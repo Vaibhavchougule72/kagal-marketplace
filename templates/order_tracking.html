@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+<style>
+.step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.step-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.completed { background: #28a745; }
+.pending { background: #ccc; }
+.cancelled { background: #dc3545; }
+.failed { background: #ffc107; }
+</style>
+
+<div class="container page-content">
+
+    <h2>{% trans "Order Status" %}</h2>
+
+    <p>
+        {% trans "Store:" %} <strong>{{ order.store.name }}</strong><br>
+        {% trans "Ordered On:" %} {{ order.created_at|date:"d M Y, H:i" }}
+    </p>
+
+    <!-- REQUEST SUBMITTED -->
+    <div class="step">
+        <div class="step-circle completed"></div>
+        {% trans "Request Submitted" %}
+    </div>
+
+    <!-- ACCEPTED -->
+    <div class="step">
+        <div class="step-circle 
+        {% if order.status in 'ACCEPTED IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
+            completed
+        {% else %}
+            pending
+        {% endif %}"></div>
+        {% trans "Accepted" %}
+    </div>
+
+    <!-- IN PROGRESS -->
+    <div class="step">
+        <div class="step-circle 
+        {% if order.status in 'IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
+            completed
+        {% else %}
+            pending
+        {% endif %}"></div>
+        {% trans "In Progress" %}
+    </div>
+
+    <!-- PICKED UP -->
+    <div class="step">
+        <div class="step-circle 
+        {% if order.status in 'PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
+            completed
+        {% else %}
+            pending
+        {% endif %}"></div>
+        {% trans "Picked Up" %}
+    </div>
+
+    <!-- OUT FOR DELIVERY -->
+    <div class="step">
+        <div class="step-circle 
+        {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}
+            completed
+        {% else %}
+            pending
+        {% endif %}"></div>
+        {% trans "Out For Delivery" %}
+    </div>
+
+    <!-- DELIVERED -->
+    <div class="step">
+        <div class="step-circle 
+        {% if order.status == 'DELIVERED' %}
+            completed
+        {% else %}
+            pending
+        {% endif %}"></div>
+        {% trans "Delivered" %}
+    </div>
+
+    <!-- FAILED -->
+    {% if order.status == "FAILED" %}
+    <div class="step mt-4">
+        <div class="step-circle failed"></div>
+        <strong class="text-warning">{% trans "Delivery Failed" %}</strong>
+    </div>
+    {% endif %}
+
+    <!-- CANCELLED -->
+    {% if order.status == "CANCELLED" %}
+    <div class="step mt-4">
+        <div class="step-circle cancelled"></div>
+        <strong class="text-danger">{% trans "Order Cancelled" %}</strong>
+    </div>
+    {% endif %}
+
+</div>
+
+<a href="{% url 'generate_invoice' order.id %}"
+   class="btn btn-outline-primary mt-3"
+   target="_blank">
+   {% trans "Download Invoice PDF" %}
+</a>
+
+<!-- CANCEL BUTTON -->
+{% if order.status in "REQUEST_SUBMITTED ACCEPTED IN_PROGRESS" %}
+<div class="container mt-3">
+    <button class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#cancelModal">
+        {% trans "Cancel Order" %}
+    </button>
+</div>
+{% endif %}
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">Cancel Order?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="fw-bold">
+          {% trans "Are you sure you want to cancel this order?" %}
+        </p>
+        <p class="text-muted">
+          {% trans "This action cannot be undone." %}
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            {% trans "No" %}
+        </button>
+
+        <a href="{% url 'cancel_order' order.id %}"
+           class="btn btn-danger">
+            {% trans "Yes, Cancel" %}
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+<script>
+setInterval(function(){
+    location.reload();
+}, 7000);
+</script>

@@ -1,0 +1,106 @@
+{% if not items %}
+{% load i18n %}
+
+<div class="text-center p-5">
+    <h5>{% trans "Your cart is empty 🛒" %}</h5>
+    <p class="text-muted">{% trans "Add some products to get started." %}</p>
+    <a href="/" class="btn btn-primary mt-3">{% trans "Start Shopping" %}</a>
+</div>
+
+{% else %}
+
+<div class="cart-items">
+
+    {% for item in items %}
+    <div class="card mb-3 p-3 shadow-sm">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+                <strong>
+                    {% if item.product %}
+                    {{ item.product.name }}
+                    {% else %}
+                    {{ item.name }}
+                    {% endif %}
+                </strong>
+                <small class="text-muted">
+                    ₹{% if item.product %}{{ item.product.price }}{% else %}{{ item.price }}{% endif %}
+                </small>
+            </div>
+
+            <div class="d-flex align-items-center">
+
+                <button type="button" class="btn btn-sm btn-outline-dark qty-btn"
+                        data-id="{{ item.key }}"
+    
+                        data-action="decrease">
+                    -
+                </button>
+
+                <span class="mx-2 fw-bold">{{ item.quantity }}</span>
+
+                <button type="button" class="btn btn-sm btn-outline-dark qty-btn"
+                        data-id="{{ item.key }}"
+                        data-action="add">
+                    +
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="mt-2 d-flex justify-content-between align-items-center">
+            <div>
+                {% trans "Subtotal" %}: <strong>₹{{ item.subtotal }}</strong>
+            </div>
+
+            <button type="button" class="btn btn-sm text-danger remove-btn"
+                    data-id="{{ item.key }}">
+                {% trans "Remove" %}
+            </button>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- 💰 Small Order Fee Warning -->
+{% if remaining_to_149 > 0 %}
+<div class="alert alert-warning fw-bold text-center mb-3">
+    {% trans "Add items worth" %} ₹{{ remaining_to_149 }} {% trans "more to avoid ₹20 small order fee." %}
+</div>
+{% endif %}
+
+{% if cod_not_allowed %}
+<div class="alert alert-danger fw-bold text-center mb-3">
+    {% trans "Cash on Delivery is not available below ₹149." %}
+</div>
+{% endif %}
+
+{% if remaining_to_free_delivery > 0 %}
+<div class="alert alert-info fw-bold text-center mb-3">
+    {% trans "Add" %} ₹{{ remaining_to_free_delivery }} {% trans "more to unlock FREE delivery 🎉" %}
+</div>
+{% else %}
+<div class="alert alert-success fw-bold text-center mb-3">
+    {% trans "🎉 Congratulations! You unlocked FREE delivery!" %}
+</div>
+{% endif %}
+
+<!-- Cart Summary -->
+<div class="mt-3 border-top pt-3">
+
+    <div class="d-flex justify-content-between mb-2">
+        <strong>Total:</strong>
+        <strong>₹{{ subtotal }}</strong>
+    </div>
+
+    <a href="{% url 'checkout' %}" class="btn btn-success w-100">
+        {% trans "Proceed to Checkout" %}
+    </a>
+
+</div>
+
+{% endif %}

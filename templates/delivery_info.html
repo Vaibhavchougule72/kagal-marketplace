@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load i18n %}
+
+<div class="container page-content">
+    <h2 class="fw-bold mb-4">{% trans "Delivery Information" %}</h2>
+
+    <p>
+        {% trans "We currently deliver across Kagal and nearby areas." %}"
+    </p>
+
+    <p>
+        {% trans "Standard delivery time: 30–45 minutes." %}
+    </p>
+
+    <p>
+        {% trans "Delivery charges may vary based on distance and order size." %}
+    </p>
+
+    <p>
+        {% trans "Cash on Delivery and UPI accepted." %}
+    </p>
+</div>
+
+{% endblock %}

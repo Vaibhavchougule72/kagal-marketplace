@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">{{ category.name }} - {% trans "Stores" %}</h2>
+
+    <div class="row g-4">
+        {% for store in stores %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'store_detail' store.id %}" class="text-decoration-none">
+
+                <div class="loka-store-card">
+
+                    <div class="loka-store-image">
+                        {% if store.image %}
+                            <img src="{{ store.image.url }}" alt="{{ store.name }}">
+                        {% endif %}
+                    </div>
+
+                    <div class="loka-store-body">
+                        <div class="loka-store-name">
+                            {{ store.name }}
+                        </div>
+
+                        <div class="loka-store-desc">
+                            {{ store.description|truncatechars:60 }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </a>
+        </div>
+        {% empty %}
+        <p>{% trans "No stores available." %}</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

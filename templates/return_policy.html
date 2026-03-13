@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+<div class="container page-content">
+    <h2 class="fw-bold mb-4">{% trans "Return Policy" %}</h2>
+
+    <p>
+        {% trans "If you receive damaged or incorrect items, please contact us within
+        24 hours of delivery." %}
+    </p>
+
+    <p>
+        {% trans "Refunds will be processed within 3–5 business days after verification." %}
+    </p>
+
+    <p>
+        {% trans "Perishable goods may not be eligible for return unless damaged." %}
+    </p>
+</div>
+
+{% endblock %}

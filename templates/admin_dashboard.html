@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>LOKA Analytics Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+background:#f4f6fb;
+font-family:Inter, sans-serif;
+}
+
+.card{
+border:none;
+border-radius:14px;
+box-shadow:0 6px 20px rgba(0,0,0,0.08);
+}
+
+.metric{
+font-size:28px;
+font-weight:700;
+}
+
+.section-title{
+font-weight:700;
+margin-bottom:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container-fluid p-4">
+
+<h2 class="mb-4">🚀 LOKA Marketplace Analytics</h2>
+
+<!-- KPI ROW -->
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-2">
+<div class="card p-3">
+<div class="text-muted">Revenue</div>
+<div class="metric text-success">₹{{ total_revenue }}</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card p-3">
+<div class="text-muted">Orders</div>
+<div class="metric">{{ total_orders }}</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card p-3">
+<div class="text-muted">Today</div>
+<div class="metric">{{ todays_orders }}</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card p-3">
+<div class="text-muted">AOV</div>
+<div class="metric text-primary">₹{{ avg_order_value|floatformat:0 }}</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card p-3">
+<div class="text-muted">Repeat Customers</div>
+<div class="metric text-warning">{{ repeat_customers }}</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card p-3">
+<div class="text-muted">Delivery Success</div>
+<div class="metric text-info">{{ delivery_success }}%</div>
+</div>
+</div>
+
+</div>
+
+<!-- CHART ROW -->
+
+<div class="row g-4 mb-4">
+
+<div class="col-md-8">
+
+<div class="card p-4">
+
+<div class="section-title">Revenue Trend</div>
+
+<canvas id="revenueChart"></canvas>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="card p-4">
+
+<div class="section-title">Payment Methods</div>
+
+<canvas id="paymentChart"></canvas>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- SECOND ROW -->
+
+<div class="row g-4">
+
+<!-- TOP PRODUCTS -->
+
+<div class="col-md-6">
+
+<div class="card p-4">
+
+<div class="section-title">🏆 Top Products</div>
+
+<table class="table">
+
+<thead>
+
+<tr>
+<th>Product</th>
+<th>Sold</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for p in top_products %}
+
+<tr>
+
+<td>{{ p.product__name }}</td>
+
+<td>{{ p.total_qty }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- STORE LEADERBOARD -->
+
+<div class="col-md-6">
+
+<div class="card p-4">
+
+<div class="section-title">🏪 Top Stores</div>
+
+<table class="table">
+
+<thead>
+
+<tr>
+<th>Store</th>
+<th>Revenue</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in top_stores %}
+
+<tr>
+
+<td>{{ s.store__name }}</td>
+
+<td>₹{{ s.revenue }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- HOURLY ORDERS -->
+
+<div class="card p-4 mt-4">
+
+<div class="section-title">⏰ Orders by Hour</div>
+
+<canvas id="hourChart"></canvas>
+
+</div>
+
+</div>
+
+
+<script>
+
+const labels = {{ labels|safe }};
+const revenues = {{ revenues|safe }};
+const hourly = {{ hourly_orders|safe }};
+
+new Chart(document.getElementById("revenueChart"), {
+
+type: "line",
+
+data: {
+
+labels: labels,
+
+datasets:[{
+
+label:"Revenue",
+
+data: revenues,
+
+borderColor:"#28a745",
+
+backgroundColor:"rgba(40,167,69,0.2)",
+
+fill:true
+
+}]
+
+}
+
+});
+
+
+new Chart(document.getElementById("paymentChart"),{
+
+type:"doughnut",
+
+data:{
+
+labels:["COD","UPI"],
+
+datasets:[{
+
+data:[{{ cod_orders }},{{ upi_orders }}],
+
+backgroundColor:["#ffc107","#0d6efd"]
+
+}]
+
+}
+
+});
+
+
+new Chart(document.getElementById("hourChart"),{
+
+type:"bar",
+
+data:{
+
+labels:["8","9","10","11","12","1","2","3","4","5","6","7"],
+
+datasets:[{
+
+label:"Orders",
+
+data: hourly,
+
+backgroundColor:"#0d6efd"
+
+}]
+
+}
+
+});
+
+</script>
+
+</body>
+
+</html>

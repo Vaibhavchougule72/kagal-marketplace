@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>Store Performance Dashboard</h2>
+
+<form method="GET" class="row mb-4">
+
+<div class="col-md-3">
+<label>Category</label>
+
+<select name="category" class="form-select" onchange="this.form.submit()">
+
+<option value="">All Categories</option>
+
+{% for c in categories %}
+<option value="{{ c.id }}"
+{% if selected_category == c.id|stringformat:"s" %}selected{% endif %}>
+{{ c.name }}
+</option>
+{% endfor %}
+
+</select>
+</div>
+
+
+<div class="col-md-3">
+<label>Store</label>
+
+<select name="store" class="form-select" onchange="this.form.submit()">
+
+<option value="">All Stores</option>
+
+{% for s in stores %}
+<option value="{{ s.id }}"
+{% if selected_store == s.id|stringformat:"s" %}selected{% endif %}>
+{{ s.name }}
+</option>
+{% endfor %}
+
+</select>
+</div>
+
+
+<div class="col-md-2">
+<label>Start Date</label>
+<input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
+</div>
+
+
+<div class="col-md-2">
+<label>End Date</label>
+<input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
+</div>
+
+
+<div class="col-md-2 d-flex align-items-end">
+<button class="btn btn-primary w-100">Apply</button>
+</div>
+
+</form>
+
+<div class="card">
+
+<div class="card-header">
+Store Sales
+</div>
+
+<table class="table table-striped">
+
+<thead>
+
+<tr>
+
+<th>Store</th>
+<th>Category</th>
+<th>Total Orders</th>
+<th>Weekly Sales</th>
+<th>Commission %</th>
+<th>Platform Earn</th>
+<th>Store Payout</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for data in store_data %}
+
+<tr>
+
+<td>{{ data.store.name }}</td>
+
+<td>{{ data.store.category.name }}</td>
+
+<td>{{ data.orders }}</td>
+
+<td>₹{{ data.sales }}</td>
+
+<td>{{ data.store.commission_percent }}%</td>
+
+<td>₹{{ data.commission }}</td>
+
+<td class="text-success">₹{{ data.payout }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+
+{% endblock %}
+

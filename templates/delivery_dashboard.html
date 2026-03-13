@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>Delivery Partner Dashboard</h2>
+
+<!-- FILTER -->
+
+<form method="GET" class="mb-4">
+
+<label>Filter by Delivery Partner</label>
+
+<select name="partner" class="form-select w-25" onchange="this.form.submit()">
+
+<option value="">All Partners</option>
+
+{% for p in partners %}
+
+<option value="{{ p.id }}"
+{% if selected_partner == p.id|stringformat:"s" %}selected{% endif %}>
+
+{{ p.username }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</form>
+
+<!-- SUMMARY -->
+
+<div class="row">
+
+<div class="col-md-3">
+<div class="card text-center p-3">
+<h5>Total Orders</h5>
+<h3>{{ total_orders }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center p-3">
+<h5>Total Distance</h5>
+<h3>{{ total_distance }} km</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center p-3">
+<h5>Total Payout</h5>
+<h3>₹{{ total_payout }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center p-3">
+<h5>Avg Delivery Time</h5>
+<h3>{{ avg_time }} min</h3>
+</div>
+</div>
+
+</div>
+
+<!-- TABLE -->
+
+<div class="card mt-4">
+
+<div class="card-header">
+
+<h4>Delivery Details</h4>
+
+</div>
+
+<table class="table table-striped">
+
+<thead>
+
+<tr>
+
+<th>Order ID</th>
+<th>Delivery Boy</th>
+<th>Distance</th>
+<th>Time</th>
+<th>Payout</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for order in orders %}
+
+<tr>
+
+<td>#{{ order.id }}</td>
+
+<td>
+{% if order.assigned_delivery %}
+{{ order.assigned_delivery.username }}
+{% else %}
+-
+{% endif %}
+</td>
+
+<td>{{ order.delivery_distance }} km</td>
+
+<td>{{ order.delivery_time_minutes }} min</td>
+
+<td>₹{{ order.delivery_payout }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

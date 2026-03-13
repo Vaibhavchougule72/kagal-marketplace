@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+
+<div class="container page-content">
+    <h4>{% trans "Complete Your UPI Payment" %}</h4>
+
+    <button id="rzp-button" class="btn btn-success mt-4 px-4 py-2">
+        Pay ₹{{ amount|floatformat:2 }}
+    </button>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ amount }}",
+    "currency": "INR",
+    "name": "Kagal Marketplace",
+    "description": "Order Payment",
+    "order_id": "{{ razorpay_order_id }}",
+
+    "handler": function (response){
+        window.location.href = "/payment-success/?payment_id="
+            + response.razorpay_payment_id
+            + "&order_id=" + response.razorpay_order_id
+            + "&signature=" + response.razorpay_signature;
+    },
+
+    "prefill": {
+        "name": "{{ customer_name }}",
+        "contact": "{{ phone }}"
+    },
+
+    "theme": {
+        "color": "#198754"
+    }
+};
+
+var rzp = new Razorpay(options);
+
+document.getElementById('rzp-button').onclick = function(e){
+    rzp.open();
+    e.preventDefault();
+}
+</script>
+
+{% endblock %}

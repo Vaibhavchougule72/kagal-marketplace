@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load i18n %}
+
+<div class="container page-content">
+    <h2 class="fw-bold mb-4">{% trans "Frequently Asked Questions" %}</h2>
+
+    <div class="mb-4">
+        <h5 class="fw-bold">{% trans "How fast is delivery?" %}</h5>
+        <p>{% trans "We deliver within 30–45 minutes inside Kagal." %}
+        </p>
+    </div>
+
+    <div class="mb-4">
+        <h5 class="fw-bold">{% trans "What payment methods are available?" %}</h5>
+        <p>{% trans "Cash on Delivery and UPI payments are supported." %}</p>
+    </div>
+
+    <div class="mb-4">
+        <h5 class="fw-bold">{% trans "Can I cancel my order?"}</h5>
+        <p>{% trans "You can cancel before the order is picked up." %}</p>
+    </div>
+</div>
+
+{% endblock %}

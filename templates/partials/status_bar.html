@@ -1,0 +1,18 @@
+<div class="d-flex justify-content-between mt-3">
+
+{% for step in status_flow %}
+    <div class="text-center flex-fill">
+
+        {% if step == order.status %}
+            <div class="rounded-circle bg-primary mx-auto" style="width:20px;height:20px;"></div>
+        {% elif step in completed_steps %}
+            <div class="rounded-circle bg-success mx-auto" style="width:20px;height:20px;"></div>
+        {% else %}
+            <div class="rounded-circle bg-secondary mx-auto" style="width:20px;height:20px;"></div>
+        {% endif %}
+
+        <small>{{ step|title }}</small>
+    </div>
+{% endfor %}
+
+</div>

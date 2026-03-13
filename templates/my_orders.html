@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+
+<div class="container page-content">
+    <h2>{% trans "My Orders" %}</h2>
+
+    <form method="GET" class="mb-4">
+        <input type="text" name="phone" placeholder="Enter your phone number"
+               class="form-control" required>
+        <button class="btn btn-primary mt-2">{% trans "Search Orders" %}</button>
+    </form>
+
+    {% if orders %}
+        {% for order in orders %}
+            <div class="card p-3 mb-3 shadow-sm">
+                <p>
+                    {% trans "Store:" %} <strong>{{ order.store.name }}</strong><br>
+                    {% trans "Ordered On:" %} {{ order.created_at|date:"d M Y, H:i" }}<br>
+                    {% trans "Total:" %} ₹{{ order.total }}<br>
+                    {% trans "Status:" %} {{ order.get_status_display }}
+                </p>
+
+                <a href="{% url 'order_tracking' order.id %}" class="btn btn-sm btn-outline-dark">
+                    {% trans "Track Order" %}
+                </a>
+            </div>
+
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+{% if phone and not orders %}
+<p class="mt-4">{% trans "No orders found for this number." %}</p>
+{% endif %}
+
+{% endblock %}

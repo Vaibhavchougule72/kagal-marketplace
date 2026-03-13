@@ -1,0 +1,908 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LOKA-Online Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/loka-theme.css' %}">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            background: #9de99d; /* Green */
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Loader */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Cart Overlay */
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 9998;
+        }
+
+        .cart-overlay.active {
+            display: block;
+        }
+
+        /* Cart Panel */
+        .cart-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+        }
+
+        .cart-panel.open {
+            right: 0;
+        }
+
+        .cart-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        @media(max-width:768px){
+            .cart-panel{
+                width: 100%;
+            }
+        }
+        .custom-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: none;
+            z-index: 99999;
+            animation: fadeInOut 2.5s ease forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+        .main-content {
+            margin-top: 100px;
+        }
+        /* Adjust navbar height */
+        .premium-navbar {
+            backdrop-filter: blur(14px);
+            background: rgba(12, 104, 63, 0.9);
+            border-bottom: 1px solid rgba(248, 244, 244, 0.05);
+            padding-top: 10px;
+            padding-bottom: 10px;
+            z-index: 9999;
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: white !important;
+        }
+
+        .nav-link:hover {
+            color: #F39C12 !important; /* Orange hover */
+        }
+
+        /* Smaller navbar on mobile */
+        @media (max-width: 991px) {
+
+        .premium-navbar {
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        .navbar-brand {
+            font-size: 1.1rem;
+        }
+
+        .navbar-collapse {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        /* Make links black in mobile dropdown */
+        .navbar-collapse .nav-link {
+            color: #000 !important;
+            font-weight: 600;
+        }
+
+        .navbar-collapse .nav-link:hover {
+            color: #198754 !important; /* green hover */
+        }
+    }
+        /* Prevent content overlap */
+        .main-content {
+            margin-top: 90px;
+        }
+        /* Floating Cart Button */
+        .floating-cart {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #198754;
+            color: white;
+            border: none;
+            font-size: 22px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-cart:hover {
+            transform: scale(1.08);
+        }
+
+        /* Badge */
+        .floating-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 4px 7px;
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+
+{% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+<body>
+
+
+{% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Global Loader -->
+<div id="globalLoader" class="loader-overlay">
+    <div class="spinner-border text-primary"></div>
+</div>
+{% if show_navbar != False %}
+<nav class="navbar navbar-expand-lg fixed-top premium-navbar px-3">
+
+    <div class="container-fluid">
+
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold" href="/">
+            LOKA - Online Store
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Content -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+
+            <!-- Search -->
+            <form class="d-none d-lg-flex mx-lg-auto my-2 my-lg-0 position-relative"
+                method="GET"
+                action="{% url 'search_products' %}"
+                style="max-width: 400px; width: 100%;">
+
+                <input class="form-control rounded-pill"
+                    type="search"
+                    id="searchInput"
+                    name="q"
+                    placeholder="Search products..."
+                    autocomplete="off">
+
+                <!-- 🔽 Suggestion Box -->
+                <div id="suggestionBox"
+                    class="list-group position-absolute w-100"
+                    style="top: 45px; z-index: 9999; display: none;">
+                </div>
+
+            </form>
+
+            <form action="{% url 'set_language' %}" method="post">
+                {% csrf_token %}
+
+                <input type="hidden" name="next" value="{{ request.path }}">
+
+                <select name="language" onchange="this.form.submit()">
+                    <option value="en">English</option>
+                    <option value="mr">मराठी</option>
+                </select>
+
+            </form>
+
+            <!-- Right Links -->
+            <ul class="navbar-nav ms-lg-auto align-items-lg-center">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/">{% trans "Home" %}</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'my_orders' %}">
+                        {% trans "Orders" %}
+                    </a>
+                </li>
+
+                <li class="nav-item ms-lg-3">
+                    <button class="btn btn-dark position-relative"
+                            id="cartToggle">
+                        {% trans "🛒 Cart" %}
+                        <span class="badge bg-danger cart-badge"
+                              id="cartBadge">
+                            {{ cart_item_count }}
+                        </span>
+                    </button>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+</nav>
+{% endif %}
+
+<div class="page-wrapper">
+<!-- MOBILE SEARCH BAR -->
+<div class="mobile-search-wrapper d-lg-none px-3 pt-3">
+
+    <form method="GET"
+          action="{% url 'search_products' %}"
+          class="position-relative">
+
+        <input class="form-control rounded-pill"
+               type="search"
+               id="mobileSearchInput"
+               name="q"
+               placeholder="Search for grocery, snacks..."
+               autocomplete="off">
+
+        <div id="mobileSuggestionBox"
+             class="list-group position-absolute w-100"
+             style="top: 45px; z-index: 9999; display: none;">
+        </div>
+
+    </form>
+
+</div>
+
+<div id="cartOverlay" class="cart-overlay"></div>
+
+<div id="toast" class="custom-toast">{% trans "Item added to cart" %}</div>
+
+
+<div id="cartPanel" class="cart-panel">
+    <div class="cart-header d-flex justify-content-between p-3 border-bottom">
+        <h5>{% trans "Your Cart" %}</h5>
+        <button class="btn btn-sm btn-outline-dark" id="closeCart">X</button>
+    </div>
+    <div class="cart-body p-3" id="cartContent">
+        Loading...
+    </div>
+</div>
+
+<div class="main-content">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- 🔥 Floating Cart Button (Mobile Only) -->
+<button id="floatingCartBtn"
+        class="floating-cart d-lg-none">
+    🛒
+    <span class="floating-badge" id="floatingCartBadge">
+        {{ cart_item_count }}
+    </span>
+</button>
+
+
+
+
+
+<script>
+window.addEventListener("load", function(){
+
+    const loader = document.getElementById("globalLoader");
+
+    if(loader){
+        loader.classList.add("hidden");
+    }
+
+    // 🔥 Always show body
+    document.body.classList.add("loaded");
+
+});
+</script>
+
+<script>
+
+function updateCartBadge(count){
+    const desktopBadge = document.getElementById("cartBadge");
+    const floatingBadge = document.getElementById("floatingCartBadge");
+
+    if(desktopBadge) desktopBadge.innerText = count;
+    if(floatingBadge) floatingBadge.innerText = count;
+}
+
+function animateAddToCart(imgElement){
+
+    const cartIcon = document.getElementById("cartToggle");
+
+    if(!cartIcon || !imgElement) return;
+
+    const imgRect = imgElement.getBoundingClientRect();
+    const cartRect = cartIcon.getBoundingClientRect();
+
+    const flyingImg = imgElement.cloneNode(true);
+    flyingImg.classList.add("flying-img");
+
+    flyingImg.style.top = imgRect.top + "px";
+    flyingImg.style.left = imgRect.left + "px";
+
+    document.body.appendChild(flyingImg);
+
+    setTimeout(()=>{
+
+    flyingImg.style.top = cartRect.top + "px";
+    flyingImg.style.left = cartRect.left + "px";
+    flyingImg.style.width = "20px";
+    flyingImg.style.height = "20px";
+    flyingImg.style.opacity = "0.5";
+
+    },20);
+
+    setTimeout(()=>{
+    flyingImg.remove();
+    },800);
+
+}
+
+function showToast(){
+    const toast = document.getElementById("toast");
+    toast.style.display = "block";
+
+    setTimeout(()=>{
+        toast.style.display="none";
+    },2500);
+}
+
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const cartToggle = document.getElementById("cartToggle");
+    const floatingBtn = document.getElementById("floatingCartBtn");
+    const cartPanel = document.getElementById("cartPanel");
+    const cartOverlay = document.getElementById("cartOverlay");
+    const closeCart = document.getElementById("closeCart");
+    const cartContent = document.getElementById("cartContent");
+    
+    function refreshCart() {
+        fetch("/cart/", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => {
+            cartContent.innerHTML = html;
+        });
+    }
+
+
+    function openCart() {
+        cartPanel.classList.add("open");
+        cartOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+        refreshCart();
+    }
+
+    function closeCartPanel() {
+        cartPanel.classList.remove("open");
+        cartOverlay.classList.remove("active");
+        document.body.style.overflow = "auto";
+    }
+
+    
+
+    if(cartToggle) cartToggle.addEventListener("click", openCart);
+    if(floatingBtn) floatingBtn.addEventListener("click", openCart);
+    if(closeCart) closeCart.addEventListener("click", closeCartPanel);
+    if(cartOverlay) cartOverlay.addEventListener("click", closeCartPanel);
+
+    // 🔥 GLOBAL ADD BUTTON HANDLER (PRODUCT PAGES)
+    document.addEventListener("click", function(e){
+
+        const addBtn = e.target.closest(".add-to-cart-btn");
+
+            if(addBtn){
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const productId = addBtn.dataset.id;
+
+            /* find product image */
+            const card = addBtn.closest(".product-card");
+            const img = card ? card.querySelector(".product-img") : null;
+
+            if(img){
+            animateAddToCart(img);
+            }
+
+            fetch(`/add-to-cart/${productId}/`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => res.json())
+            .then(data => {
+
+            if(data.success){
+            updateCartBadge(data.cart_count);
+            showToast();
+            }
+
+            });
+
+            return;
+            }
+
+    });
+
+    /* ==========================
+    SEARCH AUTOCOMPLETE
+    ========================== */
+
+    const searchInput = document.getElementById("searchInput");
+    const mobileSearchInput = document.getElementById("mobileSearchInput");
+
+    const suggestionBox = document.getElementById("suggestionBox");
+    const mobileSuggestionBox = document.getElementById("mobileSuggestionBox");
+
+    if(searchInput){
+
+        searchInput.addEventListener("keyup", function(){
+
+            const query = this.value.trim();
+
+            if(query.length < 2){
+                suggestionBox.style.display = "none";
+                suggestionBox.innerHTML = "";
+                return;
+            }
+
+            fetch(`/search-suggestions/?q=${query}`)
+            .then(res => res.json())
+            .then(data => {
+
+                suggestionBox.innerHTML = "";
+
+                if(data.results.length === 0){
+                    suggestionBox.style.display = "none";
+                    return;
+                }
+
+                data.results.forEach(item => {
+
+                    const option = document.createElement("a");
+                    option.href = `/search/?q=${item.name}`;
+                    option.classList.add("list-group-item", "list-group-item-action");
+                    option.textContent = item.name;
+
+                    suggestionBox.appendChild(option);
+
+                });
+
+                suggestionBox.style.display = "block";
+            });
+
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", function(e){
+            if(!searchInput.contains(e.target)){
+                suggestionBox.style.display = "none";
+            }
+        });
+
+    }
+
+    if(mobileSearchInput){
+
+        mobileSearchInput.addEventListener("keyup", function(){
+
+            const query = this.value.trim();
+
+            if(query.length < 2){
+                mobileSuggestionBox.style.display = "none";
+                mobileSuggestionBox.innerHTML = "";
+                return;
+            }
+
+            fetch(`/search-suggestions/?q=${query}`)
+            .then(res => res.json())
+            .then(data => {
+
+                mobileSuggestionBox.innerHTML = "";
+
+                if(data.results.length === 0){
+                    mobileSuggestionBox.style.display = "none";
+                    return;
+                }
+
+                data.results.forEach(item => {
+
+                    const option = document.createElement("a");
+                    option.href = `/search/?q=${item.name}`;
+                    option.classList.add("list-group-item", "list-group-item-action");
+                    option.textContent = item.name;
+
+                    mobileSuggestionBox.appendChild(option);
+
+                });
+
+                mobileSuggestionBox.style.display = "block";
+            });
+
+        });
+
+    }
+
+
+    // 🔥 CART PANEL HANDLER (+ / - / REMOVE)
+    document.addEventListener("click", function(e){
+
+        const qtyBtn = e.target.closest(".qty-btn");
+        const removeBtn = e.target.closest(".remove-btn");
+
+        if(qtyBtn){
+            e.preventDefault();
+
+            const productId = qtyBtn.dataset.id;
+            const action = qtyBtn.dataset.action;
+
+            let url;
+
+            if(productId.startsWith("bundle_")){
+
+                const bundleId = productId.replace("bundle_","");
+
+                if(action === "add"){
+                    url = `/add-bundle/${bundleId}/`;
+                }else{
+                    url = `/decrease-cart/${productId}/`;
+                }
+
+            }else{
+
+                url = action === "add"
+                    ? `/add-to-cart/${productId}/`
+                    : `/decrease-cart/${productId}/`;
+
+            }
+            fetch(url, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success){
+                    updateCartBadge(data.cart_count);
+                    refreshCart();
+                }
+            });
+
+            return;
+        }
+
+        if(removeBtn){
+            e.preventDefault();
+
+            const productId = removeBtn.dataset.id;
+
+            fetch(`/remove-from-cart/${productId}/`, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success){
+                    updateCartBadge(data.cart_count);
+                    refreshCart();
+                }
+            });
+
+            return;
+        }
+
+    });
+
+});
+
+document.addEventListener("click", function(e){
+
+const bundleBtn = e.target.closest(".add-bundle-btn");
+
+if(bundleBtn){
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const bundleId = bundleBtn.dataset.id;
+
+    fetch(`/add-bundle/${bundleId}/`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+
+            updateCartBadge(data.cart_count);
+
+            showToast();   // same popup as product
+
+        }
+
+    });
+
+}
+
+});
+
+
+document.addEventListener("click", function(e){
+
+const card = e.target.closest(".combo-card");
+
+if(card && !e.target.closest(".add-bundle-btn")){
+
+const comboId = card.dataset.id;
+
+fetch(`/combo/${comboId}/`)
+.then(res => res.json())
+.then(data => {
+
+document.getElementById("comboTitle").innerText = data.name;
+
+let html = "";
+
+data.items.forEach(item => {
+
+html += `
+<div class="d-flex justify-content-between border-bottom py-2">
+<span>${item.name} x${item.qty}</span>
+<span>₹${item.price}</span>
+</div>
+`;
+
+});
+
+document.getElementById("comboItems").innerHTML = html;
+
+new bootstrap.Modal(document.getElementById("comboModal")).show();
+
+});
+
+}
+
+});
+
+let currentProductId = null;
+let quickQty = 1;
+
+document.addEventListener("click", function(e){
+
+const card = e.target.closest(".product-card");
+
+if(card && !e.target.closest(".add-to-cart-btn")){
+
+const name = card.dataset.name;
+const price = card.dataset.price;
+const desc = card.dataset.desc;
+const image = card.dataset.image;
+const id = card.dataset.id;
+
+currentProductId = id;
+
+document.getElementById("quickName").innerText = name;
+document.getElementById("quickPrice").innerText = "₹" + price;
+document.getElementById("quickDescription").innerText = desc;
+document.getElementById("quickImage").src = image;
+
+quickQty = 1;
+document.getElementById("quickQty").innerText = quickQty;
+
+new bootstrap.Modal(document.getElementById("productQuickView")).show();
+
+}
+
+});
+
+function increaseQty(){
+
+quickQty++;
+document.getElementById("quickQty").innerText = quickQty;
+
+}
+
+function decreaseQty(){
+
+if(quickQty > 1){
+quickQty--;
+document.getElementById("quickQty").innerText = quickQty;
+}
+
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+const quickBtn = document.getElementById("quickAddBtn");
+
+if(quickBtn){
+
+quickBtn.addEventListener("click", function(){
+
+fetch(`/add-to-cart/${currentProductId}/?qty=${quickQty}`, {
+headers: { "X-Requested-With": "XMLHttpRequest" }
+})
+.then(res => res.json())
+.then(data => {
+
+if(data.success){
+
+updateCartBadge(data.cart_count);
+showToast();
+
+/* close popup after add */
+const modal = bootstrap.Modal.getInstance(
+document.getElementById("productQuickView")
+);
+
+if(modal) modal.hide();
+
+}
+
+});
+
+});
+
+}
+
+});
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+</div>
+
+<!-- Product Quick View Modal -->
+
+<div class="modal fade" id="productQuickView" tabindex="-1">
+
+  <div class="modal-dialog modal-dialog-centered">
+
+```
+<div class="modal-content">
+
+  <div class="modal-body">
+
+    <button class="btn-close float-end" data-bs-dismiss="modal"></button>
+
+    <img id="quickImage" class="img-fluid mb-3" style="border-radius:12px;">
+
+    <h5 id="quickName"></h5>
+
+    <h6 class="text-success" id="quickPrice"></h6>
+
+    <p id="quickDescription" class="text-muted"></p>
+
+    <div class="d-flex align-items-center mt-3">
+
+        <button class="btn btn-outline-secondary btn-sm" onclick="decreaseQty()">-</button>
+
+        <span id="quickQty" class="mx-3">1</span>
+
+        <button class="btn btn-outline-secondary btn-sm" onclick="increaseQty()">+</button>
+
+    </div>
+
+    <button id="quickAddBtn" class="btn btn-success w-100 mt-3">
+        {% trans "Add to Cart" %}
+    </button>
+
+  </div>
+
+</div>
+```
+
+  </div>
+
+</div>
+
+
+</body>
+</html>

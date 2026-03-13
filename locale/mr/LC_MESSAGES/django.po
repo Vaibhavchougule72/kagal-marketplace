@@ -1,0 +1,285 @@
+# Marathi translations for LOKA Marketplace
+msgid ""
+msgstr ""
+"Project-Id-Version: LOKA\n"
+"Language: mr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/base.html
+msgid "Home"
+msgstr "मुख्यपृष्ठ"
+
+msgid "Orders"
+msgstr "ऑर्डर्स"
+
+msgid "🛒 Cart"
+msgstr "🛒 कार्ट"
+
+msgid "Item added to cart"
+msgstr "आयटम कार्टमध्ये जोडला"
+
+msgid "Your Cart"
+msgstr "तुमची कार्ट"
+
+msgid "Add to Cart"
+msgstr "कार्टमध्ये टाका"
+
+msgid "Start Shopping"
+msgstr "खरेदी सुरू करा"
+
+msgid "Subtotal:"
+msgstr "उपएकूण:"
+
+msgid "Total:"
+msgstr "एकूण:"
+
+msgid "Checkout"
+msgstr "ऑर्डर करा"
+
+msgid "Your cart is empty 🛒"
+msgstr "तुमची कार्ट रिकामी आहे 🛒"
+
+msgid "Add some products to get started."
+msgstr "सुरू करण्यासाठी काही उत्पादने जोडा."
+
+msgid "Subtotal"
+msgstr "उपएकूण"
+
+msgid "Remove"
+msgstr "काढा"
+
+msgid "Add items worth"
+msgstr "इतक्या किंमतीची उत्पादने जोडा"
+
+msgid "more to avoid ₹20 small order fee."
+msgstr "₹20 लहान ऑर्डर शुल्क टाळण्यासाठी"
+
+msgid "Cash on Delivery is not available below ₹149."
+msgstr "₹149 पेक्षा कमी ऑर्डरवर कॅश ऑन डिलिव्हरी उपलब्ध नाही"
+
+msgid "Add"
+msgstr "जोडा"
+
+msgid "more to unlock FREE delivery 🎉"
+msgstr "मोफत डिलिव्हरी मिळवण्यासाठी आणखी जोडा 🎉"
+
+msgid "🎉 Congratulations! You unlocked FREE delivery!"
+msgstr "🎉 अभिनंदन! तुम्हाला मोफत डिलिव्हरी मिळाली!"
+
+msgid "Proceed to Checkout"
+msgstr "ऑर्डर करण्यासाठी पुढे जा"
+
+msgid "Shop by Store"
+msgstr "दुकानानुसार खरेदी"
+
+msgid "Shop by Product"
+msgstr "उत्पादनानुसार खरेदी"
+
+msgid "Products"
+msgstr "उत्पादने"
+
+msgid "Stores"
+msgstr "दुकाने"
+
+msgid "No stores available."
+msgstr "कोणतेही दुकान उपलब्ध नाही"
+
+msgid "Full Name"
+msgstr "पूर्ण नाव"
+
+msgid "Please enter your full name."
+msgstr "कृपया तुमचे पूर्ण नाव टाका"
+
+msgid "Phone"
+msgstr "फोन नंबर"
+
+msgid "Enter valid Indian mobile number (starts with 6-9)."
+msgstr "वैध भारतीय मोबाइल नंबर टाका (6 ते 9 ने सुरू होणारा)"
+
+msgid "Delivery Landmark / House Details"
+msgstr "डिलिव्हरी लँडमार्क / घराचा पत्ता"
+
+msgid "Please enter delivery landmark."
+msgstr "कृपया डिलिव्हरी लँडमार्क टाका"
+
+msgid "Select Delivery Location"
+msgstr "डिलिव्हरी लोकेशन निवडा"
+
+msgid "📍 Use My Current Location"
+msgstr "📍 माझे सध्याचे लोकेशन वापरा"
+
+msgid "Coupon Code"
+msgstr "कूपन कोड"
+
+msgid "Order Summary"
+msgstr "ऑर्डर सारांश"
+
+msgid "Delivery:"
+msgstr "डिलिव्हरी:"
+
+msgid "Small Order Fee"
+msgstr "लहान ऑर्डर शुल्क"
+
+msgid "Coupon Discount"
+msgstr "कूपन सवलत"
+
+msgid "Total"
+msgstr "एकूण"
+
+msgid "Payment Method"
+msgstr "पेमेंट पद्धत"
+
+msgid "Cash on Delivery"
+msgstr "कॅश ऑन डिलिव्हरी"
+
+msgid "Place Order"
+msgstr "ऑर्डर करा"
+
+msgid "Delivery Information"
+msgstr "डिलिव्हरी माहिती"
+
+msgid "We currently deliver across Kagal and nearby areas."
+msgstr "आम्ही सध्या कागल आणि आसपासच्या भागात डिलिव्हरी करतो"
+
+msgid "Standard delivery time: 30–45 minutes."
+msgstr "सामान्य डिलिव्हरी वेळ: 30–45 मिनिटे"
+
+msgid "Delivery charges may vary based on distance and order size."
+msgstr "अंतर आणि ऑर्डरच्या आकारानुसार डिलिव्हरी शुल्क बदलू शकते"
+
+msgid "Cash on Delivery and UPI accepted."
+msgstr "कॅश ऑन डिलिव्हरी आणि UPI स्वीकारले जातात"
+
+msgid "Frequently Asked Questions"
+msgstr "सामान्य प्रश्न"
+
+msgid "How fast is delivery?"
+msgstr "डिलिव्हरी किती वेगाने होते?"
+
+msgid "We deliver within 30–45 minutes inside Kagal."
+msgstr "कागलमध्ये आम्ही 30–45 मिनिटांत डिलिव्हरी करतो"
+
+msgid "Why Choose LOKA?"
+msgstr "LOKA का निवडावे?"
+
+msgid "Fast Delivery"
+msgstr "जलद डिलिव्हरी"
+
+msgid "Local Stores"
+msgstr "स्थानिक दुकाने"
+
+msgid "Cash & UPI"
+msgstr "कॅश आणि UPI"
+
+msgid "Shop by Category"
+msgstr "कॅटेगरीनुसार खरेदी"
+
+msgid "Featured Products"
+msgstr "विशेष उत्पादने"
+
+msgid "About LOKA"
+msgstr "LOKA बद्दल"
+
+msgid "Contact"
+msgstr "संपर्क"
+
+msgid "My Orders"
+msgstr "माझ्या ऑर्डर्स"
+
+msgid "Search Orders"
+msgstr "ऑर्डर शोधा"
+
+msgid "No orders found for this number."
+msgstr "या नंबरसाठी कोणतीही ऑर्डर सापडली नाही"
+
+msgid "Order Request Submitted"
+msgstr "ऑर्डर विनंती पाठवली आहे"
+
+msgid "Back to Home"
+msgstr "मुख्यपृष्ठावर परत जा"
+
+msgid "Order Status"
+msgstr "ऑर्डर स्थिती"
+
+msgid "Request Submitted"
+msgstr "विनंती पाठवली"
+
+msgid "Accepted"
+msgstr "स्वीकारले"
+
+msgid "In Progress"
+msgstr "प्रक्रिया सुरू आहे"
+
+msgid "Picked Up"
+msgstr "उचलले"
+
+msgid "Out For Delivery"
+msgstr "डिलिव्हरीसाठी निघाले"
+
+msgid "Delivered"
+msgstr "डिलिव्हर झाले"
+
+msgid "Delivery Failed"
+msgstr "डिलिव्हरी अयशस्वी"
+
+msgid "Order Cancelled"
+msgstr "ऑर्डर रद्द झाली"
+
+msgid "Download Invoice PDF"
+msgstr "इनव्हॉइस PDF डाउनलोड करा"
+
+msgid "Cancel Order"
+msgstr "ऑर्डर रद्द करा"
+
+msgid "Are you sure you want to cancel this order?"
+msgstr "तुम्हाला ही ऑर्डर रद्द करायची आहे का?"
+
+msgid "This action cannot be undone."
+msgstr "ही क्रिया मागे घेता येणार नाही"
+
+msgid "No"
+msgstr "नाही"
+
+msgid "Yes, Cancel"
+msgstr "होय, रद्द करा"
+
+msgid "Cancellation & Refund Policy"
+msgstr "रद्द करण्याचे व परताव्याचे नियम"
+
+msgid "Order can be cancelled before it is shipped."
+msgstr "ऑर्डर पाठवण्यापूर्वी रद्द करता येते."
+
+msgid "Full refund for UPI payments if cancelled before dispatch."
+msgstr "डिस्पॅचपूर्वी रद्द केल्यास UPI पेमेंटचा पूर्ण परतावा मिळेल."
+
+msgid "If cancelled after dispatch, delivery charges may be deducted."
+msgstr "डिस्पॅचनंतर रद्द केल्यास डिलिव्हरी शुल्क वजा होऊ शकते."
+
+msgid "Refusal at delivery may result in COD restriction."
+msgstr "डिलिव्हरी नाकारल्यास COD सुविधा बंद केली जाऊ शकते."
+
+msgid "Refunds for UPI may take 3-5 working days."
+msgstr "UPI परतावा 3-5 कामकाजाच्या दिवसांत मिळू शकतो."
+
+msgid "I agree to the cancellation and refund policy."
+msgstr "मी रद्द करण्याच्या व परताव्याच्या नियमांना सहमत आहे."
+
+msgid "Verify OTP"
+msgstr "OTP तपासा"
+
+msgid "OTP valid for 5 minutes"
+msgstr "OTP 5 मिनिटांसाठी वैध आहे"
+
+msgid "Expires in:"
+msgstr "समाप्त होण्यास:"
+
+msgid "Attempts left:"
+msgstr "उरलेले प्रयत्न:"
+
+msgid "Verify & Place Order"
+msgstr "OTP तपासा आणि ऑर्डर करा"
+
+msgid "Resend OTP"
+msgstr "OTP पुन्हा पाठवा"

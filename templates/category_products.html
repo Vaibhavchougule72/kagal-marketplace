@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+<div class="container page-content">
+
+    <h2 class="mb-4">{{ category.name }} - {% trans "Products" %}</h2>
+
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="loka-product-card product-card"
+                data-id="{{ product.id }}"
+                data-name="{{ product.name }}"
+                data-price="{{ product.price }}"
+                data-desc="{{ product.description }}"
+                data-image="{{ product.image.url }}">
+
+                <!-- PRODUCT IMAGE -->
+                <div class="loka-product-image">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                        class="img-fluid product-img"
+                        alt="{{ product.name }}">
+                    {% endif %}
+                </div>
+
+                <!-- PRODUCT INFO -->
+                <div class="loka-product-body">
+
+                    <div class="loka-product-name">
+                        {{ product.name }}
+                    </div>
+
+                    <div class="loka-product-desc">
+                        {{ product.store.name }}
+                    </div>
+
+                    <div class="loka-product-bottom">
+
+                        <div class="loka-product-price">
+                            ₹{{ product.price }}
+                        </div>
+
+                        <button class="loka-add-btn add-to-cart-btn"
+                                data-id="{{ product.id }}">
+                            ADD
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+        <p>No products available.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

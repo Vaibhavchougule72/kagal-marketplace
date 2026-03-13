@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+<div class="container page-content">
+    <h2 class="mb-4">{{ category.name }}</h2>
+
+    <div class="row justify-content-center g-4">
+
+        <div class="col-6 col-md-4">
+            <a href="{% url 'category_stores' category.id %}" style="text-decoration:none;">
+                <div class="card shadow-sm p-4">
+                    <h5>{% trans "Shop by Store" %}</h5>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4">
+            <a href="{% url 'category_products' category.id %}" style="text-decoration:none;">
+                <div class="card shadow-sm p-4">
+                    <h5>{% trans "Shop by Product" %}</h5>
+                </div>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

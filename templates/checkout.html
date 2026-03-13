@@ -1,0 +1,593 @@
+{% extends "base.html" %}
+{% block content %}
+{% load i18n %}
+<style>
+.map-invalid {
+    border: 2px solid #dc3545 !important;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+</style>
+
+<div class="container page-content">
+
+    <h3 class="mb-4">{% trans "Checkout" %}</h3>
+
+    <form method="POST" id="checkoutForm">
+        {% csrf_token %}
+
+        <!-- NAME -->
+        <div class="mb-3">
+            <label class="form-label">{% trans "Full Name" %}</label>
+            <input type="text" name="name" id="nameInput"
+                   class="form-control" required>
+            <div class="invalid-feedback">
+                {% trans "Please enter your full name." %}
+            </div>
+        </div>
+
+        <!-- PHONE -->
+        <div class="mb-3">
+            <label class="form-label">{% trans "Phone" %}</label>
+            <div class="position-relative">
+                <input type="text"
+                       name="phone"
+                       id="phoneInput"
+                       class="form-control pe-5"
+                       maxlength="10"
+                       placeholder="10-digit mobile number"
+                       required>
+                <span id="phoneCheck"
+                      style="position:absolute; right:12px; top:50%; transform:translateY(-50%); display:none;">
+                    ✅
+                </span>
+            </div>
+            <div class="invalid-feedback">
+                {% trans "Enter valid Indian mobile number (starts with 6-9)." %}
+            </div>
+        </div>
+
+        <div id="deliveryInfo" class="text-success mt-2"></div>
+
+
+        <!-- ADDRESS -->
+        <div class="mb-3">
+            <label class="form-label">{% trans "Delivery Landmark / House Details" %}</label>
+            <textarea name="address" id="addressInput"
+                      class="form-control"
+                      placeholder="Flat No, Building, Landmark"
+                      required></textarea>
+            <div class="invalid-feedback">
+                {% trans "Please enter delivery landmark." %}
+            </div>
+        </div>
+
+        <!-- MAP -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">{% trans "Select Delivery Location" %}</label>
+
+            <div class="mb-2 text-end">
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        onclick="useCurrentLocation()">
+                    {% trans "📍 Use My Current Location" %}
+                </button>
+            </div>
+
+            <div id="map" style="height:350px; border-radius:12px;"></div>
+
+            <div class="text-danger mt-2 d-none" id="mapError"></div>
+
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
+        </div>
+
+        <div class="mb-3">
+
+            <label>{% trans "Coupon Code" %}</label>
+
+            <input type="text" id="coupon_code" class="form-control">
+            <input type="hidden" name="coupon_code" id="applied_coupon">
+            <button type="button" class="btn btn-primary mt-2" onclick="applyCoupon()">Apply Coupon</button>
+
+            <p id="coupon_message"></p>
+
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="card p-4 shadow-sm mb-4">
+
+            <h5 class="mb-3">{% trans "Order Summary" %}</h5>
+
+            <div class="d-flex justify-content-between">
+                <span>{% trans "Subtotal" %}</span>
+                <strong>₹{{ subtotal }}</strong>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                {% trans "Delivery:" %} <span id="deliveryFee">₹20</span>
+
+            </div>
+
+            {% if cod_not_allowed %}
+            <div class="alert alert-danger fw-bold text-center">
+                {% trans "Cash on Delivery is not available for orders below ₹149." %}
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between">
+                <span>{% trans "Small Order Fee" %}</span>
+                <strong>₹{{ small_order_fee }}</strong>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between text-success">
+                <span>{% trans "Coupon Discount" %}</span>
+                <strong id="discount_amount">₹0</strong>
+            </div>
+
+            <div class="d-flex justify-content-between fs-5">
+                <strong>{% trans "Total" %}</strong>
+                <strong id="orderTotal">
+                    ₹{{ subtotal|add:small_order_fee|add:20 }}
+                </strong>
+            </div>
+
+            <small class="text-muted" id="distanceInfo"></small>
+
+        </div>
+
+        {% for item in items %}
+        <div class="d-flex justify-content-between small mb-1">
+
+        <span>
+        {{ item.name }}
+        </span>
+
+        <span>
+        ₹{{ item.price|floatformat:2 }}
+        </span>
+
+        </div>
+        {% endfor %}
+
+        <hr>
+
+        {% if upi_only_required %}
+        <div class="alert alert-warning">
+            ⚠ Your cart contains non-returnable products. Only UPI payment is available.
+        </div>
+        {% endif %}
+
+        <!-- PAYMENT -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">{% trans "Payment Method" %}</label>
+
+            <div class="card p-3">
+                <div class="form-check mb-2">
+                    <input class="form-check-input"
+                            type="radio"
+                            name="payment"
+                            value="COD"
+                            id="codOption"
+                            {% if cod_not_allowed or upi_only_required %}disabled{% endif %}
+                           {% if cod_not_allowed %}disabled{% endif %}
+                           checked>
+                    <label class="form-check-label">
+                        {% trans "Cash on Delivery" %}
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input"
+                            type="radio"
+                            name="payment"
+                            value="UPI"
+                            id="upiOption"
+                            {% if upi_only_required %}checked{% endif %}>
+                    <label class="form-check-label">
+                        UPI
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div id="formSuccess"
+             class="alert alert-success d-none">
+            {% trans "✅ All details look good. You can place your order." %}
+        </div>
+
+        <div class="card mt-4 border-warning">
+            <div class="card-body">
+
+                <h5 class="text-danger">{% trans "Cancellation & Refund Policy" %}</h5>
+
+                <ul class="small text-muted">
+                <li>{% trans "Order can be cancelled before it is shipped." %}</li>
+                <li>{% trans "Full refund for UPI payments if cancelled before dispatch." %}</li>
+                <li>{% trans "If cancelled after dispatch, delivery charges may be deducted." %}</li>
+                <li>{% trans "Refusal at delivery may result in COD restriction." %}</li>
+                <li>{% trans "Refunds for UPI may take 3-5 working days." %}</li>
+                </ul>
+
+                <div class="form-check mt-3">
+                <input class="form-check-input"
+                        type="checkbox"
+                        id="policyCheck"
+                        required>
+                <label class="form-check-label" for="policyCheck">
+                    {% trans "I agree to the cancellation and refund policy." %}
+                </label>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PLACE ORDER -->
+        <button type="submit"
+                id="placeOrderBtn"
+                class="btn btn-success w-100 py-3 fs-5"
+                disabled>
+            {% trans "Place Order" %}
+        </button>
+
+        <div style="height:70px;"></div>
+
+    </form>
+
+</div>
+
+
+
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+const BUS_STAND_LAT = 16.5775;
+const BUS_STAND_LON = 74.3169;
+const DELIVERY_RADIUS_KM = 5;
+
+const subtotal = parseFloat("{{ subtotal }}");
+const smallOrderFee = parseFloat("{{ small_order_fee }}");
+
+let freeDeliveryUnlocked = false;
+
+var map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
+
+// 🌍 Street / Traffic-like Map (Default)
+var streetLayer = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }
+);
+
+// 🛰 Satellite Layer (Esri)
+var satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri'
+    }
+);
+
+// Add default layer
+streetLayer.addTo(map);
+
+// Layer control toggle
+L.control.layers(
+    {
+        "Traffic / Street": streetLayer,
+        "Satellite": satelliteLayer
+    }
+).addTo(map);
+
+L.circle([BUS_STAND_LAT, BUS_STAND_LON], {
+    radius: DELIVERY_RADIUS_KM * 1000,
+    color: 'green',
+    fillOpacity: 0.08
+}).addTo(map);
+
+var marker;
+
+map.on('click', function(e){
+    setLocation(e.latlng.lat, e.latlng.lng);
+});
+
+function calculateDistance(lat1, lon1, lat2, lon2){
+    const R = 6371;
+    const dLat = (lat2-lat1) * Math.PI/180;
+    const dLon = (lon2-lon1) * Math.PI/180;
+
+    const a =
+        Math.sin(dLat/2)**2 +
+        Math.cos(lat1*Math.PI/180) *
+        Math.cos(lat2*Math.PI/180) *
+        Math.sin(dLon/2)**2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function setLocation(lat, lng){
+
+    if(marker) map.removeLayer(marker);
+
+    marker = L.marker([lat, lng], { draggable:true }).addTo(map);
+    map.flyTo([lat, lng], 16, { duration: 0.7 });
+
+    document.getElementById("latitude").value = lat;
+    document.getElementById("longitude").value = lng;
+
+    marker.on('dragend', function(){
+        const pos = marker.getLatLng();
+        updateDelivery(pos.lat, pos.lng);
+    });
+
+    updateDelivery(lat, lng);
+}
+
+function updateDelivery(lat, lng){
+
+    const distanceInfo = document.getElementById("distanceInfo");
+    distanceInfo.innerText = "Calculating delivery...";
+
+    let distance = calculateDistance(
+        lat, lng, BUS_STAND_LAT, BUS_STAND_LON
+    ) + 1;
+
+    const placeBtn = document.getElementById("placeOrderBtn");
+    const mapError = document.getElementById("mapError");
+
+    if(distance > DELIVERY_RADIUS_KM){
+        mapError.innerText =
+            "Delivery not available outside 5 KM.";
+        mapError.classList.remove("d-none");
+        placeBtn.disabled = true;
+        return;
+    } else {
+        mapError.classList.add("d-none");
+    }
+
+    let deliveryFee = 0;
+
+    if(freeDeliveryUnlocked){
+
+        deliveryFee = 0;
+
+    }else if(subtotal >= 349){
+
+        deliveryFee = 0;
+
+    }else{
+
+        if(distance <= 2){
+            deliveryFee = 20;
+        } else {
+            deliveryFee = 20 + ((distance - 2) * 5);
+        }
+
+        if(deliveryFee > 60) deliveryFee = 60;
+
+        deliveryFee = Math.round(deliveryFee);
+    }
+
+    const avgSpeed = distance < 2 ? 20 : 30;
+    const prepTime = 15;
+    let travelTime = (distance / avgSpeed) * 60;
+    let baseTime = travelTime + prepTime;
+
+    let minTime = Math.round(baseTime);
+    let maxTime = Math.round(baseTime + 10);
+
+    const total = subtotal + smallOrderFee + deliveryFee;
+
+    document.getElementById("deliveryFee").innerText =
+        "₹" + deliveryFee;
+
+    document.getElementById("orderTotal").innerText =
+        "₹" + total;
+
+    distanceInfo.innerText =
+        "Distance: " + distance.toFixed(2) + " km | Delivery: "
+        + minTime + " - " + maxTime + " mins";
+
+    validateForm();
+}
+
+function useCurrentLocation(){
+    navigator.geolocation.getCurrentPosition(function(position){
+        setLocation(position.coords.latitude, position.coords.longitude);
+    });
+}
+
+function applyCoupon(){
+
+const code = document.getElementById("coupon_code").value
+
+const phone = document.getElementById("phoneInput").value
+
+fetch(`/apply-coupon/?code=${code}&subtotal={{ subtotal }}&phone=${phone}`)
+.then(res => res.json())
+.then(data => {
+
+if(data.success){
+
+const discount = data.discount
+
+document.getElementById("discount_amount").innerText =
+"₹" + discount
+
+// Get current values from page
+const subtotalValue = parseFloat("{{ subtotal }}")
+const smallOrderFee = parseFloat("{{ small_order_fee }}")
+
+// Delivery from UI
+const deliveryText = document.getElementById("deliveryFee").innerText
+const deliveryValue = parseFloat(deliveryText.replace("₹",""))
+
+const newTotal = subtotalValue + smallOrderFee + deliveryValue - discount
+
+document.getElementById("orderTotal").innerText =
+"₹" + newTotal.toFixed(0)
+
+document.getElementById("coupon_message").innerText =
+"Coupon applied successfully"
+
+document.getElementById("applied_coupon").value = code
+
+}else{
+
+document.getElementById("coupon_message").innerText =
+data.message
+
+}
+
+})
+
+}
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const form = document.getElementById("checkoutForm");
+    const placeBtn = document.getElementById("placeOrderBtn");
+    const phoneInput = document.getElementById("phoneInput");
+    const nameInput = document.getElementById("nameInput");
+    const addressInput = document.getElementById("addressInput");
+    const phoneCheck = document.getElementById("phoneCheck");
+    const mapError = document.getElementById("mapError");
+    const codOption = document.getElementById("codOption");
+    const upiOption = document.getElementById("upiOption");
+    const successBox = document.getElementById("formSuccess");
+
+    function isValidIndianPhone(phone){
+        return /^[6-9]\d{9}$/.test(phone);
+    }
+
+    window.validateForm = function(){
+
+        let valid = true;
+
+        if(nameInput.value.trim().length < 3){
+            nameInput.classList.add("is-invalid");
+            valid = false;
+        } else nameInput.classList.remove("is-invalid");
+
+        if(isValidIndianPhone(phoneInput.value)){
+            phoneInput.classList.remove("is-invalid");
+            phoneInput.classList.add("is-valid");
+            phoneCheck.style.display = "block";
+        } else {
+            phoneInput.classList.add("is-invalid");
+            phoneInput.classList.remove("is-valid");
+            phoneCheck.style.display = "none";
+            valid = false;
+        }
+
+        if(addressInput.value.trim().length < 5){
+            addressInput.classList.add("is-invalid");
+            valid = false;
+        } else addressInput.classList.remove("is-invalid");
+
+        const lat = document.getElementById("latitude").value;
+        const lng = document.getElementById("longitude").value;
+
+        if(!lat || !lng){
+            document.getElementById("map").classList.add("map-invalid");
+            valid = false;
+        } else {
+            document.getElementById("map").classList.remove("map-invalid");
+        }
+
+        if(subtotal < 149){
+            codOption.disabled = true;
+            upiOption.checked = true;
+        }
+
+        if(valid){
+            placeBtn.disabled = false;
+            successBox.classList.remove("d-none");
+        } else {
+            placeBtn.disabled = true;
+            successBox.classList.add("d-none");
+        }
+    };
+
+    form.addEventListener("submit", function(e){
+        validateForm();
+        if(placeBtn.disabled){
+            e.preventDefault();
+            return;
+        }
+
+        // Loading spinner
+        placeBtn.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        placeBtn.disabled = true;
+    });
+
+    nameInput.addEventListener("input", validateForm);
+    phoneInput.addEventListener("input", validateForm);
+    addressInput.addEventListener("input", validateForm);
+
+    validateForm();
+});
+</script>
+
+<script>
+    
+document.getElementById("phoneInput").addEventListener("blur", function(){
+
+    let phone = this.value;
+
+    if(phone.length < 10) return;
+
+    fetch(`/check-free-delivery/?phone=${phone}`)
+    .then(res => res.json())
+    .then(data => {
+
+        let infoBox = document.getElementById("deliveryInfo");
+
+        if(data.next_is_free){
+
+            infoBox.innerHTML =
+            "🎉 Congratulations! This order has FREE delivery";
+
+            freeDeliveryUnlocked = true;
+
+        } else {
+
+            let remaining = 5 - (data.order_count % 5);
+
+            infoBox.innerHTML =
+            `${remaining} more orders to unlock FREE delivery`;
+
+            freeDeliveryUnlocked = false;
+
+        }
+
+        // Recalculate delivery if location already selected
+        const lat = document.getElementById("latitude").value;
+        const lng = document.getElementById("longitude").value;
+
+        if(lat && lng){
+            updateDelivery(lat, lng);
+        }
+
+    });
+
+});
+</script>
+
+{% endblock %}
