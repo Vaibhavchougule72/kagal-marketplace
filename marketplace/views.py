@@ -190,34 +190,40 @@ def add_to_cart(request, product_id):
 
     product = get_object_or_404(Product, id=product_id, is_active=True)
 
-    cart_data = request.session.get('cart', {'store_id': None, 'items': {}})
+    cart = request.session.get('cart')
 
-    # Single store restriction
-    if cart_data['store_id'] and cart_data['store_id'] != product.store.id:
-        request.session['cart'] = {
+    if not cart:
+        cart = {
             'store_id': product.store.id,
             'items': {}
         }
 
-    request.session['cart']['store_id'] = product.store.id
+    # single store rule
+    if cart['store_id'] and cart['store_id'] != product.store.id:
+        cart = {
+            'store_id': product.store.id,
+            'items': {}
+        }
 
-    cart = Cart(request)   # MOVE HERE
+    product_id = str(product.id)
 
-    qty = int(request.GET.get("qty", 1))
+    if product_id in cart['items']:
+        cart['items'][product_id]['quantity'] += 1
+    else:
+        cart['items'][product_id] = {
+            'name': product.name,
+            'price': float(product.price),
+            'quantity': 1
+        }
 
-    if qty > 10:
-        qty = 10
-
-    for _ in range(qty):
-        cart.add(product)
-
-    cart = request.session.get('cart', {'items': {}})
+    request.session['cart'] = cart
+    request.session.modified = True
 
     cart_count = sum(item['quantity'] for item in cart['items'].values())
 
     return JsonResponse({
-        'success': True,
-        'cart_count': cart_count
+        "success": True,
+        "cart_count": cart_count
     })
 
 def decrease_cart(request, product_id):
