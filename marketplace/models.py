@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -46,20 +48,28 @@ class Product(models.Model):
         help_text="If enabled, this product allows only UPI payment"
     )
     
+
+
     def save(self, *args, **kwargs):
 
         super().save(*args, **kwargs)
 
         if self.image:
 
-            img = Image.open(self.image.path)
+            img = Image.open(self.image)
 
             if img.height > 800 or img.width > 800:
 
-                img.thumbnail((800,800))
+                img.thumbnail((800, 800))
 
-                img.save(self.image.path, optimize=True, quality=70)
+                buffer = BytesIO()
+                img.save(buffer, format="JPEG", optimize=True, quality=70)
 
+                file_content = ContentFile(buffer.getvalue())
+
+                self.image.save(self.image.name, file_content, save=False)
+
+                super().save(update_fields=["image"])
     def __str__(self):
         return self.name
 
