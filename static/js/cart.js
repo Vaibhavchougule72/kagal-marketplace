@@ -1,49 +1,35 @@
 document.addEventListener("click", function(e){
 
-    // PRODUCT ADD
-    if(e.target.classList.contains("add-to-cart-btn")){
+    const btn = e.target.closest(".add-to-cart-btn");
 
-        const productId = e.target.dataset.id
+    if(!btn) return;
 
-        fetch(`/add-to-cart/${productId}/`)
-        .then(res => res.json())
-        .then(data => {
+    e.preventDefault();
 
-            if(data.success){
+    if(btn.classList.contains("loading")) return;
 
-                const badge = document.getElementById("cart-count")
+    btn.classList.add("loading");
 
-                if(badge){
-                    badge.innerText = data.cart_count
-                }
+    const productId = btn.dataset.id;
 
+    fetch(`/add-to-cart/${productId}/`)
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+
+            const cartCounter = document.querySelector("#cart-count");
+
+            if(cartCounter){
+                cartCounter.textContent = data.cart_count;
             }
 
-        })
+        }
 
-    }
+    })
+    .catch(err => console.error(err))
+    .finally(() => {
+        btn.classList.remove("loading");
+    });
 
-    // BUNDLE ADD
-    if(e.target.classList.contains("add-bundle-btn")){
-
-        const bundleId = e.target.dataset.id
-
-        fetch(`/add-bundle-to-cart/${bundleId}/`)
-        .then(res => res.json())
-        .then(data => {
-
-            if(data.success){
-
-                const badge = document.getElementById("cart-count")
-
-                if(badge){
-                    badge.innerText = data.cart_count
-                }
-
-            }
-
-        })
-
-    }
-
-})
+});
