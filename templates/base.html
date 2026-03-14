@@ -497,40 +497,43 @@ document.addEventListener("DOMContentLoaded", function(){
     // 🔥 GLOBAL ADD BUTTON HANDLER (PRODUCT PAGES)
     document.addEventListener("click", function(e){
 
-        const addBtn = e.target.closest(".add-to-cart-btn");
+    const addBtn = e.target.closest(".add-to-cart-btn");
 
-            if(addBtn){
+    if(!addBtn) return;
 
-            e.preventDefault();
-            e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-            const productId = addBtn.dataset.id;
+    // prevent duplicate clicks
+    if(addBtn.dataset.loading === "true") return;
+    addBtn.dataset.loading = "true";
 
-            /* find product image */
-            const card = addBtn.closest(".product-card");
-            const img = card ? card.querySelector(".product-img") : null;
+    const productId = addBtn.dataset.id;
 
-            if(img){
-            animateAddToCart(img);
-            }
+    const card = addBtn.closest(".product-card");
+    const img = card ? card.querySelector(".product-img") : null;
 
-            fetch(`/add-to-cart/${productId}/`, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-            })
-            .then(res => res.json())
-            .then(data => {
+    if(img){
+        animateAddToCart(img);
+    }
 
-            if(data.success){
+    fetch(`/add-to-cart/${productId}/`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
             updateCartBadge(data.cart_count);
             showToast();
-            }
+        }
 
-            });
-
-            return;
-            }
-
+    })
+    .finally(()=>{
+        addBtn.dataset.loading = "false";
     });
+
+});
 
     /* ==========================
     SEARCH AUTOCOMPLETE
@@ -903,6 +906,6 @@ if(modal) modal.hide();
 
 </div>
 
-<script src="{% static 'js/cart.js' %}"></script>
+
 </body>
 </html>
