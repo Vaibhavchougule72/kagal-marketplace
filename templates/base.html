@@ -452,9 +452,42 @@ function showToast(){
 }
 
 </script>
+<script>
+    function refreshCartBadge(){
 
+        fetch("/cart/", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => {
+
+            const temp = document.createElement("div");
+            temp.innerHTML = html;
+
+            const items = temp.querySelectorAll(".cart-item-row");
+
+            let count = 0;
+
+            items.forEach(row => {
+                const qty = row.dataset.qty;
+                count += parseInt(qty);
+            });
+
+            updateCartBadge(count);
+
+        });
+
+    }
+
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function(){
+
+    window.addEventListener("pageshow", function(){
+        refreshCartBadge();
+    });
+
+    refreshCartBadge();
 
     const cartToggle = document.getElementById("cartToggle");
     const floatingBtn = document.getElementById("floatingCartBtn");
@@ -463,16 +496,18 @@ document.addEventListener("DOMContentLoaded", function(){
     const closeCart = document.getElementById("closeCart");
     const cartContent = document.getElementById("cartContent");
     
-    function refreshCart() {
-        fetch("/cart/", {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(res => res.text())
-        .then(html => {
-            cartContent.innerHTML = html;
-        });
-    }
+    function refreshCart(){
 
+    fetch("/cart/", {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.text())
+    .then(html => {
+        cartContent.innerHTML = html;
+        refreshCartBadge();
+    });
+
+}
 
     function openCart() {
         cartPanel.classList.add("open");
@@ -497,43 +532,43 @@ document.addEventListener("DOMContentLoaded", function(){
     // 🔥 GLOBAL ADD BUTTON HANDLER (PRODUCT PAGES)
     document.addEventListener("click", function(e){
 
-    const addBtn = e.target.closest(".add-to-cart-btn");
+        const addBtn = e.target.closest(".add-to-cart-btn");
 
-    if(!addBtn) return;
+        if(!addBtn) return;
 
-    e.preventDefault();
-    e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
 
-    // prevent duplicate clicks
-    if(addBtn.dataset.loading === "true") return;
-    addBtn.dataset.loading = "true";
+        // prevent duplicate request
+        if(addBtn.dataset.loading === "true") return;
+        addBtn.dataset.loading = "true";
 
-    const productId = addBtn.dataset.id;
+        const productId = addBtn.dataset.id;
 
-    const card = addBtn.closest(".product-card");
-    const img = card ? card.querySelector(".product-img") : null;
+        const card = addBtn.closest(".product-card");
+        const img = card ? card.querySelector(".product-img") : null;
 
-    if(img){
-        animateAddToCart(img);
-    }
-
-    fetch(`/add-to-cart/${productId}/`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        if(data.success){
-            updateCartBadge(data.cart_count);
-            showToast();
+        if(img){
+            animateAddToCart(img);
         }
 
-    })
-    .finally(()=>{
-        addBtn.dataset.loading = "false";
-    });
+        fetch(`/add-to-cart/${productId}/`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.json())
+        .then(data => {
 
-});
+            if(data.success){
+                refreshCartBadge();   // important
+                showToast();
+            }
+
+        })
+        .finally(()=>{
+            addBtn.dataset.loading = "false";
+        });
+
+    });
 
     /* ==========================
     SEARCH AUTOCOMPLETE
@@ -672,7 +707,7 @@ document.addEventListener("DOMContentLoaded", function(){
             .then(res => res.json())
             .then(data => {
                 if(data.success){
-                    updateCartBadge(data.cart_count);
+                    
                     refreshCart();
                 }
             });
@@ -691,7 +726,7 @@ document.addEventListener("DOMContentLoaded", function(){
             .then(res => res.json())
             .then(data => {
                 if(data.success){
-                    updateCartBadge(data.cart_count);
+                    
                     refreshCart();
                 }
             });
@@ -722,7 +757,7 @@ if(bundleBtn){
 
         if(data.success){
 
-            updateCartBadge(data.cart_count);
+            refreshCartBadge();
 
             showToast();   // same popup as product
 
@@ -735,45 +770,6 @@ if(bundleBtn){
 });
 
 
-document.addEventListener("click", function(e){
-
-// ignore if clicking ADD button
-if(e.target.closest(".add-to-cart-btn")) return;
-
-const card = e.target.closest(".product-card");
-
-if(card){
-
-const comboId = card.dataset.id;
-
-fetch(`/combo/${comboId}/`)
-.then(res => res.json())
-.then(data => {
-
-document.getElementById("comboTitle").innerText = data.name;
-
-let html = "";
-
-data.items.forEach(item => {
-
-html += `
-<div class="d-flex justify-content-between border-bottom py-2">
-<span>${item.name} x${item.qty}</span>
-<span>₹${item.price}</span>
-</div>
-`;
-
-});
-
-document.getElementById("comboItems").innerHTML = html;
-
-new bootstrap.Modal(document.getElementById("comboModal")).show();
-
-});
-
-}
-
-});
 
 let currentProductId = null;
 let quickQty = 1;
@@ -782,7 +778,7 @@ document.addEventListener("click", function(e){
 
 const card = e.target.closest(".product-card");
 
-if(card && !e.target.closest(".add-to-cart-btn")){
+if(card && !e.target.closest(".add-to-cart-btn") && !e.target.closest(".qty-btn")&& !e.target.closest(".add-bundle-btn")){
 
 const name = card.dataset.name;
 const price = card.dataset.price;
@@ -822,41 +818,41 @@ document.getElementById("quickQty").innerText = quickQty;
 
 }
 
+
 document.addEventListener("DOMContentLoaded", function(){
 
-const quickBtn = document.getElementById("quickAddBtn");
+    const quickBtn = document.getElementById("quickAddBtn");
 
-if(quickBtn){
+    if(quickBtn){
 
-quickBtn.addEventListener("click", function(){
+        quickBtn.addEventListener("click", function(){
 
-fetch(`/add-to-cart/${currentProductId}/?qty=${quickQty}`, {
-headers: { "X-Requested-With": "XMLHttpRequest" }
-})
-.then(res => res.json())
-.then(data => {
+            fetch(`/add-to-cart/${currentProductId}/?qty=${quickQty}`, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => res.json())
+            .then(data => {
 
-if(data.success){
+                if(data.success){
+                    refreshCartBadge();
+                    showToast();
 
-updateCartBadge(data.cart_count);
-showToast();
+                    const modal = bootstrap.Modal.getInstance(
+                        document.getElementById("productQuickView")
+                    );
 
-/* close popup after add */
-const modal = bootstrap.Modal.getInstance(
-document.getElementById("productQuickView")
-);
+                    if(modal) modal.hide();
+                }
 
-if(modal) modal.hide();
+            });
 
-}
+        });
 
-});
-
-});
-
-}
+    }
 
 });
+
+
 </script>
 
 
