@@ -737,9 +737,12 @@ if(bundleBtn){
 
 document.addEventListener("click", function(e){
 
-const card = e.target.closest(".combo-card");
+// ignore if clicking ADD button
+if(e.target.closest(".add-to-cart-btn")) return;
 
-if(card && !e.target.closest(".add-bundle-btn")){
+const card = e.target.closest(".product-card");
+
+if(card){
 
 const comboId = card.dataset.id;
 
