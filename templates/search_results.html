@@ -82,7 +82,7 @@
                     data-image="{{ product.image.url }}">
 
                     <div class="loka-product-image">
-                        <img src="{{ product.image.url }}"
+                        <img src="{% if product.image_url %}{{ product.image_url }}{% else %}{{ product.image_file.url }}{% endif %}"
                         class="img-fluid product-img"
                         alt="{{ product.name }}">
                     </div>

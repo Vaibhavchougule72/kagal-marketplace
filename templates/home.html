@@ -122,7 +122,7 @@
 
                         <div class="category-image-wrapper">
                             {% if category.image %}
-                                <img src="{{ category.image.url }}"
+                                <img src="{% if category.image_url %}{{ category.image_url }}{% else %}{{ category.image_file.url }}{% endif %}"
                                      alt="{{ category.name }}">
                             {% endif %}
                         </div>
@@ -163,7 +163,7 @@
 <div class="loka-product-image">
 
 {% if combo.image %}
-<img src="{{ combo.image.url }}">
+<img src="{% if combo.image_url %}{{ combo.image_url }}{% else %}{{ combo.image_file.url }}{% endif %}">
 {% endif %}
 
 </div>
@@ -236,7 +236,7 @@ ADD
                     <!-- PRODUCT IMAGE -->
                     <div class="loka-product-image">
                         {% if product.image %}
-                            <img src="{{ product.image.url }}"
+                            <img src="{% if product.image_url %}{{ product.image_url }}{% else %}{{ product.image_file.url }}{% endif %}"
                             class="img-fluid product-img"
                             alt="{{ product.name }}">
                         {% endif %}

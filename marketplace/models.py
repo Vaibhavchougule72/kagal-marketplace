@@ -4,10 +4,29 @@ from datetime import timedelta
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
+from .github_storage import upload_image_to_github
+
+
 
 class Category(models.Model):
+
     name = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='categories/', null=True, blank=True)
+
+    image_file = models.ImageField(upload_to="temp/", null=True, blank=True)
+
+    image_url = models.URLField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+
+        if self.image_file:
+
+            url = upload_image_to_github(self.image_file, "categories")
+
+            if url:
+                self.image_url = url
+                self.image_file = None
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -16,8 +35,13 @@ class Category(models.Model):
 class Store(models.Model):
 
     name = models.CharField(max_length=200)
+
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='stores/', null=True, blank=True)
+
+    image_file = models.ImageField(upload_to="temp/", null=True, blank=True)
+
+    image_url = models.URLField(blank=True, null=True)
+
     description = models.TextField(blank=True)
 
     commission_percent = models.DecimalField(
@@ -27,51 +51,58 @@ class Store(models.Model):
         help_text="Platform commission percentage"
     )
 
+    def save(self, *args, **kwargs):
+
+        if self.image_file:
+
+            url = upload_image_to_github(self.image_file, "stores")
+
+            if url:
+                self.image_url = url
+                self.image_file = None
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
-
 class Product(models.Model):
+
     name = models.CharField(max_length=200)
+
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
+
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='products/', null=True, blank=True)
+
+    image_file = models.ImageField(upload_to="temp/", null=True, blank=True)
+
+    image_url = models.URLField(blank=True, null=True)
+
     description = models.TextField(blank=True)
 
     is_featured = models.BooleanField(default=False)
+
     is_active = models.BooleanField(default=True)
 
     upi_only = models.BooleanField(
         default=False,
         help_text="If enabled, this product allows only UPI payment"
     )
-    
-
 
     def save(self, *args, **kwargs):
 
+        if self.image_file:
+
+            url = upload_image_to_github(self.image_file, "products")
+
+            if url:
+                self.image_url = url
+                self.image_file = None
+
         super().save(*args, **kwargs)
 
-        if self.image:
-
-            img = Image.open(self.image)
-
-            if img.height > 800 or img.width > 800:
-
-                img.thumbnail((800, 800))
-
-                buffer = BytesIO()
-                img_format = img.format if img.format else "JPEG"
-
-                img.save(buffer, format=img_format, optimize=True, quality=70)
-
-                file_content = ContentFile(buffer.getvalue())
-
-                self.image.save(self.image.name, file_content, save=False)
-
-                super().save(update_fields=["image"])
     def __str__(self):
         return self.name
 
@@ -259,7 +290,7 @@ class PendingOrder(models.Model):
 
     def __str__(self):
         return f"PendingOrder #{self.id}"
-
+    
 class Bundle(models.Model):
 
     name = models.CharField(max_length=200)
@@ -270,20 +301,36 @@ class Bundle(models.Model):
 
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
-    image = models.ImageField(upload_to="bundles/", blank=True, null=True)
+    image_file = models.ImageField(upload_to="temp/", blank=True, null=True)
+
+    image_url = models.URLField(blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+
+        if self.image_file:
+
+            url = upload_image_to_github(self.image_file, "bundles")
+
+            if url:
+                self.image_url = url
+                self.image_file = None
+
+        super().save(*args, **kwargs)
+
     def original_price(self):
 
         total = 0
+
         for item in self.items.all():
+
             total += item.product.price * item.quantity
 
         return total
-        
+
     def __str__(self):
         return self.name
 
