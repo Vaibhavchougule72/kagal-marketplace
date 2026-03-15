@@ -63,7 +63,9 @@ class Product(models.Model):
                 img.thumbnail((800, 800))
 
                 buffer = BytesIO()
-                img.save(buffer, format="JPEG", optimize=True, quality=70)
+                img_format = img.format if img.format else "JPEG"
+
+                img.save(buffer, format=img_format, optimize=True, quality=70)
 
                 file_content = ContentFile(buffer.getvalue())
 
