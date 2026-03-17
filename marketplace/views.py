@@ -207,13 +207,16 @@ def add_to_cart(request, product_id):
 
     product_id = str(product.id)
 
+    # 🔥 GET quantity from request
+    qty = int(request.GET.get("qty", 1))
+
     if product_id in cart['items']:
-        cart['items'][product_id]['quantity'] += 1
+        cart['items'][product_id]['quantity'] += qty
     else:
         cart['items'][product_id] = {
             'name': product.name,
             'price': float(product.price),
-            'quantity': 1
+            'quantity': qty   # 🔥 FIX HERE
         }
 
     request.session['cart'] = cart
