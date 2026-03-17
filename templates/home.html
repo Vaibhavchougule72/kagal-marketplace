@@ -121,10 +121,10 @@
                     <div class="blinkit-category-card">
 
                         <div class="category-image-wrapper">
-                            {% if category.image %}
-                                <img src="{% if category.image_url %}{{ category.image_url }}{% else %}{{ category.image_file.url }}{% endif %}"
-                                     alt="{{ category.name }}">
+                            {% if category.image_url %}
+                                <img src="{{ category.image_url }}" alt="{{ category.name }}">
                             {% endif %}
+
                         </div>
 
                         <div class="category-title">
@@ -162,8 +162,8 @@
 
 <div class="loka-product-image">
 
-{% if combo.image %}
-<img src="{% if combo.image_url %}{{ combo.image_url }}{% else %}{{ combo.image_file.url }}{% endif %}">
+{% if combo.image_url %}
+<img src="{{ combo.image_url }}">
 {% endif %}
 
 </div>
@@ -235,8 +235,8 @@ ADD
 
                     <!-- PRODUCT IMAGE -->
                     <div class="loka-product-image">
-                        {% if product.image %}
-                            <img src="{% if product.image_url %}{{ product.image_url }}{% else %}{{ product.image_file.url }}{% endif %}"
+                        {% if product.image_url %}
+                            <img src="{{ product.image_url }}"
                             class="img-fluid product-img"
                             alt="{{ product.name }}">
                         {% endif %}
