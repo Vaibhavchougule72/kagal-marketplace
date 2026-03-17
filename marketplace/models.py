@@ -4,44 +4,20 @@ from datetime import timedelta
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
-from .github_storage import upload_image_to_github
-
+from cloudinary.models import CloudinaryField
 
 
 class Category(models.Model):
-
     name = models.CharField(max_length=200)
-
-    image_file = models.ImageField(upload_to="temp/", null=True, blank=True)
-
-    image_url = models.URLField(blank=True, null=True)
-
-    def save(self, *args, **kwargs):
-
-        if self.image_file:
-
-            url = upload_image_to_github(self.image_file, "categories")
-
-            if url:
-                self.image_url = url
-                self.image_file = None
-
-        super().save(*args, **kwargs)
+    image = CloudinaryField('image', blank=True, null=True)
 
     def __str__(self):
         return self.name
 
-
 class Store(models.Model):
-
     name = models.CharField(max_length=200)
-
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-
-    image_file = models.ImageField(upload_to="temp/", null=True, blank=True)
-
-    image_url = models.URLField(blank=True, null=True)
-
+    category = models.ForeignKey("Category", on_delete=models.CASCADE)
+    image = CloudinaryField('image', blank=True, null=True)
     description = models.TextField(blank=True)
 
     commission_percent = models.DecimalField(
@@ -51,35 +27,16 @@ class Store(models.Model):
         help_text="Platform commission percentage"
     )
 
-    def save(self, *args, **kwargs):
-
-        if self.image_file:
-
-            url = upload_image_to_github(self.image_file, "stores")
-
-            if url:
-                self.image_url = url
-                self.image_file = None
-
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.name
 
 class Product(models.Model):
-
     name = models.CharField(max_length=200)
-
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
-
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    store = models.ForeignKey("Store", on_delete=models.CASCADE)
+    category = models.ForeignKey("Category", on_delete=models.CASCADE)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    image_file = models.ImageField(upload_to="temp/", null=True, blank=True)
-
-    image_url = models.URLField(blank=True, null=True)
-
+    image = CloudinaryField('image', blank=True, null=True)
     description = models.TextField(blank=True)
 
     is_featured = models.BooleanField(default=False)
@@ -90,18 +47,6 @@ class Product(models.Model):
         default=False,
         help_text="If enabled, this product allows only UPI payment"
     )
-
-    def save(self, *args, **kwargs):
-
-        if self.image_file:
-
-            url = upload_image_to_github(self.image_file, "products")
-
-            if url:
-                self.image_url = url
-                self.image_file = None
-
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -292,34 +237,17 @@ class PendingOrder(models.Model):
         return f"PendingOrder #{self.id}"
     
 class Bundle(models.Model):
-
     name = models.CharField(max_length=200)
-
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    store = models.ForeignKey("Store", on_delete=models.CASCADE)
 
     description = models.TextField(blank=True)
-
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
-    image_file = models.ImageField(upload_to="temp/", blank=True, null=True)
-
-    image_url = models.URLField(blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-
-        if self.image_file:
-
-            url = upload_image_to_github(self.image_file, "bundles")
-
-            if url:
-                self.image_url = url
-                self.image_file = None
-
-        super().save(*args, **kwargs)
 
     def original_price(self):
 
