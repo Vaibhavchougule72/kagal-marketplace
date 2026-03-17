@@ -10,7 +10,7 @@
 
             <div class="loka-store-image">
                 {% if store.image %}
-                    <img src="{{ store.image.url }}" alt="{{ store.name }}">
+                    <img src="{% if store.image_url %}{{ store.image_url }}{% else %}{{ store.image_file.url }}{% endif %}" alt="{{ store.name }}">
                 {% endif %}
             </div>
 
