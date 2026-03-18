@@ -3,10 +3,10 @@ import os
 
 def send_sms(phone, message):
 
-    api_key = os.getenv("FAST2SMS_API_KEY")
+    api_key = os.getenv("SMS_API_KEY")
 
     if not api_key:
-        print("❌ FAST2SMS_API_KEY missing")
+        print("❌SMS_API_KEY missing")
         return None
 
     url = "https://www.fast2sms.com/dev/bulkV2"
