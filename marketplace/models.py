@@ -1,9 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
-from PIL import Image
-from io import BytesIO
-from django.core.files.base import ContentFile
+from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 
 
@@ -72,7 +70,7 @@ class Order(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
 
     customer_name = models.CharField(max_length=200)
-    phone = models.CharField(max_length=15)
+    phone = models.CharField(max_length=10, db_index=True)
     address = models.TextField()
 
     latitude = models.FloatField(null=True, blank=True)
@@ -94,11 +92,9 @@ class Order(models.Model):
     refund_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_refunded = models.BooleanField(default=False)
 
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='REQUEST_SUBMITTED')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='REQUEST_SUBMITTED', db_index=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    from django.contrib.auth.models import User
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
     assigned_delivery = models.ForeignKey(
         User,
@@ -116,14 +112,14 @@ class Order(models.Model):
     delivery_otp = models.CharField(max_length=6, blank=True, null=True)
     delivery_otp_sent_at = models.DateTimeField(blank=True, null=True)
 
-    delivery_partner_phone = models.CharField(max_length=10, blank=True, null=True)
+    delivery_partner_phone = models.CharField(max_length=10, blank=True, null=True, db_index=True)
 
     delivery_distance = models.FloatField(null=True, blank=True)
     delivery_time_minutes = models.IntegerField(null=True, blank=True)
     delivery_payout = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     def __str__(self):
-        return f"Order #{self.id}"
+        return f"Order #{self.id} - {self.customer_name}"
         
     from django.utils import timezone
 
@@ -139,28 +135,6 @@ class Order(models.Model):
 
             self.out_for_delivery_at = timezone.now()
 
-            if self.assigned_delivery:
-
-                try:
-
-                    partner_phone = self.assigned_delivery.deliverypartnerprofile.phone
-
-                    message = f"""
-        Your order #{self.id} is out for delivery 🚴
-
-        Delivery Partner: {self.assigned_delivery.username}
-
-        Phone: {partner_phone}
-
-        You can call them if needed.
-        """
-
-                    print("SMS to customer:", self.phone)
-                    print(message)
-
-                except:
-                    pass
-
         if self.status == "DELIVERED" and not self.delivered_at:
             self.delivered_at = timezone.now()
 
@@ -172,7 +146,7 @@ class DeliveryPartnerProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    phone = models.CharField(max_length=15)
+    phone = models.CharField(max_length=10, db_index=True)
     is_available = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
 
@@ -201,7 +175,7 @@ class PendingOrder(models.Model):
     store_id = models.IntegerField()
 
     customer_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=10, db_index=True)
     address = models.TextField()
 
     latitude = models.FloatField()
@@ -223,9 +197,11 @@ class PendingOrder(models.Model):
     otp_expiry = models.DateTimeField()
     otp_attempts = models.IntegerField(default=0)
 
+    resend_count = models.IntegerField(default=0)
+
     is_payment_processed = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
     def is_expired(self):
         return timezone.now() > self.otp_expiry
@@ -247,7 +223,7 @@ class Bundle(models.Model):
 
     is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
     def original_price(self):
 
@@ -324,7 +300,7 @@ class Coupon(models.Model):
 
     is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return self.code
@@ -333,7 +309,7 @@ class CouponUsage(models.Model):
 
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
 
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=10, db_index=True)
 
     used_at = models.DateTimeField(auto_now_add=True)
 

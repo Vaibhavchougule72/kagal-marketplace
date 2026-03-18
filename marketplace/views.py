@@ -20,6 +20,9 @@ from django.db.models import F
 from .models import CouponUsage
 from .models import Coupon
 from django.core.cache import cache
+from .sms_service import send_sms
+import logging
+logger = logging.getLogger(__name__)
 
 
 def test_cache(request):
@@ -394,6 +397,7 @@ def checkout(request):
 
         name = request.POST.get('name')
         phone = request.POST.get('phone', '').strip()
+        phone = phone[-10:]   # 🔥 IMPORTANT
         address = request.POST.get('address')
         payment = request.POST.get('payment')
         latitude = request.POST.get('latitude')
@@ -569,7 +573,14 @@ def checkout(request):
             otp_attempts=0
         )
 
-        print("OTP:", otp)
+       
+
+        message = f"Your LOKA OTP is {otp}. Valid for 5 minutes."
+
+        try:
+            send_sms(phone, message)
+        except Exception as e:
+            logger.error(f"SMS failed: {e}")
 
         return redirect('verify_otp', pending_id=pending.id)
 
@@ -717,6 +728,16 @@ def verify_otp(request, pending_id):
                     )
             request.session['cart'] = {'store_id': None, 'items': {}}
             pending.delete()
+            try:
+                send_sms(order.phone, f"Order #{order.id} confirmed! Total ₹{order.total}.")
+            except Exception as e:
+                logger.error(f"Order SMS failed: {e}")
+
+            try:
+                send_sms("7038984687", f"New UPI order #{order.id} received")
+            except Exception as e:
+                logger.error(f"Admin SMS failed: {e}")
+            
 
             return redirect("order_success", order_id=order.id)
 
@@ -771,15 +792,25 @@ def verify_otp(request, pending_id):
 def resend_otp(request, pending_id):
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
+    if pending.resend_count >= 3:
+        return JsonResponse({"error": "Max resend limit reached"})
 
+    if not pending.can_resend():
+        return JsonResponse({"error": "Wait 30 seconds before retry"})
     new_otp = str(random.randint(100000, 999999))
 
     pending.otp = new_otp
     pending.otp_expiry = timezone.now() + timedelta(minutes=5)
     pending.otp_attempts = 0
+    pending.resend_count += 1
     pending.save()
 
-    print("New OTP:", new_otp)
+    message = f"Your NEW LOKA OTP is {new_otp}. Valid for 5 minutes."
+
+    try:
+        send_sms(pending.phone, message)
+    except Exception as e:
+        logger.error(f"SMS failed: {e}")
 
     return redirect("verify_otp", pending_id=pending.id)
 
@@ -1056,6 +1087,29 @@ def payment_success(request):
     pending.delete()
 
     return redirect("order_success", order_id=order.id)
+
+
+def mark_out_for_delivery(request, order_id):
+
+    if not request.user.is_staff:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    order = get_object_or_404(Order, id=order_id)
+
+    order.status = "OUT_FOR_DELIVERY"
+    order.save()
+
+    try:
+        message = f"""Your order #{order.id} is out for delivery 🚴 Delivery Partner Phone: {order.delivery_partner_phone}"""
+
+        send_sms(order.phone, message)
+
+    except Exception as e:
+        logger.error(f"Out for delivery SMS failed: {e}")
+
+    return JsonResponse({
+        "success": True
+    })
 
 from django.contrib import messages
 
@@ -1370,7 +1424,6 @@ import random
 
 def send_delivery_otp(request, order_id):
 
-    # 🔒 Only staff/admin allowed
     if not request.user.is_staff:
         return JsonResponse({"error": "Unauthorized"}, status=403)
 
@@ -1382,19 +1435,24 @@ def send_delivery_otp(request, order_id):
     order.delivery_otp_sent_at = timezone.now()
     order.save()
 
-    print("Delivery OTP:", otp)
+    customer_msg = f"Your delivery OTP is {otp}. Share with delivery partner."
+    
+    partner_msg = f"Order #{order.id} delivery OTP is {otp}. Collect from customer."
 
-    # Send to customer
-    customer_phone = order.phone
+    try:
+        # Send to customer
+        send_sms(order.phone, customer_msg)
 
-    # Send to delivery partner
-    partner_phone = order.delivery_partner_phone
+        # Send to delivery partner
+        if order.delivery_partner_phone:
+            send_sms(order.delivery_partner_phone, partner_msg)
 
-    # Here integrate SMS API later
+    except Exception as e:
+        logger.error(f"Delivery OTP SMS failed: {e}")
 
     return JsonResponse({
         "success": True,
-        "message": "Delivery OTP sent"
+        "message": "Delivery OTP sent to customer & partner"
     })
 
 from django.db.models import Sum, Count
