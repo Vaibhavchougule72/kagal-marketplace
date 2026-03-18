@@ -14,7 +14,7 @@ def send_sms(phone, message):
     }
 
     headers = {
-        "authorization": os.getenv("FAST2SMS_API_KEY"),
+        "authorization": "nkfLSNdqHIXW5U6uJteboBVGpFsxOc8ryZTE320KjwPl7aA4v1JAXPqmpIHC9e0axfTBn5oyGOEkdFRN",
         "Content-Type": "application/json"
     }
 
