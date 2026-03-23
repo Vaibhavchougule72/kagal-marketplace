@@ -12,6 +12,7 @@ def send_sms(phone, message):
     url = "https://www.fast2sms.com/dev/bulkV2"
 
     payload = {
+        "sender_id":"TXTIND",
         "message": message,
         "language": "english",
         "route": "v",
