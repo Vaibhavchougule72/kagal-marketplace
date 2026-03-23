@@ -805,7 +805,7 @@ def resend_otp(request, pending_id):
     pending.resend_count += 1
     pending.save()
 
-    message = f"NEW LOKA OTP is {new_otp}."
+    message = f"NEW LOKA varification code is {new_otp}."
 
     try:
         send_sms(pending.phone, message)

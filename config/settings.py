@@ -28,9 +28,9 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".onrender.com",
+    "kagal-marketplace.onrender.com",
+    "loka-store.online",
+    "www.loka-store.online"
 ]
 
 
