@@ -575,7 +575,7 @@ def checkout(request):
 
        
 
-        message = f"Your LOKA OTP is {otp}. Valid for 5 minutes."
+        message = f"LOKA verification code {otp}"
 
         try:
             send_sms(phone, message)
@@ -805,7 +805,7 @@ def resend_otp(request, pending_id):
     pending.resend_count += 1
     pending.save()
 
-    message = f"Your NEW LOKA OTP is {new_otp}. Valid for 5 minutes."
+    message = f"NEW LOKA OTP is {new_otp}."
 
     try:
         send_sms(pending.phone, message)

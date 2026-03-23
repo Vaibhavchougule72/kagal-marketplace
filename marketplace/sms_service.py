@@ -14,7 +14,6 @@ def send_sms(phone, message):
     payload = {
         "sender_id":"TXTIND",
         "message": message,
-        "language": "english",
         "route": "v",
         "numbers": phone
     }
