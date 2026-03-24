@@ -33,6 +33,10 @@ ALLOWED_HOSTS = [
     "www.loka-store.online"
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://loka-store.online",
+    "https://www.loka-store.online"
+]
 
 # Application definition
 
