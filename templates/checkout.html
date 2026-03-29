@@ -301,6 +301,20 @@ map.on('click', function(e){
     setLocation(e.latlng.lat, e.latlng.lng);
 });
 
+// Ask location permission when page loads (important for mobile app)
+document.addEventListener("DOMContentLoaded", function(){
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                console.log("Location permission granted");
+            },
+            function(error) {
+                console.log("Location permission denied");
+            }
+        );
+    }
+});
+
 function calculateDistance(lat1, lon1, lat2, lon2){
     const R = 6371;
     const dLat = (lat2-lat1) * Math.PI/180;
@@ -403,9 +417,28 @@ function updateDelivery(lat, lng){
 }
 
 function useCurrentLocation(){
-    navigator.geolocation.getCurrentPosition(function(position){
-        setLocation(position.coords.latitude, position.coords.longitude);
-    });
+    if (navigator.geolocation) {
+
+        navigator.geolocation.getCurrentPosition(
+            function(position){
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                setLocation(lat, lng);
+            },
+            function(error){
+                alert("Location error: Please enable GPS and allow location permission.");
+                console.log(error);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+
+    } else {
+        alert("Geolocation is not supported by this device.");
+    }
 }
 
 function applyCoupon(){
