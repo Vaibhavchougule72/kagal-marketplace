@@ -122,7 +122,8 @@
 
                         <div class="category-image-wrapper">
                             {% if category.image.url %}
-                                <img src="{{ category.image.url }}?tr=w-300,q-60,f-auto" loading="lazy">
+                                <img src="{{ category.image.url|cut:'/upload/'|add:'/upload/w_200,q_auto,f_auto/' }}"
+                                    loading="lazy">
                             {% endif %}
 
                         </div>
@@ -164,7 +165,6 @@
 
 {% if combo.image.url %}
 <img src="{{ combo.image.url }}?tr=w-300,q-60,f-auto" loading="lazy">
-     loading="lazy">
 {% endif %}
 
 </div>
