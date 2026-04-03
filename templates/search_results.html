@@ -82,9 +82,10 @@
                     data-image="{{ product.image.url }}">
 
                     <div class="loka-product-image">
-                        <img src="{{ product.image.url }}"
-                        class="img-fluid product-img"
-                        alt="{{ product.name }}" loading="lazy">
+                        <img src="{{ product.image.url|cut:'upload/'|add:'upload/w_300,q_60,f_auto/' }}"
+                            class="img-fluid product-img"
+                            alt="{{ product.name }}"
+                            loading="lazy">
                     </div>
 
                     <div class="loka-product-body">

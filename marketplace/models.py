@@ -318,3 +318,4 @@ class CouponUsage(models.Model):
 
     def __str__(self):
         return f"{self.phone} - {self.coupon.code}"
+    

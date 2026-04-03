@@ -122,7 +122,9 @@
 
                         <div class="category-image-wrapper">
                             {% if category.image.url %}
-                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+                                <img src="{{ category.image.url|cut:'upload/'|add:'upload/w_200,q_60,f_auto/' }}"
+                                    alt="{{ category.name }}"
+                                    loading="lazy">
                             {% endif %}
 
                         </div>
@@ -163,7 +165,8 @@
 <div class="loka-product-image">
 
 {% if combo.image.url %}
-<img src="{{ combo.image.url }}" loading="lazy">
+<img src="{{ combo.image.url|cut:'upload/'|add:'upload/w_300,q_60,f_auto/' }}"
+     loading="lazy">
 {% endif %}
 
 </div>
@@ -215,7 +218,11 @@ ADD
 
 </section>
 
-<!-- FEATURED PRODUCTS -->
+{% load cache %}
+
+{% cache 300 homepage featured_products.number %}
+<!-- Featured products section -->
+
 <section class="py-5 bg-light">
     <div class="container">
 
@@ -231,14 +238,15 @@ ADD
                     data-name="{{ product.name }}"
                     data-price="{{ product.price }}"
                     data-desc="{{ product.description }}"
-                    data-image="{{ product.image.url }}">
+                    data-image="{{ product.image.url|cut:'upload/'|add:'upload/w_600,q_70,f_auto/' }}">
 
                     <!-- PRODUCT IMAGE -->
                     <div class="loka-product-image">
                         {% if product.image.url %}
-                            <img src="{{ product.image.url }}"
-                            class="img-fluid product-img"
-                            alt="{{ product.name }}" loading="lazy">
+                            <img src="{{ product.image.url|cut:'upload/'|add:'upload/w_300,q_60,f_auto/' }}"
+                                class="img-fluid product-img"
+                                alt="{{ product.name }}"
+                                loading="lazy">
                         {% endif %}
                     </div>
 
@@ -274,8 +282,19 @@ ADD
         </div>
 
     </div>
-</section>
+    <div class="text-center mt-4">
 
+        {% if featured_products.has_previous %}
+            <a href="?page={{ featured_products.previous_page_number }}" class="btn btn-outline-success">Previous</a>
+        {% endif %}
+
+        {% if featured_products.has_next %}
+            <a href="?page={{ featured_products.next_page_number }}" class="btn btn-success">Next</a>
+        {% endif %}
+
+    </div>
+</section>
+{% endcache %}
 
 <!-- FOOTER -->
 <footer class="loka-footer">

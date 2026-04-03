@@ -55,17 +55,26 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 # =====================================================
 # HOME
 # =====================================================
+from django.core.paginator import Paginator
+from django.core.cache import cache
 
 def home(request):
 
-    data = cache.get("home_page")
+    page = request.GET.get('page', 1)
+
+    cache_key = f"home_page_{page}"
+    data = cache.get(cache_key)
 
     if not data:
 
         categories = Category.objects.all()
-        featured_products = Product.objects.filter(is_featured=True)
         stores = Store.objects.all()
         combos = Bundle.objects.filter(is_active=True)[:6]
+
+        featured_products_list = Product.objects.filter(is_featured=True).select_related('store')
+
+        paginator = Paginator(featured_products_list, 12)  # 12 products per page
+        featured_products = paginator.get_page(page)
 
         data = {
             "categories": categories,
@@ -74,7 +83,7 @@ def home(request):
             "combos": combos
         }
 
-        cache.set("home_page", data, 300)
+        cache.set(cache_key, data, 300)
 
     return render(request, "home.html", data)
 
@@ -96,7 +105,7 @@ def store_detail(request, store_id):
     if not data:
 
         store = get_object_or_404(Store, id=store_id)
-        products = Product.objects.filter(store=store).select_related("category")
+        products = Product.objects.filter(store=store).select_related("category", "store")
         bundles = Bundle.objects.filter(store=store, is_active=True)
 
         data = {
