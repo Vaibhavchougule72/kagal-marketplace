@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load static %}
 {% block content %}
+{% load cloudinary %}
 
 <!-- PARTNER STORE STRIP -->
 <section class="partner-strip">
@@ -122,8 +123,8 @@
 
                         <div class="category-image-wrapper">
                             {% if category.image.url %}
-                                <img src="{{ category.image.url|cut:'/upload/'|add:'/upload/w_200,q_auto,f_auto/' }}"
-                                    loading="lazy">
+                                {% cloudinary category.image width=200 quality="auto" fetch_format="auto" crop="scale" %}
+
                             {% endif %}
 
                         </div>
