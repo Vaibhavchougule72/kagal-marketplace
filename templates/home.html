@@ -122,9 +122,7 @@
 
                         <div class="category-image-wrapper">
                             {% if category.image.url %}
-                                <img src="{{ category.image.url|cut:'upload/'|add:'upload/w_200,q_60,f_auto/' }}"
-                                    alt="{{ category.name }}"
-                                    loading="lazy">
+                                <img src="{{ category.image.url }}?tr=w-300,q-60,f-auto" loading="lazy">
                             {% endif %}
 
                         </div>
@@ -165,7 +163,7 @@
 <div class="loka-product-image">
 
 {% if combo.image.url %}
-<img src="{{ combo.image.url|cut:'upload/'|add:'upload/w_300,q_60,f_auto/' }}"
+<img src="{{ combo.image.url }}?tr=w-300,q-60,f-auto" loading="lazy">
      loading="lazy">
 {% endif %}
 
@@ -243,10 +241,7 @@ ADD
                     <!-- PRODUCT IMAGE -->
                     <div class="loka-product-image">
                         {% if product.image.url %}
-                            <img src="{{ product.image.url|cut:'upload/'|add:'upload/w_300,q_60,f_auto/' }}"
-                                class="img-fluid product-img"
-                                alt="{{ product.name }}"
-                                loading="lazy">
+                            <img src="{{ product.image.url }}?tr=w-300,q-60,f-auto" loading="lazy">
                         {% endif %}
                     </div>
 
