@@ -19,10 +19,9 @@
                 <!-- PRODUCT IMAGE -->
                 <div class="loka-product-image">
                     {% if product.image %}
-                        <img src="{{ product.image.url|cut:'upload/'|add:'upload/w_300,q_60,f_auto/' }}"
+                        <img src="{{ product.image.url }}"
                             class="img-fluid product-img"
-                            alt="{{ product.name }}"
-                            loading="lazy">
+                            alt="{{ product.name }}" loading="lazy">
                     {% endif %}
                 </div>
 
