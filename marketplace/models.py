@@ -4,10 +4,53 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
+import cloudinary.uploader
+import os
+
+
+def optimize_and_upload(image_field, folder_name):
+    img = Image.open(image_field)
+    img = img.convert("RGB")
+
+    # Resize main image
+    img.thumbnail((600, 600))
+
+    buffer = BytesIO()
+    img.save(buffer, format="WEBP", quality=60, optimize=True)
+    buffer.seek(0)
+
+    file_name = os.path.splitext(image_field.name)[0]
+
+    result = cloudinary.uploader.upload(
+        ContentFile(buffer.read()),
+        public_id=file_name,
+        folder=folder_name,
+        overwrite=True,
+        resource_type="image",
+        format="webp",
+        quality="auto",
+        fetch_format="webp",
+        eager=[
+            {"width": 300, "crop": "scale", "quality": "auto", "fetch_format": "webp"},
+            {"width": 150, "crop": "scale", "quality": "auto", "fetch_format": "webp"}
+        ]
+    )
+
+    return result['public_id']
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
     image = CloudinaryField('image', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            public_id = optimize_and_upload(self.image, "categories")
+            self.image = public_id
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -27,6 +70,14 @@ class Store(models.Model):
 
     def __str__(self):
         return self.name
+    
+from django.db import models
+from cloudinary.models import CloudinaryField
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
+import cloudinary.uploader
+import os
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
@@ -38,17 +89,18 @@ class Product(models.Model):
     description = models.TextField(blank=True)
 
     is_featured = models.BooleanField(default=False)
-
     is_active = models.BooleanField(default=True)
+    upi_only = models.BooleanField(default=False)
 
-    upi_only = models.BooleanField(
-        default=False,
-        help_text="If enabled, this product allows only UPI payment"
-    )
+    def save(self, *args, **kwargs):
+        if self.image:
+            public_id = optimize_and_upload(self.image, "products")
+            self.image = public_id
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
-
 
 class Order(models.Model):
 
@@ -215,25 +267,18 @@ class PendingOrder(models.Model):
 class Bundle(models.Model):
     name = models.CharField(max_length=200)
     store = models.ForeignKey("Store", on_delete=models.CASCADE)
-
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
-
     image = CloudinaryField('image', blank=True, null=True)
-
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
-    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
+    def save(self, *args, **kwargs):
+        if self.image:
+            public_id = optimize_and_upload(self.image, "bundles")
+            self.image = public_id
 
-    def original_price(self):
-
-        total = 0
-
-        for item in self.items.all():
-
-            total += item.product.price * item.quantity
-
-        return total
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
