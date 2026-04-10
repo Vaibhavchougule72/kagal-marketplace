@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 {% load i18n %}
+{% if error %}
+<div class="alert alert-danger text-center">
+    {{ error }}
+</div>
+{% endif %}
 <style>
 .map-invalid {
     border: 2px solid #dc3545 !important;

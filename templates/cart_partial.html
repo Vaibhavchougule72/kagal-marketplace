@@ -1,5 +1,10 @@
 {% if not items %}
 {% load i18n %}
+{% if error %}
+<div class="alert alert-danger text-center">
+    {{ error }}
+</div>
+{% endif %}
 
 <div class="text-center p-5">
     <h5>{% trans "Your cart is empty 🛒" %}</h5>

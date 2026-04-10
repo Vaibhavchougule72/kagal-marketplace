@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block content %}
 
+{% block content %}
 
 <style>
 .otp-input {
@@ -23,19 +23,21 @@
 
         <p class="text-center text-danger fw-bold" id="countdown"></p>
 
+        <!-- Error -->
         {% if error %}
         <div class="alert alert-danger text-center">
             {{ error }}
         </div>
         {% endif %}
 
+        <!-- Attempts -->
         {% if pending_order %}
         <p class="text-muted text-center">
-            Attempts left:
-            {{ 3|add:"-pending_order.otp_attempts" }}
+            Attempts left: {{ 3|add:-pending_order.otp_attempts }}
         </p>
         {% endif %}
 
+        <!-- OTP FORM -->
         <form method="POST" id="otpForm">
             {% csrf_token %}
 
@@ -43,7 +45,8 @@
                    name="otp"
                    id="otpInput"
                    maxlength="6"
-                   pattern="\d{6}"
+                   inputmode="numeric"
+                   autocomplete="one-time-code"
                    class="form-control otp-input mb-3"
                    placeholder="------"
                    required>
@@ -59,16 +62,17 @@
             </button>
         </form>
 
+        <!-- RESEND -->
         <div class="text-center mt-3">
             {% if pending_order %}
-            <button id="resendBtn"
-                    class="btn btn-link"
-                    onclick="window.location.href='{% url 'resend_otp' pending_order.id %}'"
-                    disabled>
-                {% trans "Resend OTP (60s)" %}
+            <button id="resendBtn" class="btn btn-link" disabled>
+                Resend OTP (60s)
             </button>
             {% endif %}
         </div>
+
+        <!-- Message -->
+        <div id="resendMessage" class="text-center small mt-2"></div>
 
     </div>
 
@@ -80,11 +84,19 @@ document.addEventListener("DOMContentLoaded", function(){
     const otpInput = document.getElementById("otpInput");
     const verifyBtn = document.getElementById("verifyBtn");
     const resendBtn = document.getElementById("resendBtn");
+    const msgBox = document.getElementById("resendMessage");
+
+    const pendingId = "{{ pending_order.id|default:'' }}";
+
+    // ✅ SAFE JS VARIABLE (IMPORTANT FIX)
+    let timeLeft = Number("{{ expiry_seconds|default:'300' }}");
 
     // Autofocus
-    otpInput.focus();
+    if(otpInput){
+        otpInput.focus();
+    }
 
-    // Only numbers allowed
+    // Only numbers
     otpInput.addEventListener("input", function(){
         this.value = this.value.replace(/[^0-9]/g, '');
 
@@ -102,14 +114,12 @@ document.addEventListener("DOMContentLoaded", function(){
             return;
         }
 
-        // Loading spinner
         verifyBtn.innerHTML =
             '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
         verifyBtn.disabled = true;
     });
 
-    // Countdown timer (5 min)
-    let timeLeft = 300; // 5 minutes
+    // ⏳ OTP TIMER
     const countdownEl = document.getElementById("countdown");
 
     const timer = setInterval(function(){
@@ -132,10 +142,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
     }, 1000);
 
-    // Resend cooldown (60 seconds)
-    let resendTime = 60;
+    // 🔁 RESEND TIMER
+    function startResendTimer(){
 
-    if(resendBtn){
+        let resendTime = 60;
+
+        resendBtn.disabled = true;
+
         const resendTimer = setInterval(function(){
 
             resendBtn.innerText =
@@ -149,6 +162,40 @@ document.addEventListener("DOMContentLoaded", function(){
             }
 
         }, 1000);
+    }
+
+    if(resendBtn){
+        startResendTimer();
+
+        // 🔁 RESEND CLICK
+        resendBtn.addEventListener("click", function(){
+
+            if(!pendingId) return;
+
+            resendBtn.disabled = true;
+
+            fetch(`/resend_otp/${pendingId}/`)
+            .then(res => res.json())
+            .then(data => {
+
+                if(data.error){
+                    msgBox.innerText = data.error;
+                    msgBox.classList.add("text-danger");
+                    resendBtn.disabled = false;
+                } else {
+                    msgBox.innerText = "OTP sent successfully";
+                    msgBox.classList.remove("text-danger");
+                    msgBox.classList.add("text-success");
+                    startResendTimer();
+                }
+
+            })
+            .catch(() => {
+                msgBox.innerText = "Something went wrong";
+                msgBox.classList.add("text-danger");
+                resendBtn.disabled = false;
+            });
+        });
     }
 
 });

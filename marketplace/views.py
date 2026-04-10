@@ -377,14 +377,30 @@ def checkout(request):
     if not cart or not cart['items']:
         return redirect('home')
 
-    store = Store.objects.get(id=store_id)
+    store_id = cart.get('store_id')
 
+    # fallback if missing
+    if not store_id:
+        first_item = next(iter(cart['items']))
+
+        if str(first_item).startswith("bundle_"):
+            bundle_id = int(first_item.split("_")[1])
+            bundle = get_object_or_404(Bundle, id=bundle_id, is_active=True)
+            store_id = bundle.store.id
+        else:
+            product = get_object_or_404(Product, id=int(first_item))
+            store_id = product.store.id
+
+    store = get_object_or_404(Store, id=store_id)
+    
     if not store.is_open():
         return render(request, 'checkout.html', {
-            'subtotal': subtotal,
-            'error': "Store is currently closed"
+            'error': f"{store.name} is currently closed. Opens at {store.next_open_time}",
+            'cart': cart,
+            'show_navbar': True,
+            'simple_navbar': True
         })
-    
+
     # fallback if store_id missing
     if not store_id:
         first_item = next(iter(cart['items']))
@@ -628,6 +644,18 @@ def checkout(request):
 def verify_otp(request, pending_id):
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
+    # ✅ NEW STEP: Check store status
+    store = get_object_or_404(Store, id=pending.store_id)
+
+    if not store.is_open():
+        pending.delete()
+
+        request.session['cart'] = {'store_id': None, 'items': {}}
+
+        from django.contrib import messages
+        messages.error(request, f"{store.name} is now closed. Please order again later.")
+
+        return redirect("home")
 
     # 🔒 If already expired (GET request)
     if pending.is_expired():
@@ -717,6 +745,7 @@ def verify_otp(request, pending_id):
                 return redirect('home')
 
             store_id = cart.get('store_id')
+            
 
             # fallback if store_id missing
             if not store_id:
@@ -808,12 +837,19 @@ def verify_otp(request, pending_id):
 
         return redirect("order_success", order_id=order.id)
 
+    expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
+
+    if expiry_seconds < 0:
+        expiry_seconds = 0
+
+    attempts_left = 3 - pending.otp_attempts
+
     return render(request, "verify_otp.html", {
         "pending_order": pending,
-        'show_navbar': True,
-        'simple_navbar': True
-        })
-
+        "expiry_seconds": expiry_seconds,
+        "attempts_left": attempts_left,
+        'show_navbar': False
+    })
 
 # =====================================================
 # RESEND OTP
@@ -821,11 +857,19 @@ def verify_otp(request, pending_id):
 def resend_otp(request, pending_id):
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
-    if pending.resend_count >= 3:
-        return JsonResponse({"error": "Max resend limit reached"})
 
+    # 🔒 LIMIT 1: Max resend count
+    if pending.resend_count >= 3:
+        return JsonResponse({
+            "error": "Maximum resend limit reached"
+        }, status=400)
+
+    # 🔒 LIMIT 2: Cooldown (30 sec)
     if not pending.can_resend():
-        return JsonResponse({"error": "Wait 30 seconds before retry"})
+        return JsonResponse({
+            "error": "Please wait 30 seconds before resending OTP"
+        }, status=400)
+
     new_otp = str(random.randint(100000, 999999))
 
     pending.otp = new_otp
@@ -834,15 +878,17 @@ def resend_otp(request, pending_id):
     pending.resend_count += 1
     pending.save()
 
-    message = f"NEW LOKA varification code is {new_otp}."
+    message = f"Your NEW LOKA OTP is {new_otp}. Valid for 5 minutes."
 
     try:
         send_sms(pending.phone, message)
     except Exception as e:
         logger.error(f"SMS failed: {e}")
 
-    return redirect("verify_otp", pending_id=pending.id)
-
+    return JsonResponse({
+        "success": True,
+        "message": "OTP sent successfully"
+    })
 
 # =====================================================
 # ORDERS
