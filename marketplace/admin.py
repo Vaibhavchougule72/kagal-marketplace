@@ -4,17 +4,26 @@ from django.urls import path
 from django.utils.html import format_html
 from .views import generate_delivery_pdf, generate_store_pdf
 from django.urls import reverse
+from .models import StoreTiming, StoreHoliday
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
+class StoreTimingInline(admin.TabularInline):
+    model = StoreTiming
+    extra = 1
 
+class StoreHolidayInline(admin.TabularInline):
+    model = StoreHoliday
+    extra = 1
+    
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'commission_percent')
     list_filter = ('category',)
+    inlines = [StoreTimingInline, StoreHolidayInline]
 
 
 @admin.register(Product)

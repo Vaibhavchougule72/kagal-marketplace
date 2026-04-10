@@ -25,6 +25,60 @@ class Store(models.Model):
         help_text="Platform commission percentage"
     )
 
+
+    open_time = models.TimeField(null=True, blank=True)
+    close_time = models.TimeField(null=True, blank=True)
+
+    def is_open(self):
+        now = timezone.localtime()
+        today = now.date()
+        current_time = now.time()
+        weekday = now.weekday()
+
+        # 🔴 Holiday check
+        if self.storeholiday_set.filter(date=today).exists():
+            return False
+
+        # 🟢 Get all timings for today
+        timings = self.timings.filter(day=weekday, is_closed=False)
+
+        for timing in timings:
+
+            # ✅ Normal case
+            if timing.open_time < timing.close_time:
+                if timing.open_time <= current_time <= timing.close_time:
+                    return True
+
+            # ✅ Midnight crossing case
+            else:
+                if current_time >= timing.open_time or current_time <= timing.close_time:
+                    return True
+
+        return False
+
+    def get_next_open_time(self):
+        now = timezone.localtime()
+        weekday = now.weekday()
+        current_time = now.time()
+
+        for i in range(7):
+            day = (weekday + i) % 7
+
+            timings = self.timings.filter(day=day, is_closed=False).order_by("open_time")
+
+            for timing in timings:
+                # ✅ Same day → check future time only
+                if i == 0:
+                    if current_time < timing.open_time:
+                        return timing.open_time.strftime("%I:%M %p")
+                else:
+                    return timing.open_time.strftime("%I:%M %p")
+
+        return "Closed"
+
+    @property
+    def next_open_time(self):
+        return self.get_next_open_time()
     def __str__(self):
         return self.name
 
@@ -318,4 +372,40 @@ class CouponUsage(models.Model):
 
     def __str__(self):
         return f"{self.phone} - {self.coupon.code}"
+    
+
+class StoreTiming(models.Model):
+
+    DAYS = [
+        (0, "Monday"),
+        (1, "Tuesday"),
+        (2, "Wednesday"),
+        (3, "Thursday"),
+        (4, "Friday"),
+        (5, "Saturday"),
+        (6, "Sunday"),
+    ]
+
+    store = models.ForeignKey("Store", on_delete=models.CASCADE, related_name="timings")
+
+    day = models.IntegerField(choices=DAYS)
+
+    open_time = models.TimeField()
+    close_time = models.TimeField()
+
+    is_closed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.store.name} - {self.get_day_display()}"
+    
+class StoreHoliday(models.Model):
+
+    store = models.ForeignKey("Store", on_delete=models.CASCADE)
+
+    date = models.DateField()
+
+    reason = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return f"{self.store.name} - {self.date}"
     

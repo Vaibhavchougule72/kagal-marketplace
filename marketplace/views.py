@@ -122,6 +122,13 @@ def add_bundle_to_cart(request, bundle_id):
 
     bundle = get_object_or_404(Bundle, id=bundle_id, is_active=True)
 
+    # ✅ ADD THIS
+    if not bundle.store.is_open():
+        return JsonResponse({
+            "success": False,
+            "error": "Store is currently closed"
+        })
+    
     cart = request.session.get('cart', {
         'store_id': None,
         'items': {}
@@ -202,6 +209,11 @@ def add_to_cart(request, product_id):
 
     product = get_object_or_404(Product, id=product_id, is_active=True)
 
+    if not product.store.is_open():
+        return JsonResponse({
+            "success": False,
+            "error": "Store is currently closed"
+        })
     cart = request.session.get('cart')
 
     if not cart:
@@ -365,8 +377,14 @@ def checkout(request):
     if not cart or not cart['items']:
         return redirect('home')
 
-    store_id = cart.get('store_id')
+    store = Store.objects.get(id=store_id)
 
+    if not store.is_open():
+        return render(request, 'checkout.html', {
+            'subtotal': subtotal,
+            'error': "Store is currently closed"
+        })
+    
     # fallback if store_id missing
     if not store_id:
         first_item = next(iter(cart['items']))

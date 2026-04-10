@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
+
 {% block content %}
 
 <div class="container mt-5">
@@ -8,17 +9,33 @@
     <div class="row g-4">
         {% for store in stores %}
         <div class="col-6 col-md-4 col-lg-3">
-            <a href="{% url 'store_detail' store.id %}" class="text-decoration-none">
 
-                <div class="loka-store-card">
+            <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
+               class="text-decoration-none {% if not store.is_open %}disabled-link{% endif %}">
 
-                    <div class="loka-store-image">
+                <div class="loka-store-card {% if not store.is_open %}store-closed{% endif %}">
+
+                    <!-- IMAGE -->
+                    <div class="loka-store-image position-relative">
                         {% if store.image %}
                             <img src="{{ store.image.url }}" alt="{{ store.name }}" loading="lazy">
                         {% endif %}
+
+                        <!-- STATUS BADGE -->
+                        {% if store.is_open %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                Open
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                Closed
+                            </span>
+                        {% endif %}
                     </div>
 
+                    <!-- BODY -->
                     <div class="loka-store-body">
+
                         <div class="loka-store-name">
                             {{ store.name }}
                         </div>
@@ -26,12 +43,26 @@
                         <div class="loka-store-desc">
                             {{ store.description|truncatechars:60 }}
                         </div>
+
+                        <!-- TIMING -->
+                        <div class="small text-muted">
+                            {{ store.open_time }} - {{ store.close_time }}
+                        </div>
+
+                        <!-- OPEN TIME MESSAGE -->
+                        {% if not store.is_open %}
+                            <div class="text-danger small fw-bold mt-1">
+                                ⏰ Opens at {{ store.next_open_time }}
+                            </div>
+                        {% endif %}
+
                     </div>
 
                 </div>
 
             </a>
         </div>
+
         {% empty %}
         <p>{% trans "No stores available." %}</p>
         {% endfor %}
