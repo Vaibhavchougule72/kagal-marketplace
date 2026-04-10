@@ -263,7 +263,8 @@
         <!-- Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarContent">
 
-            <!-- Search -->
+            {% if not simple_navbar %}
+            <!-- 🔍 Search (HIDE in simple mode) -->
             <form class="d-none d-lg-flex mx-lg-auto my-2 my-lg-0 position-relative"
                 method="GET"
                 action="{% url 'search_products' %}"
@@ -276,32 +277,37 @@
                     placeholder="Search products..."
                     autocomplete="off">
 
-                <!-- 🔽 Suggestion Box -->
                 <div id="suggestionBox"
                     class="list-group position-absolute w-100"
                     style="top: 45px; z-index: 9999; display: none;">
                 </div>
 
             </form>
+            {% endif %}
 
+            <!-- 🌐 Language (ALWAYS SHOW) -->
             <form action="{% url 'set_language' %}" method="post">
                 {% csrf_token %}
-
                 <input type="hidden" name="next" value="{{ request.path }}">
 
                 <select name="language" onchange="this.form.submit()">
                     <option value="en">English</option>
                     <option value="mr">मराठी</option>
                 </select>
-
             </form>
 
             <!-- Right Links -->
             <ul class="navbar-nav ms-lg-auto align-items-lg-center">
 
+                <!-- ✅ HOME ALWAYS -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/">{% trans "Home" %}</a>
+                    <a class="nav-link fw-bold" href="/">
+                        ⬅ {% trans "Home" %}
+                    </a>
                 </li>
+
+                {% if not simple_navbar %}
+                <!-- ❌ Hide below in checkout/otp -->
 
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'my_orders' %}">
@@ -319,6 +325,8 @@
                         </span>
                     </button>
                 </li>
+
+                {% endif %}
 
             </ul>
 

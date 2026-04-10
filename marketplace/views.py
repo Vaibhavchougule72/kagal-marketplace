@@ -599,7 +599,8 @@ def checkout(request):
         'cod_not_allowed': cod_not_allowed,
         'cart': cart,
         'upi_only_required': upi_only_required,
-        'show_navbar': False
+        'show_navbar': True,
+        'simple_navbar':True
         
     })
 
@@ -791,8 +792,9 @@ def verify_otp(request, pending_id):
 
     return render(request, "verify_otp.html", {
         "pending_order": pending,
-        'show_navbar': False
-    })
+        'show_navbar': True,
+        'simple_navbar': True
+        })
 
 
 # =====================================================
@@ -848,7 +850,9 @@ def my_orders(request):
 
     return render(request, 'my_orders.html', {
         'orders': orders,
-        'phone': phone
+        'phone': phone,
+        'show_navbar': True,
+        'simple_navbar': True
     })
 
 
