@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
+from decimal import Decimal
 
 
 class Category(models.Model):
@@ -280,14 +281,14 @@ class Bundle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
     def original_price(self):
-
-        total = 0
+        total = Decimal(0)
 
         for item in self.items.all():
-
             total += item.product.price * item.quantity
 
         return total
+    def savings(self):
+        return int(self.original_price() - self.price)
 
     def __str__(self):
         return self.name
