@@ -380,17 +380,15 @@ def checkout(request):
     if not cart or not cart['items']:
         return redirect('home')
 
-    # -----------------------------
-    # GET STORE
-    # -----------------------------
     store_id = cart.get('store_id')
 
+    # fallback if missing
     if not store_id:
         first_item = next(iter(cart['items']))
 
         if str(first_item).startswith("bundle_"):
             bundle_id = int(first_item.split("_")[1])
-            bundle = get_object_or_404(Bundle, id=bundle_id)
+            bundle = get_object_or_404(Bundle, id=bundle_id, is_active=True)
             store_id = bundle.store.id
         else:
             product = get_object_or_404(Product, id=int(first_item))
@@ -400,13 +398,11 @@ def checkout(request):
 
     if not store.is_open():
         return render(request, 'cart_partial.html', {
-            'error': f"{store.name} is closed. Opens at {store.next_open_time}",
+            'error': f"{store.name} is currently closed. Opens at {store.next_open_time}",
             'cart': cart
         })
 
-    # -----------------------------
-    # CALCULATE SUBTOTAL
-    # -----------------------------
+            
     subtotal = Decimal(0)
     upi_only_required = False
 
@@ -414,68 +410,119 @@ def checkout(request):
 
         price = Decimal(str(item['price']))
         quantity = Decimal(str(item['quantity']))
+
         subtotal += price * quantity
 
+        # PRODUCT
         if item_id.isdigit():
-            product = Product.objects.get(id=int(item_id))
+            try:
+                product = Product.objects.get(id=int(item_id))
 
-            if not product.store.is_open():
+                # 🔥 CRITICAL FIX: store check
+                if not product.store.is_open():
+                    return render(request, 'cart_partial.html', {
+                        'error': f"{product.store.name} is now closed.",
+                        'cart': cart
+                    })
+
+                if product.upi_only:
+                    upi_only_required = True
+
+            except Product.DoesNotExist:
                 return render(request, 'cart_partial.html', {
-                    'error': f"{product.store.name} is closed",
+                    'error': "Some items are no longer available.",
                     'cart': cart
                 })
 
-            if product.upi_only:
-                upi_only_required = True
+        # BUNDLE
+        elif item_id.startswith("bundle_"):
+            try:
+                bundle_id = int(item_id.split("_")[1])
+                bundle = Bundle.objects.get(id=bundle_id)
 
-    # -----------------------------
-    # COMMON VALUES
-    # -----------------------------
+                if not bundle.store.is_open():
+                    return render(request, 'cart_partial.html', {
+                        'error': f"{bundle.store.name} is now closed.",
+                        'cart': cart
+                    })
+
+            except Bundle.DoesNotExist:
+                return render(request, 'cart_partial.html', {
+                    'error': "Some bundle items are no longer available.",
+                    'cart': cart
+                })
+    
+    
+
     small_order_fee = Decimal(20) if subtotal < 149 else Decimal(0)
     cod_not_allowed = subtotal < 149
 
-    # DEFAULT VALUES (VERY IMPORTANT)
-    delivery_fee = Decimal(0)
-    discount = Decimal(0)
-    total = subtotal + small_order_fee
-
-    # COMMON CONTEXT (🔥 FIX)
     context = {
         'subtotal': subtotal,
         'small_order_fee': small_order_fee,
         'cod_not_allowed': cod_not_allowed,
-        'delivery_fee': delivery_fee,
-        'discount': discount,
-        'total': total,
         'cart': cart,
-        'upi_only_required': upi_only_required,
-        'show_navbar': True,
-        'simple_navbar': True
+        'upi_only_required': upi_only_required
     }
 
-    # ==================================================
-    # POST REQUEST
-    # ==================================================
     if request.method == "POST":
 
         name = request.POST.get('name')
-        phone = request.POST.get('phone', '').strip()[-10:]
+        phone = request.POST.get('phone', '').strip()
+
+        if len(phone) < 10:
+            context['error'] = "Invalid phone number"
+            return render(request, 'checkout.html', context)
+
+        phone = phone[-10:]
+
         address = request.POST.get('address')
         payment = request.POST.get('payment')
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
-        coupon_code = request.POST.get("coupon_code")
 
-        # -----------------------------
-        # VALIDATIONS
-        # -----------------------------
         if upi_only_required and payment == "COD":
             context['error'] = "Only UPI allowed for selected items"
             return render(request, 'checkout.html', context)
 
+
         if not re.match(r'^[6-9]\d{9}$', phone):
             context['error'] = "Invalid phone number"
             return render(request, 'checkout.html', context)
+        
+        # ---------------------------------
+        # Daily order limit protection
+        # ---------------------------------
+        today = timezone.now().date()
+
+        orders_today = Order.objects.filter(
+            phone=phone,
+            created_at__date=today
+        ).count()
+
+        if orders_today >= 3:
+            context['error'] = "Maximum 3 orders allowed per day."
+            return render(request, 'checkout.html', context)
+        
+        # ---------------------------------
+        # COD abuse protection
+        # ---------------------------------
+
+        cancelled_orders = Order.objects.filter(
+            phone=phone,
+            status="CANCELLED"
+        ).count()
+
+        failed_orders = Order.objects.filter(
+            phone=phone,
+            status="FAILED"
+        ).count()
+
+        bad_orders = cancelled_orders + failed_orders
+
+        if bad_orders >= 3 and payment == "COD":
+           context['error'] = "Cash on delivery disabled"
+           return render(request, 'checkout.html', context)
 
         if not latitude or not longitude:
             context['error'] = "Select delivery location"
@@ -484,23 +531,33 @@ def checkout(request):
         latitude = float(latitude)
         longitude = float(longitude)
 
-        # -----------------------------
-        # DISTANCE CALCULATION
-        # -----------------------------
         BUS_STAND_LAT = 16.5775
         BUS_STAND_LON = 74.3169
 
         distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 
         if distance > 5:
-            context['error'] = "Delivery not available outside 5 KM"
+            context['error'] = "Delivery not available outside 5 km"
             return render(request, 'checkout.html', context)
 
-        # -----------------------------
-        # DELIVERY FEE
-        # -----------------------------
-        if subtotal >= 499:
+
+        # ------------------------------------------------
+        # Check customer order history (5th order free)
+        # ----------------------------------------
+        order_count = Order.objects.filter(
+            phone=phone,
+            status="DELIVERED"
+        ).count()
+
+        # First order OR every 5th order free
+        is_free_delivery_order = (order_count == 0) or ((order_count + 1) % 5 == 0)
+
+        if is_free_delivery_order:
             delivery_fee = Decimal(0)
+
+        elif subtotal >= 499:
+            delivery_fee = Decimal(0)
+
         else:
             if distance <= 2:
                 delivery_fee = Decimal(20)
@@ -512,19 +569,24 @@ def checkout(request):
 
         delivery_fee = Decimal(round(delivery_fee, 2))
 
-        # -----------------------------
-        # COUPON
-        # -----------------------------
+        coupon_code = request.POST.get("coupon_code")
         discount = Decimal(0)
 
         if coupon_code:
+
             try:
                 coupon = Coupon.objects.get(code=coupon_code, is_active=True)
 
-                if CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
+                # Prevent reuse
+                if CouponUsage.objects.filter(
+                    coupon=coupon,
+                    phone=phone
+                ).exists():
+
                     context['error'] = "Coupon already used"
                     return render(request, 'checkout.html', context)
 
+                # Calculate discount
                 if coupon.discount_type == "PERCENT":
                     discount = subtotal * coupon.discount_value / 100
                 else:
@@ -532,12 +594,10 @@ def checkout(request):
 
             except Coupon.DoesNotExist:
                 pass
+        
 
-        # -----------------------------
-        # FINAL TOTAL
-        # -----------------------------
         total = subtotal + delivery_fee + small_order_fee - discount
-
+        
         context.update({
             'delivery_fee': delivery_fee,
             'discount': discount,
@@ -551,9 +611,6 @@ def checkout(request):
             context['error'] = "COD not allowed below ₹149"
             return render(request, 'checkout.html', context)
 
-        # -----------------------------
-        # CREATE PENDING ORDER
-        # -----------------------------
         otp = str(random.randint(100000, 999999))
 
         pending = PendingOrder.objects.create(
@@ -563,41 +620,56 @@ def checkout(request):
             address=address,
             latitude=latitude,
             longitude=longitude,
+
             subtotal=subtotal,
             delivery_fee=delivery_fee,
             small_order_fee=small_order_fee,
+
             discount=discount,
             coupon_code=coupon_code,
+
             total=total,
+
             payment_method=payment,
-            items_snapshot=cart['items'],
+            items_snapshot=cart,
             otp=otp,
-            otp_expiry=timezone.now() + timedelta(minutes=5)
+            otp_expiry=timezone.now() + timedelta(minutes=5),
+            otp_attempts=0
         )
 
-        # -----------------------------
-        # SEND SMS
-        # -----------------------------
+       
+
+        message = f"LOKA verification code {otp}"
+
         try:
-            sms_response = send_sms(phone, f"LOKA OTP {otp}")
+            sms_response = send_sms(phone, message)
 
             if not sms_response or not sms_response.get("return"):
                 pending.delete()
-                context['error'] = "OTP failed. Try again"
-                return render(request, 'checkout.html', context)
 
+                context['error'] = "OTP service failed. Please try again."
+                return render(request, 'checkout.html', context)
+        
         except Exception as e:
-            logger.error(e)
+            logger.error(f"SMS failed: {e}")
+
             pending.delete()
-            context['error'] = "OTP failed. Try again"
+
+            context['error'] = "OTP service failed. Please try again."
             return render(request, 'checkout.html', context)
 
         return redirect('verify_otp', pending_id=pending.id)
 
-    # ==================================================
-    # GET REQUEST
-    # ==================================================
-    return render(request, 'checkout.html', context)
+    return render(request, 'checkout.html', {
+        'subtotal': subtotal,
+        'small_order_fee': small_order_fee,
+        'cod_not_allowed': cod_not_allowed,
+        'cart': cart,
+        'upi_only_required': upi_only_required,
+        'show_navbar': True,
+        'simple_navbar':True
+        
+    })
 
 
 # =====================================================
@@ -669,6 +741,47 @@ def verify_otp(request, pending_id):
         # -----------------------
         if pending.payment_method == "COD":
 
+            cart_items = pending.items_snapshot
+
+            for item_id, item in cart_items['items'].items():
+
+                # PRODUCT
+                if item_id.isdigit():
+                    try:
+                        product = Product.objects.get(id=int(item_id))
+
+                        # 🔥 CHECK STORE AGAIN (CRITICAL)
+                        if not product.store.is_open():
+                            return render(request, 'cart_partial.html', {
+                                'error': f"{product.store.name} is now closed.",
+                                'cart': cart_items
+                            })
+
+
+                    except Product.DoesNotExist:
+                        return render(request, 'cart_partial.html', {
+                            'error': "Some items are no longer available.",
+                            'cart': cart_items
+                        })
+
+                # BUNDLE
+                elif item_id.startswith("bundle_"):
+                    try:
+                        bundle_id = int(item_id.split("_")[1])
+                        bundle = Bundle.objects.get(id=bundle_id)
+
+                        if not bundle.store.is_open():
+                            return render(request, 'cart_partial.html', {
+                                'error': f"{bundle.store.name} is now closed.",
+                                'cart': cart_items
+                            })
+
+                    except Bundle.DoesNotExist:
+                        return render(request, 'cart_partial.html', {
+                            'error': "Some bundle items are no longer available.",
+                            'cart': cart_items
+                        })
+
             order = Order.objects.create(
                 store_id=pending.store_id,
                 customer_name=pending.customer_name,
@@ -703,17 +816,17 @@ def verify_otp(request, pending_id):
                 except Coupon.DoesNotExist:
                     logger.warning("Coupon not found during order creation")
 
-            cart = request.session.get('cart')
+           
 
-            if not cart or not cart['items']:
+            if not cart_items or not cart_items['items']:
                 return redirect('home')
 
-            store_id = cart.get('store_id')
+            store_id = cart_items.get('store_id')
             
 
             # fallback if store_id missing
             if not store_id:
-                first_item = next(iter(cart['items']))
+                first_item = next(iter(cart_items['items']))
                 
                 if str(first_item).startswith("bundle_"):
                     bundle_id = int(first_item.split("_")[1])
@@ -723,46 +836,7 @@ def verify_otp(request, pending_id):
                     product = get_object_or_404(Product, id=int(first_item))
                     store_id = product.store.id
 
-            for item_id, item in cart['items'].items():
-
-                # PRODUCT
-                if item_id.isdigit():
-                    try:
-                        product = Product.objects.get(id=int(item_id))
-
-                        # 🔥 CHECK STORE AGAIN (CRITICAL)
-                        if not product.store.is_open():
-                            return render(request, 'cart_partial.html', {
-                                'error': f"{product.store.name} is now closed.",
-                                'cart': cart
-                            })
-
-                        if product.upi_only:
-                            upi_only_required = True
-
-                    except Product.DoesNotExist:
-                        return render(request, 'cart_partial.html', {
-                            'error': "Some items are no longer available.",
-                            'cart': cart
-                        })
-
-                # BUNDLE
-                elif item_id.startswith("bundle_"):
-                    try:
-                        bundle_id = int(item_id.split("_")[1])
-                        bundle = Bundle.objects.get(id=bundle_id)
-
-                        if not bundle.store.is_open():
-                            return render(request, 'cart_partial.html', {
-                                'error': f"{bundle.store.name} is now closed.",
-                                'cart': cart
-                            })
-
-                    except Bundle.DoesNotExist:
-                        return render(request, 'cart_partial.html', {
-                            'error': "Some bundle items are no longer available.",
-                            'cart': cart
-                        })
+            
             request.session['cart'] = {'store_id': None, 'items': {}}
             pending.delete()
             try:
@@ -1039,7 +1113,7 @@ def payment_success(request):
     if not pending_id:
         return HttpResponse("Invalid session")
 
-    pending = PendingOrder.objects.get(id=pending_id)
+    pending = get_object_or_404(PendingOrder, id=pending_id)
 
     generated_signature = hmac.new(
         bytes(settings.RAZORPAY_KEY_SECRET, 'utf-8'),
@@ -1050,9 +1124,11 @@ def payment_success(request):
     if generated_signature != signature:
         return HttpResponse("Payment verification failed")
     
-    if int(pending.total * 100) != int(request.GET.get("amount", pending.total * 100)):
-        return HttpResponse("Amount mismatch")
+    amount = int(request.GET.get("amount", pending.total * 100))
 
+    if int(pending.total * 100) != amount:
+        return HttpResponse("Amount mismatch")
+    
     # Payment verified → Create order
     order = Order.objects.create(
         store_id=pending.store_id,
@@ -1096,7 +1172,7 @@ def payment_success(request):
 
     cart_items = pending.items_snapshot
 
-    for item_id, item in cart_items.items():
+    for item_id, item in cart_items['items'].items():
 
         # PRODUCT
         if item_id.isdigit():
