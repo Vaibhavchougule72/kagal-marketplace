@@ -642,9 +642,24 @@ def checkout(request):
         message = f"LOKA verification code {otp}"
 
         try:
-            send_sms(phone, message)
+            sms_response = send_sms(phone, message)
+
+            if not sms_response or not sms_response.get("return"):
+                pending.delete()
+
+                return render(request, 'checkout.html', {
+                    'subtotal': subtotal,
+                    'error': "OTP service failed. Please try again."
+                })
         except Exception as e:
             logger.error(f"SMS failed: {e}")
+
+            pending.delete()
+
+            return render(request, 'checkout.html', {
+                'subtotal': subtotal,
+                'error': "OTP sending failed. Please try again."
+            })
 
         return redirect('verify_otp', pending_id=pending.id)
 
@@ -748,17 +763,20 @@ def verify_otp(request, pending_id):
             )
 
             if pending.coupon_code:
+                try:
+                    coupon = Coupon.objects.get(code=pending.coupon_code)
 
-                coupon = Coupon.objects.get(code=pending.coupon_code)
+                    CouponUsage.objects.create(
+                        coupon=coupon,
+                        phone=pending.phone
+                    )
 
-                CouponUsage.objects.create(
-                    coupon=coupon,
-                    phone=pending.phone
-                )
+                    Coupon.objects.filter(code=pending.coupon_code).update(
+                        used_count=F("used_count") + 1
+                    )
 
-                Coupon.objects.filter(code=pending.coupon_code).update(
-                    used_count=F("used_count") + 1
-                )
+                except Coupon.DoesNotExist:
+                    logger.warning("Coupon not found during order creation")
 
             cart = request.session.get('cart')
 
@@ -828,7 +846,7 @@ def verify_otp(request, pending_id):
                 logger.error(f"Order SMS failed: {e}")
 
             try:
-                send_sms("7038984687", f"New UPI order #{order.id} received")
+                send_sms("7038984687", f"New order #{order.id} received")
             except Exception as e:
                 logger.error(f"Admin SMS failed: {e}")
             
@@ -866,13 +884,7 @@ def verify_otp(request, pending_id):
                 "phone": pending.phone
             })
 
-        # Clear cart
-        request.session['cart'] = {'store_id': None, 'items': {}}
-
-        # Delete pending order
-        pending.delete()
-
-        return redirect("order_success", order_id=order.id)
+        
 
     expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
 
@@ -1141,16 +1153,20 @@ def payment_success(request):
     )
 
     if pending.coupon_code:
-        coupon = Coupon.objects.get(code=pending.coupon_code)
+        try:
+            coupon = Coupon.objects.get(code=pending.coupon_code)
 
-        CouponUsage.objects.create(
-            coupon=coupon,
-            phone=pending.phone
-        )
+            CouponUsage.objects.create(
+                coupon=coupon,
+                phone=pending.phone
+            )
 
-        Coupon.objects.filter(code=pending.coupon_code).update(
-             used_count=F("used_count") + 1
-        )
+            Coupon.objects.filter(code=pending.coupon_code).update(
+                used_count=F("used_count") + 1
+            )
+
+        except Coupon.DoesNotExist:
+            logger.warning("Coupon not found in payment_success")
     
 
     cart_items = pending.items_snapshot
