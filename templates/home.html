@@ -160,7 +160,17 @@
 
 <div class="col-6 col-md-4 col-lg-3">
 
-<div class="loka-product-card combo-card" data-id="{{ combo.id }}">
+<div class="loka-product-card combo-card"
+     data-id="{{ combo.id }}"
+     data-name="{{ combo.name }}"
+     data-items='[
+        {% for item in combo.items.all %}
+            {"name": "{{ item.product.name }}",
+             "qty": "{{ item.quantity }}",
+             "price": "{{ item.product.price }}"}
+            {% if not forloop.last %},{% endif %}
+        {% endfor %}
+     ]'>
 
 <div class="loka-product-image">
 
@@ -174,18 +184,6 @@
 
     <div class="loka-product-name">
         {{ combo.name }}
-    </div>
-
-    <!-- 🔥 ITEMS -->
-    <div class="loka-product-desc small text-muted">
-
-        {% for item in combo.items.all %}
-            <div class="d-flex justify-content-between">
-                <span>• {{ item.product.name }} x{{ item.quantity }}</span>
-                <span>₹{{ item.product.price|floatformat:0 }}</span>
-            </div>
-        {% endfor %}
-
     </div>
 
     <div class="loka-product-bottom">
@@ -211,7 +209,8 @@
         </div>
 
         <button class="loka-add-btn add-bundle-btn"
-                data-id="{{ combo.id }}">
+            data-id="{{ combo.id }}"
+            onclick="event.stopPropagation();">
             ADD
         </button>
 
@@ -388,6 +387,44 @@
 
 </div>
 
+<script>
+document.querySelectorAll(".combo-card").forEach(card => {
+
+    card.addEventListener("click", function(){
+
+        const name = this.dataset.name;
+        const items = JSON.parse(this.dataset.items);
+
+        document.getElementById("comboTitle").innerText = name;
+
+        let html = "";
+
+        let total = 0;
+
+        items.forEach(item => {
+
+            const itemTotal = item.price * item.qty;
+            total += itemTotal;
+
+            html += `
+                <div class="d-flex justify-content-between mb-2">
+                    <span>• ${item.name} x${item.qty}</span>
+                    <span>₹${itemTotal}</span>
+                </div>
+            `;
+        });
+
+        html += `<hr><strong>Total: ₹${total}</strong>`;
+
+        document.getElementById("comboItems").innerHTML = html;
+
+        const modal = new bootstrap.Modal(document.getElementById('comboModal'));
+        modal.show();
+
+    });
+
+});
+</script>
 
 
 {% endblock %}
