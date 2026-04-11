@@ -271,10 +271,10 @@ var map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
 
 // 🌍 Street / Traffic-like Map (Default)
 var streetLayer = L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
     {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
+        maxZoom: 20,
+        attribution: '&copy; OpenStreetMap contributors &copy; Stadia Maps'
     }
 );
 
