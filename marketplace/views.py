@@ -973,7 +973,8 @@ def search_products(request):
 
     if not products:
 
-        products = Product.objects.all()
+        # 🔥 IMPORTANT: optimize query
+        products = Product.objects.select_related('store')
 
         if query:
             products = products.filter(
@@ -990,35 +991,23 @@ def search_products(request):
         if max_price:
             products = products.filter(price__lte=max_price)
 
+        # 🔽 DB sorting
         if sort_option == "price_low":
             products = products.order_by('price')
-
         elif sort_option == "price_high":
             products = products.order_by('-price')
-
         elif sort_option == "newest":
             products = products.order_by('-id')
 
+        # 🔥 Convert to list for Python sorting
+        products = list(products)
+
+        # 🔥 MOST IMPORTANT: open stores first
+        products.sort(key=lambda p: not p.store.is_open())
+
         cache.set(cache_key, products, 120)
 
-    if store_filter:
-        products = products.filter(store_id=store_filter)
-
-    if min_price:
-        products = products.filter(price__gte=min_price)
-
-    if max_price:
-        products = products.filter(price__lte=max_price)
-
-    if sort_option == "price_low":
-        products = products.order_by('price')
-    elif sort_option == "price_high":
-        products = products.order_by('-price')
-    elif sort_option == "newest":
-        products = products.order_by('-id')
-
     stores = Store.objects.all()
-    
 
     return render(request, 'search_results.html', {
         'query': query,
@@ -1029,7 +1018,6 @@ def search_products(request):
         'min_price': min_price,
         'max_price': max_price
     })
-
 
 def search_suggestions(request):
     query = request.GET.get('q', '')

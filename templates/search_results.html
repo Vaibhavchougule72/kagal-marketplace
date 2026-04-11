@@ -72,22 +72,34 @@
     {% if products %}
         <div class="row g-4">
             {% for product in products %}
-            
+
             <div class="col-6 col-md-4 col-lg-3">
-                <div class="loka-product-card product-card"
+                <div class="loka-product-card product-card {% if not product.store.is_open %}opacity-50{% endif %}"
                     data-id="{{ product.id }}"
                     data-name="{{ product.name }}"
                     data-price="{{ product.price }}"
                     data-desc="{{ product.description }}"
                     data-image="{{ product.image.url }}">
 
-                    <div class="loka-product-image">
+                    <!-- IMAGE + BADGE -->
+                    <div class="loka-product-image position-relative">
                         <img src="{{ product.image.url }}"
                             class="img-fluid product-img"
                             alt="{{ product.name }}" loading="lazy">
+
+                        {% if product.store.is_open %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                Open
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                Closed
+                            </span>
+                        {% endif %}
                     </div>
 
                     <div class="loka-product-body">
+
                         <h6 class="loka-product-name">
                             {{ product.name }}
                         </h6>
@@ -96,15 +108,30 @@
                             {{ product.store.name }}
                         </p>
 
+                        <!-- 🔥 SHOW NEXT OPEN TIME -->
+                        {% if not product.store.is_open %}
+                            <div class="small text-danger mb-1">
+                                ⏰ Opens at {{ product.store.next_open_time }}
+                            </div>
+                        {% endif %}
+
                         <div class="loka-product-bottom">
                             <span class="loka-price">
                                 ₹{{ product.price }}
                             </span>
 
-                            <button class="loka-add-btn add-to-cart-btn"
-                                    data-id="{{ product.id }}">
-                                Add
-                            </button>
+                            <!-- ✅ BUTTON LOGIC -->
+                            {% if product.store.is_open %}
+                                <button class="loka-add-btn add-to-cart-btn"
+                                        data-id="{{ product.id }}">
+                                    Add
+                                </button>
+                            {% else %}
+                                <button class="loka-add-btn btn-secondary" disabled>
+                                    Closed
+                                </button>
+                            {% endif %}
+
                         </div>
 
                     </div>
