@@ -92,7 +92,7 @@ class OrderAdmin(admin.ModelAdmin):
             "fields": (
                 "subtotal",
                 "delivery_fee",
-                "small_order_fee",
+                "Handling_fee",
                 "total",
                 "payment_method",
                 "payment_id",

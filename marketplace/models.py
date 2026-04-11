@@ -132,7 +132,7 @@ class Order(models.Model):
 
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    small_order_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    Handling_fee = models.DecimalField(max_digits=10, decimal_places=2)
 
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -237,7 +237,7 @@ class PendingOrder(models.Model):
 
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    small_order_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    Handling_fee = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     coupon_code = models.CharField(max_length=20, null=True, blank=True)

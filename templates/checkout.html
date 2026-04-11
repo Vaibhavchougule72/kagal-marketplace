@@ -128,8 +128,8 @@
             {% endif %}
 
             <div class="d-flex justify-content-between">
-                <span>{% trans "Small Order Fee" %}</span>
-                <strong>₹{{ small_order_fee }}</strong>
+                <span>{% trans "Handling Fee" %}</span>
+                <strong>₹{{ Handling_fee }}</strong>
             </div>
 
             <hr>
@@ -142,7 +142,7 @@
             <div class="d-flex justify-content-between fs-5">
                 <strong>{% trans "Total" %}</strong>
                 <strong id="orderTotal">
-                    ₹{{ subtotal|add:small_order_fee|add:20 }}
+                    ₹{{ subtotal|add:Handling_fee|add:20 }}
                 </strong>
             </div>
 
@@ -174,34 +174,47 @@
 
         <!-- PAYMENT -->
         <div class="mb-4">
-            <label class="form-label fw-bold">{% trans "Payment Method" %}</label>
+            <label class="form-label fw-bold">Payment Method</label>
 
             <div class="card p-3">
+
+                <!-- UPI -->
                 <div class="form-check mb-2">
                     <input class="form-check-input"
-                            type="radio"
-                            name="payment"
-                            value="COD"
-                            id="codOption"
-                            {% if cod_not_allowed or upi_only_required %}disabled{% endif %}
-                           {% if cod_not_allowed %}disabled{% endif %}
-                           checked>
+                        type="radio"
+                        name="payment"
+                        value="UPI"
+                        id="upiOption"
+                        {% if upi_only_required %}checked{% endif %}>
                     <label class="form-check-label">
-                        {% trans "Cash on Delivery" %}
+                        UPI (Recommended)
                     </label>
                 </div>
 
+                <!-- COD -->
                 <div class="form-check">
                     <input class="form-check-input"
-                            type="radio"
-                            name="payment"
-                            value="UPI"
-                            id="upiOption"
-                            {% if upi_only_required %}checked{% endif %}>
+                        type="radio"
+                        name="payment"
+                        value="COD"
+                        id="codOption"
+                        {% if cod_not_allowed or upi_only_required %}disabled{% endif %}>
+
                     <label class="form-check-label">
-                        UPI
+                        Cash on Delivery
+
+                        {% if upi_only_required %}
+                            <small class="text-danger d-block">
+                                Only UPI allowed for selected items
+                            </small>
+                        {% elif cod_not_allowed %}
+                            <small class="text-danger d-block">
+                                COD not available below ₹149
+                            </small>
+                        {% endif %}
                     </label>
                 </div>
+
             </div>
         </div>
 
@@ -263,7 +276,7 @@ const BUS_STAND_LON = 74.3169;
 const DELIVERY_RADIUS_KM = 5;
 
 const subtotal = parseFloat("{{ subtotal }}");
-const smallOrderFee = parseFloat("{{ small_order_fee }}");
+const smallOrderFee = parseFloat("{{ Handling_fee }}");
 
 let freeDeliveryUnlocked = false;
 
@@ -532,7 +545,7 @@ document.getElementById("discount_amount").innerText =
 
 // Get current values from page
 const subtotalValue = parseFloat("{{ subtotal }}")
-const smallOrderFee = parseFloat("{{ small_order_fee }}")
+const smallOrderFee = parseFloat("{{ Handling_fee }}")
 
 // Delivery from UI
 const deliveryText = document.getElementById("deliveryFee").innerText
@@ -615,7 +628,9 @@ document.addEventListener("DOMContentLoaded", function(){
             document.getElementById("map").classList.remove("map-invalid");
         }
 
-        if(subtotal < 149){
+        const upiOnly = "{{ upi_only_required|yesno:'true,false' }}";
+
+        if(subtotal < 149 || upiOnly === "true"){
             codOption.disabled = true;
             upiOption.checked = true;
         }
@@ -691,6 +706,21 @@ document.getElementById("phoneInput").addEventListener("blur", function(){
         }
 
     });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const upiOnly = "{{ upi_only_required|yesno:'true,false' }}";
+
+    if(upiOnly === "true"){
+        document.getElementById("upiOption").checked = true;
+    }
+
+    if(upiOnly === "true"){
+        document.getElementById("codOption").disabled = true;
+    }
 
 });
 </script>

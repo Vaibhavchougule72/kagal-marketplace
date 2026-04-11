@@ -454,12 +454,12 @@ def checkout(request):
     
     
 
-    small_order_fee = Decimal(20) if subtotal < 149 else Decimal(0)
+    Handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
     cod_not_allowed = subtotal < 149
 
     context = {
         'subtotal': subtotal,
-        'small_order_fee': small_order_fee,
+        'Handling_fee': Handling_fee,
         'cod_not_allowed': cod_not_allowed,
         'cart': cart,
         'upi_only_required': upi_only_required
@@ -536,8 +536,8 @@ def checkout(request):
 
         distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 
-        if distance > 5:
-            context['error'] = "Delivery not available outside 5 km"
+        if distance > 7:
+            context['error'] = "Delivery not available outside 7 km"
             return render(request, 'checkout.html', context)
 
 
@@ -596,7 +596,7 @@ def checkout(request):
                 pass
         
 
-        total = subtotal + delivery_fee + small_order_fee - discount
+        total = subtotal + delivery_fee + Handling_fee - discount
         
         context.update({
             'delivery_fee': delivery_fee,
@@ -623,7 +623,7 @@ def checkout(request):
 
             subtotal=subtotal,
             delivery_fee=delivery_fee,
-            small_order_fee=small_order_fee,
+            Handling_fee=Handling_fee,
 
             discount=discount,
             coupon_code=coupon_code,
@@ -662,7 +662,7 @@ def checkout(request):
 
     return render(request, 'checkout.html', {
         'subtotal': subtotal,
-        'small_order_fee': small_order_fee,
+        'Handling_fee': Handling_fee,
         'cod_not_allowed': cod_not_allowed,
         'cart': cart,
         'upi_only_required': upi_only_required,
@@ -791,7 +791,7 @@ def verify_otp(request, pending_id):
                 longitude=pending.longitude,
                 subtotal=pending.subtotal,
                 delivery_fee=pending.delivery_fee,
-                small_order_fee=pending.small_order_fee,
+                Handling_fee=pending.Handling_fee,
                 discount=pending.discount,
                 coupon_code=pending.coupon_code,
                 
@@ -1067,7 +1067,7 @@ def calculate_delivery(request):
 
     distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 
-    small_order_fee = Decimal(20) if subtotal < 149 else Decimal(0)
+    Handling_fee = Decimal(20) if subtotal < 149 else Decimal(0)
 
     delivery_fee = 20
 
@@ -1083,7 +1083,7 @@ def calculate_delivery(request):
             delivery_fee = Decimal(60)
 
     delivery_fee = Decimal(round(delivery_fee, 2))
-    total = subtotal + delivery_fee + small_order_fee
+    total = subtotal + delivery_fee + Handling_fee
 
     return JsonResponse({
         "delivery_fee": float(delivery_fee),
@@ -1141,7 +1141,7 @@ def payment_success(request):
 
         subtotal=pending.subtotal,
         delivery_fee=pending.delivery_fee,
-        small_order_fee=pending.small_order_fee,
+        Handling_fee=pending.Handling_fee,
 
         discount=pending.discount,
         coupon_code=pending.coupon_code,
@@ -1334,8 +1334,8 @@ def generate_invoice(request, order_id):
     if order.delivery_fee > 0:
         data.append(["", "", "Delivery:", f"₹{order.delivery_fee}"])
 
-    if order.small_order_fee > 0:
-        data.append(["", "", "Small Order Fee:", f"₹{order.small_order_fee}"])
+    if order.Handling_fee > 0:
+        data.append(["", "", "Handling Fee:", f"₹{order.Handling_fee}"])
 
     if order.discount > 0:
         data.append(["", "", "Coupon Discount:", f"-₹{order.discount}"])
@@ -1435,8 +1435,8 @@ def generate_delivery_pdf(request, order_id):
     if order.delivery_fee > 0:
         data.append(["", "", "Delivery Fee:", f"₹{order.delivery_fee}"])
 
-    if order.small_order_fee > 0:
-        data.append(["", "", "Small Order Fee:", f"₹{order.small_order_fee}"])
+    if order.Handling_fee > 0:
+        data.append(["", "", "Handling Fee:", f"₹{order.Handling_fee}"])
 
     if order.discount > 0:
         data.append(["", "", "Discount:", f"-₹{order.discount}"])
