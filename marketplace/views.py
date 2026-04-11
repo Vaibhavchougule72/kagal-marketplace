@@ -69,9 +69,15 @@ def home(request):
 
         categories = Category.objects.all()
         stores = Store.objects.all()
-        combos = Bundle.objects.filter(is_active=True)[:6]
+        combos = Bundle.objects.filter(is_active=True)\
+            .select_related('store')\
+            .prefetch_related('items__product')[:6]
 
-        featured_products_list = Product.objects.filter(is_featured=True).select_related('store')
+        all_products = Product.objects.filter(is_featured=True).select_related('store')
+
+        featured_products_list = [
+            p for p in all_products if p.store.is_open()
+        ]
 
         paginator = Paginator(featured_products_list, 12)  # 12 products per page
         featured_products = paginator.get_page(page)

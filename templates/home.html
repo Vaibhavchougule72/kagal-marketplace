@@ -172,36 +172,50 @@
 
 <div class="loka-product-body">
 
-<div class="loka-product-name">
-{{ combo.name }}
-</div>
+    <div class="loka-product-name">
+        {{ combo.name }}
+    </div>
 
-<div class="loka-product-desc">
-Special Combo
-</div>
+    <!-- 🔥 ITEMS -->
+    <div class="loka-product-desc small text-muted">
 
-<div class="loka-product-bottom">
+        {% for item in combo.items.all %}
+            <div class="d-flex justify-content-between">
+                <span>• {{ item.product.name }} x{{ item.quantity }}</span>
+                <span>₹{{ item.product.price|floatformat:0 }}</span>
+            </div>
+        {% endfor %}
 
-<div class="loka-product-price">
+    </div>
 
-<span style="text-decoration:line-through;color:#999;font-size:13px;">
-₹{{ combo.original_price }}
-</span>
+    <div class="loka-product-bottom">
 
-<br>
+        <div class="loka-product-price">
 
-<span style="color:#000;font-weight:700;">
-₹{{ combo.price }}
-</span>
+            <span style="text-decoration:line-through;color:#999;font-size:13px;">
+                ₹{{ combo.original_price|floatformat:0 }}
+            </span>
 
-</div>
+            <br>
 
-<button class="loka-add-btn add-bundle-btn"
-data-id="{{ combo.id }}">
-ADD
-</button>
+            <span style="color:#000;font-weight:700;">
+                ₹{{ combo.price|floatformat:0 }}
+            </span>
 
-</div>
+            <br>
+
+            <small style="color:green;font-size:12px;">
+                Save ₹{{ combo.savings|floatformat:0 }}
+            </small>
+
+        </div>
+
+        <button class="loka-add-btn add-bundle-btn"
+                data-id="{{ combo.id }}">
+            ADD
+        </button>
+
+    </div>
 
 </div>
 
