@@ -339,7 +339,10 @@ def view_cart(request):
         # PRODUCT
         else:
 
-            product = get_object_or_404(Product, id=int(item_id))
+            try:
+                product = Product.objects.get(id=int(item_id))
+            except Product.DoesNotExist:
+                continue
 
             quantity = Decimal(str(item['quantity']))
             price = Decimal(str(item['price']))
@@ -392,26 +395,13 @@ def checkout(request):
             store_id = product.store.id
 
     store = get_object_or_404(Store, id=store_id)
-    
+
     if not store.is_open():
-        return render(request, 'checkout.html', {
+        return render(request, 'cart_partial.html', {
             'error': f"{store.name} is currently closed. Opens at {store.next_open_time}",
-            'cart': cart,
-            'show_navbar': True,
-            'simple_navbar': True
+            'cart': cart
         })
 
-    # fallback if store_id missing
-    if not store_id:
-        first_item = next(iter(cart['items']))
-
-        if str(first_item).startswith("bundle_"):
-            bundle_id = int(first_item.split("_")[1])
-            bundle = get_object_or_404(Bundle, id=bundle_id, is_active=True)
-            store_id = bundle.store.id
-        else:
-            product = Product.objects.get(id=int(first_item))
-            store_id = product.store.id
             
     subtotal = Decimal(0)
     upi_only_required = False
@@ -423,13 +413,44 @@ def checkout(request):
 
         subtotal += price * quantity
 
-        # Check if product requires UPI
+        # PRODUCT
         if item_id.isdigit():
+            try:
+                product = Product.objects.get(id=int(item_id))
 
-            product = Product.objects.get(id=int(item_id))
+                # 🔥 CRITICAL FIX: store check
+                if not product.store.is_open():
+                    return render(request, 'cart_partial.html', {
+                        'error': f"{product.store.name} is now closed.",
+                        'cart': cart
+                    })
 
-            if product.upi_only:
-                upi_only_required = True
+                if product.upi_only:
+                    upi_only_required = True
+
+            except Product.DoesNotExist:
+                return render(request, 'cart_partial.html', {
+                    'error': "Some items are no longer available.",
+                    'cart': cart
+                })
+
+        # BUNDLE
+        elif item_id.startswith("bundle_"):
+            try:
+                bundle_id = int(item_id.split("_")[1])
+                bundle = Bundle.objects.get(id=bundle_id)
+
+                if not bundle.store.is_open():
+                    return render(request, 'cart_partial.html', {
+                        'error': f"{bundle.store.name} is now closed.",
+                        'cart': cart
+                    })
+
+            except Bundle.DoesNotExist:
+                return render(request, 'cart_partial.html', {
+                    'error': "Some bundle items are no longer available.",
+                    'cart': cart
+                })
     
     
 
@@ -763,26 +784,42 @@ def verify_otp(request, pending_id):
 
                 # PRODUCT
                 if item_id.isdigit():
+                    try:
+                        product = Product.objects.get(id=int(item_id))
 
-                    product = get_object_or_404(Product, id=int(item_id))
+                        # 🔥 CHECK STORE AGAIN (CRITICAL)
+                        if not product.store.is_open():
+                            return render(request, 'cart_partial.html', {
+                                'error': f"{product.store.name} is now closed.",
+                                'cart': cart
+                            })
 
-                    OrderItem.objects.create(
-                        order=order,
-                        product=product,
-                        quantity=int(item['quantity']),
-                        price=Decimal(str(item['price']))
-                    )
+                        if product.upi_only:
+                            upi_only_required = True
+
+                    except Product.DoesNotExist:
+                        return render(request, 'cart_partial.html', {
+                            'error': "Some items are no longer available.",
+                            'cart': cart
+                        })
 
                 # BUNDLE
                 elif item_id.startswith("bundle_"):
+                    try:
+                        bundle_id = int(item_id.split("_")[1])
+                        bundle = Bundle.objects.get(id=bundle_id)
 
-                    OrderItem.objects.create(
-                        order=order,
-                        product=None,
-                        bundle_name=item["name"],
-                        quantity=int(item['quantity']),
-                        price=Decimal(str(item['price']))
-                    )
+                        if not bundle.store.is_open():
+                            return render(request, 'cart_partial.html', {
+                                'error': f"{bundle.store.name} is now closed.",
+                                'cart': cart
+                            })
+
+                    except Bundle.DoesNotExist:
+                        return render(request, 'cart_partial.html', {
+                            'error': "Some bundle items are no longer available.",
+                            'cart': cart
+                        })
             request.session['cart'] = {'store_id': None, 'items': {}}
             pending.delete()
             try:
