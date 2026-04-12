@@ -86,7 +86,8 @@ def home(request):
             "categories": categories,
             "featured_products": featured_products,
             "stores": stores,
-            "combos": combos
+            "combos": combos,
+            "show_floating_cart": True
         }
 
         cache.set(cache_key, data, 300)
@@ -117,7 +118,8 @@ def store_detail(request, store_id):
         data = {
             "store": store,
             "products": products,
-            "bundles": bundles
+            "bundles": bundles,
+            "show_floating_cart": False
         }
 
         cache.set(cache_key, data, 300)
@@ -184,7 +186,8 @@ def category_detail(request, category_id):
     return render(request, 'category_detail.html', {
         'category': category,
         'stores': stores,
-        'products': products
+        'products': products,
+        "show_floating_cart": False
     })
 
 
@@ -194,7 +197,8 @@ def category_stores(request, category_id):
 
     return render(request, 'category_stores.html', {
         'category': category,
-        'stores': stores
+        'stores': stores,
+        "show_floating_cart": False
     })
 
 
@@ -204,7 +208,8 @@ def category_products(request, category_id):
 
     return render(request, 'category_products.html', {
         'category': category,
-        'products': products
+        'products': products,
+        "show_floating_cart": True
     })
 
 
@@ -326,7 +331,10 @@ def view_cart(request):
     for item_id, item in cart['items'].items():
 
         # COMBO
-        if item_id.startswith("bundle_"):
+        bundle_id = int(item_id.split("_")[1])
+        bundle = Bundle.objects.get(id=bundle_id)
+
+        if not bundle.store.is_open():
 
             quantity = Decimal(str(item['quantity']))
             price = Decimal(str(item['price']))
@@ -347,6 +355,10 @@ def view_cart(request):
 
             try:
                 product = Product.objects.get(id=int(item_id))
+
+                
+                if not product.store.is_open():
+                    continue
             except Product.DoesNotExist:
                 continue
 
@@ -372,7 +384,8 @@ def view_cart(request):
         'subtotal': subtotal,
         'remaining_to_149': remaining_to_149,
         'cod_not_allowed': cod_not_allowed,
-        'remaining_to_free_delivery': remaining_to_free_delivery
+        'remaining_to_free_delivery': remaining_to_free_delivery,
+        "show_floating_cart": False
     })
 
 
@@ -402,11 +415,14 @@ def checkout(request):
 
     store = get_object_or_404(Store, id=store_id)
 
+    context = {
+        'cart': cart,
+        "show_floating_cart": False
+    }
+
     if not store.is_open():
-        return render(request, 'cart_partial.html', {
-            'error': f"{store.name} is currently closed. Opens at {store.next_open_time}",
-            'cart': cart
-        })
+        context['error'] = f"{store.name} is currently closed."
+        return render(request, 'checkout.html', context)
 
             
     subtotal = Decimal(0)
@@ -426,19 +442,17 @@ def checkout(request):
 
                 # 🔥 CRITICAL FIX: store check
                 if not product.store.is_open():
-                    return render(request, 'cart_partial.html', {
-                        'error': f"{product.store.name} is now closed.",
-                        'cart': cart
-                    })
+                    context['error'] = f"{product.store.name} is currently closed. Opens at {product.store.next_open_time}"
+                    return render(request, 'checkout.html', context)
+                   
 
                 if product.upi_only:
                     upi_only_required = True
 
             except Product.DoesNotExist:
-                return render(request, 'cart_partial.html', {
-                    'error': "Some items are no longer available.",
-                    'cart': cart
-                })
+                context['error'] = "Some items are no longer available."
+                return render(request, 'checkout.html', context)
+             
 
         # BUNDLE
         elif item_id.startswith("bundle_"):
@@ -447,29 +461,37 @@ def checkout(request):
                 bundle = Bundle.objects.get(id=bundle_id)
 
                 if not bundle.store.is_open():
-                    return render(request, 'cart_partial.html', {
-                        'error': f"{bundle.store.name} is now closed.",
-                        'cart': cart
-                    })
+                    context['error'] = f"{bundle.store.name} is now closed."
+                    return render(request, 'checkout.html', context)
+                   
 
             except Bundle.DoesNotExist:
-                return render(request, 'cart_partial.html', {
-                    'error': "Some bundle items are no longer available.",
-                    'cart': cart
-                })
+                context['error'] = "Some bundle items are no longer available"
+                return render(request, 'checkout.html', context)
     
     
 
     Handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
     cod_not_allowed = subtotal < 149
 
-    context = {
+    items = []
+
+    for item_id, item in cart['items'].items():
+        items.append({
+            "name": item["name"],
+            "price": item["price"],
+            "quantity": item["quantity"]
+        })
+
+    context.update({
         'subtotal': subtotal,
         'Handling_fee': Handling_fee,
         'cod_not_allowed': cod_not_allowed,
         'cart': cart,
-        'upi_only_required': upi_only_required
-    }
+        'upi_only_required': upi_only_required,
+        "show_floating_cart": False,
+        "items": items
+    })
 
     if request.method == "POST":
 
@@ -606,6 +628,7 @@ def checkout(request):
         
         context.update({
             'delivery_fee': delivery_fee,
+            'handling_fee': Handling_fee,
             'discount': discount,
             'total': total
         })
@@ -666,16 +689,7 @@ def checkout(request):
 
         return redirect('verify_otp', pending_id=pending.id)
 
-    return render(request, 'checkout.html', {
-        'subtotal': subtotal,
-        'Handling_fee': Handling_fee,
-        'cod_not_allowed': cod_not_allowed,
-        'cart': cart,
-        'upi_only_required': upi_only_required,
-        'show_navbar': True,
-        'simple_navbar':True
-        
-    })
+    return render(request, 'checkout.html', context)
 
 
 # =====================================================
@@ -689,18 +703,17 @@ def verify_otp(request, pending_id):
     if not store.is_open():
         pending.delete()
 
-        request.session['cart'] = {'store_id': None, 'items': {}}
-
         from django.contrib import messages
-        messages.error(request, f"{store.name} is now closed. Please order again later.")
+        messages.error(request, f"{store.name} is now closed.")
 
-        return redirect("home")
+        return redirect("checkout")
 
     # 🔒 If already expired (GET request)
     if pending.is_expired():
         return render(request, "verify_otp.html", {
             "pending_order": pending,
-            "error": "OTP expired. Please resend OTP."
+            "error": "OTP expired. Please resend OTP.",
+            "show_floating_cart": False
         })
 
     if request.method == "POST":
@@ -711,21 +724,24 @@ def verify_otp(request, pending_id):
         if pending.is_expired():
             return render(request, "verify_otp.html", {
                 "pending_order": pending,
-                "error": "OTP expired. Please resend OTP."
+                "error": "OTP expired. Please resend OTP.",
+                "show_floating_cart": False
             })
 
         # 2️⃣ Max attempts check
         if pending.otp_attempts >= 3:
             pending.delete()
             return render(request, "verify_otp.html", {
-                "error": "Too many wrong attempts. Order cancelled."
+                "error": "Too many wrong attempts. Order cancelled.",
+                "show_floating_cart": False
             })
 
         # 3️⃣ Validate OTP format (must be 6 digits)
         if not entered.isdigit() or len(entered) != 6:
             return render(request, "verify_otp.html", {
                 "pending_order": pending,
-                "error": "Please enter a valid 6-digit OTP."
+                "error": "Please enter a valid 6-digit OTP.",
+                "show_floating_cart": False
             })
 
         # 4️⃣ Validate OTP match
@@ -737,7 +753,8 @@ def verify_otp(request, pending_id):
 
             return render(request, "verify_otp.html", {
                 "pending_order": pending,
-                "error": f"Invalid OTP. {attempts_left} attempt(s) remaining."
+                "error": f"Invalid OTP. {attempts_left} attempt(s) remaining.",
+                "show_floating_cart": False
             })
 
         # ✅ OTP CORRECT
@@ -758,17 +775,19 @@ def verify_otp(request, pending_id):
 
                         # 🔥 CHECK STORE AGAIN (CRITICAL)
                         if not product.store.is_open():
-                            return render(request, 'cart_partial.html', {
-                                'error': f"{product.store.name} is now closed.",
-                                'cart': cart_items
-                            })
+                            from django.contrib import messages
+
+                            messages.error(request, f"{product.store.name} is now closed.")
+                            return redirect("checkout")
+                            
 
 
                     except Product.DoesNotExist:
-                        return render(request, 'cart_partial.html', {
-                            'error': "Some items are no longer available.",
-                            'cart': cart_items
-                        })
+                        from django.contrib import messages
+
+                        messages.error(request, "Some items are no longer available")
+                        return redirect("checkout")
+                    
 
                 # BUNDLE
                 elif item_id.startswith("bundle_"):
@@ -777,16 +796,17 @@ def verify_otp(request, pending_id):
                         bundle = Bundle.objects.get(id=bundle_id)
 
                         if not bundle.store.is_open():
-                            return render(request, 'cart_partial.html', {
-                                'error': f"{bundle.store.name} is now closed.",
-                                'cart': cart_items
-                            })
+                            from django.contrib import messages
+
+                            messages.error(request, f"{bundle.store.name} is now closed.")
+                            return redirect("checkout")
 
                     except Bundle.DoesNotExist:
-                        return render(request, 'cart_partial.html', {
-                            'error': "Some bundle items are no longer available.",
-                            'cart': cart_items
-                        })
+                        from django.contrib import messages
+
+                        messages.error(request, "Some bundle items are no longer available.")
+                        return redirect("checkout")
+                       
 
             order = Order.objects.create(
                 store_id=pending.store_id,
@@ -886,7 +906,8 @@ def verify_otp(request, pending_id):
                 "amount": int(pending.total * 100),
                 "razorpay_order_id": razorpay_order["id"],
                 "customer_name": pending.customer_name,
-                "phone": pending.phone
+                "phone": pending.phone,
+                "show_floating_cart": False
             })
 
         
@@ -902,7 +923,8 @@ def verify_otp(request, pending_id):
         "pending_order": pending,
         "expiry_seconds": expiry_seconds,
         "attempts_left": attempts_left,
-        'show_navbar': False
+        'show_navbar': False,
+        "show_floating_cart": False
     })
 
 # =====================================================
@@ -954,7 +976,9 @@ def order_success(request, order_id):
 
 def order_tracking(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    return render(request, 'order_tracking.html', {'order': order})
+    return render(request, 'order_tracking.html', {'order': order,
+    "show_floating_cart": False
+    })
 
 
 def my_orders(request):
@@ -970,7 +994,8 @@ def my_orders(request):
         'orders': orders,
         'phone': phone,
         'show_navbar': True,
-        'simple_navbar': True
+        'simple_navbar': True,
+        "show_floating_cart": False
     })
 
 
@@ -1033,7 +1058,8 @@ def search_products(request):
         'selected_store': store_filter,
         'selected_sort': sort_option,
         'min_price': min_price,
-        'max_price': max_price
+        'max_price': max_price,
+        "show_floating_cart": True
     })
 
 def search_suggestions(request):
@@ -1529,6 +1555,11 @@ def combo_detail(request, combo_id):
 
     combo = Bundle.objects.get(id=combo_id)
 
+    if not combo.store.is_open():
+        return JsonResponse({
+            "error": "Store is currently closed"
+        }, status=400)
+
     items = []
 
     for item in combo.items.all():
@@ -1691,6 +1722,7 @@ def admin_dashboard(request):
 
         "labels": json.dumps(labels),
         "revenues": json.dumps(revenues),
+        "show_floating_cart": False,
 
         "hourly_orders": json.dumps([h["count"] for h in hourly_orders])
     }
@@ -1810,7 +1842,8 @@ def delivery_dashboard(request):
 
     return render(request,"delivery_dashboard.html",{
         **context,
-        "show_navbar": False
+        "show_navbar": False,
+        "show_floating_cart": False
     })
 
 from django.db.models import Sum, Count, F
@@ -1895,6 +1928,7 @@ def store_dashboard(request):
 
     return render(request, "store_dashboard.html", {
         **context,
-        "show_navbar": False
+        "show_navbar": False,
+        "show_floating_cart": False
     })
 

@@ -6,6 +6,13 @@
     {{ error }}
 </div>
 {% endif %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 <style>
 .map-invalid {
     border: 2px solid #dc3545 !important;
@@ -273,7 +280,7 @@
 <script>
 const BUS_STAND_LAT = 16.5775;
 const BUS_STAND_LON = 74.3169;
-const DELIVERY_RADIUS_KM = 5;
+const DELIVERY_RADIUS_KM = 7;
 
 const subtotal = parseFloat("{{ subtotal }}");
 const smallOrderFee = parseFloat("{{ Handling_fee }}");
