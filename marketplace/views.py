@@ -330,11 +330,20 @@ def view_cart(request):
 
     for item_id, item in cart['items'].items():
 
-        # COMBO
-        bundle_id = int(item_id.split("_")[1])
-        bundle = Bundle.objects.get(id=bundle_id)
+        # ======================
+        # ✅ BUNDLE
+        # ======================
+        if item_id.startswith("bundle_"):
 
-        if not bundle.store.is_open():
+            try:
+                bundle_id = int(item_id.split("_")[1])
+                bundle = Bundle.objects.get(id=bundle_id)
+
+                if not bundle.store.is_open():
+                    continue
+
+            except:
+                continue
 
             quantity = Decimal(str(item['quantity']))
             price = Decimal(str(item['price']))
@@ -350,16 +359,18 @@ def view_cart(request):
                 "subtotal": price * quantity
             })
 
-        # PRODUCT
+        # ======================
+        # ✅ PRODUCT
+        # ======================
         else:
 
             try:
                 product = Product.objects.get(id=int(item_id))
 
-                
                 if not product.store.is_open():
                     continue
-            except Product.DoesNotExist:
+
+            except:
                 continue
 
             quantity = Decimal(str(item['quantity']))
@@ -796,6 +807,7 @@ def verify_otp(request, pending_id):
                         bundle = Bundle.objects.get(id=bundle_id)
 
                         if not bundle.store.is_open():
+                            
                             from django.contrib import messages
 
                             messages.error(request, f"{bundle.store.name} is now closed.")
