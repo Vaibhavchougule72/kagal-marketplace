@@ -1949,3 +1949,6 @@ def privacy_policy(request):
         "show_floating_cart": False,
         "simple_navbar": True
     })
+
+def splash(request):
+    return render(request, "splash.html")

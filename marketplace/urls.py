@@ -4,7 +4,8 @@ from django.views.generic import TemplateView
 from django.conf.urls.i18n import set_language
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.splash, name='splash'),
+    path('home/', views.home, name='home'),
 
     path('stores/', views.all_stores, name='all_stores'),
     path('store/<int:store_id>/', views.store_detail, name='store_detail'),

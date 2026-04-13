@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LOKA</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000, #1a1a1a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 40px;
+            font-weight: bold;
+            animation: scaleUp 1.5s ease;
+        }
+
+        .tagline {
+            margin-top: 10px;
+            color: #aaa;
+        }
+
+        .loader {
+            margin-top: 25px;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #444;
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <img src="/static/images/LOKA.png" width="120">
+
+    <div class="tagline">तुमचा स्थानिक मार्केटप्लेस</div>
+
+    <div class="loader"></div>
+
+</div>
+
+<script>
+    setTimeout(function(){
+        window.location.href = "/home/";
+    }, 2500);
+</script>
+
+</body>
+</html>
