@@ -1944,3 +1944,8 @@ def store_dashboard(request):
         "show_floating_cart": False
     })
 
+def privacy_policy(request):
+    return render(request, "privacy_policy.html", {
+        "show_floating_cart": False,
+        "simple_navbar": True
+    })

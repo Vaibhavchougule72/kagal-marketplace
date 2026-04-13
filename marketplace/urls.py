@@ -53,7 +53,7 @@ urlpatterns = [
         name="delivery_dashboard"
     ),
     path("store-dashboard/", views.store_dashboard, name="store_dashboard"),
-    
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy')
 ]
 
 
