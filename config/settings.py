@@ -208,3 +208,13 @@ cloudinary.config(
 )
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+
+import sys
+
+if 'runserver' not in sys.argv:
+    from django.core.management import call_command
+    try:
+        call_command('migrate', interactive=False)
+    except Exception as e:
+        print("Migration error:", e)
