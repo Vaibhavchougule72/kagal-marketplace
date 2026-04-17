@@ -53,7 +53,6 @@ urlpatterns = [
         views.delivery_dashboard,
         name="delivery_dashboard"
     ),
-    path('lang/<str:lang>/', views.change_language, name='change_language'),
     path("store-dashboard/", views.store_dashboard, name="store_dashboard"),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy')
 ]
