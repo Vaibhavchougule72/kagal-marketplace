@@ -27,9 +27,6 @@ class Store(models.Model):
     )
 
 
-    open_time = models.TimeField(null=True, blank=True)
-    close_time = models.TimeField(null=True, blank=True)
-
     def is_open(self):
         now = timezone.localtime()
         today = now.date()
@@ -133,9 +130,9 @@ class Order(models.Model):
 
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    Handling_fee = models.DecimalField(max_digits=10, decimal_places=2)
-
+    handling_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
 
     coupon_code = models.CharField(max_length=20, null=True, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -238,8 +235,9 @@ class PendingOrder(models.Model):
 
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    Handling_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    handling_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
 
     coupon_code = models.CharField(max_length=20, null=True, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)

@@ -62,7 +62,7 @@ def home(request):
 
     page = request.GET.get('page', 1)
 
-    cache_key = f"home_page_{page}"
+    cache_key = f"home_page_{page}_{timezone.now().minute}"
     data = cache.get(cache_key)
 
     if not data:
@@ -74,11 +74,11 @@ def home(request):
             .prefetch_related('items__product')[:6]
 
         all_products = Product.objects.filter(is_featured=True).select_related('store')
-
+        print("TOTAL FEATURED:", all_products.count())
         featured_products_list = [
             p for p in all_products if p.store.is_open()
         ]
-
+        print("OPEN STORES PRODUCTS:", len(featured_products_list))
         paginator = Paginator(featured_products_list, 12)  # 12 products per page
         featured_products = paginator.get_page(page)
 
@@ -225,7 +225,10 @@ def add_to_cart(request, product_id):
             "success": False,
             "error": "Store is currently closed"
         })
-    cart = request.session.get('cart')
+    cart = request.session.get('cart', {
+        'store_id': None,
+        'items': {}
+    })
 
     if not cart:
         cart = {
@@ -250,7 +253,7 @@ def add_to_cart(request, product_id):
     else:
         cart['items'][product_id] = {
             'name': product.name,
-            'price': float(product.price),
+            'price': str(product.price),
             'quantity': qty   # 🔥 FIX HERE
         }
 
@@ -390,6 +393,11 @@ def view_cart(request):
     cod_not_allowed = subtotal < 149
     remaining_to_free_delivery = Decimal(499) - subtotal if subtotal < 499 else 0
 
+    # 🔥 FIX: clear invalid cart
+    if not items:
+        request.session['cart'] = {'store_id': None, 'items': {}}
+        request.session.modified = True
+
     return render(request, 'cart_partial.html', {
         'items': items,
         'subtotal': subtotal,
@@ -405,7 +413,10 @@ def view_cart(request):
 # =====================================================
 def checkout(request):
 
-    cart = request.session.get('cart')
+    cart = request.session.get('cart', {
+        'store_id': None,
+        'items': {}
+    })
 
     if not cart or not cart['items']:
         return redirect('home')
@@ -453,7 +464,7 @@ def checkout(request):
 
                 # 🔥 CRITICAL FIX: store check
                 if not product.store.is_open():
-                    context['error'] = f"{product.store.name} is currently closed. Opens at {product.store.next_open_time}"
+                    context['error'] = f"{product.store.name} is currently closed. Opens at {product.store.next_open_time or "later"}"
                     return render(request, 'checkout.html', context)
                    
 
@@ -482,21 +493,21 @@ def checkout(request):
     
     
 
-    Handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
+    handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
     cod_not_allowed = subtotal < 149
 
     items = []
 
     for item_id, item in cart['items'].items():
         items.append({
-            "name": item["name"],
+            "name": item.get("name", "Item"),
             "price": item["price"],
             "quantity": item["quantity"]
         })
 
     context.update({
         'subtotal': subtotal,
-        'Handling_fee': Handling_fee,
+        'handling_fee': handling_fee,
         'cod_not_allowed': cod_not_allowed,
         'cart': cart,
         'upi_only_required': upi_only_required,
@@ -529,6 +540,10 @@ def checkout(request):
             context['error'] = "Invalid phone number"
             return render(request, 'checkout.html', context)
         
+        if not payment:
+            context['error'] = "Select payment method"
+            return render(request, 'checkout.html', context)
+                
         # ---------------------------------
         # Daily order limit protection
         # ---------------------------------
@@ -567,8 +582,12 @@ def checkout(request):
             context['error'] = "Select delivery location"
             return render(request, 'checkout.html', context)
 
-        latitude = float(latitude)
-        longitude = float(longitude)
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except:
+            context['error'] = "Invalid location"
+            return render(request, 'checkout.html', context)
 
         BUS_STAND_LAT = 16.5775
         BUS_STAND_LON = 74.3169
@@ -635,11 +654,11 @@ def checkout(request):
                 pass
         
 
-        total = subtotal + delivery_fee + Handling_fee - discount
+        total = subtotal + delivery_fee + handling_fee - discount
         
         context.update({
             'delivery_fee': delivery_fee,
-            'handling_fee': Handling_fee,
+            'handling_fee': handling_fee,
             'discount': discount,
             'total': total
         })
@@ -663,7 +682,7 @@ def checkout(request):
 
             subtotal=subtotal,
             delivery_fee=delivery_fee,
-            Handling_fee=Handling_fee,
+            handling_fee=handling_fee,
 
             discount=discount,
             coupon_code=coupon_code,
@@ -684,7 +703,7 @@ def checkout(request):
         try:
             sms_response = send_sms(phone, message)
 
-            if not sms_response or not sms_response.get("return"):
+            if not sms_response or not isinstance(sms_response, dict):
                 pending.delete()
 
                 context['error'] = "OTP service failed. Please try again."
@@ -829,7 +848,7 @@ def verify_otp(request, pending_id):
                 longitude=pending.longitude,
                 subtotal=pending.subtotal,
                 delivery_fee=pending.delivery_fee,
-                Handling_fee=pending.Handling_fee,
+                handling_fee=pending.handling_fee,
                 discount=pending.discount,
                 coupon_code=pending.coupon_code,
                 
@@ -837,6 +856,35 @@ def verify_otp(request, pending_id):
                 payment_method="COD",
                 status="REQUEST_SUBMITTED"
             )
+
+            # ✅ CREATE ORDER ITEMS (CRITICAL FIX)
+
+            for item_id, item in cart_items['items'].items():
+
+                # PRODUCT
+                if item_id.isdigit():
+                    try:
+                        product = Product.objects.get(id=int(item_id))
+
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=int(item['quantity']),
+                            price=Decimal(str(item['price']))
+                        )
+
+                    except Product.DoesNotExist:
+                        continue
+
+                # BUNDLE
+                elif item_id.startswith("bundle_"):
+                    OrderItem.objects.create(
+                        order=order,
+                        product=None,
+                        bundle_name=item.get("name", "Combo"),
+                        quantity=int(item['quantity']),
+                        price=Decimal(str(item['price']))
+                    )
 
             if pending.coupon_code:
                 try:
@@ -1111,7 +1159,7 @@ def calculate_delivery(request):
 
     distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 
-    Handling_fee = Decimal(20) if subtotal < 149 else Decimal(0)
+    handling_fee = Decimal(20) if subtotal < 149 else Decimal(0)
 
     delivery_fee = 20
 
@@ -1127,7 +1175,7 @@ def calculate_delivery(request):
             delivery_fee = Decimal(60)
 
     delivery_fee = Decimal(round(delivery_fee, 2))
-    total = subtotal + delivery_fee + Handling_fee
+    total = subtotal + delivery_fee + handling_fee
 
     return JsonResponse({
         "delivery_fee": float(delivery_fee),
@@ -1185,7 +1233,7 @@ def payment_success(request):
 
         subtotal=pending.subtotal,
         delivery_fee=pending.delivery_fee,
-        Handling_fee=pending.Handling_fee,
+        handling_fee=pending.handling_fee,
 
         discount=pending.discount,
         coupon_code=pending.coupon_code,
@@ -1220,15 +1268,18 @@ def payment_success(request):
 
         # PRODUCT
         if item_id.isdigit():
+            try:
+                product = Product.objects.get(id=int(item_id))
 
-            product = get_object_or_404(Product, id=int(item_id))
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=int(item['quantity']),
+                    price=Decimal(str(item['price']))
+                )
 
-            OrderItem.objects.create(
-                order=order,
-                product=product,
-                quantity=int(item['quantity']),
-                price=Decimal(str(item['price']))
-            )
+            except Product.DoesNotExist:
+                continue
 
         # BUNDLE
         elif str(item_id).startswith("bundle_"):
@@ -1378,8 +1429,8 @@ def generate_invoice(request, order_id):
     if order.delivery_fee > 0:
         data.append(["", "", "Delivery:", f"₹{order.delivery_fee}"])
 
-    if order.Handling_fee > 0:
-        data.append(["", "", "Handling Fee:", f"₹{order.Handling_fee}"])
+    if order.handling_fee > 0:
+        data.append(["", "", "handling Fee:", f"₹{order.handling_fee}"])
 
     if order.discount > 0:
         data.append(["", "", "Coupon Discount:", f"-₹{order.discount}"])
@@ -1479,8 +1530,8 @@ def generate_delivery_pdf(request, order_id):
     if order.delivery_fee > 0:
         data.append(["", "", "Delivery Fee:", f"₹{order.delivery_fee}"])
 
-    if order.Handling_fee > 0:
-        data.append(["", "", "Handling Fee:", f"₹{order.Handling_fee}"])
+    if order.handling_fee > 0:
+        data.append(["", "", "handling Fee:", f"₹{order.handling_fee}"])
 
     if order.discount > 0:
         data.append(["", "", "Discount:", f"-₹{order.discount}"])
@@ -1545,7 +1596,7 @@ from .models import Order
 
 def check_free_delivery(request):
 
-    phone = request.GET.get("phone")
+    phone = request.GET.get("phone", "").strip()
 
     if not phone:
         return JsonResponse({"error": "Phone missing"}, status=400)
@@ -1742,11 +1793,15 @@ def admin_dashboard(request):
     return render(request, "admin_dashboard.html", context)
 
 from .models import Coupon
+from .models import CouponUsage
 
 def apply_coupon(request):
 
     code = request.GET.get("code", "").upper()
-    subtotal = Decimal(request.GET.get("subtotal", 0))
+    try:
+        subtotal = Decimal(request.GET.get("subtotal", "0"))
+    except:
+        subtotal = Decimal(0)
 
     try:
         coupon = Coupon.objects.select_for_update().get(
@@ -1783,6 +1838,14 @@ def apply_coupon(request):
             "message": "Coupon usage limit reached"
         })
 
+    # 🚨 Prevent reuse per phone
+    phone = request.GET.get("phone", "").strip()
+
+    if phone and CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
+        return JsonResponse({
+            "success": False,
+            "message": "Coupon already used"
+        })
 
     # Calculate discount
 
@@ -1950,5 +2013,3 @@ def privacy_policy(request):
         "simple_navbar": True
     })
 
-def splash(request):
-    return render(request, "splash.html")

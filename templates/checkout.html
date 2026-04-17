@@ -135,8 +135,8 @@
             {% endif %}
 
             <div class="d-flex justify-content-between">
-                <span>{% trans "Handling Fee" %}</span>
-                <strong>₹{{ Handling_fee }}</strong>
+                <span>{% trans "handling Fee" %}</span>
+                <strong>₹{{ handling_fee }}</strong>
             </div>
 
             <hr>
@@ -149,7 +149,7 @@
             <div class="d-flex justify-content-between fs-5">
                 <strong>{% trans "Total" %}</strong>
                 <strong id="orderTotal">
-                    ₹{{ subtotal|add:Handling_fee|add:20 }}
+                    ₹{{ subtotal|add:handling_fee|add:20 }}
                 </strong>
             </div>
 
@@ -283,7 +283,7 @@ const BUS_STAND_LON = 74.3169;
 const DELIVERY_RADIUS_KM = 7;
 
 const subtotal = parseFloat("{{ subtotal }}");
-const smallOrderFee = parseFloat("{{ Handling_fee }}");
+const smallOrderFee = parseFloat("{{ handling_fee }}");
 
 let freeDeliveryUnlocked = false;
 
@@ -552,7 +552,7 @@ document.getElementById("discount_amount").innerText =
 
 // Get current values from page
 const subtotalValue = parseFloat("{{ subtotal }}")
-const smallOrderFee = parseFloat("{{ Handling_fee }}")
+const smallOrderFee = parseFloat("{{ handling_fee }}")
 
 // Delivery from UI
 const deliveryText = document.getElementById("deliveryFee").innerText

@@ -293,8 +293,12 @@
                 <input type="hidden" name="next" value="{{ request.path }}">
 
                 <select name="language" onchange="this.form.submit()">
-                    <option value="en">English</option>
-                    <option value="mr">मराठी</option>
+                    <option value="mr" {% if LANGUAGE_CODE == 'mr' %}selected{% endif %}>
+                        मराठी
+                    </option>
+                    <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>
+                        English
+                    </option>
                 </select>
             </form>
 
