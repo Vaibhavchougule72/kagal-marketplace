@@ -9,7 +9,7 @@ import random
 import math
 import re
 from django.conf import settings
-
+from django.contrib import messages
 from .models import Category, Store, Product, Order, OrderItem, PendingOrder
 from .cart import Cart
 from django.contrib.auth.models import User
@@ -23,6 +23,7 @@ from django.core.cache import cache
 from .sms_service import send_sms
 import logging
 logger = logging.getLogger(__name__)
+from django.db import transaction
 
 
 def test_cache(request):
@@ -159,7 +160,7 @@ def add_bundle_to_cart(request, bundle_id):
         cart['items'][item_key] = {
             "bundle_id": bundle.id,
             "name": bundle.name,
-            "price": float(bundle.price),
+            "price": str(bundle.price),
             "quantity": 1,
             "is_bundle": True
         }
@@ -305,7 +306,10 @@ def decrease_cart(request, product_id):
 
 def remove_from_cart(request, product_id):
 
-    cart = request.session.get('cart')
+    cart = request.session.get('cart', {
+        'store_id': None,
+        'items': {}
+    })
 
     if not cart:
         return JsonResponse({"success": False})
@@ -464,7 +468,8 @@ def checkout(request):
 
                 # 🔥 CRITICAL FIX: store check
                 if not product.store.is_open():
-                    context['error'] = f"{product.store.name} is currently closed. Opens at {product.store.next_open_time or "later"}"
+                    open_time = product.store.next_open_time or "later"
+                    context['error'] = f"{product.store.name} is currently closed. Opens at {open_time}"
                     return render(request, 'checkout.html', context)
                    
 
@@ -630,28 +635,45 @@ def checkout(request):
         coupon_code = request.POST.get("coupon_code")
         discount = Decimal(0)
 
-        if coupon_code:
+        from django.utils import timezone
 
+        if coupon_code:
             try:
                 coupon = Coupon.objects.get(code=coupon_code, is_active=True)
 
-                # Prevent reuse
-                if CouponUsage.objects.filter(
-                    coupon=coupon,
-                    phone=phone
-                ).exists():
+                now = timezone.now()
 
+                # Expiry check
+                if now < coupon.valid_from or now > coupon.valid_to:
+                    context['error'] = "Coupon expired"
+                    return render(request, "checkout.html", context)
+
+                # Minimum order
+                if subtotal < coupon.min_order_value:
+                    context['error'] = f"Minimum order ₹{coupon.min_order_value} required"
+                    return render(request, "checkout.html", context)
+
+                # Usage limit
+                if coupon.used_count >= coupon.usage_limit:
+                    context['error'] = "Coupon usage limit reached"
+                    return render(request, "checkout.html", context)
+
+                # Per user usage
+                if CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
                     context['error'] = "Coupon already used"
-                    return render(request, 'checkout.html', context)
+                    return render(request, "checkout.html", context)
 
                 # Calculate discount
                 if coupon.discount_type == "PERCENT":
                     discount = subtotal * coupon.discount_value / 100
+                    if coupon.max_discount:
+                        discount = min(discount, coupon.max_discount)
                 else:
                     discount = coupon.discount_value
 
             except Coupon.DoesNotExist:
-                pass
+                context['error'] = "Invalid coupon"
+                return render(request, "checkout.html", context)
         
 
         total = subtotal + delivery_fee + handling_fee - discount
@@ -703,7 +725,7 @@ def checkout(request):
         try:
             sms_response = send_sms(phone, message)
 
-            if not sms_response or not isinstance(sms_response, dict):
+            if not sms_response or not sms_response.get("return"):
                 pending.delete()
 
                 context['error'] = "OTP service failed. Please try again."
@@ -794,7 +816,10 @@ def verify_otp(request, pending_id):
         # -----------------------
         if pending.payment_method == "COD":
 
-            cart_items = pending.items_snapshot
+            cart_items = pending.items_snapshot or {}
+
+            if not cart_items.get('items'):
+                return redirect('home')
 
             for item_id, item in cart_items['items'].items():
 
@@ -838,6 +863,30 @@ def verify_otp(request, pending_id):
                         messages.error(request, "Some bundle items are no longer available.")
                         return redirect("checkout")
                        
+            if pending.coupon_code:
+                try:
+                    with transaction.atomic():
+
+                        coupon = Coupon.objects.select_for_update().get(code=pending.coupon_code)
+
+                        if coupon.used_count >= coupon.usage_limit:
+                            messages.error(request, "Coupon usage limit reached")
+                            return redirect("checkout")
+                        
+                        if CouponUsage.objects.filter(coupon=coupon, phone=pending.phone).exists():
+                            messages.error(request, "Coupon already used")
+                            return redirect("checkout")
+
+                        CouponUsage.objects.create(
+                            coupon=coupon,
+                            phone=pending.phone
+                        )
+
+                        coupon.used_count += 1
+                        coupon.save()
+
+                except Coupon.DoesNotExist:
+                    logger.warning("Coupon not found during order creation")
 
             order = Order.objects.create(
                 store_id=pending.store_id,
@@ -885,27 +934,13 @@ def verify_otp(request, pending_id):
                         quantity=int(item['quantity']),
                         price=Decimal(str(item['price']))
                     )
+            
+            if not order.items.exists():
+                order.delete()
+                messages.error(request, "Some items are no longer available. Please try again.")
+                return redirect('checkout')
 
-            if pending.coupon_code:
-                try:
-                    coupon = Coupon.objects.get(code=pending.coupon_code)
-
-                    CouponUsage.objects.create(
-                        coupon=coupon,
-                        phone=pending.phone
-                    )
-
-                    Coupon.objects.filter(code=pending.coupon_code).update(
-                        used_count=F("used_count") + 1
-                    )
-
-                except Coupon.DoesNotExist:
-                    logger.warning("Coupon not found during order creation")
-
-           
-
-            if not cart_items or not cart_items['items']:
-                return redirect('home')
+            
 
             store_id = cart_items.get('store_id')
             
@@ -1216,10 +1251,43 @@ def payment_success(request):
     if generated_signature != signature:
         return HttpResponse("Payment verification failed")
     
-    amount = int(request.GET.get("amount", pending.total * 100))
+    try:
+        amount = int(request.GET.get("amount"))
+    except:
+        return HttpResponse("Invalid amount")
 
     if int(pending.total * 100) != amount:
         return HttpResponse("Amount mismatch")
+    
+    cart_items = pending.items_snapshot or {}
+
+    if not cart_items.get('items'):
+        return redirect('home')
+    
+    if pending.coupon_code:
+        try:
+            with transaction.atomic():
+
+                coupon = Coupon.objects.select_for_update().get(code=pending.coupon_code)
+
+                if coupon.used_count >= coupon.usage_limit:
+                    messages.error(request, "Coupon usage limit reached")
+                    return redirect("checkout")
+                
+                if CouponUsage.objects.filter(coupon=coupon, phone=pending.phone).exists():
+                    messages.error(request, "Coupon already used")
+                    return redirect("checkout")
+
+                CouponUsage.objects.create(
+                    coupon=coupon,
+                    phone=pending.phone
+                )
+
+                coupon.used_count += 1
+                coupon.save()
+
+        except Coupon.DoesNotExist:
+            logger.warning("Coupon not found in payment_success")
     
     # Payment verified → Create order
     order = Order.objects.create(
@@ -1245,24 +1313,10 @@ def payment_success(request):
         payment_id=payment_id
     )
 
-    if pending.coupon_code:
-        try:
-            coupon = Coupon.objects.get(code=pending.coupon_code)
 
-            CouponUsage.objects.create(
-                coupon=coupon,
-                phone=pending.phone
-            )
+   
 
-            Coupon.objects.filter(code=pending.coupon_code).update(
-                used_count=F("used_count") + 1
-            )
-
-        except Coupon.DoesNotExist:
-            logger.warning("Coupon not found in payment_success")
     
-
-    cart_items = pending.items_snapshot
 
     for item_id, item in cart_items['items'].items():
 
@@ -1287,10 +1341,15 @@ def payment_success(request):
             OrderItem.objects.create(
                 order=order,
                 product=None,
-                bundle_name=item["name"],
+                bundle_name=item.get("name", "Combo"),
                 quantity=int(item['quantity']),
                 price=Decimal(str(item['price']))
             )
+    
+    if not order.items.exists():
+        order.delete()
+        messages.error(request, "Some items are no longer available. Please try again.")
+        return redirect('checkout')
             
     
 
@@ -1325,7 +1384,7 @@ def mark_out_for_delivery(request, order_id):
         "success": True
     })
 
-from django.contrib import messages
+
 
 import razorpay
 from django.conf import settings
@@ -1676,7 +1735,6 @@ def send_delivery_otp(request, order_id):
 
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate, ExtractHour
-from django.utils import timezone
 import json
 
 
@@ -1795,14 +1853,17 @@ def admin_dashboard(request):
 from .models import Coupon
 from .models import CouponUsage
 
+@transaction.atomic
 def apply_coupon(request):
 
     code = request.GET.get("code", "").upper()
-    try:
-        subtotal = Decimal(request.GET.get("subtotal", "0"))
-    except:
-        subtotal = Decimal(0)
 
+    if not code:
+        return JsonResponse({
+            "success": False,
+            "message": "Enter coupon code"
+        })
+    
     try:
         coupon = Coupon.objects.select_for_update().get(
             code=code,
@@ -1814,7 +1875,20 @@ def apply_coupon(request):
             "success": False,
             "message": "Invalid coupon"
         })
+    
+    # 🚨 Prevent reuse per phone
+    phone = request.GET.get("phone", "").strip()
 
+    if phone and CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
+        return JsonResponse({
+            "success": False,
+            "message": "Coupon already used"
+        })
+    
+    try:
+        subtotal = Decimal(request.GET.get("subtotal", "0"))
+    except:
+        subtotal = Decimal(0)
 
     now = timezone.now()
 
@@ -1838,14 +1912,7 @@ def apply_coupon(request):
             "message": "Coupon usage limit reached"
         })
 
-    # 🚨 Prevent reuse per phone
-    phone = request.GET.get("phone", "").strip()
-
-    if phone and CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
-        return JsonResponse({
-            "success": False,
-            "message": "Coupon already used"
-        })
+    
 
     # Calculate discount
 
@@ -1924,10 +1991,8 @@ def delivery_dashboard(request):
 from django.db.models import Sum, Count, F
 from .models import Store, Category
 from django.db.models import Sum
-from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum
-from django.utils import timezone
 from datetime import timedelta, datetime
 from .models import Store, Category, Order
 

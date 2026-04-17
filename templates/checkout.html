@@ -420,6 +420,7 @@ function setLocation(lat, lng){
     document.getElementById("addressInput").value = "Fetching address...";
     getAddress(lat, lng);
 }
+let appliedDiscount = 0;
 
 function updateDelivery(lat, lng){
 
@@ -435,7 +436,7 @@ function updateDelivery(lat, lng){
 
     if(distance > DELIVERY_RADIUS_KM){
         mapError.innerText =
-            "Delivery not available outside 5 KM.";
+            "Delivery not available outside 7 KM.";
         mapError.classList.remove("d-none");
         placeBtn.disabled = true;
         return;
@@ -449,7 +450,7 @@ function updateDelivery(lat, lng){
 
         deliveryFee = 0;
 
-    }else if(subtotal >= 349){
+    }else if(subtotal >= 499){
 
         deliveryFee = 0;
 
@@ -474,7 +475,7 @@ function updateDelivery(lat, lng){
     let minTime = Math.round(baseTime);
     let maxTime = Math.round(baseTime + 10);
 
-    const total = subtotal + smallOrderFee + deliveryFee;
+    const total = subtotal + smallOrderFee + deliveryFee - appliedDiscount;
 
     document.getElementById("deliveryFee").innerText =
         "₹" + deliveryFee;
@@ -545,10 +546,10 @@ fetch(`/apply-coupon/?code=${code}&subtotal={{ subtotal }}&phone=${phone}`)
 
 if(data.success){
 
-const discount = data.discount
+appliedDiscount = data.discount
 
 document.getElementById("discount_amount").innerText =
-"₹" + discount
+"₹" + appliedDiscount
 
 // Get current values from page
 const subtotalValue = parseFloat("{{ subtotal }}")
@@ -558,7 +559,7 @@ const smallOrderFee = parseFloat("{{ handling_fee }}")
 const deliveryText = document.getElementById("deliveryFee").innerText
 const deliveryValue = parseFloat(deliveryText.replace("₹",""))
 
-const newTotal = subtotalValue + smallOrderFee + deliveryValue - discount
+const newTotal = subtotalValue + smallOrderFee + deliveryValue - appliedDiscount
 
 document.getElementById("orderTotal").innerText =
 "₹" + newTotal.toFixed(0)
