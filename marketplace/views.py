@@ -120,7 +120,7 @@ def store_detail(request, store_id):
             "store": store,
             "products": products,
             "bundles": bundles,
-            "show_floating_cart": False
+            "show_floating_cart": True
         }
 
         cache.set(cache_key, data, 300)
@@ -444,6 +444,7 @@ def checkout(request):
     context = {
         'cart': cart,
         "show_floating_cart": False
+        
     }
 
     if not store.is_open():
@@ -517,7 +518,9 @@ def checkout(request):
         'cart': cart,
         'upi_only_required': upi_only_required,
         "show_floating_cart": False,
-        "items": items
+        "items": items,
+        'show_navbar': True,
+        'simple_navbar': True,
     })
 
     if request.method == "POST":
@@ -533,9 +536,9 @@ def checkout(request):
 
         address = request.POST.get('address')
         payment = request.POST.get('payment')
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-
+        if not latitude or not longitude:
+            context['error'] = "Select delivery location"
+            return render(request, 'checkout.html', context)
         if upi_only_required and payment == "COD":
             context['error'] = "Only UPI allowed for selected items"
             return render(request, 'checkout.html', context)
@@ -639,7 +642,7 @@ def checkout(request):
         with transaction.atomic():
             if coupon_code:
                 try:
-                    coupon = Coupon.objects.select_for_update().get(
+                    coupon = Coupon.objects.get(
                         code=coupon_code,
                         is_active=True
                     )
@@ -870,7 +873,7 @@ def verify_otp(request, pending_id):
                 try:
                     with transaction.atomic():
 
-                        coupon = Coupon.objects.select_for_update().get(code=pending.coupon_code)
+                        coupon = Coupon.objects.get(code=pending.coupon_code)
 
                         if coupon.used_count >= coupon.usage_limit:
                             messages.error(request, "Coupon usage limit reached")
@@ -1282,7 +1285,7 @@ def payment_success(request):
         try:
             with transaction.atomic():
 
-                coupon = Coupon.objects.select_for_update().get(code=pending.coupon_code)
+                coupon = Coupon.objects.get(code=pending.coupon_code)
 
                 if coupon.used_count >= coupon.usage_limit:
                     messages.error(request, "Coupon usage limit reached")
@@ -1880,7 +1883,7 @@ def apply_coupon(request):
         })
     
     try:
-        coupon = Coupon.objects.select_for_update().get(
+        coupon = Coupon.objects.get(
             code=code,
             is_active=True
         )
