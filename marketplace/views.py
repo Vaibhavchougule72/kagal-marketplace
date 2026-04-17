@@ -247,7 +247,7 @@ def add_to_cart(request, product_id):
     product_id = str(product.id)
 
     # 🔥 GET quantity from request
-    qty = int(request.GET.get("qty", 1))
+    qty = max(1, int(request.GET.get("qty", 1)))
 
     if product_id in cart['items']:
         cart['items'][product_id]['quantity'] += qty
@@ -635,46 +635,49 @@ def checkout(request):
         coupon_code = request.POST.get("coupon_code")
         discount = Decimal(0)
 
-        from django.utils import timezone
-
-        if coupon_code:
-            try:
-                coupon = Coupon.objects.get(code=coupon_code, is_active=True)
-
-                now = timezone.now()
-
-                # Expiry check
-                if now < coupon.valid_from or now > coupon.valid_to:
-                    context['error'] = "Coupon expired"
-                    return render(request, "checkout.html", context)
-
-                # Minimum order
-                if subtotal < coupon.min_order_value:
-                    context['error'] = f"Minimum order ₹{coupon.min_order_value} required"
-                    return render(request, "checkout.html", context)
-
-                # Usage limit
-                if coupon.used_count >= coupon.usage_limit:
-                    context['error'] = "Coupon usage limit reached"
-                    return render(request, "checkout.html", context)
-
-                # Per user usage
-                if CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
-                    context['error'] = "Coupon already used"
-                    return render(request, "checkout.html", context)
-
-                # Calculate discount
-                if coupon.discount_type == "PERCENT":
-                    discount = subtotal * coupon.discount_value / 100
-                    if coupon.max_discount:
-                        discount = min(discount, coupon.max_discount)
-                else:
-                    discount = coupon.discount_value
-
-            except Coupon.DoesNotExist:
-                context['error'] = "Invalid coupon"
-                return render(request, "checkout.html", context)
         
+        with transaction.atomic():
+            if coupon_code:
+                try:
+                    coupon = Coupon.objects.select_for_update().get(
+                        code=coupon_code,
+                        is_active=True
+                    )
+
+                    now = timezone.now()
+
+                    # Expiry check
+                    if now < coupon.valid_from or now > coupon.valid_to:
+                        context['error'] = "Coupon expired"
+                        return render(request, "checkout.html", context)
+
+                    # Minimum order
+                    if subtotal < coupon.min_order_value:
+                        context['error'] = f"Minimum order ₹{coupon.min_order_value} required"
+                        return render(request, "checkout.html", context)
+
+                    # Usage limit
+                    if coupon.used_count >= coupon.usage_limit:
+                        context['error'] = "Coupon usage limit reached"
+                        return render(request, "checkout.html", context)
+
+                    # Per user usage
+                    if CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
+                        context['error'] = "Coupon already used"
+                        return render(request, "checkout.html", context)
+
+                    # Calculate discount
+                    if coupon.discount_type == "PERCENT":
+                        discount = subtotal * coupon.discount_value / 100
+                        if coupon.max_discount:
+                            discount = min(discount, coupon.max_discount)
+                    else:
+                        discount = coupon.discount_value
+
+                except Coupon.DoesNotExist:
+                    context['error'] = "Invalid coupon"
+                    return render(request, "checkout.html", context)
+            
 
         total = subtotal + delivery_fee + handling_fee - discount
         
@@ -887,54 +890,54 @@ def verify_otp(request, pending_id):
 
                 except Coupon.DoesNotExist:
                     logger.warning("Coupon not found during order creation")
+            with transaction.atomic():
+                order = Order.objects.create(
+                    store_id=pending.store_id,
+                    customer_name=pending.customer_name,
+                    phone=pending.phone,
+                    address=pending.address,
+                    latitude=pending.latitude,
+                    longitude=pending.longitude,
+                    subtotal=pending.subtotal,
+                    delivery_fee=pending.delivery_fee,
+                    handling_fee=pending.handling_fee,
+                    discount=pending.discount,
+                    coupon_code=pending.coupon_code,
+                    
+                    total=pending.total,
+                    payment_method="COD",
+                    status="REQUEST_SUBMITTED"
+                )
 
-            order = Order.objects.create(
-                store_id=pending.store_id,
-                customer_name=pending.customer_name,
-                phone=pending.phone,
-                address=pending.address,
-                latitude=pending.latitude,
-                longitude=pending.longitude,
-                subtotal=pending.subtotal,
-                delivery_fee=pending.delivery_fee,
-                handling_fee=pending.handling_fee,
-                discount=pending.discount,
-                coupon_code=pending.coupon_code,
-                
-                total=pending.total,
-                payment_method="COD",
-                status="REQUEST_SUBMITTED"
-            )
+                # ✅ CREATE ORDER ITEMS (CRITICAL FIX)
 
-            # ✅ CREATE ORDER ITEMS (CRITICAL FIX)
+                for item_id, item in cart_items['items'].items():
 
-            for item_id, item in cart_items['items'].items():
+                    # PRODUCT
+                    if item_id.isdigit():
+                        try:
+                            product = Product.objects.get(id=int(item_id))
 
-                # PRODUCT
-                if item_id.isdigit():
-                    try:
-                        product = Product.objects.get(id=int(item_id))
+                            OrderItem.objects.create(
+                                order=order,
+                                product=product,
+                                quantity=int(item['quantity']),
+                                price=Decimal(str(item['price']))
+                            )
 
+                        except Product.DoesNotExist:
+                            continue
+
+                    # BUNDLE
+                    elif item_id.startswith("bundle_"):
                         OrderItem.objects.create(
                             order=order,
-                            product=product,
+                            product=None,
+                            bundle_name=item.get("name", "Combo"),
                             quantity=int(item['quantity']),
                             price=Decimal(str(item['price']))
                         )
-
-                    except Product.DoesNotExist:
-                        continue
-
-                # BUNDLE
-                elif item_id.startswith("bundle_"):
-                    OrderItem.objects.create(
-                        order=order,
-                        product=None,
-                        bundle_name=item.get("name", "Combo"),
-                        quantity=int(item['quantity']),
-                        price=Decimal(str(item['price']))
-                    )
-            
+                
             if not order.items.exists():
                 order.delete()
                 messages.error(request, "Some items are no longer available. Please try again.")
@@ -1180,11 +1183,22 @@ def search_suggestions(request):
 def calculate_delivery(request):
     latitude = request.GET.get("latitude")
     longitude = request.GET.get("longitude")
-    subtotal = request.GET.get("subtotal")
+    cart = request.session.get('cart', {'items': {}})
+    subtotal = Decimal(0)
 
-    if not latitude or not longitude or not subtotal:
+    for item in cart['items'].values():
+        subtotal += Decimal(str(item['price'])) * Decimal(str(item['quantity']))
+
+    if not latitude or not longitude:
         return JsonResponse({"error": "Missing data"}, status=400)
 
+    if subtotal == 0:
+        return JsonResponse({
+            "delivery_fee": 0,
+            "total": 0,
+            "distance": 0
+        })
+    
     latitude = float(latitude)
     longitude = float(longitude)
     subtotal = Decimal(subtotal)
@@ -1289,63 +1303,64 @@ def payment_success(request):
         except Coupon.DoesNotExist:
             logger.warning("Coupon not found in payment_success")
     
-    # Payment verified → Create order
-    order = Order.objects.create(
-        store_id=pending.store_id,
-        customer_name=pending.customer_name,
-        phone=pending.phone,
-        address=pending.address,
+    store = get_object_or_404(Store, id=pending.store_id)
 
-        latitude=pending.latitude,
-        longitude=pending.longitude,
+    if not store.is_open():
+        pending.delete()
+        return HttpResponse("Store is closed. Payment will be refunded.")
+    with transaction.atomic():
+        # Payment verified → Create order
+        order = Order.objects.create(
+            store_id=pending.store_id,
+            customer_name=pending.customer_name,
+            phone=pending.phone,
+            address=pending.address,
 
-        subtotal=pending.subtotal,
-        delivery_fee=pending.delivery_fee,
-        handling_fee=pending.handling_fee,
+            latitude=pending.latitude,
+            longitude=pending.longitude,
 
-        discount=pending.discount,
-        coupon_code=pending.coupon_code,
+            subtotal=pending.subtotal,
+            delivery_fee=pending.delivery_fee,
+            handling_fee=pending.handling_fee,
 
-        total=pending.total,
+            discount=pending.discount,
+            coupon_code=pending.coupon_code,
 
-        payment_method="UPI",
-        status="REQUEST_SUBMITTED",
-        payment_id=payment_id
-    )
+            total=pending.total,
 
+            payment_method="UPI",
+            status="REQUEST_SUBMITTED",
+            payment_id=payment_id
+        )
 
-   
+        for item_id, item in cart_items['items'].items():
 
-    
+            # PRODUCT
+            if item_id.isdigit():
+                try:
+                    product = Product.objects.get(id=int(item_id))
 
-    for item_id, item in cart_items['items'].items():
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=int(item['quantity']),
+                        price=Decimal(str(item['price']))
+                    )
 
-        # PRODUCT
-        if item_id.isdigit():
-            try:
-                product = Product.objects.get(id=int(item_id))
+                except Product.DoesNotExist:
+                    continue
+
+            # BUNDLE
+            elif str(item_id).startswith("bundle_"):
 
                 OrderItem.objects.create(
                     order=order,
-                    product=product,
+                    product=None,
+                    bundle_name=item.get("name", "Combo"),
                     quantity=int(item['quantity']),
                     price=Decimal(str(item['price']))
                 )
-
-            except Product.DoesNotExist:
-                continue
-
-        # BUNDLE
-        elif str(item_id).startswith("bundle_"):
-
-            OrderItem.objects.create(
-                order=order,
-                product=None,
-                bundle_name=item.get("name", "Combo"),
-                quantity=int(item['quantity']),
-                price=Decimal(str(item['price']))
-            )
-    
+        
     if not order.items.exists():
         order.delete()
         messages.error(request, "Some items are no longer available. Please try again.")
@@ -1886,7 +1901,13 @@ def apply_coupon(request):
         })
     
     try:
-        subtotal = Decimal(request.GET.get("subtotal", "0"))
+        cart = request.session.get('cart') or {'items': {}}
+        items = cart.get('items', {})
+
+        subtotal = Decimal(0)
+
+        for item in items.values():
+            subtotal += Decimal(item['price']) * item['quantity']
     except:
         subtotal = Decimal(0)
 

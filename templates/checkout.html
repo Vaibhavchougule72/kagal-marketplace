@@ -571,9 +571,16 @@ document.getElementById("applied_coupon").value = code
 
 }else{
 
-document.getElementById("coupon_message").innerText =
-data.message
+    appliedDiscount = 0   // 🔥 ADD THIS
 
+    document.getElementById("discount_amount").innerText = "₹0"
+
+    document.getElementById("coupon_message").innerText = data.message
+
+    updateDelivery(
+        document.getElementById("latitude").value,
+        document.getElementById("longitude").value
+    )
 }
 
 })
