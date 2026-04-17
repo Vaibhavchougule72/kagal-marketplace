@@ -536,6 +536,10 @@ def checkout(request):
 
         address = request.POST.get('address')
         payment = request.POST.get('payment')
+
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        
         if not latitude or not longitude:
             context['error'] = "Select delivery location"
             return render(request, 'checkout.html', context)
