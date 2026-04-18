@@ -37,6 +37,10 @@ def fix_db():
         ALTER TABLE marketplace_order
         ADD COLUMN IF NOT EXISTS handling_fee numeric DEFAULT 0;
         """)
+        cursor.execute("""
+        ALTER TABLE marketplace_pendingorder
+        ALTER COLUMN small_order_fee SET DEFAULT 0;
+        """)
 
 if not hasattr(connection, "_handling_fee_fixed"):
     fix_db()
@@ -636,6 +640,7 @@ def checkout(request):
                         subtotal=subtotal,
                         delivery_fee=delivery_fee,
                         handling_fee=handling_fee,
+                        small_order_fee=handling_fee,
                         discount=discount,
                         coupon_code=coupon_code,
                         total=total,
@@ -842,7 +847,8 @@ def verify_otp(request, pending_id):
                     longitude=pending.longitude,
                     subtotal=pending.subtotal,
                     delivery_fee=pending.delivery_fee,
-                    handling_fee = getattr(pending, "handling_fee", 0),
+                    handling_fee=getattr(pending, "handling_fee", 0),
+                    small_order_fee=getattr(pending, "handling_fee", 0),
                     discount=pending.discount,
                     coupon_code=pending.coupon_code,
                     
@@ -1270,8 +1276,8 @@ def payment_success(request):
 
             subtotal=pending.subtotal,
             delivery_fee=pending.delivery_fee,
-            handling_fee = getattr(pending, "handling_fee", 0),
-
+            handling_fee=getattr(pending, "handling_fee", 0),
+            small_order_fee=getattr(pending, "handling_fee", 0),
             discount=pending.discount,
             coupon_code=pending.coupon_code,
 
