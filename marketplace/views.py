@@ -964,7 +964,17 @@ def verify_otp(request, pending_id):
 
         
 
-    expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
+    from django.utils import timezone
+
+    try:
+        if pending.otp_expiry:
+            expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
+            if expiry_seconds < 0:
+                expiry_seconds = 0
+        else:
+            expiry_seconds = 0
+    except Exception:
+        expiry_seconds = 0
 
     if expiry_seconds < 0:
         expiry_seconds = 0

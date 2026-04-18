@@ -256,9 +256,13 @@ class PendingOrder(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
-    def is_expired(self):
-        return timezone.now() > self.otp_expiry
+    from django.utils import timezone
 
+    def is_expired(self):
+        if not self.otp_expiry:
+            return True
+        return timezone.now() > self.otp_expiry
+    
     def can_resend(self):
         return timezone.now() > self.created_at + timedelta(seconds=30)
 
