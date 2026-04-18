@@ -35,7 +35,7 @@
             <!-- Attempts -->
             {% if pending_order.otp_attempts is not None %}
             <p class="text-muted text-center">
-                Attempts left: {{ 3|add:-pending_order.otp_attempts }}
+                Attempts left: {{ attempts_left }}
             </p>
             {% endif %}
 
