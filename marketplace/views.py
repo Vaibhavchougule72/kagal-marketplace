@@ -41,9 +41,6 @@ def fix_db():
         ALTER COLUMN small_order_fee DROP NOT NULL;
         """)
 
-if not hasattr(connection, "_handling_fee_fixed"):
-    fix_db()
-    connection._handling_fee_fixed = True
 
 def test_cache(request):
 
@@ -528,6 +525,7 @@ def checkout(request):
     # =========================
     if request.method == "POST":
         try:
+            fix_db()
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
             address = request.POST.get("address")
@@ -696,6 +694,8 @@ def checkout(request):
 # =====================================================
 # VERIFY OTP
 def verify_otp(request, pending_id):
+    
+    fix_db()
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
     # ✅ NEW STEP: Check store status
