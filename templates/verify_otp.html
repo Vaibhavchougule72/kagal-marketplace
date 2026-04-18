@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function(){
     const resendBtn = document.getElementById("resendBtn");
     const msgBox = document.getElementById("resendMessage");
 
-    const pendingId = "{{ pending_order.id|default:'' }}";
+    const pendingId = "{{ pending_order.id|default_if_none:'' }}";
 
     // ✅ SAFE JS VARIABLE (IMPORTANT FIX)
     let timeLeft = Number("{{ expiry_seconds|default:'300' }}");

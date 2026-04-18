@@ -733,6 +733,7 @@ def verify_otp(request, pending_id):
         if pending.otp_attempts >= 3:
             pending.delete()
             return render(request, "verify_otp.html", {
+                "pending_order": pending,
                 "error": "Too many wrong attempts. Order cancelled.",
                 "show_floating_cart": False
             })
