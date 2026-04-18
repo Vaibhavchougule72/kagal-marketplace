@@ -25,6 +25,22 @@ import logging
 logger = logging.getLogger(__name__)
 from django.db import transaction
 
+from django.db import connection
+
+def fix_db():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        ALTER TABLE marketplace_pendingorder
+        ADD COLUMN IF NOT EXISTS handling_fee numeric DEFAULT 0;
+        """)
+        cursor.execute("""
+        ALTER TABLE marketplace_order
+        ADD COLUMN IF NOT EXISTS handling_fee numeric DEFAULT 0;
+        """)
+
+if not hasattr(connection, "_handling_fee_fixed"):
+    fix_db()
+    connection._handling_fee_fixed = True
 
 def test_cache(request):
 
@@ -598,27 +614,62 @@ def checkout(request):
             otp = str(random.randint(100000, 999999))
 
             with transaction.atomic():
-                pending = PendingOrder.objects.create(
-                    store_id=store_id,
-                    customer_name=name,
-                    phone=phone,
-                    address=address,
-                    latitude=latitude,
-                    longitude=longitude,
-                    subtotal=subtotal,
-                    delivery_fee=delivery_fee,
-                    handling_fee=handling_fee,
-                    discount=discount,
-                    coupon_code=coupon_code,
-                    total=total,
-                    payment_method=payment,
-                    items_snapshot={
-                        "store_id": store_id,
-                        "items": copy.deepcopy(cart.get("items", {}))
-                    },
-                    otp=otp,
-                    otp_expiry=timezone.now() + timedelta(minutes=5)
-                )
+                from django.db import connection
+
+                # 🔥 Check if column exists
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_name='marketplace_pendingorder'
+                    """)
+                    columns = [col[0] for col in cursor.fetchall()]
+
+                if "handling_fee" in columns:
+                    pending = PendingOrder.objects.create(
+                        store_id=store_id,
+                        customer_name=name,
+                        phone=phone,
+                        address=address,
+                        latitude=latitude,
+                        longitude=longitude,
+                        subtotal=subtotal,
+                        delivery_fee=delivery_fee,
+                        handling_fee=handling_fee,
+                        discount=discount,
+                        coupon_code=coupon_code,
+                        total=total,
+                        payment_method=payment,
+                        items_snapshot={
+                            "store_id": store_id,
+                            "items": copy.deepcopy(cart.get("items", {}))
+                        },
+                        otp=otp,
+                        otp_expiry=timezone.now() + timedelta(minutes=5)
+                    )
+                
+                else:
+                    pending = PendingOrder.objects.create(
+                        store_id=store_id,
+                        customer_name=name,
+                        phone=phone,
+                        address=address,
+                        latitude=latitude,
+                        longitude=longitude,
+                        subtotal=subtotal,
+                        delivery_fee=delivery_fee,
+                        #handling_fee=handling_fee,
+                        discount=discount,
+                        coupon_code=coupon_code,
+                        total=total,
+                        payment_method=payment,
+                        items_snapshot={
+                            "store_id": store_id,
+                            "items": copy.deepcopy(cart.get("items", {}))
+                        },
+                        otp=otp,
+                        otp_expiry=timezone.now() + timedelta(minutes=5)
+                    )
 
             # -------------------------
             # SEND OTP (SAFE)
@@ -791,7 +842,7 @@ def verify_otp(request, pending_id):
                     longitude=pending.longitude,
                     subtotal=pending.subtotal,
                     delivery_fee=pending.delivery_fee,
-                    handling_fee=pending.handling_fee,
+                    handling_fee = getattr(pending, "handling_fee", 0),
                     discount=pending.discount,
                     coupon_code=pending.coupon_code,
                     
@@ -1219,7 +1270,7 @@ def payment_success(request):
 
             subtotal=pending.subtotal,
             delivery_fee=pending.delivery_fee,
-            handling_fee=pending.handling_fee,
+            handling_fee = getattr(pending, "handling_fee", 0),
 
             discount=pending.discount,
             coupon_code=pending.coupon_code,
