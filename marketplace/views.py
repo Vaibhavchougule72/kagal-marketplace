@@ -719,7 +719,8 @@ def verify_otp(request, pending_id):
                 "pending_order": None,
                 "error": "Store is currently closed.",
                 "expiry_seconds": 0,
-                "show_floating_cart": False
+                "show_floating_cart": False,
+                'simple_navbar': True,
             })
 
         # ⏳ Calculate expiry safely
@@ -737,6 +738,7 @@ def verify_otp(request, pending_id):
                 "pending_order": pending,
                 "error": "OTP expired. Please resend OTP.",
                 "expiry_seconds": 0,
+                'simple_navbar': True,
                 "show_floating_cart": False
             })
 
@@ -753,6 +755,7 @@ def verify_otp(request, pending_id):
                     "pending_order": pending,
                     "error": "OTP expired. Please resend OTP.",
                     "expiry_seconds": 0,
+                    'simple_navbar': True,
                     "show_floating_cart": False
                 })
 
@@ -763,6 +766,7 @@ def verify_otp(request, pending_id):
                     "pending_order": None,
                     "error": "Too many wrong attempts. Order cancelled.",
                     "expiry_seconds": 0,
+                    'simple_navbar': True,
                     "show_floating_cart": False
                 })
 
@@ -772,6 +776,7 @@ def verify_otp(request, pending_id):
                     "pending_order": pending,
                     "error": "Enter valid 6-digit OTP.",
                     "expiry_seconds": expiry_seconds,
+                    'simple_navbar': True,
                     "show_floating_cart": False
                 })
 
@@ -786,6 +791,7 @@ def verify_otp(request, pending_id):
                     "pending_order": pending,
                     "error": f"Invalid OTP. {attempts_left} attempts left.",
                     "expiry_seconds": expiry_seconds,
+                    'simple_navbar': True,
                     "show_floating_cart": False
                 })
 
@@ -895,6 +901,7 @@ def verify_otp(request, pending_id):
             "pending_order": pending,
             "expiry_seconds": expiry_seconds,
             "attempts_left": 3 - pending.otp_attempts,
+            'simple_navbar': True,
             "show_floating_cart": False
         })
 
@@ -904,6 +911,7 @@ def verify_otp(request, pending_id):
             "pending_order": None,
             "error": "Something went wrong. Please try again.",
             "expiry_seconds": 0,
+            'simple_navbar': True,
             "show_floating_cart": False
         })
     
@@ -957,7 +965,7 @@ def order_success(request, order_id):
 def order_tracking(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, 'order_tracking.html', {'order': order,
-    "show_floating_cart": False
+    "show_floating_cart": False, 'simple_navbar': True,
     })
 
 
