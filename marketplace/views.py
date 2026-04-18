@@ -29,17 +29,16 @@ from django.db import connection
 
 def fix_db():
     with connection.cursor() as cursor:
+        # Add new column
         cursor.execute("""
         ALTER TABLE marketplace_pendingorder
         ADD COLUMN IF NOT EXISTS handling_fee numeric DEFAULT 0;
         """)
-        cursor.execute("""
-        ALTER TABLE marketplace_order
-        ADD COLUMN IF NOT EXISTS handling_fee numeric DEFAULT 0;
-        """)
+
+        # Remove NOT NULL constraint from old column
         cursor.execute("""
         ALTER TABLE marketplace_pendingorder
-        ALTER COLUMN small_order_fee SET DEFAULT 0;
+        ALTER COLUMN small_order_fee DROP NOT NULL;
         """)
 
 if not hasattr(connection, "_handling_fee_fixed"):
@@ -640,7 +639,7 @@ def checkout(request):
                         subtotal=subtotal,
                         delivery_fee=delivery_fee,
                         handling_fee=handling_fee,
-                        small_order_fee=handling_fee,
+                        
                         discount=discount,
                         coupon_code=coupon_code,
                         total=total,
@@ -848,7 +847,7 @@ def verify_otp(request, pending_id):
                     subtotal=pending.subtotal,
                     delivery_fee=pending.delivery_fee,
                     handling_fee=getattr(pending, "handling_fee", 0),
-                    small_order_fee=getattr(pending, "handling_fee", 0),
+                    
                     discount=pending.discount,
                     coupon_code=pending.coupon_code,
                     
@@ -1163,7 +1162,7 @@ def calculate_delivery(request):
 
     distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 
-    handling_fee = Decimal(20) if subtotal < 149 else Decimal(0)
+    handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
 
     delivery_fee = 20
 
@@ -1277,7 +1276,7 @@ def payment_success(request):
             subtotal=pending.subtotal,
             delivery_fee=pending.delivery_fee,
             handling_fee=getattr(pending, "handling_fee", 0),
-            small_order_fee=getattr(pending, "handling_fee", 0),
+            
             discount=pending.discount,
             coupon_code=pending.coupon_code,
 
