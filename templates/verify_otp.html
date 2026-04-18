@@ -30,48 +30,55 @@
         </div>
         {% endif %}
 
-        <!-- Attempts -->
         {% if pending_order %}
+
+            <!-- Attempts -->
             {% if pending_order.otp_attempts is not None %}
-                <p>
-                    Attempts left: {{ 3|add:-pending_order.otp_attempts }}
-                </p>
+            <p class="text-muted text-center">
+                Attempts left: {{ 3|add:-pending_order.otp_attempts }}
+            </p>
             {% endif %}
-        {% endif %}
 
-        <!-- OTP FORM -->
-        <form method="POST" id="otpForm">
-            {% csrf_token %}
+            <!-- OTP FORM -->
+            <form method="POST" id="otpForm">
+                {% csrf_token %}
 
-            <input type="text"
-                   name="otp"
-                   id="otpInput"
-                   maxlength="6"
-                   inputmode="numeric"
-                   autocomplete="one-time-code"
-                   class="form-control otp-input mb-3"
-                   placeholder="------"
-                   required>
+                <input type="text"
+                       name="otp"
+                       id="otpInput"
+                       maxlength="6"
+                       inputmode="numeric"
+                       autocomplete="one-time-code"
+                       class="form-control otp-input mb-3"
+                       placeholder="------"
+                       required>
 
-            <div class="invalid-feedback text-center">
-                {% trans "Enter valid 6-digit OTP." %}
+                <div class="invalid-feedback text-center">
+                    {% trans "Enter valid 6-digit OTP." %}
+                </div>
+
+                <button type="submit"
+                        id="verifyBtn"
+                        class="btn btn-success w-100">
+                    {% trans "Verify & Place Order" %}
+                </button>
+            </form>
+
+            <!-- RESEND -->
+            <div class="text-center mt-3">
+                <button id="resendBtn" class="btn btn-link" disabled>
+                    Resend OTP (60s)
+                </button>
             </div>
 
-            <button type="submit"
-                    id="verifyBtn"
-                    class="btn btn-success w-100">
-                {% trans "Verify & Place Order" %}
-            </button>
-        </form>
+        {% else %}
 
-        <!-- RESEND -->
-        <div class="text-center mt-3">
-            {% if pending_order %}
-            <button id="resendBtn" class="btn btn-link" disabled>
-                Resend OTP (60s)
-            </button>
-            {% endif %}
-        </div>
+            <!-- ❌ No pending order -->
+            <div class="text-center text-danger mt-3">
+                {{ error|default:"Session expired. Please try again." }}
+            </div>
+
+        {% endif %}
 
         <!-- Message -->
         <div id="resendMessage" class="text-center small mt-2"></div>
@@ -88,11 +95,11 @@ document.addEventListener("DOMContentLoaded", function(){
     const resendBtn = document.getElementById("resendBtn");
     const msgBox = document.getElementById("resendMessage");
 
-    const pendingId = "{{ pending_order.id|default_if_none:'' }}";
+    // ✅ SAFE pendingId (NO crash possible)
+    const pendingId = "{{ pending_order.id|default:'' }}";
 
-    // ✅ SAFE JS VARIABLE (IMPORTANT FIX)
+    // ✅ SAFE expiry time
     let timeLeft = Number("{{ expiry_seconds|default_if_none:'300' }}");
-
 
     // Autofocus
     if(otpInput){
@@ -100,27 +107,32 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     // Only numbers
-    otpInput.addEventListener("input", function(){
-        this.value = this.value.replace(/[^0-9]/g, '');
+    if(otpInput){
+        otpInput.addEventListener("input", function(){
+            this.value = this.value.replace(/[^0-9]/g, '');
 
-        if(this.value.length === 6){
-            this.classList.remove("is-invalid");
-        }
-    });
+            if(this.value.length === 6){
+                this.classList.remove("is-invalid");
+            }
+        });
+    }
 
     // Form validation
-    document.getElementById("otpForm").addEventListener("submit", function(e){
+    const form = document.getElementById("otpForm");
+    if(form){
+        form.addEventListener("submit", function(e){
 
-        if(otpInput.value.length !== 6){
-            e.preventDefault();
-            otpInput.classList.add("is-invalid");
-            return;
-        }
+            if(otpInput.value.length !== 6){
+                e.preventDefault();
+                otpInput.classList.add("is-invalid");
+                return;
+            }
 
-        verifyBtn.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
-        verifyBtn.disabled = true;
-    });
+            verifyBtn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
+            verifyBtn.disabled = true;
+        });
+    }
 
     // ⏳ OTP TIMER
     const countdownEl = document.getElementById("countdown");
@@ -140,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function(){
         if(timeLeft < 0){
             clearInterval(timer);
             countdownEl.innerText = "OTP expired.";
-            verifyBtn.disabled = true;
+            if(verifyBtn) verifyBtn.disabled = true;
         }
 
     }, 1000);
@@ -150,18 +162,25 @@ document.addEventListener("DOMContentLoaded", function(){
 
         let resendTime = 60;
 
-        resendBtn.disabled = true;
+        if(resendBtn){
+            resendBtn.disabled = true;
+        }
 
         const resendTimer = setInterval(function(){
 
-            resendBtn.innerText =
-                "Resend OTP (" + resendTime + "s)";
+            if(resendBtn){
+                resendBtn.innerText =
+                    "Resend OTP (" + resendTime + "s)";
+            }
+
             resendTime--;
 
             if(resendTime < 0){
                 clearInterval(resendTimer);
-                resendBtn.innerText = "Resend OTP";
-                resendBtn.disabled = false;
+                if(resendBtn){
+                    resendBtn.innerText = "Resend OTP";
+                    resendBtn.disabled = false;
+                }
             }
 
         }, 1000);
@@ -170,7 +189,6 @@ document.addEventListener("DOMContentLoaded", function(){
     if(resendBtn){
         startResendTimer();
 
-        // 🔁 RESEND CLICK
         resendBtn.addEventListener("click", function(){
 
             if(!pendingId) return;

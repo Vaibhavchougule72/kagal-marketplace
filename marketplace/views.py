@@ -692,302 +692,221 @@ def checkout(request):
 
 # =====================================================
 # VERIFY OTP
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from django.contrib import messages
+from django.db import transaction
+from decimal import Decimal
+from datetime import timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+
 def verify_otp(request, pending_id):
 
-    
+    try:
+        pending = PendingOrder.objects.filter(id=pending_id).first()
 
-    pending = get_object_or_404(PendingOrder, id=pending_id)
-    # ✅ NEW STEP: Check store status
-    store = get_object_or_404(Store, id=pending.store_id)
+        # ❌ If not found → safe redirect (NO 500)
+        if not pending:
+            messages.error(request, "Session expired. Please try again.")
+            return redirect("checkout")
 
-    if not store.is_open():
-        messages.error(request, f"{store.name} is now closed.")
+        store = Store.objects.filter(id=pending.store_id).first()
 
-        return render(request, "verify_otp.html", {
-            "pending_order": pending,
-            "error": f"{store.name} is now closed.",
-            "show_floating_cart": False
-        })
+        if not store or not store.is_open():
+            return render(request, "verify_otp.html", {
+                "pending_order": None,
+                "error": "Store is currently closed.",
+                "expiry_seconds": 0,
+                "show_floating_cart": False
+            })
 
-    # 🔒 If already expired (GET request)
-    if pending.is_expired():
-        return render(request, "verify_otp.html", {
-            "pending_order": pending,
-            "error": "OTP expired. Please resend OTP.",
-            "show_floating_cart": False
-        })
+        # ⏳ Calculate expiry safely
+        expiry_seconds = 0
+        if pending.otp_expiry:
+            expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
+            if expiry_seconds < 0:
+                expiry_seconds = 0
 
-    if request.method == "POST":
-
-        entered = request.POST.get("otp", "").strip()
-
-        # 1️⃣ Expiry check again (safety)
+        # -------------------------
+        # OTP EXPIRED (GET)
+        # -------------------------
         if pending.is_expired():
             return render(request, "verify_otp.html", {
                 "pending_order": pending,
                 "error": "OTP expired. Please resend OTP.",
+                "expiry_seconds": 0,
                 "show_floating_cart": False
             })
 
-        if pending.otp_attempts >= 3:
-            return render(request, "verify_otp.html", {
-                "pending_order": None,   # safe
-                "error": "Too many wrong attempts. Order cancelled.",
-                "show_floating_cart": False
-            })
+        # =========================
+        # POST LOGIC
+        # =========================
+        if request.method == "POST":
 
-        # 3️⃣ Validate OTP format (must be 6 digits)
-        if not entered.isdigit() or len(entered) != 6:
-            return render(request, "verify_otp.html", {
-                "pending_order": pending,
-                "error": "Please enter a valid 6-digit OTP.",
-                "show_floating_cart": False
-            })
+            entered = request.POST.get("otp", "").strip()
 
-        # 4️⃣ Validate OTP match
-        if entered != pending.otp:
-            pending.otp_attempts += 1
-            pending.save()
+            # Expiry check again
+            if pending.is_expired():
+                return render(request, "verify_otp.html", {
+                    "pending_order": pending,
+                    "error": "OTP expired. Please resend OTP.",
+                    "expiry_seconds": 0,
+                    "show_floating_cart": False
+                })
 
-            attempts_left = 3 - pending.otp_attempts
+            # Attempts limit
+            if pending.otp_attempts >= 3:
+                pending.delete()
+                return render(request, "verify_otp.html", {
+                    "pending_order": None,
+                    "error": "Too many wrong attempts. Order cancelled.",
+                    "expiry_seconds": 0,
+                    "show_floating_cart": False
+                })
 
-            return render(request, "verify_otp.html", {
-                "pending_order": pending,
-                "error": f"Invalid OTP. {attempts_left} attempt(s) remaining.",
-                "show_floating_cart": False
-            })
+            # OTP format validation
+            if not entered.isdigit() or len(entered) != 6:
+                return render(request, "verify_otp.html", {
+                    "pending_order": pending,
+                    "error": "Enter valid 6-digit OTP.",
+                    "expiry_seconds": expiry_seconds,
+                    "show_floating_cart": False
+                })
 
-        # ✅ OTP CORRECT
+            # OTP mismatch
+            if entered != pending.otp:
+                pending.otp_attempts += 1
+                pending.save()
 
-        # -----------------------
-        # CASE 1: COD
-        # -----------------------
-        if pending.payment_method == "COD":
+                attempts_left = 3 - pending.otp_attempts
+
+                return render(request, "verify_otp.html", {
+                    "pending_order": pending,
+                    "error": f"Invalid OTP. {attempts_left} attempts left.",
+                    "expiry_seconds": expiry_seconds,
+                    "show_floating_cart": False
+                })
+
+            # ✅ OTP CORRECT
 
             cart_items = pending.items_snapshot or {}
 
-            if not cart_items.get('items'):
-                return redirect('home')
+            if not cart_items.get("items"):
+                return redirect("home")
 
-            for item_id, item in cart_items['items'].items():
+            # =========================
+            # COD FLOW
+            # =========================
+            if pending.payment_method == "COD":
 
-                # PRODUCT
-                if item_id.isdigit():
-                    try:
-                        product = Product.objects.get(id=int(item_id))
+                with transaction.atomic():
 
-                        # 🔥 CHECK STORE AGAIN (CRITICAL)
-                        if not product.store.is_open():
-                            from django.contrib import messages
+                    order = Order.objects.create(
+                        store_id=pending.store_id,
+                        customer_name=pending.customer_name,
+                        phone=pending.phone,
+                        address=pending.address,
+                        latitude=pending.latitude,
+                        longitude=pending.longitude,
+                        subtotal=pending.subtotal,
+                        delivery_fee=pending.delivery_fee,
+                        handling_fee=getattr(pending, "handling_fee", 0),
+                        discount=pending.discount,
+                        coupon_code=pending.coupon_code,
+                        total=pending.total,
+                        payment_method="COD",
+                        status="REQUEST_SUBMITTED"
+                    )
 
-                            messages.error(request, f"{product.store.name} is now closed.")
-                            return redirect("checkout")
-                            
+                    # Create order items
+                    for item_id, item in cart_items["items"].items():
 
+                        if str(item_id).isdigit():
+                            try:
+                                product = Product.objects.get(id=int(item_id))
+                                OrderItem.objects.create(
+                                    order=order,
+                                    product=product,
+                                    price=Decimal(str(item.get("price", 0))),
+                                    quantity=int(item.get("quantity", 1))
+                                )
+                            except:
+                                continue
 
-                    except Product.DoesNotExist:
-                        from django.contrib import messages
-
-                        messages.error(request, "Some items are no longer available")
-                        return redirect("checkout")
-                    
-
-                # BUNDLE
-                elif item_id.startswith("bundle_"):
-                    try:
-                        bundle_id = int(item_id.split("_")[1])
-                        bundle = Bundle.objects.get(id=bundle_id, is_active=True)
-
-                        if not bundle.store.is_open():
-                            
-                            from django.contrib import messages
-
-                            messages.error(request, f"{bundle.store.name} is now closed.")
-                            return redirect("checkout")
-
-                    except Bundle.DoesNotExist:
-                        from django.contrib import messages
-
-                        messages.error(request, "Some bundle items are no longer available.")
-                        return redirect("checkout")
-                       
-            if pending.coupon_code:
-                try:
-                    with transaction.atomic():
-
-                        coupon = Coupon.objects.get(code=pending.coupon_code)
-
-                        if coupon.used_count >= coupon.usage_limit:
-                            messages.error(request, "Coupon usage limit reached")
-                            return redirect("checkout")
-                        
-                        if CouponUsage.objects.filter(coupon=coupon, phone=pending.phone).exists():
-                            messages.error(request, "Coupon already used")
-                            return redirect("checkout")
-
-                        CouponUsage.objects.create(
-                            coupon=coupon,
-                            phone=pending.phone
-                        )
-
-                        coupon.used_count += 1
-                        coupon.save()
-
-                except Coupon.DoesNotExist:
-                    logger.warning("Coupon not found during order creation")
-            with transaction.atomic():
-                order = Order.objects.create(
-                    store_id=pending.store_id,
-                    customer_name=pending.customer_name,
-                    phone=pending.phone,
-                    address=pending.address,
-                    latitude=pending.latitude,
-                    longitude=pending.longitude,
-                    subtotal=pending.subtotal,
-                    delivery_fee=pending.delivery_fee,
-                    handling_fee=getattr(pending, "handling_fee", 0),
-                    
-                    discount=pending.discount,
-                    coupon_code=pending.coupon_code,
-                    
-                    total=pending.total,
-                    payment_method="COD",
-                    status="REQUEST_SUBMITTED"
-                )
-
-                # ✅ CREATE ORDER ITEMS (CRITICAL FIX)
-
-                for item_id, item in cart_items['items'].items():
-
-                    # PRODUCT
-                    if item_id.isdigit():
-                        try:
-                            product = Product.objects.get(id=int(item_id))
-
+                        elif str(item_id).startswith("bundle_"):
                             OrderItem.objects.create(
                                 order=order,
-                                product=product,
-                                price = Decimal(str(item.get('price', 0))),
-                                quantity = int(item.get('quantity', 1))
+                                product=None,
+                                bundle_name=item.get("name", "Combo"),
+                                price=Decimal(str(item.get("price", 0))),
+                                quantity=int(item.get("quantity", 1))
                             )
 
-                        except Product.DoesNotExist:
-                            continue
+                # Safety: no items
+                if not order.items.exists():
+                    order.delete()
+                    messages.error(request, "Items unavailable. Try again.")
+                    return redirect("checkout")
 
-                    # BUNDLE
-                    elif item_id.startswith("bundle_"):
-                        OrderItem.objects.create(
-                            order=order,
-                            product=None,
-                            bundle_name=item.get("name", "Combo"),
-                            price = Decimal(str(item.get('price', 0))),
-                            quantity = int(item.get('quantity', 1))
-                        )
-                
-            if not order.items.exists():
-                order.delete()
-                messages.error(request, "Some items are no longer available. Please try again.")
-                return redirect('checkout')
+                # Clear cart
+                request.session["cart"] = {"store_id": None, "items": {}}
 
-            
+                pending.delete()
 
-            store_id = cart_items.get('store_id')
-            
+                return redirect("order_success", order_id=order.id)
 
-            # fallback if store_id missing
-            if not store_id:
-                if not cart_items.get('items'):
-                    return redirect('home')
+            # =========================
+            # UPI FLOW
+            # =========================
+            elif pending.payment_method == "UPI":
 
-                first_item = next(iter(cart_items['items']))
-                
-                if str(first_item).startswith("bundle_"):
-                    bundle_id = int(first_item.split("_")[1])
-                    bundle = get_object_or_404(Bundle, id=bundle_id, is_active=True)
-                    store_id = bundle.store.id
-                else:
-                    product = get_object_or_404(Product, id=int(first_item))
-                    store_id = product.store.id
+                import razorpay
+                from django.conf import settings
 
-            
-            request.session['cart'] = {'store_id': None, 'items': {}}
-            pending.delete()
-            try:
-                send_sms(order.phone, f"Order #{order.id} confirmed! Total ₹{order.total}.")
-            except Exception as e:
-                logger.error(f"Order SMS failed: {e}")
-
-            try:
-                send_sms("7038984687", f"New order #{order.id} received")
-            except Exception as e:
-                logger.error(f"Admin SMS failed: {e}")
-            
-
-            return redirect("order_success", order_id=order.id)
-
-
-        # -----------------------
-        # CASE 2: UPI (Razorpay)
-        # -----------------------
-        elif pending.payment_method == "UPI":
-
-            import razorpay
-            from django.conf import settings
-
-            try:
                 client = razorpay.Client(auth=(
                     settings.RAZORPAY_KEY_ID,
                     settings.RAZORPAY_KEY_SECRET
                 ))
-            except Exception as e:
-                logger.error(e)
-                return HttpResponse("Payment system error")
 
-            razorpay_order = client.order.create({
-                "amount": int(pending.total * 100),  # ₹ to paise
-                "currency": "INR",
-                "payment_capture": 1
-            })
+                razorpay_order = client.order.create({
+                    "amount": int(pending.total * 100),
+                    "currency": "INR",
+                    "payment_capture": 1
+                })
 
-            request.session["razorpay_order_id"] = razorpay_order["id"]
-            request.session["pending_id"] = pending.id
+                request.session["razorpay_order_id"] = razorpay_order["id"]
+                request.session["pending_id"] = pending.id
 
-            return render(request, "upi_payment.html", {
-                "razorpay_key": settings.RAZORPAY_KEY_ID,
-                "amount": int(pending.total * 100),
-                "razorpay_order_id": razorpay_order["id"],
-                "customer_name": pending.customer_name,
-                "phone": pending.phone,
-                "show_floating_cart": False
-            })
+                return render(request, "upi_payment.html", {
+                    "razorpay_key": settings.RAZORPAY_KEY_ID,
+                    "amount": int(pending.total * 100),
+                    "razorpay_order_id": razorpay_order["id"],
+                    "customer_name": pending.customer_name,
+                    "phone": pending.phone,
+                    "show_floating_cart": False
+                })
 
+        # =========================
+        # GET REQUEST
+        # =========================
+        return render(request, "verify_otp.html", {
+            "pending_order": pending,
+            "expiry_seconds": expiry_seconds,
+            "attempts_left": 3 - pending.otp_attempts,
+            "show_floating_cart": False
+        })
 
-    expiry_seconds = 0
-
-    if pending.otp_expiry:
-        try:
-            expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
-            if expiry_seconds < 0:
-                expiry_seconds = 0
-        except Exception as e:
-            print("Expiry calc error:", e)
-            expiry_seconds = 0
-
-    if expiry_seconds < 0:
-        expiry_seconds = 0
-
-    attempts_left = 3 - pending.otp_attempts
-
-    print("Pending:", pending.id)
-    print("OTP Expiry:", pending.otp_expiry)
-    return render(request, "verify_otp.html", {
-        "pending_order": pending,
-        "expiry_seconds": expiry_seconds,
-        "attempts_left": attempts_left,
-        'show_navbar': False,
-        "show_floating_cart": False
-    })
-
+    except Exception as e:
+        logger.error(f"VERIFY OTP ERROR: {e}", exc_info=True)
+        return render(request, "verify_otp.html", {
+            "pending_order": None,
+            "error": "Something went wrong. Please try again.",
+            "expiry_seconds": 0,
+            "show_floating_cart": False
+        })
+    
 # =====================================================
 # RESEND OTP
 # =====================================================
