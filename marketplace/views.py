@@ -469,7 +469,6 @@ def checkout(request):
 
     # 🚨 MULTIPLE STORE CHECK
     if len(store_ids) != 1:
-        request.session['cart'] = {'store_id': None, 'items': {}}
         return render(request, 'checkout.html', {
             "error": "Cart contains items from multiple stores",
             "show_floating_cart": False
@@ -702,12 +701,13 @@ def verify_otp(request, pending_id):
     store = get_object_or_404(Store, id=pending.store_id)
 
     if not store.is_open():
-        pending.delete()
-
-        from django.contrib import messages
         messages.error(request, f"{store.name} is now closed.")
 
-        return redirect("checkout")
+        return render(request, "verify_otp.html", {
+            "pending_order": pending,
+            "error": f"{store.name} is now closed.",
+            "show_floating_cart": False
+        })
 
     # 🔒 If already expired (GET request)
     if pending.is_expired():
@@ -729,11 +729,9 @@ def verify_otp(request, pending_id):
                 "show_floating_cart": False
             })
 
-        # 2️⃣ Max attempts check
         if pending.otp_attempts >= 3:
-            pending.delete()
             return render(request, "verify_otp.html", {
-                "pending_order": pending,
+                "pending_order": None,   # safe
                 "error": "Too many wrong attempts. Order cancelled.",
                 "show_floating_cart": False
             })

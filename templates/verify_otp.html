@@ -32,9 +32,11 @@
 
         <!-- Attempts -->
         {% if pending_order %}
-        <p class="text-muted text-center">
-            Attempts left: {{ 3|add:-pending_order.otp_attempts }}
-        </p>
+            {% if pending_order.otp_attempts is not None %}
+                <p>
+                    Attempts left: {{ 3|add:-pending_order.otp_attempts }}
+                </p>
+            {% endif %}
         {% endif %}
 
         <!-- OTP FORM -->
@@ -89,7 +91,8 @@ document.addEventListener("DOMContentLoaded", function(){
     const pendingId = "{{ pending_order.id|default_if_none:'' }}";
 
     // ✅ SAFE JS VARIABLE (IMPORTANT FIX)
-    let timeLeft = Number("{{ expiry_seconds|default:'300' }}");
+    let timeLeft = Number("{{ expiry_seconds|default_if_none:'300' }}");
+
 
     // Autofocus
     if(otpInput){
