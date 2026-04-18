@@ -525,7 +525,7 @@ def checkout(request):
     # =========================
     if request.method == "POST":
         try:
-            fix_db()
+            
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
             address = request.POST.get("address")
@@ -694,8 +694,8 @@ def checkout(request):
 # =====================================================
 # VERIFY OTP
 def verify_otp(request, pending_id):
+
     
-    fix_db()
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
     # ✅ NEW STEP: Check store status
@@ -962,25 +962,25 @@ def verify_otp(request, pending_id):
                 "show_floating_cart": False
             })
 
-        
 
-    from django.utils import timezone
+    expiry_seconds = 0
 
-    try:
-        if pending.otp_expiry:
+    if pending.otp_expiry:
+        try:
             expiry_seconds = int((pending.otp_expiry - timezone.now()).total_seconds())
             if expiry_seconds < 0:
                 expiry_seconds = 0
-        else:
+        except Exception as e:
+            print("Expiry calc error:", e)
             expiry_seconds = 0
-    except Exception:
-        expiry_seconds = 0
 
     if expiry_seconds < 0:
         expiry_seconds = 0
 
     attempts_left = 3 - pending.otp_attempts
 
+    print("Pending:", pending.id)
+    print("OTP Expiry:", pending.otp_expiry)
     return render(request, "verify_otp.html", {
         "pending_order": pending,
         "expiry_seconds": expiry_seconds,
