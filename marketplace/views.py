@@ -196,16 +196,7 @@ def add_bundle_to_cart(request, bundle_id):
 # CATEGORY
 # =====================================================
 def category_detail(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    stores = Store.objects.filter(category=category)
-    products = Product.objects.filter(category=category)
-
-    return render(request, 'category_detail.html', {
-        'category': category,
-        'stores': stores,
-        'products': products,
-        "show_floating_cart": False
-    })
+    return redirect('category_stores', category_id=category_id)
 
 
 def category_stores(request, category_id):
