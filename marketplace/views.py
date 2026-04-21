@@ -20,26 +20,16 @@ from django.db.models import F
 from .models import CouponUsage
 from .models import Coupon
 from django.core.cache import cache
-from .sms_service import send_sms
+# from .sms_service import send_sms   ❌ comment
+
+def send_sms(*args, **kwargs):
+    return True  # dummy function (prevents crash)
+
 import logging
 logger = logging.getLogger(__name__)
 from django.db import transaction
 
 from django.db import connection
-
-def fix_db():
-    with connection.cursor() as cursor:
-        # Add new column
-        cursor.execute("""
-        ALTER TABLE marketplace_pendingorder
-        ADD COLUMN IF NOT EXISTS handling_fee numeric DEFAULT 0;
-        """)
-
-        # Remove NOT NULL constraint from old column
-        cursor.execute("""
-        ALTER TABLE marketplace_pendingorder
-        ALTER COLUMN small_order_fee DROP NOT NULL;
-        """)
 
 
 def test_cache(request):
@@ -436,10 +426,14 @@ from datetime import timedelta
 
 def checkout(request):
 
+    PendingOrder.objects.filter(
+        created_at__lt=timezone.now() - timedelta(hours=1)
+    ).delete()
+
     cart = request.session.get('cart', {'store_id': None, 'items': {}})
 
     # -------------------------
-    # EMPTY CART CHECK
+    # EMPTY CART
     # -------------------------
     if not cart or not cart.get('items'):
         return redirect('home')
@@ -454,6 +448,7 @@ def checkout(request):
             if item_id.isdigit():
                 product = Product.objects.get(id=int(item_id))
                 store_ids.add(product.store.id)
+
             elif item_id.startswith("bundle_"):
                 bundle_id = int(item_id.split("_")[1])
                 bundle = Bundle.objects.get(id=bundle_id, is_active=True)
@@ -461,7 +456,6 @@ def checkout(request):
         except:
             continue
 
-    # 🚨 MULTIPLE STORE CHECK
     if len(store_ids) != 1:
         return render(request, 'checkout.html', {
             "error": "Cart contains items from multiple stores",
@@ -475,7 +469,6 @@ def checkout(request):
         "cart": cart,
         "store": store,
         "show_floating_cart": False,
-        "show_navbar": True,
         "simple_navbar": True,
     }
 
@@ -503,7 +496,7 @@ def checkout(request):
                 if product.upi_only:
                     upi_only_required = True
             except:
-                continue
+                pass
 
     handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
 
@@ -514,11 +507,10 @@ def checkout(request):
     })
 
     # =========================
-    # POST LOGIC
+    # POST
     # =========================
     if request.method == "POST":
         try:
-            
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
             address = request.POST.get("address")
@@ -546,15 +538,11 @@ def checkout(request):
                 context["error"] = "Select delivery location"
                 return render(request, "checkout.html", context)
 
-            try:
-                latitude = float(latitude)
-                longitude = float(longitude)
-            except:
-                context["error"] = "Invalid location"
-                return render(request, "checkout.html", context)
+            latitude = float(latitude)
+            longitude = float(longitude)
 
             # -------------------------
-            # DELIVERY CALCULATION
+            # DELIVERY
             # -------------------------
             BUS_LAT, BUS_LON = 16.5775, 74.3169
             distance = calculate_distance(latitude, longitude, BUS_LAT, BUS_LON) + 1
@@ -563,7 +551,6 @@ def checkout(request):
                 context["error"] = "Delivery not available"
                 return render(request, "checkout.html", context)
 
-            # Delivery fee
             if subtotal >= 499:
                 delivery_fee = Decimal(0)
             else:
@@ -602,79 +589,106 @@ def checkout(request):
                 context["error"] = "COD not allowed below ₹149"
                 return render(request, "checkout.html", context)
 
-            # -------------------------
-            # CREATE PENDING ORDER
-            # -------------------------
-            otp = str(random.randint(100000, 999999))
+            # =========================
+            # 🔵 UPI FLOW
+            # =========================
+            if payment == "UPI":
 
+                import razorpay
+
+                pending = PendingOrder.objects.create(
+                    store_id=store_id,
+                    customer_name=name,
+                    phone=phone,
+                    address=address,
+                    latitude=latitude,
+                    longitude=longitude,
+                    subtotal=subtotal,
+                    delivery_fee=delivery_fee,
+                    handling_fee=handling_fee,
+                    discount=discount,
+                    coupon_code=coupon_code,
+                    total=total,
+                    payment_method="UPI",
+                    items_snapshot={
+                        "store_id": store_id,
+                        "items": cart["items"]
+                    }
+                )
+
+                client = razorpay.Client(auth=(
+                    settings.RAZORPAY_KEY_ID,
+                    settings.RAZORPAY_KEY_SECRET
+                ))
+
+                razorpay_order = client.order.create({
+                    "amount": int(total * 100),
+                    "currency": "INR",
+                    "payment_capture": 1
+                })
+
+                request.session["razorpay_order_id"] = razorpay_order["id"]
+                request.session["pending_id"] = pending.id
+
+                return render(request, "upi_payment.html", {
+                    "razorpay_key": settings.RAZORPAY_KEY_ID,
+                    "amount": int(total * 100),
+                    "razorpay_order_id": razorpay_order["id"],
+                    "customer_name": name,
+                    "phone": phone,
+                    "show_floating_cart": False
+                })
+
+            # =========================
+            # 🟢 COD FLOW
+            # =========================
             with transaction.atomic():
-                from django.db import connection
 
-                # 🔥 Check if column exists
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT column_name
-                        FROM information_schema.columns
-                        WHERE table_name='marketplace_pendingorder'
-                    """)
-                    columns = [col[0] for col in cursor.fetchall()]
+                order = Order.objects.create(
+                    store_id=store_id,
+                    customer_name=name,
+                    phone=phone,
+                    address=address,
+                    latitude=latitude,
+                    longitude=longitude,
+                    subtotal=subtotal,
+                    delivery_fee=delivery_fee,
+                    handling_fee=handling_fee,
+                    discount=discount,
+                    coupon_code=coupon_code,
+                    total=total,
+                    payment_method="COD",
+                    status="REQUEST_SUBMITTED"
+                )
 
-                if "handling_fee" in columns:
-                    pending = PendingOrder.objects.create(
-                        store_id=store_id,
-                        customer_name=name,
-                        phone=phone,
-                        address=address,
-                        latitude=latitude,
-                        longitude=longitude,
-                        subtotal=subtotal,
-                        delivery_fee=delivery_fee,
-                        handling_fee=handling_fee,
-                        
-                        discount=discount,
-                        coupon_code=coupon_code,
-                        total=total,
-                        payment_method=payment,
-                        items_snapshot={
-                            "store_id": store_id,
-                            "items": copy.deepcopy(cart.get("items", {}))
-                        },
-                        otp=otp,
-                        otp_expiry=timezone.now() + timedelta(minutes=5)
-                    )
-                
-                else:
-                    pending = PendingOrder.objects.create(
-                        store_id=store_id,
-                        customer_name=name,
-                        phone=phone,
-                        address=address,
-                        latitude=latitude,
-                        longitude=longitude,
-                        subtotal=subtotal,
-                        delivery_fee=delivery_fee,
-                        #handling_fee=handling_fee,
-                        discount=discount,
-                        coupon_code=coupon_code,
-                        total=total,
-                        payment_method=payment,
-                        items_snapshot={
-                            "store_id": store_id,
-                            "items": copy.deepcopy(cart.get("items", {}))
-                        },
-                        otp=otp,
-                        otp_expiry=timezone.now() + timedelta(minutes=5)
-                    )
+                for item_id, item in cart["items"].items():
 
-            # -------------------------
-            # SEND OTP (SAFE)
-            # -------------------------
-            try:
-                send_sms(phone, f"LOKA OTP: {otp}")
-            except Exception:
-                pass  # do not block order
+                    if item_id.isdigit():
+                        try:
+                            product = Product.objects.get(id=int(item_id))
 
-            return redirect("verify_otp", pending_id=pending.id)
+                            OrderItem.objects.create(
+                                order=order,
+                                product=product,
+                                price=Decimal(str(item.get("price", 0))),
+                                quantity=int(item.get("quantity", 1))
+                            )
+                        except:
+                            continue
+
+                    elif item_id.startswith("bundle_"):
+
+                        OrderItem.objects.create(
+                            order=order,
+                            product=None,
+                            bundle_name=item.get("name", "Combo"),
+                            price=Decimal(str(item.get("price", 0))),
+                            quantity=int(item.get("quantity", 1))
+                        )
+
+            request.session["cart"] = {"store_id": None, "items": {}}
+
+            return redirect("order_success", order_id=order.id)
 
         except Exception as e:
             logger.error(f"CHECKOUT ERROR: {e}", exc_info=True)
@@ -682,7 +696,6 @@ def checkout(request):
             return render(request, "checkout.html", context)
 
     return render(request, "checkout.html", context)
-
 
 # =====================================================
 # VERIFY OTP
@@ -696,7 +709,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def verify_otp(request, pending_id):
+'''def verify_otp(request, pending_id):
 
     try:
         pending = PendingOrder.objects.filter(id=pending_id).first()
@@ -907,12 +920,12 @@ def verify_otp(request, pending_id):
             "expiry_seconds": 0,
             'simple_navbar': True,
             "show_floating_cart": False
-        })
-    
+        })'''
+  
 # =====================================================
 # RESEND OTP
 # =====================================================
-def resend_otp(request, pending_id):
+'''def resend_otp(request, pending_id):
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
 
@@ -946,7 +959,7 @@ def resend_otp(request, pending_id):
     return JsonResponse({
         "success": True,
         "message": "OTP sent successfully"
-    })
+    })'''
 
 # =====================================================
 # ORDERS
@@ -1139,6 +1152,9 @@ def payment_success(request):
         return HttpResponse("Invalid session")
 
     pending = get_object_or_404(PendingOrder, id=pending_id)
+
+    if pending.payment_method != "UPI":
+        return HttpResponse("Invalid payment flow")
 
     generated_signature = hmac.new(
         bytes(settings.RAZORPAY_KEY_SECRET, 'utf-8'),
@@ -1599,7 +1615,7 @@ def combo_detail(request, combo_id):
 
 import random
 
-def send_delivery_otp(request, order_id):
+'''def send_delivery_otp(request, order_id):
 
     if not request.user.is_staff:
         return JsonResponse({"error": "Unauthorized"}, status=403)
@@ -1630,7 +1646,7 @@ def send_delivery_otp(request, order_id):
     return JsonResponse({
         "success": True,
         "message": "Delivery OTP sent to customer & partner"
-    })
+    })'''
 
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate, ExtractHour

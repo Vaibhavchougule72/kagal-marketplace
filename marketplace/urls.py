@@ -24,8 +24,8 @@ urlpatterns = [
     path('search/', views.search_products, name='search_products'),
     path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
     path("calculate-delivery/", views.calculate_delivery, name="calculate_delivery"),
-    path('verify-otp/<int:pending_id>/', views.verify_otp, name='verify_otp'),
-    path('resend-otp/<int:pending_id>/', views.resend_otp, name='resend_otp'),
+    #path('verify-otp/<int:pending_id>/', views.verify_otp, name='verify_otp'),
+    #path('resend-otp/<int:pending_id>/', views.resend_otp, name='resend_otp'),
     path("payment-success/", views.payment_success, name="payment_success"),
     path("cancel-order/<int:order_id>/", views.cancel_order, name="cancel_order"),
     path('invoice/<int:order_id>/', views.generate_invoice, name='generate_invoice'),
@@ -39,11 +39,11 @@ urlpatterns = [
         views.combo_detail,
         name="combo_detail"
     ),
-    path(
-        "send-delivery-otp/<int:order_id>/",
-        views.send_delivery_otp,
-        name="send_delivery_otp"
-    ),
+    #path(
+    #    "send-delivery-otp/<int:order_id>/",
+    #    views.send_delivery_otp,
+    #    name="send_delivery_otp"
+    #),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
     path("test-cache/", views.test_cache, name="test_cache"),
