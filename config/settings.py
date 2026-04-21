@@ -145,9 +145,10 @@ USE_L10N = True
 
 STATIC_URL = '/static/'
 
+import os
 
-RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID", default="")
-RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET", default="")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
 LOGIN_URL = '/dashboard-login/'
 
