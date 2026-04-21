@@ -86,9 +86,12 @@ def home(request):
 
         categories = Category.objects.all()
         stores = Store.objects.all()
-        combos = Bundle.objects.filter(is_active=True)\
+        all_combos = Bundle.objects.filter(is_active=True)\
             .select_related('store')\
-            .prefetch_related('items__product')[:6]
+            .prefetch_related('items__product')
+
+        # 🔥 Filter only open stores
+        combos = [c for c in all_combos if c.store.is_open()][:6]
 
         all_products = Product.objects.filter(is_featured=True).select_related('store')
         print("TOTAL FEATURED:", all_products.count())

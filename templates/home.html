@@ -25,36 +25,43 @@
 </section>
 
 <!-- HERO SECTION -->
+<!-- HERO SECTION -->
 <section class="hero-section">
     <div class="container">
         <div class="row align-items-center">
 
             <div class="col-md-6">
+
                 <h1 class="fw-bold text-black display-5">
-                    सगळं एकाच ठिकाणी.
+                    गरमागरम जेवण, थेट तुमच्या घरी 🍔🔥
                 </h1>
 
                 <p class="mt-3 text-dark">
-                    तुमच्या विश्वासाचं ऑनलाइन बाजार. किराणा, भाजीपाला आणि दैनंदिन गरजा आता कागलमधील स्थानिक दुकानांतून.
+                    कागलमधील तुमच्या आवडत्या हॉटेल्स आणि फूड स्टॉल्समधून 
+                    स्वादिष्ट पदार्थ आता घरबसल्या ऑर्डर करा. जलद डिलिव्हरी आणि खात्रीशीर चव!
                 </p>
 
+                <!-- HIGHLIGHTS -->
                 <div class="d-flex gap-3 flex-wrap mt-3">
-                    <span class="badge bg-success-subtle text-success">🏬 स्थानिक दुकाने</span>
-                    <span class="badge bg-warning-subtle text-warning">⚡ जलद डिलिव्हरी</span>
-                    <span class="badge bg-light text-dark border">💵 रोख पेमेंट उपलब्ध</span>
+                    <span class="badge bg-danger-subtle text-danger">🍽️ हॉटेल & स्ट्रीट फूड</span>
+                    <span class="badge bg-success-subtle text-success">⚡ 30 मिनिटांत डिलिव्हरी</span>
+                    <span class="badge bg-light text-dark border">💵 COD उपलब्ध</span>
                 </div>
 
+                <!-- CTA -->
                 <div class="mt-4">
-                    <a href="#categories" class="btn btn-success px-4">
-                        आता खरेदी करा
+                    <a href="#categories" class="btn btn-danger px-4 fw-bold">
+                        🍔 ऑर्डर करा
                     </a>
 
-                    <a href="#categories" class="btn btn-outline-warning ms-3 px-4">
-                        वर्ग पहा
+                    <a href="#categories" class="btn btn-outline-dark ms-3 px-4">
+                        मेनू पहा
                     </a>
                 </div>
+
             </div>
 
+            <!-- IMAGE -->
             <div class="col-md-6 text-center d-none d-md-block">
                 <img src="{% static 'images/hero-delivery.png' %}"
                      class="img-fluid"
@@ -426,6 +433,32 @@ document.querySelectorAll(".combo-card").forEach(card => {
 
 });
 </script>
+<script>
+document.querySelectorAll(".add-bundle-btn").forEach(btn => {
 
+    btn.addEventListener("click", function(e){
+        e.stopPropagation();
+
+        const comboId = this.dataset.id;
+
+        fetch(`/add-bundle/${comboId}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            if(data.success){
+                alert("Added to cart ✅");
+                location.reload(); // optional (or update cart badge)
+            } else {
+                alert(data.error || "Something went wrong");
+            }
+
+        })
+        .catch(() => {
+            alert("Error adding combo");
+        });
+    });
+
+});
+</script>
 
 {% endblock %}
