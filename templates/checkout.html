@@ -124,7 +124,7 @@
             </div>
 
             <div class="d-flex justify-content-between">
-                {% trans "Delivery:" %} <span id="deliveryFee">₹20</span>
+                {% trans "Delivery:" %} <span id="deliveryFee">₹0</span>
 
             </div>
 
@@ -283,7 +283,7 @@ const BUS_STAND_LON = 74.3169;
 const DELIVERY_RADIUS_KM = 7;
 
 const subtotal = parseFloat("{{ subtotal }}");
-const smallOrderFee = parseFloat("{{ handling_fee }}");
+const handlingFee = parseFloat("{{ handling_fee }}");
 
 let freeDeliveryUnlocked = false;
 
@@ -475,7 +475,7 @@ function updateDelivery(lat, lng){
     let minTime = Math.round(baseTime);
     let maxTime = Math.round(baseTime + 10);
 
-    const total = subtotal + smallOrderFee + deliveryFee - appliedDiscount;
+    const total = subtotal + handlingFee + deliveryFee - appliedDiscount;
 
     document.getElementById("deliveryFee").innerText =
         "₹" + deliveryFee;
@@ -553,13 +553,13 @@ document.getElementById("discount_amount").innerText =
 
 // Get current values from page
 const subtotalValue = parseFloat("{{ subtotal }}")
-const smallOrderFee = parseFloat("{{ handling_fee }}")
+const handlingFee = parseFloat("{{ handling_fee }}")
 
 // Delivery from UI
 const deliveryText = document.getElementById("deliveryFee").innerText
 const deliveryValue = parseFloat(deliveryText.replace("₹",""))
 
-const newTotal = subtotalValue + smallOrderFee + deliveryValue - appliedDiscount
+const newTotal = subtotalValue + handlingFee + deliveryValue - appliedDiscount
 
 document.getElementById("orderTotal").innerText =
 "₹" + newTotal.toFixed(0)
