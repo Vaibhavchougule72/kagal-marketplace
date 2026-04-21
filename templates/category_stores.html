@@ -46,7 +46,11 @@
 
                         <!-- TIMING -->
                         <div class="small text-muted">
-                            {{ store.open_time }} - {{ store.close_time }}
+                            {% if store.is_open %}
+                                🟢 Open Now
+                            {% else %}
+                                🔴 Closed
+                            {% endif %}
                         </div>
 
                         <!-- OPEN TIME MESSAGE -->
