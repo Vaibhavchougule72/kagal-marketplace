@@ -551,12 +551,19 @@ def checkout(request):
                 context["error"] = "Delivery not available"
                 return render(request, "checkout.html", context)
 
-            if subtotal >= 499:
+            free_delivery = request.POST.get("free_delivery") == "true"
+
+            if free_delivery:
                 delivery_fee = Decimal(0)
+
+            elif subtotal >= 499:
+                delivery_fee = Decimal(0)
+
             else:
                 delivery_fee = min(
                     Decimal(20 + max(0, (distance - 2) * 5)),
-                    Decimal(60))
+                    Decimal(60)
+                )
                 
             # -------------------------
             # COUPON
@@ -638,7 +645,7 @@ def checkout(request):
                     "razorpay_order_id": razorpay_order["id"],
                     "customer_name": name,
                     "phone": phone,
-                    "display_amount": total,
+                    "display_amount": f"{total:.2f}",
                     "show_floating_cart": False
                 })
 

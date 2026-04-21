@@ -30,6 +30,7 @@
 
     <form method="POST" id="checkoutForm">
         {% csrf_token %}
+        <input type="hidden" name="free_delivery" id="freeDeliveryInput" value="false">
 
         <!-- NAME -->
         <div class="mb-3">
@@ -449,22 +450,24 @@ function updateDelivery(lat, lng){
     if(freeDeliveryUnlocked){
 
         deliveryFee = 0;
-
-    }else if(subtotal >= 499){
-
-        deliveryFee = 0;
+        document.getElementById("freeDeliveryInput").value = "true";
 
     }else{
 
-        if(distance <= 2){
-            deliveryFee = 20;
-        } else {
-            deliveryFee = 20 + ((distance - 2) * 5);
+        document.getElementById("freeDeliveryInput").value = "false";
+
+        if(subtotal >= 499){
+            deliveryFee = 0;
+        }else{
+            if(distance <= 2){
+                deliveryFee = 20;
+            } else {
+                deliveryFee = 20 + ((distance - 2) * 5);
+            }
+
+            if(deliveryFee > 60) deliveryFee = 60;
+            deliveryFee = Math.round(deliveryFee);
         }
-
-        if(deliveryFee > 60) deliveryFee = 60;
-
-        deliveryFee = Math.round(deliveryFee);
     }
 
     const avgSpeed = distance < 2 ? 20 : 30;
