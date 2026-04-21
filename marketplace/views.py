@@ -610,6 +610,7 @@ def checkout(request):
                     coupon_code=coupon_code,
                     total=total,
                     payment_method="UPI",
+                    otp_expiry=timezone.now() + timedelta(minutes=5),
                     items_snapshot={
                         "store_id": store_id,
                         "items": cart["items"]
