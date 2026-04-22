@@ -17,10 +17,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
     var btn = document.getElementById('rzp-button');
 
-    if (!btn) {
-        console.log("⚠️ Not payment page");
-        return;
-    }
+    if (!btn) return;
 
     var options = {
         key: "{{ razorpay_key }}",
@@ -33,11 +30,12 @@ document.addEventListener("DOMContentLoaded", function(){
         modal: {
             ondismiss: function(){
                 console.log("❌ User closed payment popup");
+                btn.disabled = false;
+                btn.innerText = "Pay ₹ {{ display_amount }}";
             }
         },
 
         handler: function (response){
-
             console.log("✅ PAYMENT SUCCESS:", response);
 
             window.location.href = "/payment-success/?razorpay_payment_id="
@@ -61,37 +59,29 @@ document.addEventListener("DOMContentLoaded", function(){
 
         e.preventDefault();
 
-        console.log("🚀 PAY BUTTON CLICKED");
-
+        // ✅ Razorpay load check
         if (typeof Razorpay === "undefined") {
-            alert("❌ Razorpay not loaded. Refresh page.");
+            alert("Payment system failed to load. Refresh page.");
             return;
         }
 
         btn.disabled = true;
-        btn.innerText = "Processing...";
+        btn.innerText = "Waiting for payment confirmation...";
 
         var rzp = new Razorpay(options);
 
-        // 🔥 VERY IMPORTANT (THIS SHOWS REAL ERROR)
         rzp.on('payment.failed', function (response){
-
-            console.log("❌ FULL FAILURE:", response);
-
-            alert(
-                "❌ PAYMENT FAILED\n\n" +
-                "Code: " + response.error.code + "\n" +
-                "Reason: " + response.error.reason + "\n" +
-                "Step: " + response.error.step + "\n" +
-                "Description: " + response.error.description + "\n" +
-                "Source: " + response.error.source
-            );
-
-            btn.disabled = false;
-            btn.innerText = "Pay ₹ {{ display_amount }}";
+            console.log("⚠️ Ignoring Razorpay false failure:", response);
         });
 
         rzp.open();
+
+        // ✅ fallback message
+        setTimeout(function(){
+            if (btn.disabled) {
+                btn.innerText = "Still processing... If amount deducted, wait.";
+            }
+        }, 5000);
     };
 
 });
