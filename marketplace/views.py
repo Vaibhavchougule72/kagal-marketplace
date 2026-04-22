@@ -666,21 +666,19 @@ def checkout(request):
 
                 amount_paise = to_paise(total)
 
-                existing_order_id = request.session.get("razorpay_order_id")
-                existing_amount = request.session.get("razorpay_amount")
+                # 🔥 ALWAYS CREATE NEW ORDER (DO NOT REUSE)
 
-                if existing_order_id and existing_amount == amount_paise:
-                    razorpay_order_id = existing_order_id
-                else:
-                    razorpay_order = client.order.create({
-                        "amount": amount_paise,
-                        "currency": "INR",
-                        "payment_capture": 1
-                    })
-                    razorpay_order_id = razorpay_order["id"]
+                razorpay_order = client.order.create({
+                    "amount": amount_paise,
+                    "currency": "INR",
+                    "payment_capture": 1
+                })
 
-                    request.session["razorpay_order_id"] = razorpay_order_id
-                    request.session["razorpay_amount"] = amount_paise
+                razorpay_order_id = razorpay_order["id"]
+
+                # optional (just for debugging / reference)
+                request.session["razorpay_order_id"] = razorpay_order_id
+                request.session["razorpay_amount"] = amount_paise
 
 
                 return render(request, "upi_payment.html", {
@@ -1223,10 +1221,11 @@ def payment_success(request):
         # -------------------------
         # STEP 2: DUPLICATE CHECK
         # -------------------------
-        if Order.objects.filter(payment_id=payment_id).exists():
-            logger.warning("Duplicate payment detected")
-            return HttpResponse("Order already created")
+        existing_order = Order.objects.filter(payment_id=payment_id).first()
 
+        if existing_order:
+            return redirect("order_success", order_id=existing_order.id)
+        
         # -------------------------
         # STEP 3: GET PENDING ORDER
         # -------------------------
@@ -1279,6 +1278,10 @@ def payment_success(request):
         except Exception as e:
             logger.error(f"Razorpay fetch error: {str(e)}")
             return HttpResponse("Payment verification failed")
+
+        if payment.get("status") != "captured":
+            logger.error("Payment not captured")
+            return HttpResponse("Payment not completed")
 
         # -------------------------
         # STEP 7: VERIFY AMOUNT
