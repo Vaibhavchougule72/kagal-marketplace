@@ -1469,9 +1469,14 @@ def generate_invoice(request, order_id):
         elements.append(Paragraph(f"<b>Refunded:</b> ₹{order.refund_amount}", styles['Normal']))
 
     doc.build(elements)
-
     buffer.seek(0)
-    return HttpResponse(buffer, content_type='application/pdf')
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+
+    # 🔥 IMPORTANT LINE
+    response['Content-Disposition'] = 'inline; filename="invoice.pdf"'
+
+    return response
 
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table

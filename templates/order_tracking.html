@@ -108,10 +108,16 @@
 
 </div>
 
+<!-- VIEW (for app) -->
+<a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"
+   class="btn btn-primary mt-3">
+   📄 View Invoice
+</a>
+
+<!-- DOWNLOAD (for browser) -->
 <a href="{% url 'generate_invoice' order.id %}"
-   class="btn btn-outline-primary mt-3"
-   target="_blank">
-   {% trans "Download Invoice PDF" %}
+   class="btn btn-outline-secondary mt-3">
+   ⬇ Download
 </a>
 
 <!-- CANCEL BUTTON -->
