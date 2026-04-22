@@ -49,13 +49,10 @@ var options = {
 var rzp = new Razorpay(options);
 
 rzp.on('payment.failed', function (response){
-
-    alert("Payment failed or pending. If amount is deducted, it will be confirmed automatically.");
+    console.log("Payment failed:", response.error);
 
     document.getElementById('rzp-button').disabled = false;
-    document.getElementById('rzp-button').innerText = "Try Again";
-
-    console.log(response.error);
+    document.getElementById('rzp-button').innerText = "Pay Now";
 });
 
 document.getElementById('rzp-button').onclick = function(e){
