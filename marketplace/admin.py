@@ -61,11 +61,12 @@ class OrderAdmin(admin.ModelAdmin):
         "status",
         "payment_method",
         "created_at",
+        "pdf_buttons",   # ✅ ADD THIS
     )
 
     list_filter = ("status", "payment_method", "created_at")
     search_fields = ("customer_name", "phone", "id")
-    readonly_fields = ("created_at",)
+    readonly_fields = ("created_at", "pdf_buttons", "send_otp_button")
 
     fieldsets = (
         ("Customer Info", {
@@ -102,8 +103,10 @@ class OrderAdmin(admin.ModelAdmin):
         }),
 
         ("System Info", {
-            "fields": ("created_at",)
+            "fields": ("created_at", "pdf_buttons", "send_otp_button")
         }),
+
+        
     )
 
     # 🔥 CRITICAL DEBUG PART
@@ -167,11 +170,14 @@ class OrderAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def pdf_buttons(self, obj):
+        delivery_url = reverse("admin:order-delivery-pdf", args=[obj.id])
+        store_url = reverse("admin:order-store-pdf", args=[obj.id])
+
         return format_html(
             '<a class="button" href="{}">Delivery PDF</a>&nbsp;'
             '<a class="button" href="{}">Store PDF</a>',
-            f"{obj.id}/delivery-pdf/",
-            f"{obj.id}/store-pdf/",
+            delivery_url,
+            store_url,
         )
     
     def send_otp_button(self, obj):
