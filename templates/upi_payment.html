@@ -15,18 +15,24 @@
 <script>
 var options = {
     "key": "{{ razorpay_key }}",
-   "amount": "{{ amount }}",
+    "amount": Number("{{ amount }}"),
     "currency": "INR",
     "name": "Kagal Marketplace",
     "description": "Order Payment",
     "order_id": "{{ razorpay_order_id }}",
+    "modal": {
+        "ondismiss": function(){
+            console.log("Payment popup closed");
+        }
+    },
 
     "handler": function (response){
 
         window.location.href = "/payment-success/?razorpay_payment_id="
             + response.razorpay_payment_id
             + "&razorpay_order_id=" + response.razorpay_order_id
-            + "&razorpay_signature=" + response.razorpay_signature;
+            + "&razorpay_signature=" + response.razorpay_signature
+            + "&pending_id={{ request.session.pending_id }}";
     },
 
     "prefill": {
@@ -37,11 +43,26 @@ var options = {
     "theme": {
         "color": "#198754"
     }
+    
 };
 
 var rzp = new Razorpay(options);
 
+rzp.on('payment.failed', function (response){
+
+    alert("Payment failed or pending. If amount is deducted, it will be confirmed automatically.");
+
+    document.getElementById('rzp-button').disabled = false;
+    document.getElementById('rzp-button').innerText = "Try Again";
+
+    console.log(response.error);
+});
+
 document.getElementById('rzp-button').onclick = function(e){
+
+    this.disabled = true;
+    this.innerText = "Processing...";
+
     rzp.open();
     e.preventDefault();
 }

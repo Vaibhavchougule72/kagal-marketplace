@@ -23,7 +23,10 @@ from django.core.cache import cache
 from decimal import Decimal, ROUND_HALF_UP
 # from .sms_service import send_sms   ❌ comment
 
+from decimal import Decimal, ROUND_HALF_UP
 
+def to_paise(amount):
+    return int((Decimal(amount) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
 def send_sms(*args, **kwargs):
@@ -617,52 +620,76 @@ def checkout(request):
             if payment == "UPI":
 
                 import razorpay
+                pending_id = request.session.get("pending_id")
 
-                pending = PendingOrder.objects.create(
-                    store_id=store_id,
-                    customer_name=name,
-                    phone=phone,
-                    address=address,
-                    latitude=latitude,
-                    longitude=longitude,
-                    subtotal=subtotal,
-                    delivery_fee=delivery_fee,
-                    handling_fee=handling_fee,
-                    discount=discount,
-                    coupon_code=coupon_code,
-                    total=total,
-                    payment_method="UPI",
-                    otp_expiry=timezone.now() + timedelta(minutes=5),
-                    items_snapshot={
-                        "store_id": store_id,
-                        "items": cart["items"]
-                    }
-                )
+                pending = None
+
+                if pending_id:
+                    try:
+                        pending = PendingOrder.objects.get(id=pending_id)
+
+                        # 🔥 IMPORTANT: check if total changed
+                        if pending.total != total:
+                            pending.delete()
+                            pending = None
+
+                    except PendingOrder.DoesNotExist:
+                        pending = None
+
+                if not pending:
+                    pending = PendingOrder.objects.create(
+                        store_id=store_id,
+                        customer_name=name,
+                        phone=phone,
+                        address=address,
+                        latitude=latitude,
+                        longitude=longitude,
+                        subtotal=subtotal,
+                        delivery_fee=delivery_fee,
+                        handling_fee=handling_fee,
+                        discount=discount,
+                        coupon_code=coupon_code,
+                        total=total,
+                        payment_method="UPI",
+                        otp_expiry=timezone.now() + timedelta(minutes=5),
+                        items_snapshot={
+                            "store_id": store_id,
+                            "items": cart["items"]
+                        }
+                    )
+                    request.session["pending_id"] = pending.id
 
                 client = razorpay.Client(auth=(
-                    settings.RAZORPAY_KEY_ID,
-                    settings.RAZORPAY_KEY_SECRET
-                ))
+                        settings.RAZORPAY_KEY_ID,
+                        settings.RAZORPAY_KEY_SECRET
+                    ))
 
-                amount_paise = int((total * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+                amount_paise = to_paise(total)
 
-                razorpay_order = client.order.create({
-                    "amount": amount_paise,
-                    "currency": "INR",
-                    "payment_capture": 1
-                })
+                existing_order_id = request.session.get("razorpay_order_id")
+                existing_amount = request.session.get("razorpay_amount")
 
-                request.session["razorpay_order_id"] = razorpay_order["id"]
-                request.session["pending_id"] = pending.id
+                if existing_order_id and existing_amount == amount_paise:
+                    razorpay_order_id = existing_order_id
+                else:
+                    razorpay_order = client.order.create({
+                        "amount": amount_paise,
+                        "currency": "INR",
+                        "payment_capture": 1
+                    })
+                    razorpay_order_id = razorpay_order["id"]
+
+                    request.session["razorpay_order_id"] = razorpay_order_id
+                    request.session["razorpay_amount"] = amount_paise
+
 
                 return render(request, "upi_payment.html", {
                     "razorpay_key": settings.RAZORPAY_KEY_ID,
                     "amount": amount_paise,
-                    "razorpay_order_id": razorpay_order["id"],
+                    "razorpay_order_id": razorpay_order_id,
                     "customer_name": name,
                     "phone": phone,
                     "display_amount": f"{total:.2f}",
-                    "show_floating_cart": False
                 })
 
             # =========================
@@ -1159,7 +1186,7 @@ def calculate_delivery(request):
     )
 
     # ✅ ROUND PROPERLY
-    total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    total = total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)  # integer ₹
     return JsonResponse({
         "delivery_fee": float(delivery_fee),
         "total": float(total),
@@ -1256,9 +1283,8 @@ def payment_success(request):
         # -------------------------
         # STEP 7: VERIFY AMOUNT
         # -------------------------
-        expected_amount = int(
-            (Decimal(pending.total) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-        )
+        expected_amount = to_paise(pending.total)
+
         actual_amount = payment.get("amount")
 
         logger.info(f"EXPECTED: {expected_amount}, ACTUAL: {actual_amount}")
@@ -1330,6 +1356,7 @@ def payment_success(request):
         # -------------------------
         request.session.pop("pending_id", None)
         request.session.pop("razorpay_order_id", None)
+        request.session.pop("razorpay_amount", None)
         request.session['cart'] = {'store_id': None, 'items': {}}
 
         pending.delete()
@@ -2070,3 +2097,18 @@ def privacy_policy(request):
         "simple_navbar": True
     })
 
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def razorpay_webhook(request):
+    data = json.loads(request.body)
+
+    if data['event'] == 'payment.captured':
+        payment = data['payload']['payment']['entity']
+        payment_id = payment['id']
+        order_id = payment['order_id']
+
+        # mark order as paid safely
+
+    return HttpResponse("OK")
