@@ -1262,7 +1262,6 @@ def payment_success(request):
                 longitude=pending.longitude,
                 subtotal=pending.subtotal,
                 delivery_fee=pending.delivery_fee,
-                small_order_fee=getattr(pending, "handling_fee", 12),
                 handling_fee=getattr(pending, "handling_fee", 12),
                 discount=pending.discount,
                 coupon_code=pending.coupon_code,
