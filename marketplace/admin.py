@@ -34,6 +34,11 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 from django.contrib import admin
+from django.urls import path, reverse
+from django.utils.html import format_html
+from django.http import HttpResponse
+import traceback
+
 from .models import Order, OrderItem
 
 
@@ -55,26 +60,12 @@ class OrderAdmin(admin.ModelAdmin):
         "total",
         "status",
         "payment_method",
-        "pdf_buttons",
-        "created_at",
-        "send_otp_button"
-    )
-
-    list_filter = (
-        "status",
-        "payment_method",
         "created_at",
     )
 
-    search_fields = (
-        "customer_name",
-        "phone",
-        "id",
-    )
-
-    readonly_fields = (
-        "created_at",
-    )
+    list_filter = ("status", "payment_method", "created_at")
+    search_fields = ("customer_name", "phone", "id")
+    readonly_fields = ("created_at",)
 
     fieldsets = (
         ("Customer Info", {
@@ -96,9 +87,6 @@ class OrderAdmin(admin.ModelAdmin):
                 "total",
                 "payment_method",
                 "payment_id",
-                "refund_id",
-                "refund_amount",
-                "is_refunded",
             )
         }),
 
@@ -114,12 +102,54 @@ class OrderAdmin(admin.ModelAdmin):
         }),
 
         ("System Info", {
-            "fields": (
-                "created_at",
-            )
+            "fields": ("created_at",)
         }),
     )
 
+    # 🔥 CRITICAL DEBUG PART
+    def get_queryset(self, request):
+        try:
+            qs = super().get_queryset(request)
+
+            # Force DB query (important)
+            list(qs[:2])
+
+            return qs
+
+        except Exception as e:
+            print("🔥 QUERY ERROR:", str(e))
+            print(traceback.format_exc())
+            return Order.objects.none()
+
+    def changelist_view(self, request, extra_context=None):
+        try:
+            return super().changelist_view(request, extra_context)
+
+        except Exception as e:
+            error_trace = traceback.format_exc()
+
+            return HttpResponse(
+                f"""
+                <h1 style='color:red;'>🔥 ADMIN LIST ERROR</h1>
+                <pre>{error_trace}</pre>
+                """,
+                content_type="text/html"
+            )
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        try:
+            return super().change_view(request, object_id, form_url, extra_context)
+
+        except Exception as e:
+            error_trace = traceback.format_exc()
+
+            return HttpResponse(
+                f"""
+                <h1 style='color:red;'>🔥 ORDER DETAIL ERROR</h1>
+                <pre>{error_trace}</pre>
+                """,
+                content_type="text/html"
+            )
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
