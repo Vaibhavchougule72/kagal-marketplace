@@ -1,13 +1,15 @@
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
 var options = {
-    "key": "{{ razorpay_key }}",
-    "amount": Number("{{ amount }}"),
-    "currency": "INR",
-    "name": "Kagal Marketplace",
-    "description": "Order Payment",
-    "order_id": "{{ razorpay_order_id }}",
+    key: "{{ razorpay_key }}",
+    amount: Number("{{ amount }}"),
+    currency: "INR",
+    name: "Kagal Marketplace",
+    description: "Order Payment",
+    order_id: "{{ razorpay_order_id }}",
 
-    "handler": function (response){
+    handler: function (response){
 
         console.log("✅ PAYMENT SUCCESS RESPONSE:", response);
 
@@ -18,43 +20,51 @@ var options = {
             + "&pending_id={{ request.session.pending_id }}";
     },
 
-    "prefill": {
-        "name": "{{ customer_name }}",
-        "contact": "{{ phone }}"
+    prefill: {
+        name: "{{ customer_name }}",
+        contact: "{{ phone }}"
     },
 
-    "theme": {
-        "color": "#198754"
+    theme: {
+        color: "#198754"
     }
 };
 
-var rzp = new Razorpay(options);
-
-/* 🔥 CRITICAL DEBUG */
-rzp.on('payment.failed', function (response){
-
-    console.log("❌ PAYMENT FAILED FULL OBJECT:", response);
-
-    alert(
-        "Payment Failed\n\n" +
-        "Code: " + response.error.code + "\n" +
-        "Reason: " + response.error.reason + "\n" +
-        "Step: " + response.error.step + "\n" +
-        "Description: " + response.error.description
-    );
-
-    document.getElementById('rzp-button').disabled = false;
-    document.getElementById('rzp-button').innerText = "Pay Now";
-});
-
 document.getElementById('rzp-button').onclick = function(e){
+
+    e.preventDefault();
+
+    console.log("🚀 BUTTON CLICKED");
+
+    // ✅ SAFETY CHECK
+    if (typeof Razorpay === "undefined") {
+        alert("Payment system not loaded. Please refresh.");
+        return;
+    }
 
     this.disabled = true;
     this.innerText = "Processing...";
 
-    console.log("🚀 OPENING RAZORPAY");
+    // ✅ CREATE INSTANCE HERE (IMPORTANT)
+    var rzp = new Razorpay(options);
+
+    // ✅ FAILURE DEBUG
+    rzp.on('payment.failed', function (response){
+
+        console.log("❌ PAYMENT FAILED FULL OBJECT:", response);
+
+        alert(
+            "Payment Failed\n\n" +
+            "Code: " + response.error.code + "\n" +
+            "Reason: " + response.error.reason + "\n" +
+            "Step: " + response.error.step + "\n" +
+            "Description: " + response.error.description
+        );
+
+        document.getElementById('rzp-button').disabled = false;
+        document.getElementById('rzp-button').innerText = "Pay Now";
+    });
 
     rzp.open();
-    e.preventDefault();
-}
+};
 </script>
