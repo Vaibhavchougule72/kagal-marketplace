@@ -66,7 +66,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     list_filter = ("status", "payment_method", "created_at")
     search_fields = ("customer_name", "phone", "id")
-    readonly_fields = ("created_at", "pdf_buttons", "send_otp_button")
+    readonly_fields = ("created_at", "pdf_buttons")
 
     fieldsets = (
         ("Customer Info", {
@@ -103,7 +103,7 @@ class OrderAdmin(admin.ModelAdmin):
         }),
 
         ("System Info", {
-            "fields": ("created_at", "pdf_buttons", "send_otp_button")
+            "fields": ("created_at", "pdf_buttons")
         }),
 
         
