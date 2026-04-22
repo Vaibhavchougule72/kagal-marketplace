@@ -1146,10 +1146,13 @@ from django.http import HttpResponse
 
 def payment_success(request):
 
-    payment_id = request.GET.get("payment_id")
-    razorpay_order_id = request.GET.get("order_id")
-    signature = request.GET.get("signature")
+    payment_id = request.GET.get("razorpay_payment_id")
+    razorpay_order_id = request.GET.get("razorpay_order_id")
+    signature = request.GET.get("razorpay_signature")
 
+    if not payment_id or not razorpay_order_id or not signature:
+        return HttpResponse("Invalid payment response")
+    
     if Order.objects.filter(payment_id=payment_id).exists():
         return HttpResponse("Order already created")
 
@@ -1166,22 +1169,31 @@ def payment_success(request):
     if pending.payment_method != "UPI":
         return HttpResponse("Invalid payment flow")
 
-    generated_signature = hmac.new(
-        bytes(settings.RAZORPAY_KEY_SECRET, 'utf-8'),
-        bytes(razorpay_order_id + "|" + payment_id, 'utf-8'),
-        hashlib.sha256
-    ).hexdigest()
+    
+    import razorpay
 
-    if generated_signature != signature:
-        return HttpResponse("Payment verification failed")
+    client = razorpay.Client(auth=(
+        settings.RAZORPAY_KEY_ID,
+        settings.RAZORPAY_KEY_SECRET
+    ))
+
     
     try:
-        amount = int(request.GET.get("amount"))
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        })
     except:
-        return HttpResponse("Invalid amount")
+        return HttpResponse("Payment verification failed")
 
-    if int(pending.total * 100) != amount:
-        return HttpResponse("Amount mismatch")
+    # Fetch actual payment from Razorpay
+    payment = client.payment.fetch(payment_id)
+
+    expected_amount = int(pending.total * 100)
+
+    if payment["amount"] != expected_amount:
+        return HttpResponse("Invalid amount")
     
     cart_items = pending.items_snapshot or {}
 
