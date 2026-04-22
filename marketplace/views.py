@@ -20,6 +20,7 @@ from django.db.models import F
 from .models import CouponUsage
 from .models import Coupon
 from django.core.cache import cache
+from decimal import Decimal, ROUND_HALF_UP
 # from .sms_service import send_sms   ❌ comment
 
 
@@ -594,8 +595,15 @@ def checkout(request):
                     context["error"] = str(e)
                     return render(request, "checkout.html", context)
 
-            total = subtotal + delivery_fee + handling_fee - discount
+            total = (
+                Decimal(subtotal) +
+                Decimal(delivery_fee) +
+                Decimal(handling_fee) -
+                Decimal(discount)
+            )
 
+            # ✅ ROUND PROPERLY
+            total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             if subtotal < 149 and payment == "COD":
                 context["error"] = "COD not allowed below ₹149"
                 return render(request, "checkout.html", context)
@@ -633,8 +641,10 @@ def checkout(request):
                     settings.RAZORPAY_KEY_SECRET
                 ))
 
+                amount_paise = int((total * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
                 razorpay_order = client.order.create({
-                    "amount": int(total * 100),
+                    "amount": amount_paise,
                     "currency": "INR",
                     "payment_capture": 1
                 })
@@ -644,7 +654,7 @@ def checkout(request):
 
                 return render(request, "upi_payment.html", {
                     "razorpay_key": settings.RAZORPAY_KEY_ID,
-                    "amount": int(total * 100),
+                    "amount": amount_paise,
                     "razorpay_order_id": razorpay_order["id"],
                     "customer_name": name,
                     "phone": phone,
@@ -1134,8 +1144,14 @@ def calculate_delivery(request):
             delivery_fee = Decimal(60)
 
     delivery_fee = Decimal(round(delivery_fee, 2))
-    total = subtotal + delivery_fee + handling_fee
+    total = (
+        Decimal(subtotal) +
+        Decimal(delivery_fee) +
+        Decimal(handling_fee)
+    )
 
+    # ✅ ROUND PROPERLY
+    total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     return JsonResponse({
         "delivery_fee": float(delivery_fee),
         "total": float(total),
@@ -1232,7 +1248,9 @@ def payment_success(request):
         # -------------------------
         # STEP 7: VERIFY AMOUNT
         # -------------------------
-        expected_amount = int(pending.total * 100)
+        expected_amount = int(
+            (Decimal(pending.total) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        )
         actual_amount = payment.get("amount")
 
         logger.info(f"EXPECTED: {expected_amount}, ACTUAL: {actual_amount}")
