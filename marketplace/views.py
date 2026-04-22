@@ -564,10 +564,13 @@ def checkout(request):
                 delivery_fee = Decimal(0)
 
             else:
-                delivery_fee = min(
-                    Decimal(20 + max(0, (distance - 2) * 5)),
-                    Decimal(60)
-                )
+                delivery_fee = 20 + max(0, (distance - 2) * 5)
+
+                delivery_fee = math.ceil(delivery_fee)   # 🔥 ALWAYS ROUND UP
+
+                delivery_fee = min(delivery_fee, 60)
+
+                delivery_fee = Decimal(delivery_fee)
                 
             # -------------------------
             # COUPON
@@ -603,7 +606,7 @@ def checkout(request):
             )
 
             # ✅ ROUND PROPERLY
-            total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            total = total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             if subtotal < 149 and payment == "COD":
                 context["error"] = "COD not allowed below ₹149"
                 return render(request, "checkout.html", context)
@@ -1138,12 +1141,17 @@ def calculate_delivery(request):
         if distance <= 2:
             delivery_fee = Decimal(20)
         else:
-            delivery_fee = Decimal(20 + ((distance - 2) * 5))
+            delivery_fee = 20 + max(0, (distance - 2) * 5)
+            delivery_fee = math.ceil(delivery_fee)
+            delivery_fee = min(delivery_fee, 60)
+            delivery_fee = Decimal(delivery_fee)
+
 
         if delivery_fee > 60:
             delivery_fee = Decimal(60)
 
-    delivery_fee = Decimal(round(delivery_fee, 2))
+    delivery_fee = Decimal(delivery_fee)
+
     total = (
         Decimal(subtotal) +
         Decimal(delivery_fee) +
