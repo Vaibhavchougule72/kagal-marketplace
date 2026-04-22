@@ -24,17 +24,29 @@ from django.core.cache import cache
 
 from django.db import connection
 from django.http import HttpResponse
+from django.db import connection
+from django.http import HttpResponse
 
 def fix_db(request):
     try:
         with connection.cursor() as cursor:
+
+            # 1. Make column nullable first (safe)
+            cursor.execute("""
+                ALTER TABLE marketplace_order
+                ALTER COLUMN small_order_fee DROP NOT NULL;
+            """)
+
+            # 2. Then drop column
             cursor.execute("""
                 ALTER TABLE marketplace_order
                 DROP COLUMN IF EXISTS small_order_fee;
             """)
-        return HttpResponse("✅ small_order_fee column removed successfully")
+
+        return HttpResponse("✅ DB FIXED SUCCESSFULLY")
+
     except Exception as e:
-        return HttpResponse(f"❌ Error: {str(e)}")
+        return HttpResponse(f"❌ ERROR: {str(e)}")
 
 def send_sms(*args, **kwargs):
     return True  # dummy function (prevents crash)
