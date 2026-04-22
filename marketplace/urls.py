@@ -44,7 +44,6 @@ urlpatterns = [
     #    views.send_delivery_otp,
     #    name="send_delivery_otp"
     #),
-    path("fix-db/", views.fix_db),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
     path("test-cache/", views.test_cache, name="test_cache"),
