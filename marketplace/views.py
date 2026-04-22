@@ -22,6 +22,20 @@ from .models import Coupon
 from django.core.cache import cache
 # from .sms_service import send_sms   ❌ comment
 
+from django.db import connection
+from django.http import HttpResponse
+
+def fix_db(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                ALTER TABLE marketplace_order
+                DROP COLUMN IF EXISTS small_order_fee;
+            """)
+        return HttpResponse("✅ small_order_fee column removed successfully")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")
+
 def send_sms(*args, **kwargs):
     return True  # dummy function (prevents crash)
 
