@@ -1139,117 +1139,127 @@ def calculate_delivery(request):
         "distance": round(distance, 2)
     })
 
-
-import hmac
-import hashlib
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse
+from django.conf import settings
+from django.db import transaction
+from decimal import Decimal
+import razorpay
 
 def payment_success(request):
 
+    # -------------------------
+    # GET PARAMS
+    # -------------------------
     payment_id = request.GET.get("razorpay_payment_id")
     razorpay_order_id = request.GET.get("razorpay_order_id")
     signature = request.GET.get("razorpay_signature")
 
     if not payment_id or not razorpay_order_id or not signature:
         return HttpResponse("Invalid payment response")
-    
+
+    # -------------------------
+    # PREVENT DUPLICATE
+    # -------------------------
     if Order.objects.filter(payment_id=payment_id).exists():
         return HttpResponse("Order already created")
 
-    pending_id = request.session.get("pending_id")
-
-    if razorpay_order_id != request.session.get("razorpay_order_id"):
-        return HttpResponse("Order ID mismatch")
+    # -------------------------
+    # GET PENDING (SESSION FALLBACK FIX)
+    # -------------------------
+    pending_id = request.GET.get("pending_id") or request.session.get("pending_id")
 
     if not pending_id:
         return HttpResponse("Invalid session")
 
-    pending = get_object_or_404(PendingOrder, id=pending_id)
+    try:
+        pending = PendingOrder.objects.get(id=pending_id)
+    except PendingOrder.DoesNotExist:
+        return HttpResponse("Invalid order reference")
 
     if pending.payment_method != "UPI":
         return HttpResponse("Invalid payment flow")
 
-    
-    import razorpay
+    # -------------------------
+    # OPTIONAL: ORDER ID CHECK (SAFE)
+    # -------------------------
+    session_order_id = request.session.get("razorpay_order_id")
+    if session_order_id and razorpay_order_id != session_order_id:
+        return HttpResponse("Order ID mismatch")
 
+    # -------------------------
+    # RAZORPAY CLIENT
+    # -------------------------
     client = razorpay.Client(auth=(
         settings.RAZORPAY_KEY_ID,
         settings.RAZORPAY_KEY_SECRET
     ))
 
-    
+    # -------------------------
+    # VERIFY SIGNATURE
+    # -------------------------
     try:
         client.utility.verify_payment_signature({
             'razorpay_order_id': razorpay_order_id,
             'razorpay_payment_id': payment_id,
             'razorpay_signature': signature
         })
-    except:
+    except Exception as e:
+        print("SIGNATURE ERROR:", e)
         return HttpResponse("Payment verification failed")
 
-    # Fetch actual payment from Razorpay
-    payment = client.payment.fetch(payment_id)
+    # -------------------------
+    # FETCH PAYMENT
+    # -------------------------
+    try:
+        payment = client.payment.fetch(payment_id)
+    except Exception as e:
+        print("RAZORPAY FETCH ERROR:", e)
+        return HttpResponse("Payment verification failed")
 
+    # -------------------------
+    # VERIFY AMOUNT (PAISE)
+    # -------------------------
     expected_amount = int(pending.total * 100)
 
-    if payment["amount"] != expected_amount:
+    if payment.get("amount") != expected_amount:
         return HttpResponse("Invalid amount")
-    
+
+    # -------------------------
+    # ITEMS SNAPSHOT CHECK
+    # -------------------------
     cart_items = pending.items_snapshot or {}
 
     if not cart_items.get('items'):
         return redirect('home')
-    
-    if pending.coupon_code:
-        try:
-            with transaction.atomic():
 
-                coupon = Coupon.objects.get(code=pending.coupon_code)
-
-                if coupon.used_count >= coupon.usage_limit:
-                    messages.error(request, "Coupon usage limit reached")
-                    return redirect("checkout")
-                
-                if CouponUsage.objects.filter(coupon=coupon, phone=pending.phone).exists():
-                    messages.error(request, "Coupon already used")
-                    return redirect("checkout")
-
-                CouponUsage.objects.create(
-                    coupon=coupon,
-                    phone=pending.phone
-                )
-
-                coupon.used_count += 1
-                coupon.save()
-
-        except Coupon.DoesNotExist:
-            logger.warning("Coupon not found in payment_success")
-    
+    # -------------------------
+    # STORE CHECK
+    # -------------------------
     store = get_object_or_404(Store, id=pending.store_id)
 
     if not store.is_open():
         pending.delete()
         return HttpResponse("Store is closed. Payment will be refunded.")
+
+    # -------------------------
+    # CREATE ORDER
+    # -------------------------
     with transaction.atomic():
-        # Payment verified → Create order
+
         order = Order.objects.create(
             store_id=pending.store_id,
             customer_name=pending.customer_name,
             phone=pending.phone,
             address=pending.address,
-
             latitude=pending.latitude,
             longitude=pending.longitude,
-
             subtotal=pending.subtotal,
             delivery_fee=pending.delivery_fee,
             handling_fee=getattr(pending, "handling_fee", 0),
-            
             discount=pending.discount,
             coupon_code=pending.coupon_code,
-
             total=pending.total,
-
             payment_method="UPI",
             status="REQUEST_SUBMITTED",
             payment_id=payment_id
@@ -1257,43 +1267,43 @@ def payment_success(request):
 
         for item_id, item in cart_items['items'].items():
 
-            # PRODUCT
-            if item_id.isdigit():
+            if str(item_id).isdigit():
                 try:
                     product = Product.objects.get(id=int(item_id))
 
                     OrderItem.objects.create(
                         order=order,
                         product=product,
-                        price = Decimal(str(item.get('price', 0))),
-                        quantity = int(item.get('quantity', 1))
+                        price=Decimal(str(item.get('price', 0))),
+                        quantity=int(item.get('quantity', 1))
                     )
-
                 except Product.DoesNotExist:
                     continue
 
-            # BUNDLE
             elif str(item_id).startswith("bundle_"):
 
                 OrderItem.objects.create(
                     order=order,
                     product=None,
                     bundle_name=item.get("name", "Combo"),
-                    price = Decimal(str(item.get('price', 0))),
-                    quantity = int(item.get('quantity', 1))
+                    price=Decimal(str(item.get('price', 0))),
+                    quantity=int(item.get('quantity', 1))
                 )
-        
+
+    # -------------------------
+    # SAFETY: EMPTY ORDER CHECK
+    # -------------------------
     if not order.items.exists():
         order.delete()
-        messages.error(request, "Some items are no longer available. Please try again.")
         return redirect('checkout')
-            
-    
 
+    # -------------------------
+    # CLEANUP
+    # -------------------------
     request.session.pop("pending_id", None)
     request.session.pop("razorpay_order_id", None)
-
     request.session['cart'] = {'store_id': None, 'items': {}}
+
     pending.delete()
 
     return redirect("order_success", order_id=order.id)
