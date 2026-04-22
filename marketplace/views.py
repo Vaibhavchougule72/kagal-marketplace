@@ -686,7 +686,14 @@ def checkout(request):
                 logger.info(f"RAZORPAY_ORDER_ID: {razorpay_order_id}")
                 logger.info(f"PENDING_ID: {pending.id}")
                 logger.info("=====================================")
-                return redirect(f"/upi_payment/?order_id={razorpay_order_id}&amount={amount_paise}&name={name}&phone={phone}")
+                return render(request, "upi_payment.html", {
+                    "razorpay_key": settings.RAZORPAY_KEY_ID,
+                    "amount": amount_paise,
+                    "razorpay_order_id": razorpay_order_id,
+                    "customer_name": name,
+                    "phone": phone,
+                    "display_amount": f"{total:.2f}",
+                })
 
             # =========================
             # 🟢 COD FLOW

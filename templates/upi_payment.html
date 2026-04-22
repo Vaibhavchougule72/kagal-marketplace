@@ -5,13 +5,19 @@
 <div class="container page-content">
     <h4>{% trans "Complete Your UPI Payment" %}</h4>
 
-    
+    <button id="rzp-button" class="btn btn-success mt-4 px-4 py-2">
+        Pay ₹ {{ display_amount }}
+    </button>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
+
+    var btn = document.getElementById('rzp-button');
+
+    if (!btn) return;
 
     var options = {
         key: "{{ razorpay_key }}",
@@ -21,8 +27,18 @@ document.addEventListener("DOMContentLoaded", function(){
         description: "Order Payment",
         order_id: "{{ razorpay_order_id }}",
 
+        modal: {
+            ondismiss: function(){
+                console.log("❌ User closed payment popup");
+                btn.disabled = false;
+                btn.innerText = "Pay ₹ {{ display_amount }}";
+            }
+        },
+
         handler: function (response){
-            window.location.href = "https://www.loka-store.online/payment-success/?razorpay_payment_id="
+            console.log("✅ PAYMENT SUCCESS:", response);
+
+            window.location.href = "/payment-success/?razorpay_payment_id="
                 + response.razorpay_payment_id
                 + "&razorpay_order_id=" + response.razorpay_order_id
                 + "&razorpay_signature=" + response.razorpay_signature
@@ -39,17 +55,34 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     };
 
-    if (typeof Razorpay === "undefined") {
-        alert("Payment failed to load. Refresh.");
-        return;
-    }
+    btn.onclick = function(e){
 
-    var rzp = new Razorpay(options);
+        e.preventDefault();
 
-    // 🔥 SMALL DELAY (important for Android WebView detection)
-    setTimeout(function(){
+        // ✅ Razorpay load check
+        if (typeof Razorpay === "undefined") {
+            alert("Payment system failed to load. Refresh page.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Waiting for payment confirmation...";
+
+        var rzp = new Razorpay(options);
+
+        rzp.on('payment.failed', function (response){
+            console.log("⚠️ Ignoring Razorpay false failure:", response);
+        });
+
         rzp.open();
-    }, 500);
+
+        // ✅ fallback message
+        setTimeout(function(){
+            if (btn.disabled) {
+                btn.innerText = "Still processing... If amount deducted, wait.";
+            }
+        }, 5000);
+    };
 
 });
 </script>
