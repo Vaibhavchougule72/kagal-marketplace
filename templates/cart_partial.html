@@ -72,28 +72,9 @@
 
 </div>
 
-<!-- 💰 handling Fee Warning -->
-{% if remaining_to_149 > 0 %}
-<div class="alert alert-warning fw-bold text-center mb-3">
-    {% trans "Add items worth" %} ₹{{ remaining_to_149 }} {% trans "more to avoid ₹20 handling Fee." %}
+<div class="text-center mb-3" style="font-size: 15px; color: #198754;">
+    🚚 Free Delivery on orders above ₹499
 </div>
-{% endif %}
-
-{% if cod_not_allowed %}
-<div class="alert alert-danger fw-bold text-center mb-3">
-    {% trans "Cash on Delivery is not available below ₹149." %}
-</div>
-{% endif %}
-
-{% if remaining_to_free_delivery > 0 %}
-<div class="alert alert-info fw-bold text-center mb-3">
-    {% trans "Add" %} ₹{{ remaining_to_free_delivery }} {% trans "more to unlock FREE delivery 🎉" %}
-</div>
-{% else %}
-<div class="alert alert-success fw-bold text-center mb-3">
-    {% trans "🎉 Congratulations! You unlocked FREE delivery!" %}
-</div>
-{% endif %}
 
 <!-- Cart Summary -->
 <div class="mt-3 border-top pt-3">
