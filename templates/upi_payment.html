@@ -1,3 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+
+<div class="container page-content">
+    <h4>{% trans "Complete Your UPI Payment" %}</h4>
+
+    <button id="rzp-button" class="btn btn-success mt-4 px-4 py-2">
+        Pay ₹ {{ display_amount }}
+    </button>
+</div>
+
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
@@ -6,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function(){
     var btn = document.getElementById('rzp-button');
 
     if (!btn) {
-        console.error("❌ Button not found");
+        console.log("⚠️ Not payment page");
         return;
     }
 
@@ -20,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         modal: {
             ondismiss: function(){
-                console.log("❌ Payment popup closed by user");
+                console.log("❌ User closed payment popup");
             }
         },
 
@@ -51,22 +63,20 @@ document.addEventListener("DOMContentLoaded", function(){
 
         console.log("🚀 PAY BUTTON CLICKED");
 
-        // 🔴 Razorpay load check
         if (typeof Razorpay === "undefined") {
-            alert("❌ Razorpay not loaded. Please refresh page.");
-            console.error("Razorpay script missing");
+            alert("❌ Razorpay not loaded. Refresh page.");
             return;
         }
 
-        this.disabled = true;
-        this.innerText = "Processing...";
+        btn.disabled = true;
+        btn.innerText = "Processing...";
 
         var rzp = new Razorpay(options);
 
-        // 🔥 FULL FAILURE DEBUG
+        // 🔥 VERY IMPORTANT (THIS SHOWS REAL ERROR)
         rzp.on('payment.failed', function (response){
 
-            console.log("❌ FULL FAILURE OBJECT:", response);
+            console.log("❌ FULL FAILURE:", response);
 
             alert(
                 "❌ PAYMENT FAILED\n\n" +
