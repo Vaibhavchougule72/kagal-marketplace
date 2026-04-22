@@ -41,6 +41,11 @@
             {% trans "Total:" %} ₹{{ order.total }}
         </p>
 
+        <!-- 🔥 NEW MARATHI MESSAGE -->
+        <p class="mt-3 text-muted fw-semibold">
+            📄 तुमचा ऑर्डरचा बिल डाउनलोड करण्यासाठी "Track Order" वर क्लिक करा.
+        </p>
+
         <a href="{% url 'order_tracking' order.id %}" class="btn btn-primary mt-3">
             {% trans "Track Order" %}
         </a>
