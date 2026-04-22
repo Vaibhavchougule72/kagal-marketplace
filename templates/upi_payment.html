@@ -1,70 +1,88 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-var options = {
-    key: "{{ razorpay_key }}",
-    amount: Number("{{ amount }}"),
-    currency: "INR",
-    name: "Kagal Marketplace",
-    description: "Order Payment",
-    order_id: "{{ razorpay_order_id }}",
+document.addEventListener("DOMContentLoaded", function(){
 
-    handler: function (response){
+    var btn = document.getElementById('rzp-button');
 
-        console.log("✅ PAYMENT SUCCESS RESPONSE:", response);
-
-        window.location.href = "/payment-success/?razorpay_payment_id="
-            + response.razorpay_payment_id
-            + "&razorpay_order_id=" + response.razorpay_order_id
-            + "&razorpay_signature=" + response.razorpay_signature
-            + "&pending_id={{ request.session.pending_id }}";
-    },
-
-    prefill: {
-        name: "{{ customer_name }}",
-        contact: "{{ phone }}"
-    },
-
-    theme: {
-        color: "#198754"
-    }
-};
-
-document.getElementById('rzp-button').onclick = function(e){
-
-    e.preventDefault();
-
-    console.log("🚀 BUTTON CLICKED");
-
-    // ✅ SAFETY CHECK
-    if (typeof Razorpay === "undefined") {
-        alert("Payment system not loaded. Please refresh.");
+    if (!btn) {
+        console.error("❌ Button not found");
         return;
     }
 
-    this.disabled = true;
-    this.innerText = "Processing...";
+    var options = {
+        key: "{{ razorpay_key }}",
+        amount: Number("{{ amount }}"),
+        currency: "INR",
+        name: "Kagal Marketplace",
+        description: "Order Payment",
+        order_id: "{{ razorpay_order_id }}",
 
-    // ✅ CREATE INSTANCE HERE (IMPORTANT)
-    var rzp = new Razorpay(options);
+        modal: {
+            ondismiss: function(){
+                console.log("❌ Payment popup closed by user");
+            }
+        },
 
-    // ✅ FAILURE DEBUG
-    rzp.on('payment.failed', function (response){
+        handler: function (response){
 
-        console.log("❌ PAYMENT FAILED FULL OBJECT:", response);
+            console.log("✅ PAYMENT SUCCESS:", response);
 
-        alert(
-            "Payment Failed\n\n" +
-            "Code: " + response.error.code + "\n" +
-            "Reason: " + response.error.reason + "\n" +
-            "Step: " + response.error.step + "\n" +
-            "Description: " + response.error.description
-        );
+            window.location.href = "/payment-success/?razorpay_payment_id="
+                + response.razorpay_payment_id
+                + "&razorpay_order_id=" + response.razorpay_order_id
+                + "&razorpay_signature=" + response.razorpay_signature
+                + "&pending_id={{ request.session.pending_id }}";
+        },
 
-        document.getElementById('rzp-button').disabled = false;
-        document.getElementById('rzp-button').innerText = "Pay Now";
-    });
+        prefill: {
+            name: "{{ customer_name }}",
+            contact: "{{ phone }}"
+        },
 
-    rzp.open();
-};
+        theme: {
+            color: "#198754"
+        }
+    };
+
+    btn.onclick = function(e){
+
+        e.preventDefault();
+
+        console.log("🚀 PAY BUTTON CLICKED");
+
+        // 🔴 Razorpay load check
+        if (typeof Razorpay === "undefined") {
+            alert("❌ Razorpay not loaded. Please refresh page.");
+            console.error("Razorpay script missing");
+            return;
+        }
+
+        this.disabled = true;
+        this.innerText = "Processing...";
+
+        var rzp = new Razorpay(options);
+
+        // 🔥 FULL FAILURE DEBUG
+        rzp.on('payment.failed', function (response){
+
+            console.log("❌ FULL FAILURE OBJECT:", response);
+
+            alert(
+                "❌ PAYMENT FAILED\n\n" +
+                "Code: " + response.error.code + "\n" +
+                "Reason: " + response.error.reason + "\n" +
+                "Step: " + response.error.step + "\n" +
+                "Description: " + response.error.description + "\n" +
+                "Source: " + response.error.source
+            );
+
+            btn.disabled = false;
+            btn.innerText = "Pay ₹ {{ display_amount }}";
+        });
+
+        rzp.open();
+    };
+
+});
 </script>
