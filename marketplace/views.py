@@ -680,7 +680,12 @@ def checkout(request):
                 request.session["razorpay_order_id"] = razorpay_order_id
                 request.session["razorpay_amount"] = amount_paise
 
-
+                logger.info("=========== CHECKOUT DEBUG ===========")
+                logger.info(f"TOTAL: {total}")
+                logger.info(f"AMOUNT_PAISE: {amount_paise}")
+                logger.info(f"RAZORPAY_ORDER_ID: {razorpay_order_id}")
+                logger.info(f"PENDING_ID: {pending.id}")
+                logger.info("=====================================")
                 return render(request, "upi_payment.html", {
                     "razorpay_key": settings.RAZORPAY_KEY_ID,
                     "amount": amount_paise,
@@ -1274,28 +1279,30 @@ def payment_success(request):
         # -------------------------
         try:
             payment = client.payment.fetch(payment_id)
-            logger.info(f"RAZORPAY PAYMENT: {payment}")
+
+            logger.info("=========== PAYMENT DEBUG ===========")
+            logger.info(f"FULL PAYMENT OBJECT: {payment}")
+            logger.info(f"STATUS: {payment.get('status')}")
+            logger.info(f"METHOD: {payment.get('method')}")
+            logger.info(f"ERROR: {payment.get('error_description')}")
+            logger.info("====================================")
+
         except Exception as e:
             logger.error(f"Razorpay fetch error: {str(e)}")
             return HttpResponse("Payment verification failed")
-
-        if payment.get("status") != "captured":
-            logger.error("Payment not captured")
-            return HttpResponse("Payment not completed")
 
         # -------------------------
         # STEP 7: VERIFY AMOUNT
         # -------------------------
         expected_amount = to_paise(pending.total)
-
         actual_amount = payment.get("amount")
 
-        logger.info(f"EXPECTED: {expected_amount}, ACTUAL: {actual_amount}")
+        logger.info(f"EXPECTED: {expected_amount}")
+        logger.info(f"ACTUAL: {actual_amount}")
 
         if actual_amount != expected_amount:
-            logger.error("Amount mismatch")
+            logger.error("❌ AMOUNT MISMATCH")
             return HttpResponse("Invalid amount")
-
         # -------------------------
         # STEP 8: STORE CHECK
         # -------------------------

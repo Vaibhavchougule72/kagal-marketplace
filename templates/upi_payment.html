@@ -1,17 +1,3 @@
-{% extends "base.html" %}
-{% load i18n %}
-{% block content %}
-
-<div class="container page-content">
-    <h4>{% trans "Complete Your UPI Payment" %}</h4>
-
-    <button id="rzp-button" class="btn btn-success mt-4 px-4 py-2">
-        Pay ₹ {{ display_amount }}
-    </button>
-</div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 <script>
 var options = {
     "key": "{{ razorpay_key }}",
@@ -20,13 +6,10 @@ var options = {
     "name": "Kagal Marketplace",
     "description": "Order Payment",
     "order_id": "{{ razorpay_order_id }}",
-    "modal": {
-        "ondismiss": function(){
-            console.log("Payment popup closed");
-        }
-    },
 
     "handler": function (response){
+
+        console.log("✅ PAYMENT SUCCESS RESPONSE:", response);
 
         window.location.href = "/payment-success/?razorpay_payment_id="
             + response.razorpay_payment_id
@@ -43,13 +26,22 @@ var options = {
     "theme": {
         "color": "#198754"
     }
-    
 };
 
 var rzp = new Razorpay(options);
 
+/* 🔥 CRITICAL DEBUG */
 rzp.on('payment.failed', function (response){
-    console.log("Payment failed:", response.error);
+
+    console.log("❌ PAYMENT FAILED FULL OBJECT:", response);
+
+    alert(
+        "Payment Failed\n\n" +
+        "Code: " + response.error.code + "\n" +
+        "Reason: " + response.error.reason + "\n" +
+        "Step: " + response.error.step + "\n" +
+        "Description: " + response.error.description
+    );
 
     document.getElementById('rzp-button').disabled = false;
     document.getElementById('rzp-button').innerText = "Pay Now";
@@ -60,9 +52,9 @@ document.getElementById('rzp-button').onclick = function(e){
     this.disabled = true;
     this.innerText = "Processing...";
 
+    console.log("🚀 OPENING RAZORPAY");
+
     rzp.open();
     e.preventDefault();
 }
 </script>
-
-{% endblock %}
