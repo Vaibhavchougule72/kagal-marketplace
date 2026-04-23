@@ -1775,7 +1775,7 @@ def admin_dashboard(request):
     # Revenue
     total_revenue = Order.objects.filter(
         status="DELIVERED"
-    ).aggregate(Sum("total"))["total__sum"] or 0
+    ).aggregate(Sum("subtotal"))["subtotal__sum"] or 0
 
     # Today's orders
     todays_orders = Order.objects.filter(
@@ -1813,7 +1813,7 @@ def admin_dashboard(request):
     ).annotate(
         day=TruncDate("created_at")
     ).values("day").annotate(
-        revenue=Sum("total")
+        revenue=Sum("subtotal")
     ).order_by("day")
 
     # Convert chart data
@@ -1837,7 +1837,7 @@ def admin_dashboard(request):
     ).values(
         "store__name"
     ).annotate(
-        revenue=Sum("total")
+        revenue=Sum("subtotal")
     ).order_by("-revenue")[:5]
 
     # Hourly demand
@@ -2067,8 +2067,8 @@ def store_dashboard(request):
         )
 
         sales = orders.aggregate(
-            Sum("total")
-        )["total__sum"] or 0
+            Sum("subtotal")
+        )["subtotal__sum"] or 0
 
         order_count = orders.count()
 

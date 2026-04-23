@@ -198,7 +198,7 @@ class Order(models.Model):
         # ==================================================
         # 🔥 DELIVERY METRICS CALCULATION (MAIN LOGIC)
         # ==================================================
-        if self.status == "DELIVERED" and not self.delivery_distance:
+        if self.status == "DELIVERED":
 
             try:
                 # 📍 Store location (YOU MUST ADD THESE FIELDS IF NOT EXISTS)
