@@ -1157,8 +1157,8 @@ def calculate_delivery(request):
     longitude = float(longitude)
     subtotal = Decimal(subtotal)
 
-    BUS_STAND_LAT = 16.5775
-    BUS_STAND_LON = 74.3169
+    BUS_STAND_LAT = 16.579644
+    BUS_STAND_LON = 74.312721
 
     distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 

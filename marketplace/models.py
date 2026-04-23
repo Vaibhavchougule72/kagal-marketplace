@@ -177,6 +177,12 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
 
+        from .views import calculate_distance  # import here to avoid circular import
+        import math
+
+        # -------------------------
+        # STATUS TIMESTAMPS
+        # -------------------------
         if self.status == "ACCEPTED" and not self.accepted_at:
             self.accepted_at = timezone.now()
 
@@ -184,11 +190,44 @@ class Order(models.Model):
             self.picked_at = timezone.now()
 
         if self.status == "OUT_FOR_DELIVERY" and not self.out_for_delivery_at:
-
             self.out_for_delivery_at = timezone.now()
 
         if self.status == "DELIVERED" and not self.delivered_at:
             self.delivered_at = timezone.now()
+
+        # ==================================================
+        # 🔥 DELIVERY METRICS CALCULATION (MAIN LOGIC)
+        # ==================================================
+        if self.status == "DELIVERED" and not self.delivery_distance:
+
+            try:
+                # 📍 Store location (YOU MUST ADD THESE FIELDS IF NOT EXISTS)
+                store_lat = 16.579644   # fallback (bus stand)
+                store_lon = 74.312721
+
+                # If you later add store lat/lon → replace above
+
+                # 📏 distance
+                distance = calculate_distance(
+                    store_lat,
+                    store_lon,
+                    self.latitude,
+                    self.longitude
+                )
+
+                # ⏱ time
+                time_minutes = int(distance * 5)
+
+                # 💰 payout formula
+                payout = 10 + (round(distance + 1) * 4)
+
+                # SAVE
+                self.delivery_distance = round(distance, 2)
+                self.delivery_time_minutes = time_minutes
+                self.delivery_payout = round(payout, 2)
+
+            except Exception as e:
+                print("DELIVERY CALCULATION ERROR:", e)
 
         super().save(*args, **kwargs)
 
