@@ -2173,7 +2173,8 @@ def rider_dashboard(request):
             "completed_orders": completed_orders,
             "total_payout": total_payout,
             "total_distance": round(total_distance, 2),
-            "show_floating_cart": False
+            "show_floating_cart": False,
+            "simple_navbar": True
         })
 
     except Exception as e:
