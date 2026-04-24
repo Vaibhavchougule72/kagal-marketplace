@@ -2132,32 +2132,54 @@ def razorpay_webhook(request):
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 
+import logging
+logger = logging.getLogger(__name__)
+
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+
 @login_required
 def rider_dashboard(request):
-    active_orders = Order.objects.filter(
-        assigned_delivery=request.user
-    ).exclude(status="DELIVERED").order_by("-created_at")
 
-    completed_orders = Order.objects.filter(
-        assigned_delivery=request.user,
-        status="DELIVERED"
-    )
+    try:
+        active_orders = Order.objects.filter(
+            assigned_delivery=request.user
+        ).exclude(
+            status__in=["DELIVERED", "FAILED", "CANCELLED"]
+        ).order_by("-created_at")
 
-    total_payout = completed_orders.aggregate(
-        Sum("delivery_payout")
-    )["delivery_payout__sum"] or 0
+        completed_orders = Order.objects.filter(
+            assigned_delivery=request.user,
+            status="DELIVERED"
+        ).order_by("-created_at")[:10]
 
-    total_distance = completed_orders.aggregate(
-        Sum("delivery_distance")
-    )["delivery_distance__sum"] or 0
+        total_payout = Order.objects.filter(
+            assigned_delivery=request.user,
+            status="DELIVERED"
+        ).aggregate(
+            Sum("delivery_payout")
+        )["delivery_payout__sum"] or 0
 
-    return render(request, "rider_dashboard.html", {
-        "active_orders": active_orders,
-        "completed_orders": completed_orders[:10],
-        "total_payout": total_payout,
-        "total_distance": round(total_distance,2)
-    })
+        total_distance = Order.objects.filter(
+            assigned_delivery=request.user,
+            status="DELIVERED"
+        ).aggregate(
+            Sum("delivery_distance")
+        )["delivery_distance__sum"] or 0
 
+        return render(request, "rider_dashboard.html", {
+            "active_orders": active_orders,
+            "completed_orders": completed_orders,
+            "total_payout": total_payout,
+            "total_distance": round(total_distance, 2),
+            "show_floating_cart": False
+        })
+
+    except Exception as e:
+        logger.exception("RIDER DASHBOARD ERROR")
+        return HttpResponse("Rider dashboard failed. Check logs.")
+    
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
