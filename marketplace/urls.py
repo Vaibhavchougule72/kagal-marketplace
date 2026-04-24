@@ -55,7 +55,18 @@ urlpatterns = [
     ),
     path("razorpay-webhook/", views.razorpay_webhook),
     path("store-dashboard/", views.store_dashboard, name="store_dashboard"),
-    path('privacy-policy/', views.privacy_policy, name='privacy_policy')
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path("rider-dashboard/", views.rider_dashboard, name="rider_dashboard"),
+    path(
+        "rider/update-status/<int:order_id>/<str:new_status>/",
+        views.rider_update_status,
+        name="rider_update_status"
+    ),
+    path(
+        "rider/location/<int:order_id>/",
+        views.update_rider_location,
+        name="update_rider_location"
+    ),
 ]
 
 

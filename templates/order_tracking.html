@@ -121,7 +121,7 @@
 </a>
 
 <!-- CANCEL BUTTON -->
-{% if order.status in "REQUEST_SUBMITTED ACCEPTED IN_PROGRESS" %}
+{% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" %}
 <div class="container mt-3">
     <button class="btn btn-danger"
             data-bs-toggle="modal"
@@ -166,6 +166,22 @@
     </div>
   </div>
 </div>
+
+{% if order.status == "OUT_FOR_DELIVERY" and order.rider_latitude %}
+
+<div class="container mt-4">
+
+<a target="_blank"
+href="https://www.google.com/maps?q={{ order.rider_latitude }},{{ order.rider_longitude }}"
+class="btn btn-success w-100">
+
+📍 Track Rider Live
+
+</a>
+
+</div>
+
+{% endif %}
 
 {% endblock %}
 

@@ -520,6 +520,7 @@ def checkout(request):
         try:
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
+            confirm_phone = request.POST.get("confirm_phone")
             address = request.POST.get("address")
             payment = request.POST.get("payment")
             latitude = request.POST.get("latitude")
@@ -533,6 +534,10 @@ def checkout(request):
                 context["error"] = "Invalid phone number"
                 return render(request, "checkout.html", context)
 
+            if not confirm_phone:
+                context["error"] = "Please confirm mobile number"
+                return render(request, "checkout.html", context)
+            
             if not payment:
                 context["error"] = "Select payment method"
                 return render(request, "checkout.html", context)
@@ -2123,3 +2128,85 @@ def razorpay_webhook(request):
         # mark order as paid safely
 
     return HttpResponse("OK")
+
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+
+@login_required
+def rider_dashboard(request):
+    active_orders = Order.objects.filter(
+        assigned_delivery=request.user
+    ).exclude(status="DELIVERED").order_by("-created_at")
+
+    completed_orders = Order.objects.filter(
+        assigned_delivery=request.user,
+        status="DELIVERED"
+    )
+
+    total_payout = completed_orders.aggregate(
+        Sum("delivery_payout")
+    )["delivery_payout__sum"] or 0
+
+    total_distance = completed_orders.aggregate(
+        Sum("delivery_distance")
+    )["delivery_distance__sum"] or 0
+
+    return render(request, "rider_dashboard.html", {
+        "active_orders": active_orders,
+        "completed_orders": completed_orders[:10],
+        "total_payout": total_payout,
+        "total_distance": round(total_distance,2)
+    })
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+@login_required
+def rider_update_status(request, order_id, new_status):
+
+    allowed_status = [
+        "ACCEPTED",
+        "PICKED_UP",
+        "OUT_FOR_DELIVERY",
+        "DELIVERED",
+        "FAILED"
+    ]
+
+    if new_status not in allowed_status:
+        messages.error(request, "Invalid status")
+        return redirect("rider_dashboard")
+
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        assigned_delivery=request.user
+    )
+
+    order.status = new_status
+    order.save()
+
+    messages.success(request, f"Order #{order.id} updated to {new_status}")
+
+    return redirect("rider_dashboard")
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def update_rider_location(request, order_id):
+
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        assigned_delivery=request.user
+    )
+
+    lat = request.GET.get("lat")
+    lng = request.GET.get("lng")
+
+    if lat and lng:
+        order.rider_latitude = float(lat)
+        order.rider_longitude = float(lng)
+        order.save(update_fields=["rider_latitude", "rider_longitude"])
+
+    return JsonResponse({"success": True})

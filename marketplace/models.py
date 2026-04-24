@@ -169,6 +169,8 @@ class Order(models.Model):
     delivery_distance = models.FloatField(null=True, blank=True)
     delivery_time_minutes = models.IntegerField(null=True, blank=True)
     delivery_payout = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    rider_latitude = models.FloatField(null=True, blank=True)
+    rider_longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"Order #{self.id} - {self.customer_name}"
