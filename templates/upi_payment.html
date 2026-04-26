@@ -20,21 +20,24 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function () {
 
     const btn = document.getElementById("rzp-button");
     const loader = document.getElementById("loader");
     const title = document.getElementById("title");
 
+    if (!btn) return;
+
     const params = new URLSearchParams(window.location.search);
     const startPayment = params.get("start_payment");
 
-    // -----------------------------
-    // APP WEBVIEW
-    // -----------------------------
-    if(!startPayment){
+    // ------------------------------------------------
+    // STEP 1 : APP WEBVIEW MODE
+    // First click -> Android app opens Chrome
+    // ------------------------------------------------
+    if (!startPayment) {
 
-        btn.onclick = function(e){
+        btn.onclick = function (e) {
             e.preventDefault();
 
             btn.disabled = true;
@@ -42,28 +45,39 @@ document.addEventListener("DOMContentLoaded", function(){
 
             let nextUrl = window.location.href;
 
-            if(nextUrl.includes("?")){
+            if (nextUrl.includes("?")) {
                 nextUrl += "&start_payment=true";
-            }else{
+            } else {
                 nextUrl += "?start_payment=true";
             }
 
-            window.location.href = nextUrl;
+            window.location.assign(nextUrl);
         };
 
         return;
     }
 
-    // -----------------------------
-    // CHROME PAYMENT MODE
-    // -----------------------------
+    // ------------------------------------------------
+    // STEP 2 : CHROME MODE
+    // Auto open Razorpay
+    // ------------------------------------------------
+
     btn.style.display = "none";
     loader.style.display = "block";
     title.innerText = "Secure Browser Payment";
 
-    setTimeout(function(){
+    setTimeout(function () {
 
-        var options = {
+        if (typeof Razorpay === "undefined") {
+            loader.style.display = "none";
+            btn.style.display = "inline-block";
+            btn.disabled = false;
+            btn.innerText = "Retry Payment";
+            title.innerText = "Payment system unavailable";
+            return;
+        }
+
+        const options = {
             key: "{{ razorpay_key }}",
             amount: Number("{{ amount }}"),
             currency: "INR",
@@ -80,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 color: "#198754"
             },
 
-            handler: function(response){
+            handler: function (response) {
 
                 window.location.href =
                     "https://www.loka-store.online/payment-success/?razorpay_payment_id="
@@ -91,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function(){
             },
 
             modal: {
-                ondismiss: function(){
+                ondismiss: function () {
                     loader.style.display = "none";
                     btn.style.display = "inline-block";
                     btn.disabled = false;
@@ -101,7 +115,16 @@ document.addEventListener("DOMContentLoaded", function(){
             }
         };
 
-        var rzp = new Razorpay(options);
+        const rzp = new Razorpay(options);
+
+        rzp.on("payment.failed", function () {
+            loader.style.display = "none";
+            btn.style.display = "inline-block";
+            btn.disabled = false;
+            btn.innerText = "Retry Payment";
+            title.innerText = "Payment Failed";
+        });
+
         rzp.open();
 
     }, 1200);

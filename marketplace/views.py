@@ -691,15 +691,18 @@ def checkout(request):
                 logger.info(f"RAZORPAY_ORDER_ID: {razorpay_order_id}")
                 logger.info(f"PENDING_ID: {pending.id}")
                 logger.info("=====================================")
-                return render(request, "upi_payment.html", {
+                request.session["payment_data"] = {
                     "razorpay_key": settings.RAZORPAY_KEY_ID,
                     "amount": amount_paise,
                     "razorpay_order_id": razorpay_order_id,
                     "customer_name": name,
                     "phone": phone,
                     "display_amount": f"{total:.2f}",
-                    "show_floating_cart": False, 'simple_navbar': True,
-                })
+                    "show_floating_cart": False,
+                    "simple_navbar": True,
+                }
+
+                return redirect("upi_payment")
 
             # =========================
             # 🟢 COD FLOW
@@ -2234,3 +2237,10 @@ def update_rider_location(request, order_id):
 
     return JsonResponse({"success": True})
 
+def upi_payment(request):
+    data = request.session.get("payment_data")
+
+    if not data:
+        return redirect("view_cart")
+
+    return render(request, "upi_payment.html", data)
