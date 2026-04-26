@@ -2233,3 +2233,19 @@ def update_rider_location(request, order_id):
         order.save(update_fields=["rider_latitude", "rider_longitude"])
 
     return JsonResponse({"success": True})
+
+from django.shortcuts import render
+from django.conf import settings
+
+
+def upi_payment(request):
+    return render(request, "upi_payment.html", {
+        "razorpay_key": settings.RAZORPAY_KEY_ID,
+        "amount": request.GET.get("amount", "0"),
+        "razorpay_order_id": request.GET.get("order_id", ""),
+        "customer_name": request.GET.get("name", ""),
+        "phone": request.GET.get("phone", ""),
+        "display_amount": request.GET.get("display_amount", "0"),
+        "show_floating_cart": False,
+        "simple_navbar": True,
+    })
