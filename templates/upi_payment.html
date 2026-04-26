@@ -13,37 +13,58 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function () {
 
     const btn = document.getElementById("rzp-button");
-
     if (!btn) return;
 
-    // 🔥 If user clicks PAY inside app
-    btn.onclick = function(e){
-        e.preventDefault();
-
-        btn.disabled = true;
-        btn.innerText = "Opening payment...";
-
-        let currentUrl = window.location.href;
-
-        // add flag only once
-        if (!currentUrl.includes("start_payment=true")) {
-
-            if (currentUrl.includes("?")) {
-                window.location.href = currentUrl + "&start_payment=true";
-            } else {
-                window.location.href = currentUrl + "?start_payment=true";
-            }
-        }
-    };
-
-    // 🔥 If Chrome page loaded after redirect
     const params = new URLSearchParams(window.location.search);
     const startPayment = params.get("start_payment");
 
-    if (startPayment === "true") {
+    // ----------------------------------------------------
+    // STEP 1: Inside App WebView
+    // First click opens Chrome
+    // ----------------------------------------------------
+    if (!startPayment) {
+
+        btn.onclick = function (e) {
+            e.preventDefault();
+
+            btn.disabled = true;
+            btn.innerText = "Opening payment...";
+
+            let nextUrl = window.location.href;
+
+            if (nextUrl.includes("?")) {
+                nextUrl += "&start_payment=true";
+            } else {
+                nextUrl += "?start_payment=true";
+            }
+
+            window.location.href = nextUrl;
+        };
+
+        return;
+    }
+
+    // ----------------------------------------------------
+    // STEP 2: In Chrome Browser
+    // Second click opens Razorpay
+    // ----------------------------------------------------
+
+    btn.disabled = false;
+    btn.innerText = "Continue to Pay ₹ {{ display_amount }}";
+
+    btn.onclick = function (e) {
+        e.preventDefault();
+
+        if (typeof Razorpay === "undefined") {
+            alert("Payment system failed to load. Please refresh page.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Opening Razorpay...";
 
         var options = {
             key: "{{ razorpay_key }}",
@@ -53,7 +74,14 @@ document.addEventListener("DOMContentLoaded", function(){
             description: "Order Payment",
             order_id: "{{ razorpay_order_id }}",
 
-            handler: function (response){
+            modal: {
+                ondismiss: function () {
+                    btn.disabled = false;
+                    btn.innerText = "Continue to Pay ₹ {{ display_amount }}";
+                }
+            },
+
+            handler: function (response) {
 
                 window.location.href =
                     "https://www.loka-store.online/payment-success/?razorpay_payment_id="
@@ -75,10 +103,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
         var rzp = new Razorpay(options);
 
-        setTimeout(function(){
-            rzp.open();
-        }, 400);
-    }
+        rzp.on('payment.failed', function () {
+            btn.disabled = false;
+            btn.innerText = "Continue to Pay ₹ {{ display_amount }}";
+        });
+
+        rzp.open();
+    };
 
 });
 </script>
