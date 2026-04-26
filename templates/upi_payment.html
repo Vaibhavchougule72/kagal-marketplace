@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
 
-<div class="container page-content">
+<div class="container page-content text-center mt-5">
     <h4>{% trans "Complete Your UPI Payment" %}</h4>
 
     <button id="rzp-button" class="btn btn-success mt-4 px-4 py-2">
@@ -15,75 +15,72 @@
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
-    var btn = document.getElementById('rzp-button');
+    const btn = document.getElementById("rzp-button");
 
     if (!btn) return;
 
-    var options = {
-        key: "{{ razorpay_key }}",
-        amount: Number("{{ amount }}"),
-        currency: "INR",
-        name: "Kagal Marketplace",
-        description: "Order Payment",
-        order_id: "{{ razorpay_order_id }}",
+    // 🔥 If user clicks PAY inside app
+    btn.onclick = function(e){
+        e.preventDefault();
 
-        modal: {
-            ondismiss: function(){
-                console.log("❌ User closed payment popup");
-                btn.disabled = false;
-                btn.innerText = "Pay ₹ {{ display_amount }}";
+        btn.disabled = true;
+        btn.innerText = "Opening payment...";
+
+        let currentUrl = window.location.href;
+
+        // add flag only once
+        if (!currentUrl.includes("start_payment=true")) {
+
+            if (currentUrl.includes("?")) {
+                window.location.href = currentUrl + "&start_payment=true";
+            } else {
+                window.location.href = currentUrl + "?start_payment=true";
             }
-        },
-
-        handler: function (response){
-            console.log("✅ PAYMENT SUCCESS:", response);
-
-            window.location.href = "/payment-success/?razorpay_payment_id="
-                + response.razorpay_payment_id
-                + "&razorpay_order_id=" + response.razorpay_order_id
-                + "&razorpay_signature=" + response.razorpay_signature
-                + "&pending_id={{ request.session.pending_id }}";
-        },
-
-        prefill: {
-            name: "{{ customer_name }}",
-            contact: "{{ phone }}"
-        },
-
-        theme: {
-            color: "#198754"
         }
     };
 
-    btn.onclick = function(e){
+    // 🔥 If Chrome page loaded after redirect
+    const params = new URLSearchParams(window.location.search);
+    const startPayment = params.get("start_payment");
 
-        e.preventDefault();
+    if (startPayment === "true") {
 
-        // ✅ Razorpay load check
-        if (typeof Razorpay === "undefined") {
-            alert("Payment system failed to load. Refresh page.");
-            return;
-        }
+        var options = {
+            key: "{{ razorpay_key }}",
+            amount: Number("{{ amount }}"),
+            currency: "INR",
+            name: "Kagal Marketplace",
+            description: "Order Payment",
+            order_id: "{{ razorpay_order_id }}",
 
-        btn.disabled = true;
-        btn.innerText = "Waiting for payment confirmation...";
+            handler: function (response){
+
+                window.location.href =
+                    "https://www.loka-store.online/payment-success/?razorpay_payment_id="
+                    + response.razorpay_payment_id
+                    + "&razorpay_order_id=" + response.razorpay_order_id
+                    + "&razorpay_signature=" + response.razorpay_signature
+                    + "&pending_id={{ request.session.pending_id }}";
+            },
+
+            prefill: {
+                name: "{{ customer_name }}",
+                contact: "{{ phone }}"
+            },
+
+            theme: {
+                color: "#198754"
+            }
+        };
 
         var rzp = new Razorpay(options);
 
-        rzp.on('payment.failed', function (response){
-            console.log("⚠️ Ignoring Razorpay false failure:", response);
-        });
-
-        rzp.open();
-
-        // ✅ fallback message
         setTimeout(function(){
-            if (btn.disabled) {
-                btn.innerText = "Still processing... If amount deducted, wait.";
-            }
-        }, 5000);
-    };
+            rzp.open();
+        }, 400);
+    }
 
 });
 </script>
+
 {% endblock %}
