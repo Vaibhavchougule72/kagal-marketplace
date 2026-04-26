@@ -680,6 +680,8 @@ def checkout(request):
                 })
 
                 razorpay_order_id = razorpay_order["id"]
+                pending.razorpay_order_id = razorpay_order_id
+                pending.save(update_fields=["razorpay_order_id"])
 
                 # optional (just for debugging / reference)
                 request.session["razorpay_order_id"] = razorpay_order_id
@@ -1253,8 +1255,19 @@ def payment_success(request):
             logger.error("Missing Razorpay parameters")
             return HttpResponse("Invalid payment response")
 
-        if not pending_id:
-            logger.error("Missing pending_id")
+        pending = None
+
+        # First try pending_id
+        if pending_id:
+            pending = PendingOrder.objects.filter(id=int(pending_id)).first()
+
+        # Fallback by Razorpay order id
+        if not pending:
+            pending = PendingOrder.objects.filter(
+                razorpay_order_id=razorpay_order_id
+            ).first()
+
+        if not pending:
             return HttpResponse("Invalid order reference")
 
         # --------------------------------------------------
@@ -1269,11 +1282,6 @@ def payment_success(request):
         # --------------------------------------------------
         # STEP 4 : FETCH PENDING ORDER
         # --------------------------------------------------
-        try:
-            pending = PendingOrder.objects.get(id=int(pending_id))
-        except PendingOrder.DoesNotExist:
-            logger.error("Pending order not found")
-            return HttpResponse("Invalid order reference")
 
         if pending.payment_method != "UPI":
             logger.error("Pending order not UPI")
