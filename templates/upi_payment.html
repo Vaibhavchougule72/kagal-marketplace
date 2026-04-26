@@ -94,7 +94,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 nextUrl += "?start_payment=true";
             }
 
-            window.open(nextUrl, "_blank");
+            const isAndroidApp = /wv|Android/i.test(navigator.userAgent);
+
+            if (isAndroidApp) {
+                window.open(nextUrl, "_blank");
+            } else {
+                window.location.replace(nextUrl);
+            }
 
             // Auto reset if user returns
             setTimeout(function () {
