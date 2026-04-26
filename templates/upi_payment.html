@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     + response.razorpay_payment_id
                     + "&razorpay_order_id=" + response.razorpay_order_id
                     + "&razorpay_signature=" + response.razorpay_signature
-                    + "&pending_id={{ request.session.pending_id }}";
+                    + "&pending_id={{ pending_id }}";
             },
 
             modal: {

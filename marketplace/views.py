@@ -708,6 +708,7 @@ def checkout(request):
                     f"&display_amount={total}"
                     f"&name={name}"
                     f"&phone={phone}"
+                    f"&pending_id={pending.id}"
                 )
 
             # =========================
@@ -1221,117 +1222,150 @@ from decimal import Decimal
 logger = logging.getLogger(__name__)
 
 def payment_success(request):
+    import razorpay
+    import logging
+    from decimal import Decimal
+    from django.http import HttpResponse
+    from django.shortcuts import redirect
+    from django.conf import settings
+    from django.db import transaction
+
+    logger = logging.getLogger(__name__)
 
     try:
-        # -------------------------
-        # STEP 1: GET PARAMS
-        # -------------------------
-        payment_id = request.GET.get("razorpay_payment_id")
-        razorpay_order_id = request.GET.get("razorpay_order_id")
-        signature = request.GET.get("razorpay_signature")
+        # --------------------------------------------------
+        # STEP 1 : GET RAZORPAY RESPONSE PARAMS
+        # --------------------------------------------------
+        payment_id = request.GET.get("razorpay_payment_id", "").strip()
+        razorpay_order_id = request.GET.get("razorpay_order_id", "").strip()
+        signature = request.GET.get("razorpay_signature", "").strip()
+        pending_id = request.GET.get("pending_id", "").strip()
 
+        logger.info("========== PAYMENT SUCCESS START ==========")
         logger.info(f"PAYMENT_ID: {payment_id}")
         logger.info(f"ORDER_ID: {razorpay_order_id}")
-        logger.info(f"SIGNATURE: {signature}")
+        logger.info(f"PENDING_ID: {pending_id}")
 
+        # --------------------------------------------------
+        # STEP 2 : BASIC VALIDATION
+        # --------------------------------------------------
         if not payment_id or not razorpay_order_id or not signature:
             logger.error("Missing Razorpay parameters")
             return HttpResponse("Invalid payment response")
 
-        # -------------------------
-        # STEP 2: DUPLICATE CHECK
-        # -------------------------
+        if not pending_id:
+            logger.error("Missing pending_id")
+            return HttpResponse("Invalid order reference")
+
+        # --------------------------------------------------
+        # STEP 3 : DUPLICATE ORDER PROTECTION
+        # --------------------------------------------------
         existing_order = Order.objects.filter(payment_id=payment_id).first()
 
         if existing_order:
+            logger.warning("Duplicate callback detected")
             return redirect("order_success", order_id=existing_order.id)
-        
-        # -------------------------
-        # STEP 3: GET PENDING ORDER
-        # -------------------------
-        pending_id = request.GET.get("pending_id") or request.session.get("pending_id")
 
-        logger.info(f"PENDING_ID (GET): {request.GET.get('pending_id')}")
-        logger.info(f"PENDING_ID (SESSION): {request.session.get('pending_id')}")
-
-        if not pending_id:
-            logger.error("Pending ID missing")
-            return HttpResponse("Invalid session")
-
+        # --------------------------------------------------
+        # STEP 4 : FETCH PENDING ORDER
+        # --------------------------------------------------
         try:
             pending = PendingOrder.objects.get(id=int(pending_id))
-        except Exception as e:
-            logger.error(f"Pending fetch error: {str(e)}")
+        except PendingOrder.DoesNotExist:
+            logger.error("Pending order not found")
             return HttpResponse("Invalid order reference")
 
         if pending.payment_method != "UPI":
-            logger.error("Invalid payment method")
+            logger.error("Pending order not UPI")
             return HttpResponse("Invalid payment flow")
 
-        # -------------------------
-        # STEP 4: RAZORPAY CLIENT
-        # -------------------------
+        # Prevent duplicate process
+        if pending.is_payment_processed:
+            existing_order = Order.objects.filter(
+                phone=pending.phone,
+                payment_id=payment_id
+            ).first()
+
+            if existing_order:
+                return redirect("order_success", order_id=existing_order.id)
+
+        # --------------------------------------------------
+        # STEP 5 : RAZORPAY CLIENT
+        # --------------------------------------------------
         client = razorpay.Client(auth=(
             settings.RAZORPAY_KEY_ID,
             settings.RAZORPAY_KEY_SECRET
         ))
 
-        # -------------------------
-        # STEP 5: SIGNATURE VERIFY
-        # -------------------------
+        # --------------------------------------------------
+        # STEP 6 : SIGNATURE VERIFY
+        # --------------------------------------------------
         try:
             client.utility.verify_payment_signature({
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': payment_id,
-                'razorpay_signature': signature
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": payment_id,
+                "razorpay_signature": signature
             })
         except Exception as e:
-            logger.error(f"Signature verification failed: {str(e)}")
+            logger.error(f"Signature failed: {str(e)}")
             return HttpResponse("Payment verification failed")
 
-        # -------------------------
-        # STEP 6: FETCH PAYMENT
-        # -------------------------
+        # --------------------------------------------------
+        # STEP 7 : FETCH PAYMENT DETAILS
+        # --------------------------------------------------
         try:
             payment = client.payment.fetch(payment_id)
-
-            logger.info("=========== PAYMENT DEBUG ===========")
-            logger.info(f"FULL PAYMENT OBJECT: {payment}")
-            logger.info(f"STATUS: {payment.get('status')}")
-            logger.info(f"METHOD: {payment.get('method')}")
-            logger.info(f"ERROR: {payment.get('error_description')}")
-            logger.info("====================================")
-
         except Exception as e:
-            logger.error(f"Razorpay fetch error: {str(e)}")
-            return HttpResponse("Payment verification failed")
+            logger.error(f"Payment fetch failed: {str(e)}")
+            return HttpResponse("Unable to verify payment")
 
-        # -------------------------
-        # STEP 7: VERIFY AMOUNT
-        # -------------------------
-        expected_amount = to_paise(pending.total)
+        payment_status = payment.get("status")
         actual_amount = payment.get("amount")
+        expected_amount = to_paise(pending.total)
 
+        logger.info(f"PAYMENT STATUS: {payment_status}")
         logger.info(f"EXPECTED: {expected_amount}")
         logger.info(f"ACTUAL: {actual_amount}")
 
+        # --------------------------------------------------
+        # STEP 8 : STRICT CHECKS
+        # --------------------------------------------------
+        if payment_status != "captured":
+            logger.error("Payment not captured")
+            return HttpResponse("Payment not completed")
+
         if actual_amount != expected_amount:
-            logger.error("❌ AMOUNT MISMATCH")
-            return HttpResponse("Invalid amount")
-        # -------------------------
-        # STEP 8: STORE CHECK
-        # -------------------------
-        store = Store.objects.get(id=pending.store_id)
+            logger.error("Amount mismatch")
+            return HttpResponse("Invalid payment amount")
+
+        # --------------------------------------------------
+        # STEP 9 : STORE STATUS CHECK
+        # --------------------------------------------------
+        try:
+            store = Store.objects.get(id=pending.store_id)
+        except:
+            logger.error("Store missing")
+            return HttpResponse("Store unavailable")
 
         if not store.is_open():
             logger.warning("Store closed after payment")
-            pending.delete()
-            return HttpResponse("Store closed. Refund initiated.")
+            return HttpResponse("Store temporarily unavailable. Contact support.")
 
-        # -------------------------
-        # STEP 9: CREATE ORDER
-        # -------------------------
+        # --------------------------------------------------
+        # STEP 10 : CREATE ORDER (ATOMIC)
+        # --------------------------------------------------
         with transaction.atomic():
+
+            # Lock pending row
+            pending = PendingOrder.objects.select_for_update().get(id=pending.id)
+
+            if pending.is_payment_processed:
+                existing_order = Order.objects.filter(
+                    payment_id=payment_id
+                ).first()
+
+                if existing_order:
+                    return redirect("order_success", order_id=existing_order.id)
 
             order = Order.objects.create(
                 store_id=pending.store_id,
@@ -1342,58 +1376,71 @@ def payment_success(request):
                 longitude=pending.longitude,
                 subtotal=pending.subtotal,
                 delivery_fee=pending.delivery_fee,
-                handling_fee=getattr(pending, "handling_fee", 12),
+                handling_fee=pending.handling_fee,
                 discount=pending.discount,
                 coupon_code=pending.coupon_code,
                 total=pending.total,
                 payment_method="UPI",
-                status="REQUEST_SUBMITTED",
-                payment_id=payment_id
+                payment_id=payment_id,
+                status="REQUEST_SUBMITTED"
             )
 
             cart_items = pending.items_snapshot or {}
 
-            for item_id, item in cart_items.get('items', {}).items():
+            for item_id, item in cart_items.get("items", {}).items():
 
+                # PRODUCT
                 if str(item_id).isdigit():
                     try:
                         product = Product.objects.get(id=int(item_id))
+
                         OrderItem.objects.create(
                             order=order,
                             product=product,
-                            price=Decimal(str(item.get('price', 0))),
-                            quantity=int(item.get('quantity', 1))
+                            quantity=int(item.get("quantity", 1)),
+                            price=Decimal(str(item.get("price", 0)))
                         )
                     except Exception as e:
-                        logger.warning(f"Product error: {str(e)}")
+                        logger.warning(f"Product skipped: {e}")
 
+                # BUNDLE
                 elif str(item_id).startswith("bundle_"):
                     OrderItem.objects.create(
                         order=order,
                         product=None,
                         bundle_name=item.get("name", "Combo"),
-                        price=Decimal(str(item.get('price', 0))),
-                        quantity=int(item.get('quantity', 1))
+                        quantity=int(item.get("quantity", 1)),
+                        price=Decimal(str(item.get("price", 0)))
                     )
 
-        # -------------------------
-        # STEP 10: CLEANUP
-        # -------------------------
+            # Mark processed
+            pending.is_payment_processed = True
+            pending.save()
+
+        # --------------------------------------------------
+        # STEP 11 : CLEANUP
+        # --------------------------------------------------
         request.session.pop("pending_id", None)
         request.session.pop("razorpay_order_id", None)
         request.session.pop("razorpay_amount", None)
-        request.session['cart'] = {'store_id': None, 'items': {}}
+        request.session["cart"] = {
+            "store_id": None,
+            "items": {}
+        }
 
         pending.delete()
 
-        logger.info(f"ORDER CREATED SUCCESSFULLY: {order.id}")
+        logger.info(f"ORDER CREATED: {order.id}")
+        logger.info("========== PAYMENT SUCCESS END ==========")
 
+        # --------------------------------------------------
+        # STEP 12 : SUCCESS PAGE
+        # --------------------------------------------------
         return redirect("order_success", order_id=order.id)
 
     except Exception as e:
-        logger.error(f"🔥 CRITICAL PAYMENT ERROR: {str(e)}", exc_info=True)
+        logger.error(f"CRITICAL PAYMENT ERROR: {str(e)}", exc_info=True)
         return HttpResponse("Something went wrong. Please contact support.")
-
 
 def mark_out_for_delivery(request, order_id):
 
@@ -2268,6 +2315,7 @@ def upi_payment(request):
             "display_amount": display_amount,
             "customer_name": name,
             "phone": phone,
+            "pending_id": request.GET.get("pending_id"),
             "show_floating_cart": False,
             "simple_navbar": True,
         }
