@@ -30,10 +30,17 @@
 <div class="card-body">
 
 <b>Order #{{ order.id }}</b><br>
-{{ order.customer_name }}<br>
-{{ order.phone }}<br>
-{{ order.address }}<br>
-₹{{ order.total }}<br>
+
+🏪 <strong>Store:</strong> {{ order.store.name }}<br>
+
+👤 {{ order.customer_name }}<br>
+
+📞 {{ order.phone }}<br>
+
+📍 {{ order.address }}<br>
+
+💰 ₹{{ order.total }}<br>
+
 Status: <b>{{ order.status }}</b>
 
 <div class="mt-3">
