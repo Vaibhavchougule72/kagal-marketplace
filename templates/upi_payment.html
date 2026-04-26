@@ -19,7 +19,7 @@
     <div id="cancelBox" style="display:none; margin-top:25px;">
 
         <a href="https://www.loka-store.online/payment-failed/"
-           class="btn btn-primary w-100 mb-2">
+        class="btn btn-primary w-100 mb-2">
             Back
         </a>
 
@@ -36,6 +36,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const loader = document.getElementById("loader");
     const title = document.getElementById("title");
     const cancelBox = document.getElementById("cancelBox");
+    const backBtn = document.getElementById("backBtn");
+
+    if (backBtn) {
+
+        backBtn.onclick = function () {
+
+            const startPayment = params.get("start_payment");
+
+            // If Chrome payment mode (came from app)
+            if (startPayment) {
+                window.location.href =
+                    "https://www.loka-store.online/payment-failed/";
+            }
+
+            // Normal website mode
+            else {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href =
+                        "https://www.loka-store.online/";
+                }
+            }
+        };
+    }
 
     if (!btn) return;
 

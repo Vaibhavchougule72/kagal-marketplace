@@ -2274,5 +2274,3 @@ def upi_payment(request):
 
     return render(request, "upi_payment.html", data)
 
-def payment_failed(request):
-    return render(request, "home.html")
