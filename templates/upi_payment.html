@@ -18,10 +18,9 @@
     <!-- Cancel / Back Buttons -->
     <div id="cancelBox" style="display:none; margin-top:25px;">
 
-        <a href="https://www.loka-store.online/payment-failed/"
-        class="btn btn-primary w-100 mb-2">
+        <button id="backBtn" class="btn btn-primary w-100 mb-2">
             Back
-        </a>
+        </button>
 
     </div>
 
@@ -38,13 +37,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelBox = document.getElementById("cancelBox");
     const backBtn = document.getElementById("backBtn");
 
+    if (!btn) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const startPayment = params.get("start_payment");
+
+    // -----------------------------------------
+    // BACK BUTTON LOGIC
+    // -----------------------------------------
     if (backBtn) {
 
         backBtn.onclick = function () {
 
-            const startPayment = params.get("start_payment");
-
-            // If Chrome payment mode (came from app)
+            // Chrome payment mode (came from app)
             if (startPayment) {
                 window.location.href =
                     "https://www.loka-store.online/payment-failed/";
@@ -62,15 +67,18 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    if (!btn) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const startPayment = params.get("start_payment");
-
     // -----------------------------------------
     // STEP 1 : APP WEBVIEW MODE
     // -----------------------------------------
     if (!startPayment) {
+
+        // Reset UI every page load
+        btn.disabled = false;
+        btn.style.display = "inline-block";
+        btn.innerText = "Pay ₹ {{ display_amount }}";
+        loader.style.display = "none";
+        cancelBox.style.display = "none";
+        title.innerText = "Complete Your UPI Payment";
 
         btn.onclick = function (e) {
             e.preventDefault();
@@ -87,6 +95,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             window.open(nextUrl, "_blank");
+
+            // Auto reset if user returns
+            setTimeout(function () {
+                btn.disabled = false;
+                btn.innerText = "Pay ₹ {{ display_amount }}";
+            }, 4000);
         };
 
         return;
