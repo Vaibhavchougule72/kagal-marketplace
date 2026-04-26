@@ -15,6 +15,16 @@
         <p class="mt-3">Opening secure payment...</p>
     </div>
 
+    <!-- Cancel / Back Buttons -->
+    <div id="cancelBox" style="display:none; margin-top:25px;">
+
+        <a href="https://www.loka-store.online/payment-failed/"
+           class="btn btn-primary w-100 mb-2">
+            Back
+        </a>
+
+    </div>
+
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -25,16 +35,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const btn = document.getElementById("rzp-button");
     const loader = document.getElementById("loader");
     const title = document.getElementById("title");
+    const cancelBox = document.getElementById("cancelBox");
 
     if (!btn) return;
 
     const params = new URLSearchParams(window.location.search);
     const startPayment = params.get("start_payment");
 
-    // ------------------------------------------------
+    // -----------------------------------------
     // STEP 1 : APP WEBVIEW MODE
-    // First click -> Android app opens Chrome
-    // ------------------------------------------------
+    // -----------------------------------------
     if (!startPayment) {
 
         btn.onclick = function (e) {
@@ -57,11 +67,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // ------------------------------------------------
-    // STEP 2 : CHROME MODE
-    // Auto open Razorpay
-    // ------------------------------------------------
-
+    // -----------------------------------------
+    // STEP 2 : CHROME PAYMENT MODE
+    // -----------------------------------------
     btn.style.display = "none";
     loader.style.display = "block";
     title.innerText = "Secure Browser Payment";
@@ -70,10 +78,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (typeof Razorpay === "undefined") {
             loader.style.display = "none";
-            btn.style.display = "inline-block";
-            btn.disabled = false;
-            btn.innerText = "Retry Payment";
             title.innerText = "Payment system unavailable";
+            cancelBox.style.display = "block";
             return;
         }
 
@@ -107,10 +113,8 @@ document.addEventListener("DOMContentLoaded", function () {
             modal: {
                 ondismiss: function () {
                     loader.style.display = "none";
-                    btn.style.display = "inline-block";
-                    btn.disabled = false;
-                    btn.innerText = "Retry Payment";
                     title.innerText = "Payment Cancelled";
+                    cancelBox.style.display = "block";
                 }
             }
         };
@@ -119,10 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         rzp.on("payment.failed", function () {
             loader.style.display = "none";
-            btn.style.display = "inline-block";
-            btn.disabled = false;
-            btn.innerText = "Retry Payment";
             title.innerText = "Payment Failed";
+            cancelBox.style.display = "block";
         });
 
         rzp.open();
