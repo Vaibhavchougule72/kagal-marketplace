@@ -168,16 +168,39 @@
 </div>
 
 {% if order.status == "OUT_FOR_DELIVERY" and order.rider_latitude %}
-
 <div class="container mt-4">
 
+<div class="card shadow-sm border-0">
+<div class="card-body">
+
+<h5 class="mb-3">🚴 Delivery Partner</h5>
+
+{% if order.assigned_delivery %}
+
+<p class="mb-1">
+<strong>Name:</strong>
+{{ order.assigned_delivery.get_full_name|default:order.assigned_delivery.username }}
+</p>
+
+{% if order.assigned_delivery.deliverypartnerprofile.phone %}
+<a href="tel:{{ order.assigned_delivery.deliverypartnerprofile.phone }}"
+class="btn btn-primary w-100 mb-2">
+📞 Call Rider ({{ order.assigned_delivery.deliverypartnerprofile.phone }})
+</a>
+{% endif %}
+
+{% endif %}
+
+{% if order.rider_latitude %}
 <a target="_blank"
 href="https://www.google.com/maps?q={{ order.rider_latitude }},{{ order.rider_longitude }}"
 class="btn btn-success w-100">
-
 📍 Track Rider Live
-
 </a>
+{% endif %}
+
+</div>
+</div>
 
 </div>
 
