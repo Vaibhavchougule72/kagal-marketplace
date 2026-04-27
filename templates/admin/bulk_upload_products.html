@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<h1>Bulk Upload Products</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="default">
+        Upload Excel
+    </button>
+</form>
+
+<br>
+
+<p><b>Excel columns required:</b></p>
+
+<p>
+name, store, category, price, description,
+is_featured, is_active, upi_only
+</p>
+
+{% endblock %}

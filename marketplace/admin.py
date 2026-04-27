@@ -26,11 +26,84 @@ class StoreAdmin(admin.ModelAdmin):
     inlines = [StoreTimingInline, StoreHolidayInline]
 
 
+import pandas as pd
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import ProductUploadForm
+from .models import Product, Store, Category
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+
     list_display = ('name', 'store', 'price', 'is_active', 'upi_only')
     list_filter = ('store', 'is_active')
     search_fields = ('name',)
+
+    def get_urls(self):
+        urls = super().get_urls()
+
+        custom_urls = [
+            path(
+                'bulk-upload/',
+                self.admin_site.admin_view(self.bulk_upload),
+                name='product_bulk_upload'
+            ),
+        ]
+
+        return custom_urls + urls
+
+    def bulk_upload(self, request):
+
+        if request.method == "POST":
+
+            form = ProductUploadForm(request.POST, request.FILES)
+
+            if form.is_valid():
+
+                file = request.FILES["excel_file"]
+
+                df = pd.read_excel(file)
+
+                count = 0
+
+                for _, row in df.iterrows():
+
+                    store = Store.objects.get(name=row["store"])
+                    category = Category.objects.get(name=row["category"])
+
+                    Product.objects.create(
+                        name=row["name"],
+                        store=store,
+                        category=category,
+                        price=row["price"],
+                        description=row["description"],
+                        is_featured=row["is_featured"],
+                        is_active=row["is_active"],
+                        upi_only=row["upi_only"]
+                    )
+
+                    count += 1
+
+                self.message_user(
+                    request,
+                    f"{count} products uploaded successfully."
+                )
+
+                return redirect("../")
+
+        else:
+            form = ProductUploadForm()
+
+        context = {
+            "form": form,
+            "title": "Bulk Upload Products"
+        }
+
+        return render(
+            request,
+            "admin/bulk_upload_products.html",
+            context
+        )
 
 
 from django.contrib import admin
