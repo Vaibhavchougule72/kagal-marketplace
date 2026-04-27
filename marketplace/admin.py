@@ -26,11 +26,35 @@ class StoreAdmin(admin.ModelAdmin):
     inlines = [StoreTimingInline, StoreHolidayInline]
 
 
-import pandas as pd
+from django.contrib import admin
+from django.urls import path, reverse
+from django.utils.html import format_html
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
+
+import pandas as pd
+import traceback
+import logging
+
+from .views import generate_delivery_pdf, generate_store_pdf
 from .forms import ProductUploadForm
-from .models import Product, Store, Category
+
+from .models import (
+    Category,
+    Store,
+    Product,
+    Order,
+    OrderItem,
+    StoreTiming,
+    StoreHoliday,
+    Bundle,
+    BundleItem,
+    Coupon,
+    DeliveryPartnerProfile
+)
+
+logger = logging.getLogger(__name__)
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -54,58 +78,83 @@ class ProductAdmin(admin.ModelAdmin):
 
     def bulk_upload(self, request):
 
-        if request.method == "POST":
+        try:
 
-            form = ProductUploadForm(request.POST, request.FILES)
+            if request.method == "POST":
 
-            if form.is_valid():
-
-                file = request.FILES["excel_file"]
-
-                df = pd.read_excel(file)
-
-                count = 0
-
-                for _, row in df.iterrows():
-
-                    store = Store.objects.get(name=row["store"])
-                    category = Category.objects.get(name=row["category"])
-
-                    Product.objects.create(
-                        name=row["name"],
-                        store=store,
-                        category=category,
-                        price=row["price"],
-                        description=row["description"],
-                        is_featured=row["is_featured"],
-                        is_active=row["is_active"],
-                        upi_only=row["upi_only"]
-                    )
-
-                    count += 1
-
-                self.message_user(
-                    request,
-                    f"{count} products uploaded successfully."
+                form = ProductUploadForm(
+                    request.POST,
+                    request.FILES
                 )
 
-                return redirect("../")
+                if form.is_valid():
 
-        else:
-            form = ProductUploadForm()
+                    file = request.FILES["excel_file"]
 
-        context = {
-            "form": form,
-            "title": "Bulk Upload Products"
-        }
+                    df = pd.read_excel(file)
 
-        return render(
-            request,
-            "admin/bulk_upload_products.html",
-            context
-        )
+                    count = 0
 
+                    for index, row in df.iterrows():
 
+                        try:
+
+                            store = Store.objects.get(
+                                name=str(row["store"]).strip()
+                            )
+
+                            category = Category.objects.get(
+                                name=str(row["category"]).strip()
+                            )
+
+                            Product.objects.create(
+                                name=str(row["name"]).strip(),
+                                store=store,
+                                category=category,
+                                price=row["price"],
+                                description=str(row["description"]),
+                                is_featured=row["is_featured"],
+                                is_active=row["is_active"],
+                                upi_only=row["upi_only"]
+                            )
+
+                            count += 1
+
+                        except Exception as row_error:
+
+                            logger.exception(
+                                f"ROW ERROR row {index+2}"
+                            )
+
+                            return HttpResponse(
+                                f"<h2>Row Error {index+2}</h2><pre>{row_error}</pre>",
+                                status=500
+                            )
+
+                    self.message_user(
+                        request,
+                        f"{count} products uploaded successfully."
+                    )
+
+                    return redirect("../")
+
+            else:
+                form = ProductUploadForm()
+
+            return render(
+                request,
+                "admin/bulk_upload_products.html",
+                {"form": form}
+            )
+
+        except Exception:
+
+            logger.exception("MAIN BULK UPLOAD ERROR")
+
+            return HttpResponse(
+                f"<pre>{traceback.format_exc()}</pre>",
+                status=500
+            )
 from django.contrib import admin
 from django.urls import path, reverse
 from django.utils.html import format_html
