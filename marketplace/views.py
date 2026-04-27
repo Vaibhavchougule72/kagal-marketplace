@@ -2330,3 +2330,8 @@ def upi_payment(request):
 
     return render(request, "upi_payment.html", data)
 
+def download_app(request):
+    return render(request, "download_app.html", {
+        "show_floating_cart": False,
+        "simple_navbar": True
+    })

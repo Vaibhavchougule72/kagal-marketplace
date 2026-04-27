@@ -68,6 +68,7 @@ urlpatterns = [
         views.update_rider_location,
         name="update_rider_location"
     ),
+    path("download-app/", views.download_app, name="download_app"),
 ]
 
 
