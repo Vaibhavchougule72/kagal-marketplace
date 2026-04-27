@@ -112,7 +112,7 @@ class ProductAdmin(admin.ModelAdmin):
                                 store=store,
                                 category=category,
                                 price=row["price"],
-                                description=str(row["description"]),
+                                description=str(row.get("description", "")).strip(),
                                 is_featured=row["is_featured"],
                                 is_active=row["is_active"],
                                 upi_only=row["upi_only"]
