@@ -14,7 +14,7 @@ def assetlinks(request):
                 "namespace": "android_app",
                 "package_name": "com.lokamarketplace.app",
                 "sha256_cert_fingerprints": [
-                    "A7:71:D1:42:6F:E9:03:20:2F:0E:4A:A6:DF:E5:73:37:C2:B7:8B:97:99:2D:F0:CF:E1:24:65:9F:BC:F1:34:6E"
+                    "58:C3:B6:8D:35:D8:AE:C4:AF:43:FE:DF:57:69:77:DB:2F:DC:26:15:4A:CC:09:AE:AE:EA:A0:BD:8F:40:02:5D"
                 ]
             }
         }
