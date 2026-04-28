@@ -505,7 +505,7 @@ def checkout(request):
             except:
                 pass
 
-    handling_fee = Decimal(12)
+    handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
 
     context.update({
         "subtotal": subtotal,
@@ -1179,7 +1179,7 @@ def calculate_delivery(request):
 
     distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
 
-    handling_fee = Decimal(12) if subtotal < 149 else Decimal(0)
+    handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
 
     delivery_fee = 20
 
