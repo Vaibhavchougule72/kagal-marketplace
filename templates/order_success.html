@@ -23,10 +23,14 @@
 @keyframes draw {
   to { stroke-dashoffset: 0; }
 }
+
+#returnAppBox {
+  display: none;
+}
 </style>
 
 <div class="container page-content">
-    <div class="card shadow p-5">
+    <div class="card shadow p-5 text-center">
 
         <div class="success-checkmark">
             <svg viewBox="0 0 52 52">
@@ -41,20 +45,46 @@
             {% trans "Total:" %} ₹{{ order.total }}
         </p>
 
-        <!-- 🔥 NEW MARATHI MESSAGE -->
         <p class="mt-3 text-muted fw-semibold">
             📄 तुमचा ऑर्डरचा बिल डाउनलोड करण्यासाठी "Track Order" वर क्लिक करा.
         </p>
 
-        <a href="{% url 'order_tracking' order.id %}" class="btn btn-primary mt-3">
+        <!-- Track Order -->
+        <a href="{% url 'order_tracking' order.id %}" class="btn btn-primary mt-3 w-100">
             {% trans "Track Order" %}
         </a>
 
-        <a href="/" class="btn btn-outline-dark mt-3">
+        <!-- Return to App -->
+        <div id="returnAppBox">
+            <a href="https://www.loka-store.online/order-success/{{ order.id }}/"
+               class="btn btn-success mt-3 w-100">
+               अॅपमध्ये परत जा
+            </a>
+        </div>
+
+        <!-- Home -->
+        <a href="/" class="btn btn-outline-dark mt-3 w-100">
             {% trans "Back to Home" %}
         </a>
 
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Try auto-open app after short delay
+    setTimeout(function () {
+        window.location.href =
+            "https://www.loka-store.online/order-success/{{ order.id }}/";
+    }, 1200);
+
+    // If still on browser, show manual button
+    setTimeout(function () {
+        document.getElementById("returnAppBox").style.display = "block";
+    }, 2500);
+
+});
+</script>
 
 {% endblock %}

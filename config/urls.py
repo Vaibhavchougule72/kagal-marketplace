@@ -12,9 +12,9 @@ def assetlinks(request):
             ],
             "target": {
                 "namespace": "android_app",
-                "package_name": "com.example.lokamarketplace",
+                "package_name": "com.lokamarketplace.app",
                 "sha256_cert_fingerprints": [
-                    "CB:04:E9:84:4E:27:42:50:AC:D3:D2:D9:D5:DA:9F:F9:8A:12:A5:6E:37:2B:C3:8D:C0:7B:30:DA:83:2E:65:EE"
+                    "A7:71:D1:42:6F:E9:03:20:2F:0E:4A:A6:DF:E5:73:37:C2:B7:8B:97:99:2D:F0:CF:E1:24:65:9F:BC:F1:34:6E"
                 ]
             }
         }
