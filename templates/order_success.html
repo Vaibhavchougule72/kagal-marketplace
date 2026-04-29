@@ -1,111 +1,101 @@
 {% extends 'base.html' %}
-{% load i18n %}
 {% block content %}
 
-<style>
-.success-checkmark {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
-}
+<div class="container py-5 text-center">
 
-.success-checkmark svg {
-  width: 100%;
-  height: 100%;
-  stroke: #28a745;
-  stroke-width: 4;
-  fill: none;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  animation: draw 0.8s ease forwards;
-}
+<h2 class="text-success">✅ ऑर्डर यशस्वी</h2>
 
-@keyframes draw {
-  to { stroke-dashoffset: 0; }
-}
+<p class="mt-3">
+तुमची ऑर्डर यशस्वीरित्या नोंद झाली आहे.
+</p>
 
-#returnAppBox {
-  display: none;
-}
-</style>
+<p class="text-muted" id="openingText">
+अॅप उघडत आहे...
+</p>
 
-<div class="container page-content">
-    <div class="card shadow p-5 text-center">
+<a href="{% url 'order_tracking' order.id %}"
+class="btn btn-primary w-100 mt-3">
+ऑर्डर ट्रॅक करा
+</a>
 
-        <div class="success-checkmark">
-            <svg viewBox="0 0 52 52">
-                <path d="M14 27 L22 35 L38 19"/>
-            </svg>
-        </div>
+<div id="returnBox"
+style="visibility:hidden;">
 
-        <h2 class="text-success">{% trans "Order Request Submitted" %}</h2>
+<p class="mt-4 text-muted">
+अॅप उघडले नाही?
+</p>
 
-        <p class="mt-3">
-            {% trans "Store:" %} <strong>{{ order.store.name }}</strong><br>
-            {% trans "Total:" %} ₹{{ order.total }}
-        </p>
+<button id="openAppBtn"
+class="btn btn-success w-100">
+अॅपमध्ये परत जा
+</button>
 
-        <p class="mt-3 text-muted fw-semibold">
-            📄 तुमचा ऑर्डरचा बिल डाउनलोड करण्यासाठी "Track Order" वर क्लिक करा.
-        </p>
+</div>
 
-        <!-- Track Order -->
-        <a href="{% url 'order_tracking' order.id %}" class="btn btn-primary mt-3 w-100">
-            {% trans "Track Order" %}
-        </a>
+<a href="/"
+class="btn btn-outline-dark w-100 mt-3">
+मुख्यपृष्ठ
+</a>
 
-        <!-- Return to App -->
-        <div id="returnAppBox">
-            <p class="mt-3 text-muted">
-                अॅप आपोआप उघडले नाही?
-            </p>
-
-            <a href="javascript:void(0)"
-            id="openAppBtn"
-            class="btn btn-success mt-2 w-100">
-            अॅपमध्ये परत जा
-            </a>
-        </div>
-
-        <!-- Home -->
-        <a href="/" class="btn btn-outline-dark mt-3 w-100">
-            {% trans "Back to Home" %}
-        </a>
-
-    </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener(
+"DOMContentLoaded",
+function(){
 
-    const orderId = "{{ order.id }}";
-    const customUrl = "lokamarketplace://order-success/" + orderId;
+const orderId = "{{ order.id }}";
 
-    const box = document.getElementById("returnAppBox");
-    const btn = document.getElementById("openAppBtn");
+const appUrl =
+"lokamarketplace://order-success/" + orderId;
 
-    // Show button after short delay
-    setTimeout(function () {
-        box.style.display = "block";
-    }, 700);
+function openApp(){
 
-    // Prevent repeated tries
-    const alreadyTried = sessionStorage.getItem("app_open_tried");
+    const iframe =
+    document.createElement("iframe");
 
-    if (!alreadyTried) {
+    iframe.style.display = "none";
+    iframe.src = appUrl;
 
-        sessionStorage.setItem("app_open_tried", "yes");
+    document.body.appendChild(iframe);
 
-        // Try custom scheme ONLY ONCE
-        setTimeout(function () {
-            window.location.href = customUrl;
-        }, 1000);
-    }
+    setTimeout(function(){
+        iframe.remove();
+    },1200);
+}
 
-    // Manual button
-    btn.onclick = function () {
-        window.location.href = customUrl;
-    };
+const key =
+"opened_app_" + orderId;
+
+if(!sessionStorage.getItem(key)){
+
+    sessionStorage.setItem(key,"1");
+
+    setTimeout(function(){
+        openApp();
+    },700);
+}
+
+setTimeout(function(){
+
+document.getElementById(
+"openingText"
+).innerText =
+"अॅप उघडले नाही? खालील बटण वापरा.";
+
+document.getElementById(
+"returnBox"
+).style.visibility =
+"visible";
+
+},2200);
+
+document.getElementById(
+"openAppBtn"
+).onclick = function(){
+
+    openApp();
+};
 
 });
 </script>
