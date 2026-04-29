@@ -129,7 +129,7 @@ def store_detail(request, store_id):
     if not data:
 
         store = get_object_or_404(Store, id=store_id)
-        products = Product.objects.filter(store=store).select_related("category", "store")
+        products = Product.objects.filter(store=store).select_related("category", "store").order_by('?')
         bundles = Bundle.objects.filter(store=store, is_active=True)
 
         data = {
@@ -212,7 +212,7 @@ def category_stores(request, category_id):
 
 def category_products(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    products = Product.objects.filter(category=category)
+    products = Product.objects.filter(category=category).order_by('?')
 
     return render(request, 'category_products.html', {
         'category': category,
@@ -1085,7 +1085,7 @@ def search_products(request):
     if not products:
 
         # 🔥 IMPORTANT: optimize query
-        products = Product.objects.select_related('store')
+        products = Product.objects.select_related('store').order_by('?')
 
         if query:
             products = products.filter(
