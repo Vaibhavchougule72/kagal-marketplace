@@ -79,35 +79,32 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const orderId = "{{ order.id }}";
-
     const customUrl = "lokamarketplace://order-success/" + orderId;
-    const httpsUrl = "https://www.loka-store.online/order-success/" + orderId + "/";
 
     const box = document.getElementById("returnAppBox");
     const btn = document.getElementById("openAppBtn");
 
-    // Show button quickly
+    // Show button after short delay
     setTimeout(function () {
         box.style.display = "block";
-    }, 500);
+    }, 700);
 
-    // One auto try only
-    setTimeout(function () {
-        window.location.href = customUrl;
+    // Prevent repeated tries
+    const alreadyTried = sessionStorage.getItem("app_open_tried");
 
+    if (!alreadyTried) {
+
+        sessionStorage.setItem("app_open_tried", "yes");
+
+        // Try custom scheme ONLY ONCE
         setTimeout(function () {
-            window.location.href = httpsUrl;
-        }, 700);
+            window.location.href = customUrl;
+        }, 1000);
+    }
 
-    }, 900);
-
+    // Manual button
     btn.onclick = function () {
-
         window.location.href = customUrl;
-
-        setTimeout(function () {
-            window.location.href = httpsUrl;
-        }, 700);
     };
 
 });
