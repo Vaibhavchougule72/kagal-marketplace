@@ -83,39 +83,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const customUrl = "lokamarketplace://order-success/" + orderId;
     const httpsUrl = "https://www.loka-store.online/order-success/" + orderId + "/";
 
-    let tried = false;
+    const box = document.getElementById("returnAppBox");
+    const btn = document.getElementById("openAppBtn");
 
-    // 🔥 AUTO TRY (only once)
+    // Show button quickly
     setTimeout(function () {
+        box.style.display = "block";
+    }, 500);
 
-        if (tried) return;
-        tried = true;
-
-        // Try custom scheme first
+    // One auto try only
+    setTimeout(function () {
         window.location.href = customUrl;
 
-        // Fallback to https after delay
         setTimeout(function () {
             window.location.href = httpsUrl;
-        }, 800);
+        }, 700);
 
-    }, 800);
+    }, 900);
 
-    // Show manual button after delay
-    setTimeout(function () {
-        document.getElementById("returnAppBox").style.display = "block";
-    }, 2500);
+    btn.onclick = function () {
 
-    // Button click logic
-    document.getElementById("openAppBtn").onclick = function () {
-
-        // Try custom scheme
         window.location.href = customUrl;
 
-        // Fallback
         setTimeout(function () {
             window.location.href = httpsUrl;
-        }, 800);
+        }, 700);
     };
 
 });
