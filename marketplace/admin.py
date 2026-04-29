@@ -56,6 +56,9 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
+from django.core.files import File
+import os
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
 
@@ -107,7 +110,7 @@ class ProductAdmin(admin.ModelAdmin):
                                 name=str(row["category"]).strip()
                             )
 
-                            Product.objects.create(
+                            product = Product(
                                 name=str(row["name"]).strip(),
                                 store=store,
                                 category=category,
@@ -117,6 +120,22 @@ class ProductAdmin(admin.ModelAdmin):
                                 is_active=row["is_active"],
                                 upi_only=row["upi_only"]
                             )
+
+                            image_path = str(row.get("image_path", "")).strip()
+
+                            if image_path:
+
+                                filename = os.path.basename(image_path)
+
+                                if os.path.exists(image_path):
+
+                                    with open(image_path, "rb") as f:
+                                        product.image.save(filename, File(f), save=False)
+
+                                else:
+                                    raise Exception(f"Image not found: {image_path}")
+
+                            product.save()
 
                             count += 1
 
