@@ -1746,20 +1746,29 @@ def generate_store_pdf(request, order_id):
 from django.http import JsonResponse
 from .models import Order
 
+from django.db.models import Q
+
 def check_free_delivery(request):
 
     phone = request.GET.get("phone", "").strip()
 
     if not phone:
-        return JsonResponse({"error": "Phone missing"}, status=400)
+        return JsonResponse({
+            "error": "Phone missing"
+        }, status=400)
 
+    # Count all successful / active orders
     order_count = Order.objects.filter(
-        phone=phone,
-        status="DELIVERED"
+        phone=phone
+    ).exclude(
+        status__in=["CANCELLED", "FAILED"]
     ).count()
 
-    next_is_free = (order_count == 0) or ((order_count + 1) % 5 == 0)
-    
+    # 1st order free OR every 5th order free
+    next_is_free = (
+        order_count > 0 or
+        (order_count + 1) % 5 == 0
+    )
 
     return JsonResponse({
         "order_count": order_count,

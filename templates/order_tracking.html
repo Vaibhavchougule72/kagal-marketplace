@@ -3,21 +3,42 @@
 {% block content %}
 
 <style>
-.step {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
+.step{
+  display:flex;
+  align-items:center;
+  margin-bottom:15px;
 }
-.step-circle {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  margin-right: 10px;
+
+.step-circle{
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  margin-right:10px;
 }
-.completed { background: #28a745; }
-.pending { background: #ccc; }
-.cancelled { background: #dc3545; }
-.failed { background: #ffc107; }
+
+.completed{background:#28a745;}
+.pending{background:#ccc;}
+.cancelled{background:#dc3545;}
+.failed{background:#ffc107;}
+
+.policy-box{
+  background:#fff8e8;
+  border-left:4px solid #ff9800;
+  padding:14px;
+  border-radius:8px;
+  margin-top:20px;
+  font-size:14px;
+}
+
+.btn-block{
+  width:100%;
+}
+
+.refresh-note{
+  font-size:13px;
+  color:#666;
+  margin-top:10px;
+}
 </style>
 
 <div class="container page-content">
@@ -37,7 +58,7 @@
 
     <!-- ACCEPTED -->
     <div class="step">
-        <div class="step-circle 
+        <div class="step-circle
         {% if order.status in 'ACCEPTED IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
             completed
         {% else %}
@@ -48,7 +69,7 @@
 
     <!-- IN PROGRESS -->
     <div class="step">
-        <div class="step-circle 
+        <div class="step-circle
         {% if order.status in 'IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
             completed
         {% else %}
@@ -59,7 +80,7 @@
 
     <!-- PICKED UP -->
     <div class="step">
-        <div class="step-circle 
+        <div class="step-circle
         {% if order.status in 'PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
             completed
         {% else %}
@@ -70,7 +91,7 @@
 
     <!-- OUT FOR DELIVERY -->
     <div class="step">
-        <div class="step-circle 
+        <div class="step-circle
         {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}
             completed
         {% else %}
@@ -81,7 +102,7 @@
 
     <!-- DELIVERED -->
     <div class="step">
-        <div class="step-circle 
+        <div class="step-circle
         {% if order.status == 'DELIVERED' %}
             completed
         {% else %}
@@ -106,24 +127,45 @@
     </div>
     {% endif %}
 
+    <!-- RETURN POLICY -->
+    <div class="policy-box">
+        <strong>परतावा धोरण:</strong><br>
+        • चुकीचा / खराब माल मिळाल्यास त्वरित संपर्क करा.<br>
+        • वापरलेला माल परत घेतला जाणार नाही.<br>
+        • नाशवंत वस्तूंवर परतावा लागू नाही.<br>
+        • अंतिम निर्णय दुकानाचा राहील.
+    </div>
+
+    <p class="refresh-note">
+        माहिती 5 सेकंदांनी आपोआप अपडेट होईल.
+    </p>
+
+    <!-- VIEW -->
+    <a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"
+       class="btn btn-primary mt-3 btn-block"
+       target="_blank">
+       📄 बिल पहा
+    </a>
+
+    <!-- DOWNLOAD -->
+    <a href="{% url 'generate_invoice' order.id %}?download=1"
+       class="btn btn-outline-secondary mt-3 btn-block"
+       download>
+       ⬇ बिल डाउनलोड करा
+    </a>
+
+    <!-- HOME -->
+    <a href="/"
+       class="btn btn-success mt-3 btn-block">
+       🏠 मुख्यपृष्ठ
+    </a>
+
 </div>
-
-<!-- VIEW (for app) -->
-<a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"
-   class="btn btn-primary mt-3">
-   📄 View Invoice
-</a>
-
-<!-- DOWNLOAD (for browser) -->
-<a href="{% url 'generate_invoice' order.id %}"
-   class="btn btn-outline-secondary mt-3">
-   ⬇ Download
-</a>
 
 <!-- CANCEL BUTTON -->
 {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" %}
 <div class="container mt-3">
-    <button class="btn btn-danger"
+    <button class="btn btn-danger btn-block"
             data-bs-toggle="modal"
             data-bs-target="#cancelModal">
         {% trans "Cancel Order" %}
@@ -131,14 +173,16 @@
 </div>
 {% endif %}
 
-<!-- Cancel Confirmation Modal -->
+<!-- Cancel Modal -->
 <div class="modal fade" id="cancelModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
         <h5 class="modal-title text-danger">Cancel Order?</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
@@ -167,6 +211,7 @@
   </div>
 </div>
 
+<!-- RIDER -->
 {% if order.status == "OUT_FOR_DELIVERY" and order.rider_latitude %}
 <div class="container mt-4">
 
@@ -176,7 +221,6 @@
 <h5 class="mb-3">🚴 Delivery Partner</h5>
 
 {% if order.assigned_delivery %}
-
 <p class="mb-1">
 <strong>Name:</strong>
 {{ order.assigned_delivery.get_full_name|default:order.assigned_delivery.username }}
@@ -188,23 +232,38 @@ class="btn btn-primary w-100 mb-2">
 📞 Call Rider ({{ order.assigned_delivery.deliverypartnerprofile.phone }})
 </a>
 {% endif %}
-
 {% endif %}
 
-{% if order.rider_latitude %}
 <a target="_blank"
 href="https://www.google.com/maps?q={{ order.rider_latitude }},{{ order.rider_longitude }}"
 class="btn btn-success w-100">
 📍 Track Rider Live
 </a>
+
+</div>
+</div>
+
+</div>
 {% endif %}
 
-</div>
-</div>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
 
-</div>
+    const finalStatuses = [
+        "DELIVERED",
+        "FAILED",
+        "CANCELLED"
+    ];
 
-{% endif %}
+    const currentStatus = "{{ order.status }}";
+
+    if (!finalStatuses.includes(currentStatus)) {
+        setTimeout(function(){
+            location.reload();
+        }, 5000);
+    }
+
+});
+</script>
 
 {% endblock %}
-
