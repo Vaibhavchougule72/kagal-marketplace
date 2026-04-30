@@ -212,7 +212,7 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
 
-        # ✅ Scripts (MAIN)
+        # ✅ Scripts (main)
         "script-src": (
             "'self'",
             "'unsafe-inline'",
@@ -222,12 +222,13 @@ CONTENT_SECURITY_POLICY = {
             "blob:",
         ),
 
-        # ✅ IMPORTANT (this is your missing fix)
+        # 🔥 THIS IS YOUR MAIN FIX
         "script-src-elem": (
             "'self'",
             "'unsafe-inline'",
             "https://checkout.razorpay.com",
             "https://cdn.jsdelivr.net",
+            "blob:",   # ✅ ADD THIS
         ),
 
         # ✅ Styles
@@ -273,7 +274,6 @@ CONTENT_SECURITY_POLICY = {
         ),
     }
 }
-
 # ========================
 # LOCALE
 # ========================
