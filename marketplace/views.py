@@ -577,7 +577,7 @@ def checkout(request):
             if raw_distance <= 1:
                 distance = raw_distance
             else:
-                distance = 1 + (raw_distance - 1) * 1.35
+                distance = 1 + (raw_distance - 1) * 1.55
 
             if distance > 10:
                 context["error"] = "Delivery not available"
@@ -1202,7 +1202,7 @@ def calculate_delivery(request):
     if raw_distance <= 1:
         distance = raw_distance
     else:
-        distance = 1 + (raw_distance - 1) * 1.35
+        distance = 1 + (raw_distance - 1) * 1.55
 
     handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
 
