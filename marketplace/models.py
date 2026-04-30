@@ -210,12 +210,16 @@ class Order(models.Model):
                 # If you later add store lat/lon → replace above
 
                 # 📏 distance
-                distance = calculate_distance(
+                raw_distance = calculate_distance(
                     store_lat,
                     store_lon,
                     self.latitude,
                     self.longitude
                 )
+                if raw_distance <= 1:
+                    distance = raw_distance
+                else:
+                    distance = raw_distance * 1.55
 
                 # ⏱ time
                 time_minutes = int(distance * 5)
