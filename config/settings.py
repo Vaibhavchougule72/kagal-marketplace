@@ -208,28 +208,28 @@ CSRF_COOKIE_SAMESITE = "Lax"
 # ========================
 # CSP (NEW FORMAT - FIXED)
 # ========================
+# ========================
+# CSP (RELAXED - NO ERRORS)
+# ========================
+
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
 
-        # ✅ Scripts
+        # ✅ Scripts (fully flexible)
         "script-src": (
             "'self'",
             "'unsafe-inline'",
             "'unsafe-eval'",
-            "https://checkout.razorpay.com",
-            "https://cdn.jsdelivr.net",
-            "https://www.google-analytics.com",
-            "https://www.googletagmanager.com",
+            "https:",
             "blob:",
         ),
 
         "script-src-elem": (
             "'self'",
             "'unsafe-inline'",
-            "https://checkout.razorpay.com",
-            "https://cdn.jsdelivr.net",
-            "https://www.googletagmanager.com",
+            "'unsafe-eval'",
+            "https:",
             "blob:",
         ),
 
@@ -237,45 +237,38 @@ CONTENT_SECURITY_POLICY = {
         "style-src": (
             "'self'",
             "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-            "https://cdn.jsdelivr.net",
+            "https:",
         ),
 
         "style-src-elem": (
             "'self'",
             "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-            "https://cdn.jsdelivr.net",
+            "https:",
+        ),
+
+        # ✅ Images
+        "img-src": (
+            "'self'",
+            "data:",
+            "https:",
         ),
 
         # ✅ Fonts
         "font-src": (
             "'self'",
-            "https://fonts.gstatic.com",
-        ),
-
-        # ✅ Images (analytics uses this too)
-        "img-src": (
-            "'self'",
-            "data:",
-            "https://res.cloudinary.com",
             "https:",
-            "https://www.google-analytics.com",
         ),
 
-        # 🔥 MAIN FIX HERE
+        # ✅ API / AJAX
         "connect-src": (
             "'self'",
-            "https://api.razorpay.com",
-            "https://cdn.jsdelivr.net",
-            "https://www.google-analytics.com",
-            "https://region1.google-analytics.com",
+            "https:",
         ),
 
-        # ✅ Razorpay iframe
+        # ✅ Frames (Razorpay etc.)
         "frame-src": (
             "'self'",
-            "https://checkout.razorpay.com",
+            "https:",
         ),
     }
 }
