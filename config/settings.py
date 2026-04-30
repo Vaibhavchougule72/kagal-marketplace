@@ -212,23 +212,43 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
 
+        # ✅ Scripts
         "script-src": (
             "'self'",
             "'unsafe-inline'",
             "https://checkout.razorpay.com",
+            "https://cdn.jsdelivr.net",
         ),
 
+        "script-src-elem": (
+            "'self'",
+            "'unsafe-inline'",
+            "https://checkout.razorpay.com",
+            "https://cdn.jsdelivr.net",
+        ),
+
+        # ✅ Styles
         "style-src": (
             "'self'",
             "'unsafe-inline'",
             "https://fonts.googleapis.com",
+            "https://cdn.jsdelivr.net",
         ),
 
+        "style-src-elem": (
+            "'self'",
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
+            "https://cdn.jsdelivr.net",
+        ),
+
+        # ✅ Fonts
         "font-src": (
             "'self'",
             "https://fonts.gstatic.com",
         ),
 
+        # ✅ Images
         "img-src": (
             "'self'",
             "data:",
@@ -236,6 +256,7 @@ CONTENT_SECURITY_POLICY = {
             "https:",
         ),
 
+        # ✅ API / AJAX / Razorpay
         "connect-src": (
             "'self'",
             "https://api.razorpay.com",
