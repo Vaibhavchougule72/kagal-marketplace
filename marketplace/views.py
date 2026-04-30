@@ -505,6 +505,21 @@ def checkout(request):
             except:
                 pass
 
+        # ======================
+        # 🔥 BUNDLE (ADD THIS)
+        # ======================
+        elif item_id.startswith("bundle_"):
+            try:
+                bundle_id = int(item_id.split("_")[1])
+                bundle = Bundle.objects.get(id=bundle_id, is_active=True)
+
+                for bundle_item in bundle.items.all():
+                    if bundle_item.product.upi_only:
+                        upi_only_required = True
+                        break
+            except:
+                pass
+
     handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
 
     context.update({
