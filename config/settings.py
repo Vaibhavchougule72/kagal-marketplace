@@ -212,7 +212,7 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
 
-        # ✅ Scripts
+        # ✅ Scripts (MAIN)
         "script-src": (
             "'self'",
             "'unsafe-inline'",
@@ -222,6 +222,7 @@ CONTENT_SECURITY_POLICY = {
             "blob:",
         ),
 
+        # ✅ IMPORTANT (this is your missing fix)
         "script-src-elem": (
             "'self'",
             "'unsafe-inline'",
@@ -258,14 +259,14 @@ CONTENT_SECURITY_POLICY = {
             "https:",
         ),
 
-        # ✅ API / AJAX / Razorpay
+        # ✅ API
         "connect-src": (
             "'self'",
             "https://api.razorpay.com",
             "https://cdn.jsdelivr.net",
         ),
 
-        # ✅ Important for Razorpay popups
+        # ✅ Razorpay iframe
         "frame-src": (
             "'self'",
             "https://checkout.razorpay.com",
