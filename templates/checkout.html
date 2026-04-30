@@ -438,7 +438,7 @@ function updateDelivery(lat, lng){
 
     let distance = calculateDistance(
         lat, lng, BUS_STAND_LAT, BUS_STAND_LON
-    ) + 1;
+    );
 
     const placeBtn = document.getElementById("placeOrderBtn");
     const mapError = document.getElementById("mapError");
@@ -478,13 +478,8 @@ function updateDelivery(lat, lng){
         }
     }
 
-    const avgSpeed = distance < 2 ? 20 : 30;
-    const prepTime = 15;
-    let travelTime = (distance / avgSpeed) * 60;
-    let baseTime = travelTime + prepTime;
-
-    let minTime = Math.round(baseTime);
-    let maxTime = Math.round(baseTime + 10);
+    let minTime = 40;
+    let maxTime = 60;
 
     const total = subtotal + handlingFee + deliveryFee - appliedDiscount;
 
