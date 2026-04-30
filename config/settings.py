@@ -212,23 +212,25 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
 
-        # ✅ Scripts (main)
+        # ✅ Scripts
         "script-src": (
             "'self'",
             "'unsafe-inline'",
             "'unsafe-eval'",
             "https://checkout.razorpay.com",
             "https://cdn.jsdelivr.net",
+            "https://www.google-analytics.com",
+            "https://www.googletagmanager.com",
             "blob:",
         ),
 
-        # 🔥 THIS IS YOUR MAIN FIX
         "script-src-elem": (
             "'self'",
             "'unsafe-inline'",
             "https://checkout.razorpay.com",
             "https://cdn.jsdelivr.net",
-            "blob:",   # ✅ ADD THIS
+            "https://www.googletagmanager.com",
+            "blob:",
         ),
 
         # ✅ Styles
@@ -252,19 +254,22 @@ CONTENT_SECURITY_POLICY = {
             "https://fonts.gstatic.com",
         ),
 
-        # ✅ Images
+        # ✅ Images (analytics uses this too)
         "img-src": (
             "'self'",
             "data:",
             "https://res.cloudinary.com",
             "https:",
+            "https://www.google-analytics.com",
         ),
 
-        # ✅ API
+        # 🔥 MAIN FIX HERE
         "connect-src": (
             "'self'",
             "https://api.razorpay.com",
             "https://cdn.jsdelivr.net",
+            "https://www.google-analytics.com",
+            "https://region1.google-analytics.com",
         ),
 
         # ✅ Razorpay iframe
