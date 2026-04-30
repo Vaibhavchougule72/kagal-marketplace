@@ -571,7 +571,7 @@ def checkout(request):
             # -------------------------
             # DELIVERY
             # -------------------------
-            BUS_LAT, BUS_LON = 16.5775, 74.3169
+            BUS_LAT, BUS_LON = 16.579620, 74.312661
             raw_distance = calculate_distance(latitude, longitude, BUS_LAT, BUS_LON)
 
             if raw_distance <= 1:
@@ -1194,8 +1194,8 @@ def calculate_delivery(request):
     longitude = float(longitude)
     subtotal = Decimal(subtotal)
 
-    BUS_STAND_LAT = 16.579644
-    BUS_STAND_LON = 74.312721
+    BUS_STAND_LAT = 16.579620
+    BUS_STAND_LON = 74.312661
 
     raw_distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON)
 

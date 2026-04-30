@@ -287,9 +287,9 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-const BUS_STAND_LAT = 16.5775;
-const BUS_STAND_LON = 74.3169;
-const DELIVERY_RADIUS_KM = 7;
+const BUS_STAND_LAT = 16.579620;
+const BUS_STAND_LON = 74.312661;
+const DELIVERY_RADIUS_KM = 10;
 
 const subtotal = parseFloat("{{ subtotal }}");
 const handlingFee = parseFloat("{{ handling_fee }}");
@@ -436,16 +436,24 @@ function updateDelivery(lat, lng){
     const distanceInfo = document.getElementById("distanceInfo");
     distanceInfo.innerText = "Calculating delivery...";
 
-    let distance = calculateDistance(
+    let rawDistance = calculateDistance(
         lat, lng, BUS_STAND_LAT, BUS_STAND_LON
     );
+
+    let distance;
+
+    if(rawDistance <= 1){
+        distance = rawDistance;
+    } else {
+        distance = 1 + (rawDistance - 1) * 1.35;
+    }
 
     const placeBtn = document.getElementById("placeOrderBtn");
     const mapError = document.getElementById("mapError");
 
     if(distance > DELIVERY_RADIUS_KM){
         mapError.innerText =
-            "Delivery not available outside 7 KM.";
+            "Delivery not available outside 10 KM.";
         mapError.classList.remove("d-none");
         placeBtn.disabled = true;
         return;
@@ -474,7 +482,7 @@ function updateDelivery(lat, lng){
             }
 
             if(deliveryFee > 60) deliveryFee = 60;
-            deliveryFee = Math.round(deliveryFee);
+            deliveryFee = Math.ceil(deliveryFee);
         }
     }
 
