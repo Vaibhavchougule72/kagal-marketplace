@@ -248,7 +248,7 @@ CONTENT_SECURITY_POLICY = {
 
         # ✅ Images
         "img-src": (
-            "'self'",
+            "*",
             "data:",
             "https:",
         ),
