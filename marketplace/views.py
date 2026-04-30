@@ -557,9 +557,9 @@ def checkout(request):
             # DELIVERY
             # -------------------------
             BUS_LAT, BUS_LON = 16.5775, 74.3169
-            distance = calculate_distance(latitude, longitude, BUS_LAT, BUS_LON) + 1
+            distance = calculate_distance(latitude, longitude, BUS_LAT, BUS_LON) * 1.4
 
-            if distance > 7:
+            if distance > 8:
                 context["error"] = "Delivery not available"
                 return render(request, "checkout.html", context)
 
@@ -1177,7 +1177,7 @@ def calculate_delivery(request):
     BUS_STAND_LAT = 16.579644
     BUS_STAND_LON = 74.312721
 
-    distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) + 1
+    distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON) * 1.4
 
     handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
 
