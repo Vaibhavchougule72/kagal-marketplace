@@ -30,6 +30,7 @@ CSRF_TRUSTED_ORIGINS = [
 # ========================
 INSTALLED_APPS = [
     'marketplace.apps.MarketplaceConfig',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    "csp",   # NEW
+    "csp",
 ]
 
 # ========================
@@ -45,7 +46,7 @@ INSTALLED_APPS = [
 # ========================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'csp.middleware.CSPMiddleware',   # NEW
+    'csp.middleware.CSPMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -61,7 +62,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.gzip.GZipMiddleware',
 
-    'marketplace.middleware.PermissionsPolicyMiddleware',  # NEW
+    'marketplace.middleware.PermissionsPolicyMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -148,7 +149,7 @@ RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
 # ========================
-# REDIS (FIXED)
+# REDIS
 # ========================
 REDIS_URL = os.environ.get("REDIS_URL")
 
@@ -181,9 +182,8 @@ cloudinary.config(
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # ========================
-# SECURITY (CRITICAL FIXES)
+# SECURITY
 # ========================
-
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -206,39 +206,42 @@ SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 
 # ========================
-# CSP (VERY IMPORTANT)
+# CSP (NEW FORMAT - FIXED)
 # ========================
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ("'self'",),
 
-CSP_DEFAULT_SRC = ("'self'",)
+        "script-src": (
+            "'self'",
+            "'unsafe-inline'",
+            "https://checkout.razorpay.com",
+        ),
 
-CSP_STYLE_SRC = (
-    "'self'",
-    "'unsafe-inline'",
-    "https://fonts.googleapis.com"
-)
+        "style-src": (
+            "'self'",
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
+        ),
 
-CSP_SCRIPT_SRC = (
-    "'self'",
-    "'unsafe-inline'",
-    "https://checkout.razorpay.com"
-)
+        "font-src": (
+            "'self'",
+            "https://fonts.gstatic.com",
+        ),
 
-CSP_FONT_SRC = (
-    "'self'",
-    "https://fonts.gstatic.com"
-)
+        "img-src": (
+            "'self'",
+            "data:",
+            "https://res.cloudinary.com",
+            "https:",
+        ),
 
-CSP_IMG_SRC = (
-    "'self'",
-    "data:",
-    "https://res.cloudinary.com",
-    "https:"
-)
-
-CSP_CONNECT_SRC = (
-    "'self'",
-    "https://api.razorpay.com"
-)
+        "connect-src": (
+            "'self'",
+            "https://api.razorpay.com",
+        ),
+    }
+}
 
 # ========================
 # LOCALE
