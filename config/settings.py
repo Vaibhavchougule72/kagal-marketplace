@@ -216,8 +216,10 @@ CONTENT_SECURITY_POLICY = {
         "script-src": (
             "'self'",
             "'unsafe-inline'",
+            "'unsafe-eval'",
             "https://checkout.razorpay.com",
             "https://cdn.jsdelivr.net",
+            "blob:",
         ),
 
         "script-src-elem": (
@@ -260,6 +262,13 @@ CONTENT_SECURITY_POLICY = {
         "connect-src": (
             "'self'",
             "https://api.razorpay.com",
+            "https://cdn.jsdelivr.net",
+        ),
+
+        # ✅ Important for Razorpay popups
+        "frame-src": (
+            "'self'",
+            "https://checkout.razorpay.com",
         ),
     }
 }
