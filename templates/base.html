@@ -5,8 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>LOKA-Online Store</title>
-    <meta name="viewport"
-      content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet">
@@ -114,7 +113,7 @@
         }
 
         .main-content {
-            margin-top: calc(90px + env(safe-area-inset-top));
+            margin-top: calc(var(--navbar-height, 70px) + env(safe-area-inset-top));
         }
 
         /* Adjust navbar height */
@@ -142,6 +141,8 @@
         .premium-navbar {
             padding-top: calc(6px + env(safe-area-inset-top));
         }
+
+        
 
         .navbar-brand {
             font-size: 1.1rem;
@@ -174,8 +175,8 @@
         /* Floating Cart Button */
         .floating-cart {
             position: fixed;
-            bottom: 20px;
-            right: max(20px, calc(20px + env(safe-area-inset-bottom)));
+            bottom: max(20px, calc(20px + env(safe-area-inset-bottom)));
+            right: 20px;
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -213,19 +214,6 @@
 {% if messages %}
   <div class="container mt-3">
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-
-<body>
-
-{% if messages %}
-  <div class="container mt-3">
-    {% for message in messages %}
       <div class="alert alert-danger alert-dismissible fade show">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -235,6 +223,7 @@
 {% endif %}
 
 
+<body>
 
 <!-- Global Loader -->
 <div id="globalLoader" class="loader-overlay">
@@ -400,17 +389,12 @@
 
 
 <script>
-window.addEventListener("load", function(){
-
+document.addEventListener("DOMContentLoaded", function(){
     const loader = document.getElementById("globalLoader");
-
     if(loader){
         loader.classList.add("hidden");
     }
-
-    // 🔥 Always show body
     document.body.classList.add("loaded");
-
 });
 </script>
 
@@ -871,6 +855,8 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 
@@ -920,6 +906,33 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 
+<script>
+window.addEventListener("load", function(){
+
+    const navbar = document.querySelector(".premium-navbar");
+
+    if(navbar){
+        const height = navbar.offsetHeight;
+        document.documentElement.style.setProperty("--navbar-height", height + "px");
+    }
+
+});
+</script>
+
+<script>
+window.addEventListener("resize", function(){
+
+    const navbar = document.querySelector(".premium-navbar");
+
+    if(navbar){
+        document.documentElement.style.setProperty(
+            "--navbar-height",
+            navbar.offsetHeight + "px"
+        );
+    }
+
+});
+</script>
 
 </body>
 </html>
