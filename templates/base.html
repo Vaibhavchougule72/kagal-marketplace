@@ -175,7 +175,7 @@
         .floating-cart {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            right: max(20px, calc(20px + env(safe-area-inset-bottom)));
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -340,30 +340,6 @@
 
 <div class="page-wrapper">
 
-{% if not simple_navbar %}
-<!-- MOBILE SEARCH BAR -->
-<div class="mobile-search-wrapper d-lg-none px-3 pt-3">
-
-    <form method="GET"
-          action="{% url 'search_products' %}"
-          class="position-relative">
-
-        <input class="form-control rounded-pill"
-               type="search"
-               id="mobileSearchInput"
-               name="q"
-               placeholder="Search for grocery, snacks..."
-               autocomplete="off">
-
-        <div id="mobileSuggestionBox"
-             class="list-group position-absolute w-100"
-             style="top: 45px; z-index: 9999; display: none;">
-        </div>
-
-    </form>
-
-</div>
-{% endif %}
 
 <div id="cartOverlay" class="cart-overlay"></div>
 
@@ -381,11 +357,36 @@
 </div>
 
 <div class="main-content">
+    {% if not simple_navbar %}
+    <!-- MOBILE SEARCH BAR -->
+    <div class="mobile-search-wrapper d-lg-none px-3 pt-3">
+
+        <form method="GET"
+            action="{% url 'search_products' %}"
+            class="position-relative">
+
+            <input class="form-control rounded-pill"
+                type="search"
+                id="mobileSearchInput"
+                name="q"
+                placeholder="Search for grocery, snacks..."
+                autocomplete="off">
+
+            <div id="mobileSuggestionBox"
+                class="list-group position-absolute w-100"
+                style="top: 45px; z-index: 9999; display: none;">
+            </div>
+
+        </form>
+
+    </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
 </div>
 
 <!-- 🔥 Floating Cart Button (Mobile Only) -->
-{% if show_floating_cart != False %}
+{% if not simple_navbar and show_floating_cart != False %}
 <button id="floatingCartBtn"
         class="floating-cart d-lg-none">
     🛒
