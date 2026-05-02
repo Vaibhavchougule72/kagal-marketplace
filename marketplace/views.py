@@ -599,6 +599,8 @@ def checkout(request):
                 delivery_fee = min(delivery_fee, 60)
 
                 delivery_fee = Decimal(delivery_fee)
+
+                
                 
             # -------------------------
             # COUPON
@@ -1784,20 +1786,21 @@ def check_free_delivery(request):
 
     # Count all successful / active orders
     order_count = Order.objects.filter(
-        phone=phone
-    ).exclude(
-        status__in=["CANCELLED", "FAILED"]
+        phone=phone,
+        status="DELIVERED"
     ).count()
 
-    # 1st order free OR every 5th order free
-    next_is_free = (
-        order_count > 0 or
-        (order_count + 1) % 5 == 0
-    )
+    next_is_free = (order_count + 1) % 5 == 0
+        
+
+    remaining = 5 - (order_count % 5)
+    if remaining == 5:
+        remaining = 0
 
     return JsonResponse({
         "order_count": order_count,
-        "next_is_free": next_is_free
+        "next_is_free": next_is_free,
+        "remaining_orders": remaining
     })
 
 def combo_detail(request, combo_id):
