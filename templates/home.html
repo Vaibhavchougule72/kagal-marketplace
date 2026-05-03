@@ -256,6 +256,7 @@
                     data-id="{{ product.id }}"
                     data-name="{{ product.name }}"
                     data-price="{{ product.price }}"
+                    data-discount="{{ product.discount_price|default:'' }}"
                     data-desc="{{ product.description }}"
                     data-image="{{ product.image.url}}">
 
@@ -312,6 +313,7 @@
 
                             <button class="loka-add-btn add-to-cart-btn fw-bold"
                                     data-id="{{ product.id }}"
+                                    data-source="home"
                                     style="background:#ff5722; color:white;">
                                 Order Now 🍽️
                             </button>
@@ -422,38 +424,54 @@
 </div>
 
 <script>
-document.querySelectorAll(".combo-card").forEach(card => {
+document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
 
-    card.addEventListener("click", function(){
+    btn.addEventListener("click", function(){
 
-        const name = this.dataset.name;
-        const items = JSON.parse(this.dataset.items);
+        const card = this.closest(".product-card");
 
-        document.getElementById("comboTitle").innerText = name;
+        const productId = this.dataset.id;
+        const source = this.dataset.source || "normal";
 
-        let html = "";
+        const name = card.dataset.name;
 
-        let total = 0;
+        // ✅ Get correct price (for tracking only)
+        let price = card.dataset.discount;
 
-        items.forEach(item => {
+        if(!price || price === "None" || price === ""){
+            price = card.dataset.price;
+        }
 
-            const itemTotal = item.price * item.qty;
-            total += itemTotal;
+        // ✅ Send to backend with source
+        fetch(`/add-to-cart/${productId}/?source=${source}`)
+        .then(res => res.json())
+        .then(data => {
 
-            html += `
-                <div class="d-flex justify-content-between mb-2">
-                    <span>• ${item.name} x${item.qty}</span>
-                    <span>₹${itemTotal}</span>
-                </div>
-            `;
+            if(data.success){
+
+                // ✅ Google Analytics tracking
+                if(typeof gtag === "function"){
+                    gtag('event', 'add_to_cart', {
+                        item_name: name,
+                        value: parseFloat(price),
+                        currency: 'INR',
+                        source: source
+                    });
+                }
+
+                alert("Added to cart ✅");
+
+                // optional
+                location.reload();
+
+            } else {
+                alert(data.error || "Something went wrong");
+            }
+
+        })
+        .catch(() => {
+            alert("Error adding to cart");
         });
-
-        html += `<hr><strong>Total: ₹${total}</strong>`;
-
-        document.getElementById("comboItems").innerHTML = html;
-
-        const modal = new bootstrap.Modal(document.getElementById('comboModal'));
-        modal.show();
 
     });
 

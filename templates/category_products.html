@@ -69,7 +69,11 @@ document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
         const card = this.closest(".product-card");
 
         const name = card.dataset.name;
-        const price = card.dataset.price;
+        let price = card.dataset.discount;
+
+        if(!price || price === "None" || price === ""){
+            price = card.dataset.price;
+        }
 
         if(typeof gtag === "function"){
             gtag('event', 'add_to_cart', {

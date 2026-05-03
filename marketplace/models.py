@@ -245,7 +245,7 @@ class Order(models.Model):
                 payout = round(payout)
 
                 # minimum guarantee
-                payout = max(payout, 20)
+                payout = max(payout, 15)
 
                 # SAVE
                 self.delivery_distance = round(distance, 2)

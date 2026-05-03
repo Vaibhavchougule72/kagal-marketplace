@@ -76,8 +76,8 @@ def home(request):
 
     page = request.GET.get('page', 1)
 
-    cache_key = f"home_page_{page}_{timezone.now().minute}"
-    data = cache.get(cache_key)
+    cache_key = "home_page_static"
+    data = None
 
     if not data:
 
@@ -270,10 +270,19 @@ def add_to_cart(request, product_id):
     if product_id in cart['items']:
         cart['items'][product_id]['quantity'] += qty
     else:
+        # ✅ Use discount if available
+        source = request.GET.get("source", "normal")
+
+        # ✅ Apply discount ONLY for homepage
+        if source == "home" and product.discount_price:
+            final_price = product.discount_price
+        else:
+            final_price = product.price
+
         cart['items'][product_id] = {
             'name': product.name,
-            'price': str(product.price),
-            'quantity': qty   # 🔥 FIX HERE
+            'price': str(final_price),
+            'quantity': qty
         }
 
     request.session['cart'] = cart
