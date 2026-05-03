@@ -179,7 +179,7 @@
         {% endfor %}
      ]'>
 
-<div class="loka-product-image">
+<div class="loka-product-image position-relative">
 
 {% if combo.image.url %}
 <img src="{{ combo.image.url }}" loading="lazy">
@@ -252,7 +252,7 @@
         <div class="row g-4">
             {% for product in featured_products %}
             <div class="col-6 col-md-4 col-lg-3">
-                <div class="loka-product-card product-card"
+                <div class="loka-product-card product-card {% if product.is_hero %}border border-danger shadow{% endif %}"
                     data-id="{{ product.id }}"
                     data-name="{{ product.name }}"
                     data-price="{{ product.price }}"
@@ -260,7 +260,21 @@
                     data-image="{{ product.image.url}}">
 
                     <!-- PRODUCT IMAGE -->
-                    <div class="loka-product-image">
+                    <div class="loka-product-image position-relative">
+                        {% if product.is_hero %}
+                        <div style="
+                            position:absolute;
+                            top:8px;
+                            left:8px;
+                            background:#ff0000;
+                            color:white;
+                            padding:4px 8px;
+                            font-size:12px;
+                            border-radius:6px;
+                            z-index:10;">
+                            {{ product.offer_text|default:"🔥 Special Offer" }}
+                        </div>
+                        {% endif %}
                         {% if product.image.url %}
                             <img src="{{ product.image.url }}"
                                 class="img-fluid product-img"
@@ -281,13 +295,25 @@
 
                         <div class="loka-product-bottom">
 
+                            {% if product.discount_price %}
+                            <div>
+                                <span style="text-decoration:line-through; color:gray;">
+                                    ₹{{ product.price }}
+                                </span>
+                                <span class="text-danger fw-bold ms-1">
+                                    ₹{{ product.discount_price }}
+                                </span>
+                            </div>
+                            {% else %}
                             <div class="loka-product-price">
                                 ₹{{ product.price }}
                             </div>
+                            {% endif %}
 
-                            <button class="loka-add-btn add-to-cart-btn"
-                                    data-id="{{ product.id }}">
-                                ADD
+                            <button class="loka-add-btn add-to-cart-btn fw-bold"
+                                    data-id="{{ product.id }}"
+                                    style="background:#ff5722; color:white;">
+                                Order Now 🍽️
                             </button>
 
                         </div>

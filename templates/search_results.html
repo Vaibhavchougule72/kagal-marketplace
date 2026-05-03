@@ -122,9 +122,10 @@
 
                             <!-- ✅ BUTTON LOGIC -->
                             {% if product.store.is_open %}
-                                <button class="loka-add-btn add-to-cart-btn"
-                                        data-id="{{ product.id }}">
-                                    Add
+                                <button class="loka-add-btn add-to-cart-btn fw-bold"
+                                        data-id="{{ product.id }}"
+                                        style="background:#ff5722; color:white;">
+                                    Order Now
                                 </button>
                             {% else %}
                                 <button class="loka-add-btn btn-secondary" disabled>

@@ -86,6 +86,19 @@ class Product(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
+     # ✅ HERO SETTINGS
+    is_hero = models.BooleanField(default=False)
+    offer_text = models.CharField(max_length=100, blank=True, null=True)
+
+    discount_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+    
+    hero_priority = models.IntegerField(default=0)
+
     image = CloudinaryField('image', blank=True, null=True)
     description = models.TextField(blank=True)
 
@@ -225,7 +238,14 @@ class Order(models.Model):
                 time_minutes = int(distance * 5)
 
                 # 💰 payout formula
-                payout = 10 + (round(distance + 1) * 4)
+                # 💰 NEW RIDER PAYOUT LOGIC
+                payout = 12 + (distance * 3.5)
+
+                # round to nearest rupee
+                payout = round(payout)
+
+                # minimum guarantee
+                payout = max(payout, 20)
 
                 # SAVE
                 self.delivery_distance = round(distance, 2)

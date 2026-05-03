@@ -42,9 +42,10 @@
                             ₹{{ product.price }}
                         </div>
 
-                        <button class="loka-add-btn add-to-cart-btn"
-                                data-id="{{ product.id }}">
-                            ADD
+                        <button class="loka-add-btn add-to-cart-btn fw-bold"
+                                data-id="{{ product.id }}"
+                                style="background:#ff5722; color:white;">
+                            Order Now
                         </button>
 
                     </div>
@@ -60,4 +61,22 @@
 
 </div>
 
+
 {% endblock %}
+document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+    btn.addEventListener("click", function(){
+
+        const card = this.closest(".product-card");
+
+        const name = card.dataset.name;
+        const price = card.dataset.price;
+
+        if(typeof gtag === "function"){
+            gtag('event', 'add_to_cart', {
+                item_name: name,
+                value: parseFloat(price),
+                currency: 'INR'
+            });
+        }
+    });
+});

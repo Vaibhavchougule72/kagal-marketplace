@@ -40,62 +40,62 @@ class="btn btn-outline-dark w-100 mt-3">
 </div>
 
 <script>
-document.addEventListener(
-"DOMContentLoaded",
-function(){
+document.addEventListener("DOMContentLoaded", function(){
 
-const orderId = "{{ order.id }}";
+    const orderId = "{{ order.id }}";
 
-const appUrl =
-"lokamarketplace://order-success/" + orderId;
+    // ✅ TRACK PURCHASE (FIRST THING)
+    if(!sessionStorage.getItem("purchase_tracked_" + orderId)){
+        
+        if(typeof gtag === "function"){
+            gtag('event', 'purchase', {
+                transaction_id: orderId,
+                value: parseFloat("{{ order.total }}"),
+                currency: 'INR'
+            });
 
-function openApp(){
+            console.log("Purchase tracked:", orderId);
 
-    const iframe =
-    document.createElement("iframe");
+            sessionStorage.setItem("purchase_tracked_" + orderId, "1");
+        } else {
+            console.log("gtag not loaded");
+        }
+    }
 
-    iframe.style.display = "none";
-    iframe.src = appUrl;
+    // 🔽 YOUR EXISTING CODE (UNCHANGED)
+    const appUrl = "lokamarketplace://order-success/" + orderId;
 
-    document.body.appendChild(iframe);
+    function openApp(){
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = appUrl;
+        document.body.appendChild(iframe);
+
+        setTimeout(function(){
+            iframe.remove();
+        },1200);
+    }
+
+    const key = "opened_app_" + orderId;
+
+    if(!sessionStorage.getItem(key)){
+        sessionStorage.setItem(key,"1");
+
+        setTimeout(function(){
+            openApp();
+        },700);
+    }
 
     setTimeout(function(){
-        iframe.remove();
-    },1200);
-}
+        document.getElementById("openingText").innerText =
+        "अॅप उघडले नाही? खालील बटण वापरा.";
 
-const key =
-"opened_app_" + orderId;
+        document.getElementById("returnBox").style.visibility = "visible";
+    },2200);
 
-if(!sessionStorage.getItem(key)){
-
-    sessionStorage.setItem(key,"1");
-
-    setTimeout(function(){
+    document.getElementById("openAppBtn").onclick = function(){
         openApp();
-    },700);
-}
-
-setTimeout(function(){
-
-document.getElementById(
-"openingText"
-).innerText =
-"अॅप उघडले नाही? खालील बटण वापरा.";
-
-document.getElementById(
-"returnBox"
-).style.visibility =
-"visible";
-
-},2200);
-
-document.getElementById(
-"openAppBtn"
-).onclick = function(){
-
-    openApp();
-};
+    };
 
 });
 </script>

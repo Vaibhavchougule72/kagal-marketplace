@@ -91,10 +91,20 @@ def home(request):
         combos = [c for c in all_combos if c.store.is_open()][:6]
 
         all_products = Product.objects.filter(is_featured=True).select_related('store')
-        print("TOTAL FEATURED:", all_products.count())
-        featured_products_list = [
-            p for p in all_products if p.store.is_open()
-        ]
+
+        # ✅ Filter only open store products
+        open_products = [p for p in all_products if p.store.is_open()]
+
+        # ✅ Separate hero & normal
+        hero_products = sorted(
+            [p for p in open_products if p.is_hero],
+            key=lambda x: x.hero_priority
+        )
+        normal_products = [p for p in open_products if not p.is_hero]
+
+        # ✅ Combine (hero first)
+        featured_products_list = hero_products + normal_products
+
         print("OPEN STORES PRODUCTS:", len(featured_products_list))
         paginator = Paginator(featured_products_list, 12)  # 12 products per page
         featured_products = paginator.get_page(page)

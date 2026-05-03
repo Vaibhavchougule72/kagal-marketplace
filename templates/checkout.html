@@ -105,14 +105,15 @@
             <input type="hidden" name="latitude" id="latitude">
             <input type="hidden" name="longitude" id="longitude">
 
-            <button type="button" class="btn btn-success mt-2" onclick="confirmLocation()">
-                Confirm This Location
-            </button>
+    
         </div>
 
         <div class="mb-3">
 
             <label>{% trans "Coupon Code" %}</label>
+            <p class="text-danger fw-bold text-center">
+            🔥 First Order? Use code FIRST20 – Get ₹20 OFF above Rs 199 order
+            </p>
 
             <input type="text" id="coupon_code" class="form-control">
             <input type="hidden" name="coupon_code" id="applied_coupon">
@@ -257,7 +258,7 @@
                 <input class="form-check-input"
                         type="checkbox"
                         id="policyCheck"
-                        required>
+                        checked>
                 <label class="form-check-label" for="policyCheck">
                     {% trans "I agree to the cancellation and refund policy." %}
                 </label>
@@ -265,6 +266,10 @@
 
             </div>
         </div>
+
+        <p class="text-success fw-bold text-center">
+        🚀 Delivery in 40–60 mins | Trusted local stores
+        </p>
 
         <!-- PLACE ORDER -->
         <button type="submit"
@@ -618,6 +623,55 @@ document.addEventListener("DOMContentLoaded", function(){
     const upiOption = document.getElementById("upiOption");
     const successBox = document.getElementById("formSuccess");
 
+    // ✅ AUTO LOCATION (RUN ONLY ONCE)
+    if (navigator.geolocation) {
+
+        navigator.geolocation.getCurrentPosition(
+            function(position){
+
+                let lat = position.coords.latitude;
+                let lng = position.coords.longitude;
+
+                setLocation(lat, lng);
+                validateForm();   // ✅ ADD THIS
+
+                document.getElementById("deliveryInfo").innerHTML =
+                "📍 Location auto-detected";
+
+                document.getElementById("addressInput").placeholder =
+                "Address auto-filled from location";
+
+                console.log("Auto location set");
+
+            },
+            function(error){
+                console.log("Location denied, fallback to manual");
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 8000
+            }
+        );
+    }
+
+    // Load saved data
+    if(localStorage.getItem("user_name")){
+        nameInput.value = localStorage.getItem("user_name");
+    }
+
+    if(localStorage.getItem("user_phone")){
+        phoneInput.value = localStorage.getItem("user_phone");
+    }
+
+    // Save on input
+    nameInput.addEventListener("input", () => {
+        localStorage.setItem("user_name", nameInput.value);
+    });
+
+    phoneInput.addEventListener("input", () => {
+        localStorage.setItem("user_phone", phoneInput.value);
+    });
+
     function isValidIndianPhone(phone){
         return /^[6-9]\d{9}$/.test(phone);
     }
@@ -642,10 +696,12 @@ document.addEventListener("DOMContentLoaded", function(){
             valid = false;
         }
 
-        if(addressInput.value.trim().length < 5){
+        if(addressInput.value.trim().length < 3){
             addressInput.classList.add("is-invalid");
             valid = false;
-        } else addressInput.classList.remove("is-invalid");
+        } else {
+            addressInput.classList.remove("is-invalid");
+        }
 
         const lat = document.getElementById("latitude").value;
         const lng = document.getElementById("longitude").value;
@@ -671,6 +727,8 @@ document.addEventListener("DOMContentLoaded", function(){
             placeBtn.disabled = true;
             successBox.classList.add("d-none");
         }
+
+
     };
 
     form.addEventListener("submit", function(e){
@@ -678,6 +736,16 @@ document.addEventListener("DOMContentLoaded", function(){
         if(placeBtn.disabled){
             e.preventDefault();
             return;
+        }
+
+        // ✅ TRACK REAL CHECKOUT (HERE)
+        if(typeof gtag === "function"){
+            gtag('event', 'begin_checkout', {
+                value: parseFloat("{{ subtotal }}"),
+                currency: 'INR'
+            });
+
+            console.log("Checkout started");
         }
 
         // Loading spinner

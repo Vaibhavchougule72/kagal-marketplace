@@ -62,8 +62,8 @@ import os
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'store', 'price', 'is_active', 'upi_only')
-    list_filter = ('store', 'is_active')
+    list_display = ('name', 'store', 'price', 'is_hero', 'discount_price', 'is_active', 'upi_only')
+    list_filter = ('store', 'is_active', 'is_hero')
     search_fields = ('name',)
 
     def get_urls(self):
