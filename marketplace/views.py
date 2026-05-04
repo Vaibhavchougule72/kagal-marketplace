@@ -547,7 +547,7 @@ def checkout(request):
             except:
                 pass
 
-    handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
+    handling_fee = Decimal(5) if subtotal < 100 else Decimal(9)
 
     context.update({
         "subtotal": subtotal,
