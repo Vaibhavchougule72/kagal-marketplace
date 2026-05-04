@@ -3,6 +3,38 @@
 {% load static %}
 {% block content %}
 
+{% if main_banner %}
+<div class="container mb-4">
+    <div class="card shadow border-0" style="border-radius:12px; overflow:hidden;">
+        <p style="color:red; font-size:12px;">
+        ⏰ Limited time offer
+        </p>
+        {% if main_banner.image %}
+        <img src="{{ main_banner.image.url }}" style="width:100%; height:180px; object-fit:cover;">
+        {% endif %}
+
+        <div class="p-3 text-center">
+
+            <h5 class="fw-bold text-danger">
+                {{ main_banner.title }}
+            </h5>
+
+            <p class="text-muted">
+                {{ main_banner.subtitle }}
+            </p>
+
+            {% if main_banner.button_link %}
+            <a href="{{ main_banner.button_link }}" class="btn btn-danger fw-bold">
+                {{ main_banner.button_text }}
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+{% endif %}
 
 <!-- PARTNER STORE STRIP -->
 <section class="partner-strip">
@@ -239,7 +271,7 @@
 
 {% load cache %}
 
-{% cache 300 homepage featured_products.number %}
+{% cache 30 homepage featured_products.number %}
 <!-- Featured products section -->
 
 <section class="py-5 bg-light">
@@ -424,60 +456,6 @@
 </div>
 
 <script>
-document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-
-    btn.addEventListener("click", function(){
-
-        const card = this.closest(".product-card");
-
-        const productId = this.dataset.id;
-        const source = this.dataset.source || "normal";
-
-        const name = card.dataset.name;
-
-        // ✅ Get correct price (for tracking only)
-        let price = card.dataset.discount;
-
-        if(!price || price === "None" || price === ""){
-            price = card.dataset.price;
-        }
-
-        // ✅ Send to backend with source
-        fetch(`/add-to-cart/${productId}/?source=${source}`)
-        .then(res => res.json())
-        .then(data => {
-
-            if(data.success){
-
-                // ✅ Google Analytics tracking
-                if(typeof gtag === "function"){
-                    gtag('event', 'add_to_cart', {
-                        item_name: name,
-                        value: parseFloat(price),
-                        currency: 'INR',
-                        source: source
-                    });
-                }
-
-                alert("Added to cart ✅");
-
-                // optional
-                location.reload();
-
-            } else {
-                alert(data.error || "Something went wrong");
-            }
-
-        })
-        .catch(() => {
-            alert("Error adding to cart");
-        });
-
-    });
-
-});
-</script>
-<script>
 document.querySelectorAll(".add-bundle-btn").forEach(btn => {
 
     btn.addEventListener("click", function(e){
@@ -490,8 +468,8 @@ document.querySelectorAll(".add-bundle-btn").forEach(btn => {
         .then(data => {
 
             if(data.success){
-                alert("Added to cart ✅");
-                location.reload(); // optional (or update cart badge)
+                // 🔥 No redirect, no reload
+                showToast("Added to cart ✅");
             } else {
                 alert(data.error || "Something went wrong");
             }
@@ -505,4 +483,102 @@ document.querySelectorAll(".add-bundle-btn").forEach(btn => {
 });
 </script>
 
+{% if popup_banner %}
+<div id="popupBanner" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+z-index:9999;
+align-items:center;
+justify-content:center;
+">
+
+<div style="background:white; width:90%; max-width:350px; border-radius:12px; overflow:hidden;">
+
+    {% if popup_banner.image %}
+    <img src="{{ popup_banner.image.url }}" style="width:100%; height:180px; object-fit:cover;">
+    {% endif %}
+
+    <div class="p-3 text-center">
+
+        <p class="fw-bold text-dark">
+        ₹{{ popup_banner.product.discount_price|default:popup_banner.product.price }}
+        </p>
+
+        <h5 class="fw-bold text-danger">
+            {{ popup_banner.title }}
+        </h5>
+
+        <p class="text-muted">
+            {{ popup_banner.subtitle }}
+        </p>
+
+        {% if popup_banner.button_link %}
+        <button id="popupAddBtn"
+                data-id="{{ popup_banner.product.id }}"
+                class="btn btn-danger w-100 fw-bold">
+            {{ popup_banner.button_text }}
+        </button>
+        {% endif %}
+
+        <button onclick="document.getElementById('popupBanner').style.display='none'"
+            class="btn btn-link mt-2">
+            Close
+        </button>
+
+    </div>
+
+</div>
+</div>
+
+<script>
+if(!localStorage.getItem("popup_shown")){
+    setTimeout(() => {
+        document.getElementById("popupBanner").style.display = "flex";
+    }, 1200);
+    localStorage.setItem("popup_shown", "1");
+}
+</script>
+<script>
+document.getElementById("popupAddBtn")?.addEventListener("click", function(){
+
+    const productId = this.dataset.id;
+    if(!productId){
+        alert("Product not available");
+        return;
+    }
+
+    fetch(`/add-to-cart/${productId}/?source=home`)
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+
+            // ✅ Open cart panel
+            document.getElementById("cartPanel").classList.add("open");
+            document.getElementById("cartOverlay").classList.add("active");
+            document.body.style.overflow = "hidden";
+
+            
+
+            // ✅ Refresh cart
+            fetch("/cart/", {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById("cartContent").innerHTML = html;
+            });
+
+        }
+    });
+
+});
+</script>
+{% endif %}
+
 {% endblock %}
+

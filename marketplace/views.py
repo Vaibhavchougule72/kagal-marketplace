@@ -24,6 +24,7 @@ from decimal import Decimal, ROUND_HALF_UP
 # from .sms_service import send_sms   ❌ comment
 
 from decimal import Decimal, ROUND_HALF_UP
+from .models import Banner
 
 def to_paise(amount):
     return int((Decimal(amount) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
@@ -109,15 +110,22 @@ def home(request):
         paginator = Paginator(featured_products_list, 12)  # 12 products per page
         featured_products = paginator.get_page(page)
 
+        banners = Banner.objects.filter(is_active=True).order_by('priority')
+
+        popup_banner = banners.filter(is_popup=True).first()
+        main_banner = banners.filter(is_popup=False).first()
+
         data = {
             "categories": categories,
             "featured_products": featured_products,
             "stores": stores,
             "combos": combos,
-            "show_floating_cart": True
+            "show_floating_cart": True,
+            "main_banner": main_banner,
+            "popup_banner": popup_banner,
         }
 
-        cache.set(cache_key, data, 300)
+        cache.set(cache_key, data, 30)
 
     return render(request, "home.html", data)
 
@@ -149,7 +157,7 @@ def store_detail(request, store_id):
             "show_floating_cart": True
         }
 
-        cache.set(cache_key, data, 300)
+        cache.set(cache_key, data, 30)
 
     return render(request, "store_detail.html", data)
 

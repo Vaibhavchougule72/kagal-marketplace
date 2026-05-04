@@ -5,6 +5,12 @@ from django.utils.html import format_html
 from .views import generate_delivery_pdf, generate_store_pdf
 from django.urls import reverse
 from .models import StoreTiming, StoreHoliday
+from .models import Banner
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_active', 'is_popup', 'priority')
+    list_filter = ('is_active', 'is_popup')
 
 
 @admin.register(Category)

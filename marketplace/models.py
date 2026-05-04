@@ -483,3 +483,22 @@ class StoreHoliday(models.Model):
     def __str__(self):
         return f"{self.store.name} - {self.date}"
     
+class Banner(models.Model):
+    title = models.CharField(max_length=100)
+    subtitle = models.CharField(max_length=200, blank=True, null=True)
+
+    image = models.ImageField(upload_to='banners/', blank=True, null=True)
+    product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)
+    
+    button_text = models.CharField(max_length=50, default="Order Now")
+    button_link = models.CharField(max_length=200, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+    is_popup = models.BooleanField(default=False)
+
+    priority = models.IntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
