@@ -347,7 +347,7 @@
                                     data-id="{{ product.id }}"
                                     data-source="home"
                                     style="background:#ff5722; color:white;">
-                                Order Now 🍽️
+                                Order
                             </button>
 
                         </div>
@@ -468,6 +468,8 @@ document.querySelectorAll(".add-bundle-btn").forEach(btn => {
         .then(data => {
 
             if(data.success){
+                // ✅ update badge
+                refreshCartBadge();
                 // 🔥 No redirect, no reload
                 showToast("Added to cart ✅");
             } else {
