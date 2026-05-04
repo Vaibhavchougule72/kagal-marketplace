@@ -356,30 +356,6 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 });
 
-function getAddress(lat, lng){
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-    .then(response => response.json())
-    .then(data => {
-        if(data && data.address){
-
-            let road = data.address.road || "";
-            let suburb = data.address.suburb || data.address.village || "";
-            let city = data.address.city || data.address.town || data.address.county || "";
-            let postcode = data.address.postcode || "";
-
-            let parts = [road, suburb, city, postcode].filter(Boolean);
-            let finalAddress = parts.join(", ");
-
-            document.getElementById("addressInput").value = finalAddress;
-
-        } else {
-            document.getElementById("addressInput").value = "Please enter address manually";
-        }
-    })
-    .catch(error => {
-        console.log("Error getting address:", error);
-    });
-}
 
 function confirmLocation(){
     const lat = document.getElementById("latitude").value;
@@ -425,7 +401,7 @@ function setLocation(lat, lng){
         const pos = marker.getLatLng();
         updateDelivery(pos.lat, pos.lng);
         document.getElementById("addressInput").value = "Fetching address...";
-        getAddress(pos.lat, pos.lng);
+        
     });
 
     updateDelivery(lat, lng);
@@ -620,37 +596,6 @@ document.addEventListener("DOMContentLoaded", function(){
     const codOption = document.getElementById("codOption");
     const upiOption = document.getElementById("upiOption");
     const successBox = document.getElementById("formSuccess");
-
-    // ✅ AUTO LOCATION (RUN ONLY ONCE)
-    if (navigator.geolocation) {
-
-        navigator.geolocation.getCurrentPosition(
-            function(position){
-
-                let lat = position.coords.latitude;
-                let lng = position.coords.longitude;
-
-                setLocation(lat, lng);
-                validateForm();   // ✅ ADD THIS
-
-                document.getElementById("deliveryInfo").innerHTML =
-                "📍 Location auto-detected";
-
-                document.getElementById("addressInput").placeholder =
-                "Address auto-filled from location";
-
-                console.log("Auto location set");
-
-            },
-            function(error){
-                console.log("Location denied, fallback to manual");
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 8000
-            }
-        );
-    }
 
     // Load saved data
     if(localStorage.getItem("user_name")){
