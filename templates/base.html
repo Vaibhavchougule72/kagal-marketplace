@@ -553,6 +553,8 @@ document.addEventListener("DOMContentLoaded", function(){
         addBtn.dataset.loading = "true";
 
         const productId = addBtn.dataset.id;
+        const source = addBtn.dataset.source || "normal";
+
 
         const card = addBtn.closest(".product-card");
         const img = card ? card.querySelector(".product-img") : null;
@@ -561,7 +563,7 @@ document.addEventListener("DOMContentLoaded", function(){
             animateAddToCart(img);
         }
 
-        fetch(`/add-to-cart/${productId}/`, {
+        fetch(`/add-to-cart/${productId}/?source=${source}`, {
             headers: { "X-Requested-With": "XMLHttpRequest" }
         })
         .then(res => res.json())
