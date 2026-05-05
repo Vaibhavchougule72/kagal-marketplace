@@ -832,15 +832,15 @@ def checkout(request):
                 if distance <= 2:
                     delivery_fee = Decimal(15)
                 elif distance <= 3:
-                    delivery_fee = Decimal(20)
+                    delivery_fee = Decimal(18)
                 elif distance <= 4:
-                    delivery_fee = Decimal(23)
+                    delivery_fee = Decimal(20)
                 elif distance <= 5:
-                    delivery_fee = Decimal(27)
+                    delivery_fee = Decimal(23)
                 elif distance <= 6:
-                    delivery_fee = Decimal(30)
+                    delivery_fee = Decimal(27)
                 elif distance <= 7:
-                    delivery_fee = Decimal(33)
+                    delivery_fee = Decimal(30)
                 else:
                     delivery_fee = Decimal(40)
 
