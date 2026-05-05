@@ -375,15 +375,56 @@ def category_stores(request, category_id):
 
 
 def category_products(request, category_id):
+
     category = get_object_or_404(Category, id=category_id)
+
+    query = request.GET.get("q", "")
+    store_filter = request.GET.get("store")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    sort = request.GET.get("sort")
+
     products = Product.objects.filter(category=category)\
         .select_related('store')\
-        .prefetch_related('store__timings')\
-        .order_by('-id')
+        .prefetch_related('store__timings')
+
+    # 🔍 SEARCH
+    if query:
+        products = products.filter(name__icontains=query)
+
+    # 🏪 STORE FILTER
+    if store_filter:
+        products = products.filter(store_id=store_filter)
+
+    # 💰 PRICE FILTER
+    if min_price:
+        products = products.filter(price__gte=min_price)
+
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    # ↕ SORTING
+    if sort == "price_low":
+        products = products.order_by("price")
+    elif sort == "price_high":
+        products = products.order_by("-price")
+    elif sort == "newest":
+        products = products.order_by("-id")
+    else:
+        products = products.order_by("-id")
+
+    # 🔥 STORE LIST FOR FILTER
+    stores = Store.objects.filter(category=category)
 
     return render(request, 'category_products.html', {
         'category': category,
         'products': products,
+        'stores': stores,
+        'query': query,
+        'selected_store': store_filter,
+        'selected_sort': sort,
+        'min_price': min_price,
+        'max_price': max_price,
         "show_floating_cart": True
     })
 
@@ -1507,15 +1548,15 @@ def calculate_delivery(request):
         if distance <= 2:
             delivery_fee = Decimal(15)
         elif distance <= 3:
-            delivery_fee = Decimal(20)
+            delivery_fee = Decimal(18)
         elif distance <= 4:
-            delivery_fee = Decimal(23)
+            delivery_fee = Decimal(20)
         elif distance <= 5:
-            delivery_fee = Decimal(27)
+            delivery_fee = Decimal(23)
         elif distance <= 6:
-            delivery_fee = Decimal(30)
+            delivery_fee = Decimal(27)
         elif distance <= 7:
-            delivery_fee = Decimal(33)
+            delivery_fee = Decimal(30)
         else:
             delivery_fee = Decimal(40)
 
