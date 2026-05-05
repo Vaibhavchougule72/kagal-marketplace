@@ -61,3 +61,22 @@ def clear_bundle_cache(sender, instance, **kwargs):
     cache.delete("home_page")
 
     cache.delete(f"store_{instance.store.id}")
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.cache import cache
+from .models import Product, Bundle, Store
+
+@receiver(post_save, sender=Product)
+def clear_product_cache(sender, instance, **kwargs):
+    cache.delete(f"store_{instance.store.id}")
+    cache.delete("home_featured_ids")
+
+@receiver(post_save, sender=Bundle)
+def clear_bundle_cache(sender, instance, **kwargs):
+    cache.delete(f"store_{instance.store.id}")
+    cache.delete("home_combos")
+
+@receiver(post_save, sender=Store)
+def clear_store_cache(sender, instance, **kwargs):
+    cache.delete(f"store_{instance.id}")

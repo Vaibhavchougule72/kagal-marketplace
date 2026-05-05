@@ -7,7 +7,8 @@
 {% endif %}
 
 <div class="text-center p-5">
-    <h5>{% trans "Your cart is empty 🛒" %}</h5>
+    <h5>🛒 Your cart is empty</h5>
+    <p class="text-muted">Add items and get fast delivery 🚀</p>
     <p class="text-muted">{% trans "Add some products to get started." %}</p>
     <a href="/" class="btn btn-primary mt-3">{% trans "Start Shopping" %}</a>
 </div>
@@ -72,20 +73,48 @@
 
 </div>
 
-<div class="text-center mb-3" style="font-size: 15px; color: #198754;">
-    🚚 Free Delivery on orders above ₹499
-</div>
+<div class="mb-3">
 
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill"
+             data-width="{{ progress_percent|default:0 }}"></div>
+    </div>
+
+    <small>
+        {% if remaining_amount > 0 %}
+        Add ₹{{ remaining_amount|floatformat:0 }} more for FREE delivery 🚀
+        {% else %}
+        🎉 You unlocked FREE delivery!
+        {% endif %}
+    </small>
+
+</div>
 <!-- Cart Summary -->
 <div class="mt-3 border-top pt-3">
 
     <div class="d-flex justify-content-between mb-2">
+        {% if total_savings > 0 %}
+        <p style="color:green; font-weight:600;">
+        🎉 You saved ₹{{ total_savings|floatformat:0 }}
+        </p>
+        {% endif %}
+        
         <strong>Total:</strong>
+        <small style="color:red;">
+        ⏰ Prices may change soon
+        </small>
         <strong>₹{{ subtotal }}</strong>
     </div>
 
+    <div class="text-center mb-2">
+
+    <small>🚚 30–50 mins delivery</small><br>
+    <small>💵 Cash on Delivery available</small>
+
+    </div>
+
     <a href="{% url 'checkout' %}" class="btn btn-success w-100">
-        {% trans "Proceed to Checkout" %}
+        🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
     </a>
 
 </div>

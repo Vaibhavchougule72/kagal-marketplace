@@ -64,7 +64,7 @@
         </div>
 
         <div class="form-check mt-3">
-            <input class="form-check-input" type="checkbox" id="confirm_phone" name="confirm_phone" required>
+            <input class="form-check-input" type="checkbox" id="confirm_phone" name="confirm_phone" checked>
 
             <label class="form-check-label" for="confirm_phone">
             मी दिलेला मोबाईल नंबर योग्य आहे. चुकीचा नंबर दिल्यास ऑर्डर रद्द होऊ शकते.
@@ -268,14 +268,21 @@
         <p class="text-success fw-bold text-center">
         🚀 Delivery in 40–60 mins | Trusted local stores
         </p>
+        <small style="color:#198754; font-weight:600;">
+        ✔ No hidden charges  
+        ✔ Trusted local delivery  
+        </small>
 
         <!-- PLACE ORDER -->
         <button type="submit"
                 id="placeOrderBtn"
-                class="btn btn-success w-100 py-3 fs-5"
-                disabled>
-            {% trans "Place Order" %}
+                class="btn btn-success w-100 py-3 fs-5">
+            🚀 Confirm Order • ₹{{ subtotal|add:handling_fee }}
         </button>
+
+        <small style="color:red;">
+        ⏰ High demand — order now!
+        </small>
 
         <div style="height:70px;"></div>
 
@@ -464,45 +471,25 @@ function updateDelivery(lat, lng){
         mapError.classList.add("d-none");
     }
 
-    let deliveryFee = 0;
+    fetch(`/calculate-delivery/?latitude=${lat}&longitude=${lng}`)
+    .then(res => res.json())
+    .then(data => {
 
-    if(freeDeliveryUnlocked){
+        const deliveryFee = freeDeliveryUnlocked ? 0 : data.delivery_fee;
+        const total = freeDeliveryUnlocked
+            ? (subtotal + handlingFee - appliedDiscount)
+            : data.total;
 
-        deliveryFee = 0;
-        document.getElementById("freeDeliveryInput").value = "true";
+        document.getElementById("deliveryFee").innerText =
+            deliveryFee === 0 ? "FREE 🎉" : "₹" + deliveryFee;
 
-    }else{
+        document.getElementById("orderTotal").innerText =
+            "₹" + total;
 
-        document.getElementById("freeDeliveryInput").value = "false";
+        document.getElementById("distanceInfo").innerText =
+            "Distance: " + data.distance + " km | Delivery: 40–60 mins";
 
-        if(subtotal >= 499){
-            deliveryFee = 0;
-        }else{
-            if(distance <= 2){
-                deliveryFee = 20;
-            } else {
-                deliveryFee = 20 + ((distance - 2) * 5);
-            }
-
-            if(deliveryFee > 60) deliveryFee = 60;
-            deliveryFee = Math.ceil(deliveryFee);
-        }
-    }
-
-    let minTime = 40;
-    let maxTime = 60;
-
-    const total = subtotal + handlingFee + deliveryFee - appliedDiscount;
-
-    document.getElementById("deliveryFee").innerText =
-        "₹" + deliveryFee;
-
-    document.getElementById("orderTotal").innerText =
-        "₹" + total;
-
-    distanceInfo.innerText =
-        "Distance: " + distance.toFixed(2) + " km | Delivery: "
-        + minTime + " - " + maxTime + " mins";
+    });
 
     validateForm();
 }
@@ -612,38 +599,41 @@ document.addEventListener("DOMContentLoaded", function(){
 
     const form = document.getElementById("checkoutForm");
     const placeBtn = document.getElementById("placeOrderBtn");
+
     const phoneInput = document.getElementById("phoneInput");
     const nameInput = document.getElementById("nameInput");
     const addressInput = document.getElementById("addressInput");
+
     const phoneCheck = document.getElementById("phoneCheck");
-    const mapError = document.getElementById("mapError");
     const codOption = document.getElementById("codOption");
     const upiOption = document.getElementById("upiOption");
+
     const successBox = document.getElementById("formSuccess");
 
-    // ✅ AUTO LOCATION (RUN ONLY ONCE)
-    if (navigator.geolocation) {
+    // 🔥 FORCE UPI DEFAULT
+    upiOption.checked = true;
 
+    const upiOnly = "{{ upi_only_required|yesno:'true,false' }}";
+    if(upiOnly === "true"){
+        codOption.disabled = true;
+    }
+
+    // 🔥 AUTO LOCATION
+    if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(position){
-
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
 
                 setLocation(lat, lng);
-                validateForm();   // ✅ ADD THIS
+                validateForm();
 
                 document.getElementById("deliveryInfo").innerHTML =
                 "📍 Location auto-detected";
 
-                document.getElementById("addressInput").placeholder =
-                "Address auto-filled from location";
-
-                console.log("Auto location set");
-
             },
             function(error){
-                console.log("Location denied, fallback to manual");
+                console.log("Location denied");
             },
             {
                 enableHighAccuracy: true,
@@ -652,7 +642,7 @@ document.addEventListener("DOMContentLoaded", function(){
         );
     }
 
-    // Load saved data
+    // 🔥 LOAD SAVED DATA
     if(localStorage.getItem("user_name")){
         nameInput.value = localStorage.getItem("user_name");
     }
@@ -661,7 +651,11 @@ document.addEventListener("DOMContentLoaded", function(){
         phoneInput.value = localStorage.getItem("user_phone");
     }
 
-    // Save on input
+    if(localStorage.getItem("user_address")){
+        addressInput.value = localStorage.getItem("user_address");
+    }
+
+    // 🔥 SAVE DATA
     nameInput.addEventListener("input", () => {
         localStorage.setItem("user_name", nameInput.value);
     });
@@ -670,19 +664,28 @@ document.addEventListener("DOMContentLoaded", function(){
         localStorage.setItem("user_phone", phoneInput.value);
     });
 
+    addressInput.addEventListener("input", () => {
+        localStorage.setItem("user_address", addressInput.value);
+    });
+
     function isValidIndianPhone(phone){
         return /^[6-9]\d{9}$/.test(phone);
     }
 
+    // 🔥 MAIN VALIDATION
     window.validateForm = function(){
 
         let valid = true;
 
+        // NAME
         if(nameInput.value.trim().length < 3){
             nameInput.classList.add("is-invalid");
             valid = false;
-        } else nameInput.classList.remove("is-invalid");
+        } else {
+            nameInput.classList.remove("is-invalid");
+        }
 
+        // PHONE
         if(isValidIndianPhone(phoneInput.value)){
             phoneInput.classList.remove("is-invalid");
             phoneInput.classList.add("is-valid");
@@ -694,6 +697,7 @@ document.addEventListener("DOMContentLoaded", function(){
             valid = false;
         }
 
+        // ADDRESS
         if(addressInput.value.trim().length < 3){
             addressInput.classList.add("is-invalid");
             valid = false;
@@ -701,62 +705,70 @@ document.addEventListener("DOMContentLoaded", function(){
             addressInput.classList.remove("is-invalid");
         }
 
+        // MAP (NON-BLOCKING)
         const lat = document.getElementById("latitude").value;
         const lng = document.getElementById("longitude").value;
 
         if(!lat || !lng){
             document.getElementById("map").classList.add("map-invalid");
-            valid = false;
         } else {
             document.getElementById("map").classList.remove("map-invalid");
         }
 
-        const upiOnly = "{{ upi_only_required|yesno:'true,false' }}";
-
+        // PAYMENT RULE
         if(subtotal < 149 || upiOnly === "true"){
             codOption.disabled = true;
             upiOption.checked = true;
         }
 
+        // ALWAYS ENABLE BUTTON
+        placeBtn.disabled = false;
+
+        // SUCCESS MESSAGE
         if(valid){
-            placeBtn.disabled = false;
             successBox.classList.remove("d-none");
         } else {
-            placeBtn.disabled = true;
             successBox.classList.add("d-none");
         }
 
-
+        return valid;
     };
 
+    // 🔥 FORM SUBMIT
     form.addEventListener("submit", function(e){
-        validateForm();
-        if(placeBtn.disabled){
+
+        if(!validateForm()){
             e.preventDefault();
+
+            document.querySelector(".is-invalid")?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
             return;
         }
 
-        // ✅ TRACK REAL CHECKOUT (HERE)
+        // 🔥 TRACK CHECKOUT
         if(typeof gtag === "function"){
             gtag('event', 'begin_checkout', {
                 value: parseFloat("{{ subtotal }}"),
                 currency: 'INR'
             });
-
-            console.log("Checkout started");
         }
 
-        // Loading spinner
+        // 🔥 LOADING STATE
         placeBtn.innerHTML =
             '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
         placeBtn.disabled = true;
     });
 
+    // 🔁 REAL-TIME VALIDATION
     nameInput.addEventListener("input", validateForm);
     phoneInput.addEventListener("input", validateForm);
     addressInput.addEventListener("input", validateForm);
 
     validateForm();
+
 });
 </script>
 
@@ -801,21 +813,6 @@ document.getElementById("phoneInput").addEventListener("blur", function(){
         }
 
     });
-
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-
-    const upiOnly = "{{ upi_only_required|yesno:'true,false' }}";
-
-    if(upiOnly === "true"){
-        document.getElementById("upiOption").checked = true;
-    }
-
-    if(upiOnly === "true"){
-        document.getElementById("codOption").disabled = true;
-    }
 
 });
 </script>

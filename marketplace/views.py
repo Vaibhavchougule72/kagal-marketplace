@@ -25,6 +25,62 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from decimal import Decimal, ROUND_HALF_UP
 from .models import Banner
+from .models import Store
+
+def is_store_open_cached(store: Store):
+    key = f"store_open_{store.id}"
+    status = cache.get(key)
+
+    if status is None:
+        try:
+            status = store.is_open()
+        except:
+            status = False
+        cache.set(key, status, 60)
+
+    return status
+
+def get_cart_details(cart):
+    items = []
+    subtotal = Decimal(0)
+
+    product_ids = []
+    bundle_ids = []
+
+    for item_id in cart.get("items", {}):
+        if item_id.isdigit():
+            product_ids.append(int(item_id))
+        elif item_id.startswith("bundle_"):
+            bundle_ids.append(int(item_id.split("_")[1]))
+
+    products = {
+        p.id: p for p in Product.objects.filter(id__in=product_ids)
+    }
+
+    bundles = {
+        b.id: b for b in Bundle.objects.filter(id__in=bundle_ids, is_active=True)
+    }
+
+    for item_id, item in cart.get("items", {}).items():
+
+        qty = int(item.get("quantity", 1))
+
+        if item_id.isdigit():
+            product = products.get(int(item_id))
+            if not product:
+                continue
+            price = product.discount_price or product.price
+
+        else:
+            bundle_id = int(item_id.split("_")[1])
+            bundle = bundles.get(bundle_id)
+            if not bundle:
+                continue
+            price = bundle.price
+
+        subtotal += price * qty
+
+    return subtotal
 
 def to_paise(amount):
     return int((Decimal(amount) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
@@ -77,58 +133,119 @@ def home(request):
 
     page = request.GET.get('page', 1)
 
-    cache_key = "home_page_static"
-    data = None
+    # -------------------------
+    # BASIC DATA (NO CACHE)
+    # -------------------------
+    categories = Category.objects.all()
+    stores = Store.objects.prefetch_related('timings')
+    banners = Banner.objects.filter(is_active=True).order_by('priority')
 
-    if not data:
+    popup_banner = banners.filter(is_popup=True).first()
+    main_banner = banners.filter(is_popup=False).first()
 
-        categories = Category.objects.all()
-        stores = Store.objects.all()
+    # =====================================================
+    # 🔥 COMBOS (CACHE)
+    # =====================================================
+    combo_cache_key = "home_combos"
+
+    combo_ids = cache.get(combo_cache_key)
+
+    if not combo_ids:
+
         all_combos = Bundle.objects.filter(is_active=True)\
             .select_related('store')\
             .prefetch_related('items__product')
 
-        # 🔥 Filter only open stores
-        combos = [c for c in all_combos if c.store.is_open()][:6]
+        store_status_map = {}
 
-        all_products = Product.objects.filter(is_featured=True).select_related('store')
+        for c in all_combos:
+            sid = c.store.id
 
-        # ✅ Filter only open store products
-        open_products = [p for p in all_products if p.store.is_open()]
+            if sid not in store_status_map:
+                try:
+                    # ✅ optional cache for store open
+                    status = is_store_open_cached(p.store)
+                except:
+                    status = False
 
-        # ✅ Separate hero & normal
+                store_status_map[sid] = status
+
+        open_combos = [c for c in all_combos if store_status_map.get(c.store.id)]
+
+        combo_ids = [c.id for c in open_combos[:6]]
+
+        cache.set(combo_cache_key, combo_ids, 60)
+
+    combos = Bundle.objects.filter(id__in=combo_ids)\
+        .select_related('store')\
+        .prefetch_related('items__product')
+
+    # =====================================================
+    # 🔥 FEATURED PRODUCTS (CACHE + PAGINATION SAFE)
+    # =====================================================
+    product_cache_key = "home_featured_ids"
+
+    product_ids = cache.get(product_cache_key)
+
+    if not product_ids:
+
+        all_products = Product.objects.filter(is_featured=True)\
+            .select_related('store')\
+            .prefetch_related('store__timings')
+
+        store_status_map = {}
+
+        for p in all_products:
+            sid = p.store.id
+
+            if sid not in store_status_map:
+                try:
+                    status = is_store_open_cached(p.store)
+                except:
+                    status = False
+
+                store_status_map[sid] = status
+
+        open_products = [p for p in all_products if store_status_map.get(p.store.id)]
+
+        # 🔥 HERO PRIORITY SORT
         hero_products = sorted(
             [p for p in open_products if p.is_hero],
             key=lambda x: x.hero_priority
         )
+
         normal_products = [p for p in open_products if not p.is_hero]
 
-        # ✅ Combine (hero first)
-        featured_products_list = hero_products + normal_products
+        final_products = hero_products + normal_products
 
-        print("OPEN STORES PRODUCTS:", len(featured_products_list))
-        paginator = Paginator(featured_products_list, 12)  # 12 products per page
-        featured_products = paginator.get_page(page)
+        product_ids = [p.id for p in final_products]
 
-        banners = Banner.objects.filter(is_active=True).order_by('priority')
+        cache.set(product_cache_key, product_ids, 30)
 
-        popup_banner = banners.filter(is_popup=True).first()
-        main_banner = banners.filter(is_popup=False).first()
+    # 🔥 FETCH PRODUCTS FROM IDS (ORDER SAFE)
+    products_qs = Product.objects.filter(id__in=product_ids)\
+        .select_related('store')
 
-        data = {
-            "categories": categories,
-            "featured_products": featured_products,
-            "stores": stores,
-            "combos": combos,
-            "show_floating_cart": True,
-            "main_banner": main_banner,
-            "popup_banner": popup_banner,
-        }
+    products_ordered = sorted(
+        products_qs,
+        key=lambda x: product_ids.index(x.id)
+    )
 
-        cache.set(cache_key, data, 30)
+    paginator = Paginator(products_ordered, 12)
+    featured_products = paginator.get_page(page)
 
-    return render(request, "home.html", data)
-
+    # =====================================================
+    # FINAL RESPONSE
+    # =====================================================
+    return render(request, "home.html", {
+        "categories": categories,
+        "featured_products": featured_products,
+        "stores": stores,
+        "combos": combos,
+        "main_banner": main_banner,
+        "popup_banner": popup_banner,
+        "show_floating_cart": True,
+    })
 # =====================================================
 # STORES
 # =====================================================
@@ -144,29 +261,60 @@ def store_detail(request, store_id):
 
     data = cache.get(cache_key)
 
+    # =========================
+    # CACHE MISS
+    # =========================
     if not data:
 
         store = get_object_or_404(Store, id=store_id)
-        products = Product.objects.filter(store=store).select_related("category", "store").order_by('?')
-        bundles = Bundle.objects.filter(store=store, is_active=True)
 
-        data = {
-            "store": store,
-            "products": products,
-            "bundles": bundles,
-            "show_floating_cart": True
+        products = Product.objects.filter(store=store)\
+            .select_related("category", "store")\
+            .order_by('-id')
+
+        bundles = Bundle.objects.filter(
+            store=store,
+            is_active=True
+        )
+
+        # ✅ STORE ONLY IDS
+        cache_data = {
+            "store_id": store.id,
+            "product_ids": list(products.values_list("id", flat=True)),
+            "bundle_ids": list(bundles.values_list("id", flat=True))
         }
 
-        cache.set(cache_key, data, 30)
+        cache.set(cache_key, cache_data, 30)
 
-    return render(request, "store_detail.html", data)
+        data = cache_data
+
+    # =========================
+    # REBUILD FROM CACHE
+    # =========================
+    store = get_object_or_404(Store, id=data["store_id"])
+
+    products = Product.objects.filter(
+        id__in=data["product_ids"]
+    ).select_related("category", "store").order_by('-id')
+
+    bundles = Bundle.objects.filter(
+        id__in=data["bundle_ids"],
+        is_active=True
+    )
+
+    return render(request, "store_detail.html", {
+        "store": store,
+        "products": products,
+        "bundles": bundles,
+        "show_floating_cart": True
+    })
 
 def add_bundle_to_cart(request, bundle_id):
 
     bundle = get_object_or_404(Bundle, id=bundle_id, is_active=True)
 
     # ✅ ADD THIS
-    if not bundle.store.is_open():
+    if not is_store_open_cached(bundle.store):
         return JsonResponse({
             "success": False,
             "error": "Store is currently closed"
@@ -193,8 +341,6 @@ def add_bundle_to_cart(request, bundle_id):
     else:
         cart['items'][item_key] = {
             "bundle_id": bundle.id,
-            "name": bundle.name,
-            "price": str(bundle.price),
             "quantity": 1,
             "is_bundle": True
         }
@@ -230,7 +376,10 @@ def category_stores(request, category_id):
 
 def category_products(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    products = Product.objects.filter(category=category).order_by('?')
+    products = Product.objects.filter(category=category)\
+        .select_related('store')\
+        .prefetch_related('store__timings')\
+        .order_by('-id')
 
     return render(request, 'category_products.html', {
         'category': category,
@@ -246,7 +395,7 @@ def add_to_cart(request, product_id):
 
     product = get_object_or_404(Product, id=product_id, is_active=True)
 
-    if not product.store.is_open():
+    if not is_store_open_cached(product.store):
         return JsonResponse({
             "success": False,
             "error": "Store is currently closed"
@@ -289,8 +438,7 @@ def add_to_cart(request, product_id):
 
         cart['items'][product_id] = {
             'name': product.name,
-            'price': str(final_price),
-            'quantity': qty
+            'quantity': qty,
         }
 
     request.session['cart'] = cart
@@ -365,85 +513,151 @@ def remove_from_cart(request, product_id):
     })
     
 def view_cart(request):
-    cart = request.session.get('cart', {'store_id': None, 'items': {}})
+
+    cart = request.session.get('cart', {
+        'store_id': None,
+        'items': {}
+    })
+
     items = []
-    subtotal = Decimal(0)
+    total_savings = Decimal(0)
 
+    # =========================
+    # PRELOAD DATA (OPTIMIZED)
+    # =========================
+    product_ids = [int(i) for i in cart['items'] if i.isdigit()]
+    bundle_ids = [int(i.split("_")[1]) for i in cart['items'] if i.startswith("bundle_")]
 
+    products_map = {
+        p.id: p for p in Product.objects.filter(id__in=product_ids).select_related("store")
+    }
+
+    bundles_map = {
+        b.id: b for b in Bundle.objects.filter(id__in=bundle_ids, is_active=True).select_related("store")
+    }
+
+    # =========================
+    # STORE OPEN CACHE (🔥 FIX)
+    # =========================
+    store_status_map = {}
+
+    
+
+    # =========================
+    # BUILD CART ITEMS
+    # =========================
     for item_id, item in cart['items'].items():
 
-        # ======================
-        # ✅ BUNDLE
-        # ======================
-        if item_id.startswith("bundle_"):
+        qty = int(item.get('quantity', 1))
 
-            try:
-                bundle_id = int(item_id.split("_")[1])
-                bundle = Bundle.objects.get(id=bundle_id, is_active=True)
+        # ----------------------
+        # PRODUCT
+        # ----------------------
+        if item_id.isdigit():
 
-                if not bundle.store.is_open():
-                    continue
-
-            except:
+            product = products_map.get(int(item_id))
+            if not product:
                 continue
 
-            price = Decimal(str(item.get('price', 0)))
-            quantity = int(item.get('quantity', 1))
+            if product.store.id not in store_status_map:
+                store_status_map[product.store.id] = is_store_open_cached(product.store)
 
-            subtotal += price * quantity
-
-            items.append({
-                "key": item_id,
-                "product": None,
-                "name": item["name"],
-                "quantity": quantity,
-                "price": price,
-                "subtotal": price * quantity
-            })
-
-        # ======================
-        # ✅ PRODUCT
-        # ======================
-        else:
-
-            try:
-                product = Product.objects.get(id=int(item_id))
-
-                if not product.store.is_open():
-                    continue
-
-            except:
+            if not store_status_map[product.store.id]:
                 continue
 
-            price = Decimal(str(item.get('price', 0)))
-            quantity = int(item.get('quantity', 1))
+            original_price = product.price
+            final_price = product.discount_price or product.price
 
-            subtotal += price * quantity
+            line_total = final_price * qty
+            subtotal += line_total
+
+            # 🔥 SAVINGS CALCULATION
+            if product.discount_price:
+                total_savings += (original_price - final_price) * qty
+
+            
 
             items.append({
                 "key": item_id,
                 "product": product,
-                "quantity": quantity,
+                "name": product.name,
+                "quantity": qty,
                 "price": price,
-                "subtotal": price * quantity
+                "subtotal": line_total
             })
 
-    remaining_to_149 = Decimal(149) - subtotal if subtotal < 149 else 0
-    cod_not_allowed = subtotal < 149
-    remaining_to_free_delivery = Decimal(499) - subtotal if subtotal < 499 else 0
+        # ----------------------
+        # BUNDLE
+        # ----------------------
+        elif item_id.startswith("bundle_"):
 
-    # 🔥 FIX: clear invalid cart
+            bundle_id = int(item_id.split("_")[1])
+            bundle = bundles_map.get(bundle_id)
+
+            if not bundle:
+                continue
+
+            if bundle.store.id not in store_status_map:
+                store_status_map[bundle.store.id] = is_store_open_cached(bundle.store)
+
+            if not store_status_map[bundle.store.id]:
+                continue
+
+            price = bundle.price
+            line_total = price * qty
+            # bundles no savings (optional future)
+
+            subtotal += line_total
+
+            items.append({
+                "key": item_id,
+                "product": None,
+                "name": bundle.name,
+                "quantity": qty,
+                "price": price,
+                "subtotal": line_total
+            })
+
+    # =========================
+    # BUSINESS RULES
+    # =========================
+    remaining_to_149 = Decimal(149) - subtotal if subtotal < 149 else Decimal(0)
+    cod_not_allowed = subtotal < 149
+    remaining_to_free_delivery = Decimal(499) - subtotal if subtotal < 499 else Decimal(0)
+
+    # =========================
+    # CLEAN EMPTY CART
+    # =========================
     if not items:
-        request.session['cart'] = {'store_id': None, 'items': {}}
+        request.session['cart'] = {
+            'store_id': None,
+            'items': {}
+        }
         request.session.modified = True
 
+    # 🔥 FREE DELIVERY PROGRESS
+    FREE_DELIVERY_THRESHOLD = Decimal(499)
+
+    if subtotal < FREE_DELIVERY_THRESHOLD:
+        remaining_amount = FREE_DELIVERY_THRESHOLD - subtotal
+        progress_percent = (subtotal / FREE_DELIVERY_THRESHOLD) * 100
+    else:
+        remaining_amount = Decimal(0)
+        progress_percent = 100
+
+    # =========================
+    # RESPONSE
+    # =========================
     return render(request, 'cart_partial.html', {
         'items': items,
         'subtotal': subtotal,
         'remaining_to_149': remaining_to_149,
         'cod_not_allowed': cod_not_allowed,
         'remaining_to_free_delivery': remaining_to_free_delivery,
-        "show_floating_cart": False
+        "show_floating_cart": False,
+        'total_savings': total_savings,
+        'remaining_amount': remaining_amount,
+        'progress_percent': progress_percent,
     })
 
 
@@ -457,38 +671,50 @@ import random
 import re
 import copy
 from datetime import timedelta
-
 def checkout(request):
 
+    # -------------------------
+    # CLEAN OLD PENDING ORDERS
+    # -------------------------
     PendingOrder.objects.filter(
         created_at__lt=timezone.now() - timedelta(hours=1)
     ).delete()
 
     cart = request.session.get('cart', {'store_id': None, 'items': {}})
 
-    # -------------------------
-    # EMPTY CART
-    # -------------------------
-    if not cart or not cart.get('items'):
+    if not cart.get('items'):
         return redirect('home')
 
     # -------------------------
-    # STORE RESOLUTION
+    # PRELOAD PRODUCTS & BUNDLES (ONE QUERY)
+    # -------------------------
+    product_ids = [int(i) for i in cart['items'] if i.isdigit()]
+    bundle_ids = [int(i.split("_")[1]) for i in cart['items'] if i.startswith("bundle_")]
+
+    products_map = {
+        p.id: p for p in Product.objects.filter(id__in=product_ids)
+    }
+
+    bundles_map = {
+        b.id: b for b in Bundle.objects.filter(id__in=bundle_ids, is_active=True)
+    }
+
+    # -------------------------
+    # STORE VALIDATION
     # -------------------------
     store_ids = set()
 
     for item_id in cart['items']:
-        try:
-            if item_id.isdigit():
-                product = Product.objects.get(id=int(item_id))
+
+        if item_id.isdigit():
+            product = products_map.get(int(item_id))
+            if product:
                 store_ids.add(product.store.id)
 
-            elif item_id.startswith("bundle_"):
-                bundle_id = int(item_id.split("_")[1])
-                bundle = Bundle.objects.get(id=bundle_id, is_active=True)
+        elif item_id.startswith("bundle_"):
+            bundle = bundles_map.get(int(item_id.split("_")[1]))
+            if bundle:
                 store_ids.add(bundle.store.id)
-        except:
-            continue
 
     if len(store_ids) != 1:
         return render(request, 'checkout.html', {
@@ -509,43 +735,34 @@ def checkout(request):
     # -------------------------
     # STORE OPEN CHECK
     # -------------------------
-    if not store.is_open():
+    if not is_store_open_cached(store):
         context["error"] = f"{store.name} is currently closed"
         return render(request, "checkout.html", context)
 
     # -------------------------
-    # CALCULATE SUBTOTAL
+    # SAFE SUBTOTAL (🔥 FIXED)
     # -------------------------
-    subtotal = Decimal(0)
+    subtotal = get_cart_details(cart)
+
+    # -------------------------
+    # UPI ONLY CHECK
+    # -------------------------
     upi_only_required = False
 
-    for item_id, item in cart['items'].items():
-        price = Decimal(str(item.get('price', 0)))
-        quantity = int(item.get('quantity', 1))
-        subtotal += price * quantity
+    for item_id in cart['items']:
 
         if item_id.isdigit():
-            try:
-                product = Product.objects.get(id=int(item_id))
-                if product.upi_only:
-                    upi_only_required = True
-            except:
-                pass
+            product = products_map.get(int(item_id))
+            if product and product.upi_only:
+                upi_only_required = True
 
-        # ======================
-        # 🔥 BUNDLE (ADD THIS)
-        # ======================
         elif item_id.startswith("bundle_"):
-            try:
-                bundle_id = int(item_id.split("_")[1])
-                bundle = Bundle.objects.get(id=bundle_id, is_active=True)
-
-                for bundle_item in bundle.items.all():
-                    if bundle_item.product.upi_only:
+            bundle = bundles_map.get(int(item_id.split("_")[1]))
+            if bundle:
+                for item in bundle.items.all():
+                    if item.product.upi_only:
                         upi_only_required = True
                         break
-            except:
-                pass
 
     handling_fee = Decimal(5) if subtotal < 100 else Decimal(9)
 
@@ -556,7 +773,7 @@ def checkout(request):
     })
 
     # =========================
-    # POST
+    # POST LOGIC
     # =========================
     if request.method == "POST":
         try:
@@ -579,7 +796,7 @@ def checkout(request):
             if not confirm_phone:
                 context["error"] = "Please confirm mobile number"
                 return render(request, "checkout.html", context)
-            
+
             if not payment:
                 context["error"] = "Select payment method"
                 return render(request, "checkout.html", context)
@@ -596,39 +813,36 @@ def checkout(request):
             longitude = float(longitude)
 
             # -------------------------
-            # DELIVERY
+            # DELIVERY CALCULATION
             # -------------------------
             BUS_LAT, BUS_LON = 16.579620, 74.312661
             raw_distance = calculate_distance(latitude, longitude, BUS_LAT, BUS_LON)
 
-            if raw_distance <= 1:
-                distance = raw_distance
-            else:
-                distance = 1 + (raw_distance - 1) * 1.55
+            distance = raw_distance if raw_distance <= 1 else 1 + (raw_distance - 1) * 1.55
 
             if distance > 10:
                 context["error"] = "Delivery not available"
                 return render(request, "checkout.html", context)
 
-            free_delivery = request.POST.get("free_delivery") == "true"
-
-            if free_delivery:
+            if subtotal >= 499:
                 delivery_fee = Decimal(0)
-
-            elif subtotal >= 499:
-                delivery_fee = Decimal(0)
-
             else:
-                delivery_fee = 20 + max(0, (distance - 2) * 5)
 
-                delivery_fee = math.ceil(delivery_fee)   # 🔥 ALWAYS ROUND UP
+                if distance <= 2:
+                    delivery_fee = Decimal(15)
+                elif distance <= 3:
+                    delivery_fee = Decimal(20)
+                elif distance <= 4:
+                    delivery_fee = Decimal(23)
+                elif distance <= 5:
+                    delivery_fee = Decimal(27)
+                elif distance <= 6:
+                    delivery_fee = Decimal(30)
+                elif distance <= 7:
+                    delivery_fee = Decimal(33)
+                else:
+                    delivery_fee = Decimal(40)
 
-                delivery_fee = min(delivery_fee, 60)
-
-                delivery_fee = Decimal(delivery_fee)
-
-                
-                
             # -------------------------
             # COUPON
             # -------------------------
@@ -655,18 +869,67 @@ def checkout(request):
                     context["error"] = str(e)
                     return render(request, "checkout.html", context)
 
-            total = (
-                Decimal(subtotal) +
-                Decimal(delivery_fee) +
-                Decimal(handling_fee) -
-                Decimal(discount)
+            total = (subtotal + delivery_fee + handling_fee - discount).quantize(
+                Decimal("1"), rounding=ROUND_HALF_UP
             )
 
-            # ✅ ROUND PROPERLY
-            total = total.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             if subtotal < 149 and payment == "COD":
                 context["error"] = "COD not allowed below ₹149"
                 return render(request, "checkout.html", context)
+
+            # =========================
+            # COD FLOW
+            # =========================
+            if payment == "COD":
+
+                with transaction.atomic():
+
+                    order = Order.objects.create(
+                        store=store,
+                        customer_name=name,
+                        phone=phone,
+                        address=address,
+                        latitude=latitude,
+                        longitude=longitude,
+                        subtotal=subtotal,
+                        delivery_fee=delivery_fee,
+                        handling_fee=handling_fee,
+                        discount=discount,
+                        coupon_code=coupon_code,
+                        total=total,
+                        payment_method="COD",
+                        status="REQUEST_SUBMITTED"
+                    )
+
+                    for item_id, item in cart["items"].items():
+                        qty = int(item.get("quantity", 1))
+
+                        if item_id.isdigit():
+                            product = products_map.get(int(item_id))
+                            if product:
+                                OrderItem.objects.create(
+                                    order=order,
+                                    product=product,
+                                    price=product.discount_price or product.price,
+                                    quantity=qty
+                                )
+
+                        elif item_id.startswith("bundle_"):
+                            bundle = bundles_map.get(int(item_id.split("_")[1]))
+                            if bundle:
+                                OrderItem.objects.create(
+                                    order=order,
+                                    bundle=bundle,
+                                    product=None,
+                                    bundle_name=bundle.name,
+                                    price=bundle.price,
+                                    quantity=qty
+                                )
+
+                request.session["cart"] = {"store_id": None, "items": {}}
+
+                return redirect("order_success", order_id=order.id)
+
 
             # =========================
             # 🔵 UPI FLOW
@@ -761,53 +1024,6 @@ def checkout(request):
                     f"&phone={phone}"
                     f"&pending_id={pending.id}"
                 )
-
-            # =========================
-            # 🟢 COD FLOW
-            # =========================
-            with transaction.atomic():
-
-                order = Order.objects.create(
-                    store_id=store_id,
-                    customer_name=name,
-                    phone=phone,
-                    address=address,
-                    latitude=latitude,
-                    longitude=longitude,
-                    subtotal=subtotal,
-                    delivery_fee=delivery_fee,
-                    handling_fee=handling_fee,
-                    discount=discount,
-                    coupon_code=coupon_code,
-                    total=total,
-                    payment_method="COD",
-                    status="REQUEST_SUBMITTED"
-                )
-
-                for item_id, item in cart["items"].items():
-
-                    if item_id.isdigit():
-                        try:
-                            product = Product.objects.get(id=int(item_id))
-
-                            OrderItem.objects.create(
-                                order=order,
-                                product=product,
-                                price=Decimal(str(item.get("price", 0))),
-                                quantity=int(item.get("quantity", 1))
-                            )
-                        except:
-                            continue
-
-                    elif item_id.startswith("bundle_"):
-
-                        OrderItem.objects.create(
-                            order=order,
-                            product=None,
-                            bundle_name=item.get("name", "Combo"),
-                            price=Decimal(str(item.get("price", 0))),
-                            quantity=int(item.get("quantity", 1))
-                        )
 
             request.session["cart"] = {"store_id": None, "items": {}}
 
@@ -1121,29 +1337,35 @@ def my_orders(request):
 # SEARCH
 # =====================================================
 def search_products(request):
-    query = request.GET.get('q')
-    store_filter = request.GET.get('store')
-    sort_option = request.GET.get('sort')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
+    query = request.GET.get('q', '').strip()
 
-    cache_key = f"search_{query}_{store_filter}_{sort_option}_{min_price}_{max_price}"
+    if not query:
+        return render(request, 'search_results.html', {
+            'query': query,
+            'products': [],
+            'stores': [],
+            "show_floating_cart": True
+        })
 
-    products = cache.get(cache_key)
+    store_filter = request.GET.get("store")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    sort = request.GET.get("sort")
 
-    if not products:
+    
 
-        # 🔥 IMPORTANT: optimize query
-        products = Product.objects.select_related('store').order_by('?')
+    cache_key = f"search_{query or 'empty'}_{store_filter}_{sort}_{min_price}_{max_price}"
 
-        if query:
-            products = products.filter(
+    ids = cache.get(cache_key)
+
+    if not ids:
+
+        products = Product.objects.select_related('store')\
+            .prefetch_related('store__timings')\
+            .filter(
                 Q(name__icontains=query) |
                 Q(store__name__icontains=query)
             )
-
-        if store_filter:
-            products = products.filter(store_id=store_filter)
 
         if min_price:
             products = products.filter(price__gte=min_price)
@@ -1151,21 +1373,59 @@ def search_products(request):
         if max_price:
             products = products.filter(price__lte=max_price)
 
-        # 🔽 DB sorting
-        if sort_option == "price_low":
-            products = products.order_by('price')
-        elif sort_option == "price_high":
-            products = products.order_by('-price')
-        elif sort_option == "newest":
-            products = products.order_by('-id')
+        # filters
+        if store_filter:
+            products = products.filter(store_id=store_filter)
 
-        # 🔥 Convert to list for Python sorting
-        products = list(products)
+        if min_price:
+            products = [p for p in products if p.price >= float(min_price)]
 
-        # 🔥 MOST IMPORTANT: open stores first
-        products.sort(key=lambda p: not p.store.is_open())
+        if max_price:
+            products = [p for p in products if p.price <= float(max_price)]
 
-        cache.set(cache_key, products, 120)
+        # sorting
+        if sort == "price_low":
+            products.sort(key=lambda x: x.price)
+        elif sort == "price_high":
+            products.sort(key=lambda x: -x.price)
+        elif sort == "newest":
+            products.sort(key=lambda x: -x.id)
+
+        # ranking
+        for p in products:
+            p.score = 0
+            if p.name.lower().startswith(query.lower()):
+                p.score += 3
+            elif query.lower() in p.name.lower():
+                p.score += 2
+            if query.lower() in p.store.name.lower():
+                p.score += 1
+
+        products.sort(key=lambda x: -x.score)
+
+        ids = [p.id for p in products]
+        cache.set(cache_key, ids, 120)
+
+        products = sorted(
+            Product.objects.filter(id__in=ids),
+            key=lambda x: ids.index(x.id)
+        )
+    store_status_map = {}
+
+    for p in products:
+        store_id = p.store.id
+
+        if store_id not in store_status_map:
+            try:
+                store_status_map[store_id] = is_store_open_cached(p.store)
+            except:
+                store_status_map[store_id] = False
+    for p in products:
+        try:
+            p.open_status = store_status_map.get(p.store.id, False)
+        except Exception as e:
+            logger.warning(f"Open status error: {e}")
+            p.open_status = False
 
     stores = Store.objects.all()
 
@@ -1174,7 +1434,7 @@ def search_products(request):
         'products': products,
         'stores': stores,
         'selected_store': store_filter,
-        'selected_sort': sort_option,
+        'selected_sort': sort,
         'min_price': min_price,
         'max_price': max_price,
         "show_floating_cart": True
@@ -1186,13 +1446,17 @@ def search_suggestions(request):
     suggestions = []
 
     if query:
-        products = Product.objects.filter(name__icontains=query)[:5]
+        products = Product.objects.select_related('store')\
+            .filter(name__icontains=query)[:5]
 
         for product in products:
             suggestions.append({
-                'id': product.id,
-                'name': product.name
-            })
+            'type': 'product',
+            'id': product.id,
+            'name': product.name,
+            'store_id': product.store.id
+        })
+    
 
     return JsonResponse({'results': suggestions})
 
@@ -1204,10 +1468,8 @@ def calculate_delivery(request):
     latitude = request.GET.get("latitude")
     longitude = request.GET.get("longitude")
     cart = request.session.get('cart', {'items': {}})
-    subtotal = Decimal(0)
-
-    for item in cart['items'].values():
-        subtotal += Decimal(str(item['price'])) * Decimal(str(item['quantity']))
+    
+    subtotal = get_cart_details(cart)
 
     if not latitude or not longitude:
         return JsonResponse({"error": "Missing data"}, status=400)
@@ -1233,20 +1495,28 @@ def calculate_delivery(request):
     else:
         distance = 1 + (raw_distance - 1) * 1.55
 
-    handling_fee = Decimal(7) if subtotal < 99 else Decimal(12)
+    handling_fee = Decimal(5) if subtotal < 99 else Decimal(9)
 
-    delivery_fee = 20
+    delivery_fee = 15
 
     if subtotal >= 499:
         delivery_fee = Decimal(0)
     else:
+
         if distance <= 2:
+            delivery_fee = Decimal(15)
+        elif distance <= 3:
             delivery_fee = Decimal(20)
+        elif distance <= 4:
+            delivery_fee = Decimal(23)
+        elif distance <= 5:
+            delivery_fee = Decimal(27)
+        elif distance <= 6:
+            delivery_fee = Decimal(30)
+        elif distance <= 7:
+            delivery_fee = Decimal(33)
         else:
-            delivery_fee = 20 + max(0, (distance - 2) * 5)
-            delivery_fee = math.ceil(delivery_fee)
-            delivery_fee = min(delivery_fee, 80)
-            delivery_fee = Decimal(delivery_fee)
+            delivery_fee = Decimal(40)
 
 
         if delivery_fee > 80:
@@ -1409,7 +1679,7 @@ def payment_success(request):
             logger.error("Store missing")
             return HttpResponse("Store unavailable")
 
-        if not store.is_open():
+        if not is_store_open_cached(store):
             logger.warning("Store closed after payment")
             return HttpResponse("Store temporarily unavailable. Contact support.")
 
@@ -1460,19 +1730,22 @@ def payment_success(request):
                             order=order,
                             product=product,
                             quantity=int(item.get("quantity", 1)),
-                            price=Decimal(str(item.get("price", 0)))
+                            price = product.discount_price if product.discount_price else product.price
                         )
                     except Exception as e:
                         logger.warning(f"Product skipped: {e}")
 
                 # BUNDLE
                 elif str(item_id).startswith("bundle_"):
+                    bundle_id = int(item_id.split("_")[1])
+                    bundle = Bundle.objects.get(id=bundle_id)
                     OrderItem.objects.create(
                         order=order,
                         product=None,
                         bundle_name=item.get("name", "Combo"),
                         quantity=int(item.get("quantity", 1)),
-                        price=Decimal(str(item.get("price", 0)))
+                        bundle = bundle,
+                        price = bundle.price
                     )
 
             # Mark processed
@@ -1834,7 +2107,7 @@ def combo_detail(request, combo_id):
 
     combo = Bundle.objects.get(id=combo_id)
 
-    if not combo.store.is_open():
+    if not is_store_open_cached(combo.store):
         return JsonResponse({
             "error": "Store is currently closed"
         }, status=400)
@@ -2047,9 +2320,7 @@ def apply_coupon(request):
         items = cart.get('items', {})
 
         subtotal = Decimal(0)
-
-        for item in items.values():
-            subtotal += Decimal(item['price']) * item['quantity']
+        subtotal = get_cart_details(cart)
     except:
         subtotal = Decimal(0)
 

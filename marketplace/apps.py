@@ -7,3 +7,6 @@ class MarketplaceConfig(AppConfig):
 
     def ready(self):
         import marketplace.signals
+
+    def ready(self):
+        import marketplace.signals

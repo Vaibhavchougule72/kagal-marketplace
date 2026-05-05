@@ -271,6 +271,7 @@
                     type="search"
                     id="searchInput"
                     name="q"
+                    value="{{ request.GET.q }}"
                     placeholder="Search products..."
                     autocomplete="off">
 
@@ -395,7 +396,18 @@
 </button>
 {% endif %}
 
-
+<script>
+function trackAddToCart(id, name, price){
+    if(typeof gtag === "function"){
+        gtag('event', 'add_to_cart', {
+            item_id: id,
+            item_name: name,
+            value: price,
+            currency: 'INR'
+        });
+    }
+}
+</script>
 
 
 <script>
@@ -411,11 +423,25 @@ document.addEventListener("DOMContentLoaded", function(){
 <script>
 
 function updateCartBadge(count){
+
     const desktopBadge = document.getElementById("cartBadge");
     const floatingBadge = document.getElementById("floatingCartBadge");
 
     if(desktopBadge) desktopBadge.innerText = count;
     if(floatingBadge) floatingBadge.innerText = count;
+
+    // 🔥 UPDATE FLOATING BAR
+    const bar = document.getElementById("floatingCartBar");
+    const text = document.getElementById("floatingCartText");
+
+    if(bar && text){
+        if(count > 0){
+            bar.style.display = "block";
+            text.innerText = `🛒 ${count} items • Tap to view cart`;
+        } else {
+            bar.style.display = "none";
+        }
+    }
 }
 
 function animateAddToCart(imgElement){
@@ -497,6 +523,15 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 
     refreshCartBadge();
+    // 🔥 SHOW LOADER ON FORM SUBMIT (SEARCH, FILTERS, ETC.)
+    document.querySelectorAll("form").forEach(form => {
+        form.addEventListener("submit", function(){
+            const loader = document.getElementById("globalLoader");
+            if(loader){
+                loader.style.display = "flex";
+            }
+        });
+    });
 
     const cartToggle = document.getElementById("cartToggle");
     const floatingBtn = document.getElementById("floatingCartBtn");
@@ -513,7 +548,10 @@ document.addEventListener("DOMContentLoaded", function(){
     .then(res => res.text())
     .then(html => {
         cartContent.innerHTML = html;
-        refreshCartBadge();
+        document.querySelectorAll(".progress-bar-fill").forEach(el => {
+            const width = el.getAttribute("data-width") || 0;
+            el.style.width = width + "%";
+        });
     });
 
 }
@@ -555,8 +593,16 @@ document.addEventListener("DOMContentLoaded", function(){
         const productId = addBtn.dataset.id;
         const source = addBtn.dataset.source || "normal";
 
+        const card = addBtn.closest(".product-card");  // ✅ FIRST
 
-        const card = addBtn.closest(".product-card");
+        const name = card ? card.dataset.name : "product";
+
+        let price = card ? card.dataset.discount : null;
+
+        if(!price || price === "None" || price === ""){
+            price = card ? card.dataset.price : 0;
+        }
+
         const img = card ? card.querySelector(".product-img") : null;
 
         if(img){
@@ -570,8 +616,11 @@ document.addEventListener("DOMContentLoaded", function(){
         .then(data => {
 
             if(data.success){
-                refreshCartBadge();   // important
+                refreshCartBadge();
                 showToast();
+
+                // 🔥 TRACK EVENT
+                trackAddToCart(productId, name, parseFloat(price));
             }
 
         })
@@ -593,46 +642,70 @@ document.addEventListener("DOMContentLoaded", function(){
 
     if(searchInput){
 
+        let debounceTimer;
+
         searchInput.addEventListener("keyup", function(){
+
+            clearTimeout(debounceTimer);
 
             const query = this.value.trim();
 
-            if(query.length < 2){
-                suggestionBox.style.display = "none";
-                suggestionBox.innerHTML = "";
-                return;
-            }
+            debounceTimer = setTimeout(() => {
 
-            fetch(`/search-suggestions/?q=${query}`)
-            .then(res => res.json())
-            .then(data => {
-
-                suggestionBox.innerHTML = "";
-
-                if(data.results.length === 0){
+                if(query.length < 2){
                     suggestionBox.style.display = "none";
+                    suggestionBox.innerHTML = "";
                     return;
                 }
 
-                data.results.forEach(item => {
+                
 
-                    const option = document.createElement("a");
-                    option.href = `/search/?q=${item.name}`;
-                    option.classList.add("list-group-item", "list-group-item-action");
-                    option.textContent = item.name;
+                suggestionBox.innerHTML = `<div class="list-group-item">Searching...</div>`;
+                suggestionBox.style.display = "block";
 
-                    suggestionBox.appendChild(option);
+                fetch(`/search-suggestions/?q=${query}`)
+                .then(res => res.json())
+                .then(data => {
 
+                    suggestionBox.innerHTML = "";
+
+                    if(data.results.length === 0){
+                        suggestionBox.innerHTML = `<div class="list-group-item">No results found</div>`;
+                        suggestionBox.style.display = "block";
+                        return;
+                    }
+
+                    data.results.forEach(item => {
+
+                        const option = document.createElement("a");
+
+                        option.href = item.type === "store"
+                            ? `/store/${item.id}/`
+                            : `/search/?q=${item.name}`;
+
+                        option.classList.add("list-group-item");
+
+                        option.innerHTML = `
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small style="color:gray">Tap to search</small>
+                            </div>
+                        `;
+
+                        suggestionBox.appendChild(option);
+
+                    });
+
+                    suggestionBox.style.display = "block";
                 });
 
-                suggestionBox.style.display = "block";
-            });
+            }, 300);
 
         });
 
         // Hide suggestions when clicking outside
         document.addEventListener("click", function(e){
-            if(!searchInput.contains(e.target)){
+            if(!searchInput.contains(e.target) && !suggestionBox.contains(e.target)){
                 suggestionBox.style.display = "none";
             }
         });
@@ -651,6 +724,9 @@ document.addEventListener("DOMContentLoaded", function(){
                 return;
             }
 
+            mobileSuggestionBox.innerHTML = `<div class="list-group-item">Searching...</div>`;
+            mobileSuggestionBox.style.display = "block";
+
             fetch(`/search-suggestions/?q=${query}`)
             .then(res => res.json())
             .then(data => {
@@ -658,22 +734,36 @@ document.addEventListener("DOMContentLoaded", function(){
                 mobileSuggestionBox.innerHTML = "";
 
                 if(data.results.length === 0){
-                    mobileSuggestionBox.style.display = "none";
+                    mobileSuggestionBox.innerHTML = `<div class="list-group-item">No results found</div>`;
+                    mobileSuggestionBox.style.display = "block";
                     return;
                 }
 
                 data.results.forEach(item => {
 
                     const option = document.createElement("a");
-                    option.href = `/search/?q=${item.name}`;
+                    option.href = item.type === "store"
+                        ? `/store/${item.id}/`
+                        : `/store/${item.store_id}/?highlight=${item.id}`;
                     option.classList.add("list-group-item", "list-group-item-action");
-                    option.textContent = item.name;
+                    option.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small style="color:gray">Tap to search</small>
+                        </div>
+                    `;
 
                     mobileSuggestionBox.appendChild(option);
 
                 });
 
                 mobileSuggestionBox.style.display = "block";
+            });
+
+            document.addEventListener("click", function(e){
+                if(!mobileSearchInput.contains(e.target) && !mobileSuggestionBox.contains(e.target)){
+                    mobileSuggestionBox.style.display = "none";
+                }
             });
 
         });
@@ -759,6 +849,9 @@ if(bundleBtn){
     e.stopPropagation();
 
     const bundleId = bundleBtn.dataset.id;
+    const comboPrice = bundleBtn.closest(".combo-card")?.dataset.price || 0;
+    const comboName = bundleBtn.closest(".combo-card")?.dataset.name || "combo";
+
 
     fetch(`/add-bundle/${bundleId}/`, {
         headers: { "X-Requested-With": "XMLHttpRequest" }
@@ -769,8 +862,18 @@ if(bundleBtn){
         if(data.success){
 
             refreshCartBadge();
+            refreshCart(); 
 
             showToast();   // same popup as product
+            // 🔥 ADD THIS TRACKING
+            if(typeof gtag === "function"){
+                gtag('event', 'add_to_cart', {
+                    item_id: bundleId,
+                    item_name: comboName,
+                    value: parseFloat(comboPrice),
+                    currency: 'INR'
+                });
+            }
 
         }
 
@@ -792,7 +895,7 @@ const card = e.target.closest(".product-card");
 if(card && !e.target.closest(".add-to-cart-btn") && !e.target.closest(".qty-btn")&& !e.target.closest(".add-bundle-btn")){
 
 const name = card.dataset.name;
-const price = card.dataset.price;
+const price = card.dataset.discount || card.dataset.price;
 const desc = card.dataset.desc;
 const image = card.dataset.image;
 const id = card.dataset.id;
@@ -945,6 +1048,29 @@ window.addEventListener("resize", function(){
 
 });
 </script>
+<div id="floatingCartBar" style="
+position:fixed;
+bottom:10px;
+left:10px;
+right:10px;
+background:black;
+color:white;
+padding:12px;
+border-radius:10px;
+display:none;
+z-index:9999;">
 
+    <span id="floatingCartText"></span>
+
+    <button onclick="document.getElementById('cartToggle')?.click()" style="
+    float:right;
+    background:#ff5722;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;">
+        View Cart
+    </button>
+</div>
 </body>
 </html>

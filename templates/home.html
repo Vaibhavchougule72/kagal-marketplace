@@ -74,17 +74,36 @@
                 </p>
 
                 <!-- HIGHLIGHTS -->
+                <!-- HIGHLIGHTS -->
                 <div class="d-flex gap-3 flex-wrap mt-3">
-                    <span class="badge bg-danger-subtle text-danger">🍽️ हॉटेल & स्ट्रीट फूड</span>
-                    <span class="badge bg-success-subtle text-success">⚡ 30 - 50 मिनिटांत डिलिव्हरी</span>
-                    <span class="badge bg-light text-dark border">💵 COD उपलब्ध</span>
+
+                    <span class="badge bg-success-subtle text-success fw-bold">
+                        🚚 Delivery from ₹15
+                    </span>
+
+                    <span class="badge bg-danger-subtle text-danger">
+                        🍽️ हॉटेल & स्ट्रीट फूड
+                    </span>
+
+                    <span class="badge bg-success-subtle text-success">
+                        ⚡ 30 - 50 मिनिटांत डिलिव्हरी
+                    </span>
+
+                    <span class="badge bg-light text-dark border">
+                        💵 COD उपलब्ध
+                    </span>
+
                 </div>
 
                 <!-- CTA -->
                 <div class="mt-4">
-                    <a href="#categories" class="btn btn-danger px-4 fw-bold">
-                        🍔 ऑर्डर करा
-                    </a>
+                    {% if featured_products %}
+                    <button class="btn btn-danger px-4 fw-bold hero-add-btn"
+                            data-id="{{ featured_products.0.id|default:'' }}"
+                            data-source="home">
+                        🔥 Order Now ₹{{ featured_products.0.discount_price|default:featured_products.0.price }}
+                    </button>
+                    {% endif %}
 
                     <a href="#categories" class="btn btn-outline-dark ms-3 px-4">
                         मेनू पहा
@@ -141,7 +160,11 @@
     </div>
 </section>
 
-
+<div class="container text-center mb-3">
+    <small class="text-success fw-bold">
+        🚚 Delivery from ₹15 | ⚡ 30–50 mins | ⭐ Trusted local stores
+    </small>
+</div>
 <!-- CATEGORIES -->
 <section class="py-5 bg-white" id="categories">
     <div class="container">
@@ -212,6 +235,20 @@
      ]'>
 
 <div class="loka-product-image position-relative">
+    <div style="
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:#ffeb3b;
+    color:#000;
+    padding:3px 8px;
+    font-size:11px;
+    font-weight:600;
+    border-radius:6px;
+    z-index:10;
+">
+    🚚 ₹15 delivery
+</div>
 
 {% if combo.image.url %}
 <img src="{{ combo.image.url }}" loading="lazy">
@@ -243,6 +280,11 @@
 
             <small style="color:green;font-size:12px;">
                 Save ₹{{ combo.savings|floatformat:0 }}
+            </small>
+
+            <br>
+            <small style="color:red;font-size:12px;">
+                ⏰ Limited time offer
             </small>
 
         </div>
@@ -347,7 +389,7 @@
                                     data-id="{{ product.id }}"
                                     data-source="home"
                                     style="background:#ff5722; color:white;">
-                                Order
+                                🔥 Order Now
                             </button>
 
                         </div>
@@ -455,35 +497,6 @@
 
 </div>
 
-<script>
-document.querySelectorAll(".add-bundle-btn").forEach(btn => {
-
-    btn.addEventListener("click", function(e){
-        e.stopPropagation();
-
-        const comboId = this.dataset.id;
-
-        fetch(`/add-bundle/${comboId}/`)
-        .then(res => res.json())
-        .then(data => {
-
-            if(data.success){
-                // ✅ update badge
-                refreshCartBadge();
-                // 🔥 No redirect, no reload
-                showToast("Added to cart ✅");
-            } else {
-                alert(data.error || "Something went wrong");
-            }
-
-        })
-        .catch(() => {
-            alert("Error adding combo");
-        });
-    });
-
-});
-</script>
 
 {% if popup_banner %}
 <div id="popupBanner" style="
@@ -510,6 +523,7 @@ justify-content:center;
         <p class="fw-bold text-dark">
         ₹{{ popup_banner.product.discount_price|default:popup_banner.product.price }}
         </p>
+        <small style="color:red;">⏰ Only for today</small>
 
         <h5 class="fw-bold text-danger">
             {{ popup_banner.title }}
@@ -558,11 +572,18 @@ document.getElementById("popupAddBtn")?.addEventListener("click", function(){
     .then(res => res.json())
     .then(data => {
         if(data.success){
+            refreshCartBadge();
 
             // ✅ Open cart panel
             document.getElementById("cartPanel").classList.add("open");
             document.getElementById("cartOverlay").classList.add("active");
             document.body.style.overflow = "hidden";
+
+            if(typeof gtag === "function"){
+                gtag('event', 'popup_click', {
+                    item_id: productId
+                });
+            }
 
             
 
@@ -581,6 +602,30 @@ document.getElementById("popupAddBtn")?.addEventListener("click", function(){
 });
 </script>
 {% endif %}
+
+<script>
+document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
+
+    const id = this.dataset.id;
+
+    fetch(`/add-to-cart/${id}/?source=home`)
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+
+            if(typeof gtag === "function"){
+                gtag('event', 'hero_add_to_cart', {
+                    item_id: id
+                });
+            }
+            refreshCartBadge();
+
+            document.getElementById("cartToggle")?.click();
+        }
+    });
+
+});
+</script>
 
 {% endblock %}
 
