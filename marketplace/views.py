@@ -164,7 +164,7 @@ def home(request):
             if sid not in store_status_map:
                 try:
                     # ✅ optional cache for store open
-                    status = is_store_open_cached(p.store)
+                    status = is_store_open_cached(c.store)
                 except:
                     status = False
 
@@ -521,6 +521,7 @@ def view_cart(request):
 
     items = []
     total_savings = Decimal(0)
+    subtotal = Decimal(0)
 
     # =========================
     # PRELOAD DATA (OPTIMIZED)
@@ -582,7 +583,7 @@ def view_cart(request):
                 "product": product,
                 "name": product.name,
                 "quantity": qty,
-                "price": price,
+                "price": final_price,
                 "subtotal": line_total
             })
 
