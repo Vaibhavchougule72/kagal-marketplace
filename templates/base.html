@@ -182,11 +182,41 @@
             height: 100%;
         }
 
+        /* Floating Cart Button */
+        .floating-cart {
+            position: fixed;
+            bottom: max(20px, calc(20px + env(safe-area-inset-bottom)));
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #198754;
+            color: white;
+            border: none;
+            font-size: 22px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            z-index: 9997;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
         .floating-cart:hover {
             transform: scale(1.08);
         }
 
-        
+        /* Badge */
+        .floating-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 4px 7px;
+            border-radius: 50%;
+        }
 
     </style>
 </head>
@@ -356,7 +386,15 @@
 </div>
 
 <!-- 🔥 Floating Cart Button (Mobile Only) -->
-
+{% if not simple_navbar and show_floating_cart != False %}
+<button id="floatingCartBtn"
+        class="floating-cart d-lg-none">
+    🛒
+    <span class="floating-badge" id="floatingCartBadge">
+        {{ cart_item_count }}
+    </span>
+</button>
+{% endif %}
 
 <script>
 function trackAddToCart(id, name, price){
@@ -383,28 +421,15 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 
 <script>
-    
+
 function updateCartBadge(count){
 
     const desktopBadge = document.getElementById("cartBadge");
+    const floatingBadge = document.getElementById("floatingCartBadge");
 
     if(desktopBadge) desktopBadge.innerText = count;
+    if(floatingBadge) floatingBadge.innerText = count;
 
-    const bar = document.getElementById("floatingCartBar");
-    const text = document.getElementById("floatingCartText");
-
-    const allowFloating = "{{ show_floating_cart|default:'False' }}";
-
-    if(bar && text){
-
-        if(count > 0 && allowFloating === "True"){
-            bar.style.display = "flex";
-            text.innerText = `🛒 ${count} items`;
-        } else {
-            bar.style.display = "none";
-        }
-
-    }
 }
 
 function animateAddToCart(imgElement){
@@ -497,6 +522,7 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 
     const cartToggle = document.getElementById("cartToggle");
+    const floatingBtn = document.getElementById("floatingCartBtn");
     const cartPanel = document.getElementById("cartPanel");
     const cartOverlay = document.getElementById("cartOverlay");
     const closeCart = document.getElementById("closeCart");
@@ -523,6 +549,7 @@ document.addEventListener("DOMContentLoaded", function(){
         cartOverlay.classList.add("active");
         document.body.style.overflow = "hidden";
         refreshCart();
+        refreshCartBadge();
     }
 
     function closeCartPanel() {
@@ -534,6 +561,7 @@ document.addEventListener("DOMContentLoaded", function(){
     
 
     if(cartToggle) cartToggle.addEventListener("click", openCart);
+    if(floatingBtn) floatingBtn.addEventListener("click", openCart);
     if(closeCart) closeCart.addEventListener("click", closeCartPanel);
     if(cartOverlay) cartOverlay.addEventListener("click", closeCartPanel);
 
@@ -771,6 +799,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 if(data.success){
                     
                     refreshCart();
+                    refreshCartBadge();
                 }
             });
 
@@ -790,6 +819,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 if(data.success){
                     
                     refreshCart();
+                    refreshCartBadge();
                 }
             });
 
@@ -1009,36 +1039,5 @@ window.addEventListener("resize", function(){
 
 });
 </script>
-{% if show_floating_cart %}
-<div id="floatingCartBar" style="
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #000;
-    color: #fff;
-    padding: 10px 16px;
-    display: none;
-    z-index: 9999;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-">
-
-    <span id="floatingCartText" style="font-weight: 500;"></span>
-
-    <button onclick="openCart()" style="
-        background: #ff5722;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-weight: 600;
-    ">
-        View Cart →
-    </button>
-
-</div>
-{% endif %}
 </body>
 </html>
