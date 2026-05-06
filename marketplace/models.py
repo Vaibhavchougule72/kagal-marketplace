@@ -487,7 +487,7 @@ class Banner(models.Model):
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=200, blank=True, null=True)
 
-    image = models.ImageField(upload_to='banners/', blank=True, null=True)
+    image = CloudinaryField('image')
     product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)
     
     button_text = models.CharField(max_length=50, default="Order Now")
