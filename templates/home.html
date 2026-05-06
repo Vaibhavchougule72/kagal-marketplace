@@ -515,7 +515,8 @@ justify-content:center;
 <div style="background:white; width:90%; max-width:350px; border-radius:12px; overflow:hidden;">
 
     {% if popup_banner.image %}
-    <img src="{{ popup_banner.image.url }}" style="width:100%; height:180px; object-fit:cover;">
+    <img src="https://res.cloudinary.com/dokdpn0y1/image/upload/v1776569189/x4tjtrmtwgmvf1zbtob2.webp"
+     style="width:100%; height:180px; object-fit:cover;">
     {% endif %}
 
     <div class="p-3 text-center">
@@ -552,12 +553,19 @@ justify-content:center;
 </div>
 
 <script>
-if(!localStorage.getItem("popup_shown")){
-    setTimeout(() => {
-        document.getElementById("popupBanner").style.display = "flex";
-    }, 1200);
-    localStorage.setItem("popup_shown", "1");
-}
+document.addEventListener("DOMContentLoaded", function(){
+
+    const popup = document.getElementById("popupBanner");
+
+    if(popup){
+
+        setTimeout(() => {
+            popup.style.display = "flex";
+        }, 1200);
+
+    }
+
+});
 </script>
 <script>
 document.getElementById("popupAddBtn")?.addEventListener("click", function(){
@@ -613,14 +621,17 @@ document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
     .then(data => {
         if(data.success){
 
-            if(typeof gtag === "function"){
-                gtag('event', 'hero_add_to_cart', {
-                    item_id: id
-                });
-            }
+            // CLOSE POPUP
+            document.getElementById("popupBanner").style.display = "none";
+
             refreshCartBadge();
 
-            document.getElementById("cartToggle")?.click();
+            // OPEN CART PANEL
+            document.getElementById("cartPanel").classList.add("open");
+
+            document.getElementById("cartOverlay").classList.add("active");
+
+            document.body.style.overflow = "hidden";
         }
     });
 
