@@ -1378,109 +1378,221 @@ def my_orders(request):
 # =====================================================
 # SEARCH
 # =====================================================
-def search_products(request):
-    query = request.GET.get('q', '').strip()
 
-    if not query:
+import traceback
+import logging
+
+from django.db.models import Q
+from django.core.cache import cache
+from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
+
+
+def search_products(request):
+
+    try:
+
+        query = request.GET.get('q', '').strip()
+
+        if not query:
+            return render(request, 'search_results.html', {
+                'query': query,
+                'products': [],
+                'stores': [],
+                "show_floating_cart": True
+            })
+
+        store_filter = request.GET.get("store")
+        min_price = request.GET.get("min_price")
+        max_price = request.GET.get("max_price")
+        sort = request.GET.get("sort")
+
+        cache_key = (
+            f"search_{query or 'empty'}_"
+            f"{store_filter}_{sort}_{min_price}_{max_price}"
+        )
+
+        ids = cache.get(cache_key)
+
+        # =====================================================
+        # CACHE MISS
+        # =====================================================
+        if not ids:
+
+            products = Product.objects.select_related('store')\
+                .prefetch_related('store__timings')\
+                .filter(
+                    Q(name__icontains=query) |
+                    Q(store__name__icontains=query)
+                )
+
+            # =========================
+            # FILTERS
+            # =========================
+
+            if store_filter:
+                products = products.filter(store_id=store_filter)
+
+            if min_price:
+                try:
+                    products = products.filter(price__gte=float(min_price))
+                except:
+                    pass
+
+            if max_price:
+                try:
+                    products = products.filter(price__lte=float(max_price))
+                except:
+                    pass
+
+            # convert queryset to list for sorting
+            products = list(products)
+
+            # =========================
+            # SORTING
+            # =========================
+
+            if sort == "price_low":
+                products.sort(key=lambda x: float(x.price))
+
+            elif sort == "price_high":
+                products.sort(key=lambda x: -float(x.price))
+
+            elif sort == "newest":
+                products.sort(key=lambda x: -x.id)
+
+            # =========================
+            # SEARCH RANKING
+            # =========================
+
+            for p in products:
+
+                p.score = 0
+
+                try:
+                    if p.name.lower().startswith(query.lower()):
+                        p.score += 3
+
+                    elif query.lower() in p.name.lower():
+                        p.score += 2
+
+                    if p.store and query.lower() in p.store.name.lower():
+                        p.score += 1
+
+                except Exception as e:
+                    logger.warning(f"Ranking error: {e}")
+                    p.score = 0
+
+            products.sort(key=lambda x: -x.score)
+
+            ids = [p.id for p in products]
+
+            cache.set(cache_key, ids, 120)
+
+        # =====================================================
+        # CACHE HIT
+        # =====================================================
+
+        products = list(
+            Product.objects.select_related('store')
+            .prefetch_related('store__timings')
+            .filter(id__in=ids)
+        )
+
+        # preserve cached order
+        products.sort(key=lambda x: ids.index(x.id))
+
+        # =====================================================
+        # STORE STATUS
+        # =====================================================
+
+        store_status_map = {}
+
+        for p in products:
+
+            try:
+
+                if not p.store:
+                    continue
+
+                store_id = p.store.id
+
+                if store_id not in store_status_map:
+                    store_status_map[store_id] = is_store_open_cached(p.store)
+
+            except Exception as e:
+
+                logger.warning(
+                    f"Store status error for product {p.id}: {e}"
+                )
+
+                store_status_map[store_id] = False
+
+        for p in products:
+
+            try:
+                p.open_status = store_status_map.get(
+                    p.store.id,
+                    False
+                )
+
+            except Exception as e:
+
+                logger.warning(f"Open status attach error: {e}")
+
+                p.open_status = False
+
+        stores = Store.objects.all()
+
         return render(request, 'search_results.html', {
             'query': query,
-            'products': [],
-            'stores': [],
+            'products': products,
+            'stores': stores,
+            'selected_store': store_filter,
+            'selected_sort': sort,
+            'min_price': min_price,
+            'max_price': max_price,
             "show_floating_cart": True
         })
 
-    store_filter = request.GET.get("store")
-    min_price = request.GET.get("min_price")
-    max_price = request.GET.get("max_price")
-    sort = request.GET.get("sort")
+    # =====================================================
+    # ERROR LOGGING
+    # =====================================================
 
-    
+    except Exception as e:
 
-    cache_key = f"search_{query or 'empty'}_{store_filter}_{sort}_{min_price}_{max_price}"
+        print("\n" + "="*70)
+        print("🚨 SEARCH VIEW ERROR")
+        print("="*70)
 
-    ids = cache.get(cache_key)
+        print("QUERY:")
+        print(request.GET.get("q"))
 
-    if not ids:
+        print("\nERROR TYPE:")
+        print(type(e).__name__)
 
-        products = Product.objects.select_related('store')\
-            .prefetch_related('store__timings')\
-            .filter(
-                Q(name__icontains=query) |
-                Q(store__name__icontains=query)
-            )
+        print("\nERROR:")
+        print(str(e))
 
-        if min_price:
-            products = products.filter(price__gte=min_price)
+        print("\nTRACEBACK:")
+        traceback.print_exc()
 
-        if max_price:
-            products = products.filter(price__lte=max_price)
+        print("="*70 + "\n")
 
-        # filters
-        if store_filter:
-            products = products.filter(store_id=store_filter)
-
-        if min_price:
-            products = [p for p in products if p.price >= float(min_price)]
-
-        if max_price:
-            products = [p for p in products if p.price <= float(max_price)]
-
-        # sorting
-        if sort == "price_low":
-            products.sort(key=lambda x: x.price)
-        elif sort == "price_high":
-            products.sort(key=lambda x: -x.price)
-        elif sort == "newest":
-            products.sort(key=lambda x: -x.id)
-
-        # ranking
-        for p in products:
-            p.score = 0
-            if p.name.lower().startswith(query.lower()):
-                p.score += 3
-            elif query.lower() in p.name.lower():
-                p.score += 2
-            if query.lower() in p.store.name.lower():
-                p.score += 1
-
-        products.sort(key=lambda x: -x.score)
-
-        ids = [p.id for p in products]
-        cache.set(cache_key, ids, 120)
-
-        products = sorted(
-            Product.objects.filter(id__in=ids),
-            key=lambda x: ids.index(x.id)
+        logger.error(
+            "SEARCH VIEW ERROR",
+            exc_info=True
         )
-    store_status_map = {}
 
-    for p in products:
-        store_id = p.store.id
-
-        if store_id not in store_status_map:
-            try:
-                store_status_map[store_id] = is_store_open_cached(p.store)
-            except:
-                store_status_map[store_id] = False
-    for p in products:
-        try:
-            p.open_status = store_status_map.get(p.store.id, False)
-        except Exception as e:
-            logger.warning(f"Open status error: {e}")
-            p.open_status = False
-
-    stores = Store.objects.all()
-
-    return render(request, 'search_results.html', {
-        'query': query,
-        'products': products,
-        'stores': stores,
-        'selected_store': store_filter,
-        'selected_sort': sort,
-        'min_price': min_price,
-        'max_price': max_price,
-        "show_floating_cart": True
-    })
+        return HttpResponse(
+            f"""
+            <h2>Search Error</h2>
+            <p><strong>{type(e).__name__}</strong></p>
+            <pre>{str(e)}</pre>
+            """,
+            status=500
+        )
 
 def search_suggestions(request):
     query = request.GET.get('q', '')
