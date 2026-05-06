@@ -352,8 +352,6 @@ def store_detail(request, store_id):
         "products": products,
         "bundles": bundles,
         "show_floating_cart": True,
-        "simple_navbar": True,
-
         # FILTER VALUES
         "query": query,
         "selected_sort": sort,
