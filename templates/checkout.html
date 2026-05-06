@@ -80,7 +80,7 @@
             <textarea name="address" id="addressInput"
                       class="form-control"
                       placeholder="Flat No, Building, Landmark"
-                      required></textarea>
+                      ></textarea>
             <div class="invalid-feedback">
                 {% trans "Please enter delivery landmark." %}
             </div>
@@ -431,13 +431,9 @@ function setLocation(lat, lng){
     marker.on('dragend', function(){
         const pos = marker.getLatLng();
         updateDelivery(pos.lat, pos.lng);
-        document.getElementById("addressInput").value = "Fetching address...";
-        getAddress(pos.lat, pos.lng);
     });
 
     updateDelivery(lat, lng);
-    document.getElementById("addressInput").value = "Fetching address...";
-    getAddress(lat, lng);
 }
 let appliedDiscount = 0;
 
