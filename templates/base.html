@@ -828,51 +828,53 @@ document.addEventListener("DOMContentLoaded", function(){
 
     });
 
-});
+    document.addEventListener("click", function(e){
 
-document.addEventListener("click", function(e){
+        const bundleBtn = e.target.closest(".add-bundle-btn");
 
-const bundleBtn = e.target.closest(".add-bundle-btn");
+        if(bundleBtn){
 
-if(bundleBtn){
+            e.preventDefault();
+            
 
-    e.preventDefault();
-    e.stopPropagation();
-
-    const bundleId = bundleBtn.dataset.id;
-    const comboPrice = bundleBtn.closest(".combo-card")?.dataset.price || 0;
-    const comboName = bundleBtn.closest(".combo-card")?.dataset.name || "combo";
+            const bundleId = bundleBtn.dataset.id;
+            const comboPrice = bundleBtn.closest(".combo-card")?.dataset.price || 0;
+            const comboName = bundleBtn.closest(".combo-card")?.dataset.name || "combo";
 
 
-    fetch(`/add-bundle/${bundleId}/`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-    .then(res => res.json())
-    .then(data => {
+            fetch(`/add-bundle/${bundleId}/`, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(res => res.json())
+            .then(data => {
 
-        if(data.success){
+                if(data.success){
 
-            refreshCartBadge();
-            refreshCart(); 
+                    refreshCartBadge();
+                    refreshCart(); 
 
-            showToast();   // same popup as product
-            // 🔥 ADD THIS TRACKING
-            if(typeof gtag === "function"){
-                gtag('event', 'add_to_cart', {
-                    item_id: bundleId,
-                    item_name: comboName,
-                    value: parseFloat(comboPrice),
-                    currency: 'INR'
-                });
-            }
+                    showToast();   // same popup as product
+                    // 🔥 ADD THIS TRACKING
+                    if(typeof gtag === "function"){
+                        gtag('event', 'add_to_cart', {
+                            item_id: bundleId,
+                            item_name: comboName,
+                            value: parseFloat(comboPrice),
+                            currency: 'INR'
+                        });
+                    }
+
+                }
+
+            });
 
         }
 
     });
 
-}
-
 });
+
+
 
 
 

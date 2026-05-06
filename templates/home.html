@@ -101,7 +101,7 @@
                     <button class="btn btn-danger px-4 fw-bold hero-add-btn"
                             data-id="{{ featured_products.0.id|default:'' }}"
                             data-source="home">
-                        🔥 Order Now ₹{{ featured_products.0.discount_price|default:featured_products.0.price }}
+                        Order Now ₹{{ featured_products.0.discount_price|default:featured_products.0.price }}
                     </button>
                     {% endif %}
 
@@ -225,6 +225,7 @@
 <div class="loka-product-card combo-card"
      data-id="{{ combo.id }}"
      data-name="{{ combo.name }}"
+     data-price="{{ combo.price }}"
      data-items='[
         {% for item in combo.items.all %}
             {"name": "{{ item.product.name }}",
@@ -290,8 +291,7 @@
         </div>
 
         <button class="loka-add-btn add-bundle-btn"
-            data-id="{{ combo.id }}"
-            onclick="event.stopPropagation();">
+            data-id="{{ combo.id }}">
             ADD
         </button>
 
