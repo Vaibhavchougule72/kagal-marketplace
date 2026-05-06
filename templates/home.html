@@ -13,7 +13,7 @@
         <img src="{{ main_banner.image.url }}" style="width:100%; height:180px; object-fit:cover;">
         {% endif %}
 
-        <div class="p-3 text-center">
+        <div class="p-4 text-center">
 
             <h5 class="fw-bold text-danger">
                 {{ main_banner.title }}
@@ -512,35 +512,63 @@ align-items:center;
 justify-content:center;
 ">
 
-<div style="background:white; width:90%; max-width:350px; border-radius:12px; overflow:hidden;">
+<div style="
+    background:white;
+    width:92%;
+    max-width:360px;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    ">
 
     {% if popup_banner.image %}
-    <img src="https://res.cloudinary.com/dokdpn0y1/image/upload/v1776569189/x4tjtrmtwgmvf1zbtob2.webp"
-     style="width:100%; height:180px; object-fit:cover;">
+    <img src="{{ popup_banner.image.url }}?v={{ popup_banner.id }}"
+        style="
+        width:100%;
+        height:240px;
+        object-fit:cover;
+        display:block;
+    ">
     {% endif %}
 
-    <div class="p-3 text-center">
+    <div class="p-4 text-center">
 
-        <p class="fw-bold text-dark">
+        <div style="
+        font-size:30px;
+        font-weight:800;
+        color:#111;
+        line-height:1;
+        ">
         ₹{{ popup_banner.product.discount_price|default:popup_banner.product.price }}
-        </p>
-        <small style="color:red;">⏰ Only for today</small>
+        </div>
+        <div style="
+        color:#ff3d00;
+        font-size:13px;
+        font-weight:600;
+        margin-top:8px;
+        ">
+        ⏰ Limited Time Offer
+        </div>
 
         <h5 class="fw-bold text-danger">
             {{ popup_banner.title }}
         </h5>
 
-        <p class="text-muted">
+        {% if popup_banner.subtitle %}
+        <p class="text-muted mb-2">
             {{ popup_banner.subtitle }}
         </p>
+        {% endif %}
 
-        {% if popup_banner.button_link %}
         <button id="popupAddBtn"
                 data-id="{{ popup_banner.product.id }}"
-                class="btn btn-danger w-100 fw-bold">
-            {{ popup_banner.button_text }}
+                class="btn btn-danger w-100 fw-bold py-2"
+                style="
+                border-radius:12px;
+                font-size:17px;
+                ">
+            {{ popup_banner.button_text|default:"Order Now" }}
         </button>
-        {% endif %}
 
         <button onclick="document.getElementById('popupBanner').style.display='none'"
             class="btn btn-link mt-2">
@@ -551,7 +579,6 @@ justify-content:center;
 
 </div>
 </div>
-
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
@@ -568,46 +595,72 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 <script>
-document.getElementById("popupAddBtn")?.addEventListener("click", function(){
 
-    const productId = this.dataset.id;
-    if(!productId){
-        alert("Product not available");
-        return;
-    }
+document.addEventListener("DOMContentLoaded", function(){
 
-    fetch(`/add-to-cart/${productId}/?source=home`)
-    .then(res => res.json())
-    .then(data => {
-        if(data.success){
+    const popupBtn = document.getElementById("popupAddBtn");
+
+    if(!popupBtn) return;
+
+    popupBtn.addEventListener("click", function(){
+
+        const productId = this.dataset.id;
+
+        if(!productId){
+            alert("Product not available");
+            return;
+        }
+
+        fetch(`/add-to-cart/${productId}/?source=popup`)
+        .then(res => res.json())
+        .then(data => {
+
+            // CLOSE POPUP
+            const popup = document.getElementById("popupBanner");
+
+            if(popup){
+                popup.style.display = "none";
+            }
+
+            // REFRESH CART BADGE
             refreshCartBadge();
 
-            // ✅ Open cart panel
+            // OPEN CART
             document.getElementById("cartPanel").classList.add("open");
+
             document.getElementById("cartOverlay").classList.add("active");
+
             document.body.style.overflow = "hidden";
 
+            // LOAD CART CONTENT
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById("cartContent").innerHTML = html;
+
+            });
+
+            // ANALYTICS
             if(typeof gtag === "function"){
-                gtag('event', 'popup_click', {
+                gtag('event', 'popup_add_to_cart', {
                     item_id: productId
                 });
             }
 
-            
+        })
+        .catch(err => {
+            console.error("Popup cart error:", err);
+        });
 
-            // ✅ Refresh cart
-            fetch("/cart/", {
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-            })
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById("cartContent").innerHTML = html;
-            });
-
-        }
     });
 
 });
+
 </script>
 {% endif %}
 
@@ -619,10 +672,15 @@ document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
     fetch(`/add-to-cart/${id}/?source=home`)
     .then(res => res.json())
     .then(data => {
-        if(data.success){
+
+        if(data){
 
             // CLOSE POPUP
-            document.getElementById("popupBanner").style.display = "none";
+            const popup = document.getElementById("popupBanner");
+
+            if(popup){
+                popup.style.display = "none";
+            }
 
             refreshCartBadge();
 
@@ -632,7 +690,22 @@ document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
             document.getElementById("cartOverlay").classList.add("active");
 
             document.body.style.overflow = "hidden";
+
+            // LOAD UPDATED CART
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById("cartContent").innerHTML = html;
+
+            });
+
         }
+
     });
 
 });
