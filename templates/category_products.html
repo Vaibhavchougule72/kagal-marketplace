@@ -5,16 +5,12 @@
 <div class="container page-content">
 
     <h2 class="mb-4">{{ category.name }} - {% trans "Products" %}</h2>
-    <form method="GET" class="row g-2 mb-4">
-
-        <!-- SEARCH -->
-        <div class="col-12 col-md-3">
-            <input type="text" name="q" value="{{ query }}"
-                class="form-control" placeholder="Search product...">
-        </div>
+    <form method="GET"
+      class="row g-2 mb-3 p-2 bg-white rounded shadow-sm sticky-top"
+      style="top: 90px; z-index: 100;">
 
         <!-- STORE -->
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-3">
             <select name="store" class="form-select">
                 <option value="">All Stores</option>
                 {% for store in stores %}
@@ -39,7 +35,7 @@
         </div>
 
         <!-- SORT -->
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-3">
             <select name="sort" class="form-select">
                 <option value="">Sort</option>
                 <option value="price_low" {% if selected_sort == "price_low" %}selected{% endif %}>
@@ -55,7 +51,7 @@
         </div>
 
         <!-- BUTTON -->
-        <div class="col-12 col-md-1 d-grid">
+        <div class="col-12 d-grid">
             <button class="btn btn-dark">Apply</button>
         </div>
 
