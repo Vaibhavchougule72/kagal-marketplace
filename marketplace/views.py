@@ -292,10 +292,55 @@ def store_detail(request, store_id):
     # REBUILD FROM CACHE
     # =========================
     store = get_object_or_404(Store, id=data["store_id"])
+    # =========================
+    # FILTER VALUES
+    # =========================
+    query = request.GET.get("q", "")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    sort = request.GET.get("sort")
 
     products = Product.objects.filter(
         id__in=data["product_ids"]
-    ).select_related("category", "store").order_by('-id')
+    ).select_related(
+        "category",
+        "store"
+    )
+    # =========================
+    # SEARCH
+    # =========================
+    if query:
+        products = products.filter(
+            name__icontains=query
+        )
+
+    # =========================
+    # PRICE FILTER
+    # =========================
+    if min_price:
+        products = products.filter(
+            price__gte=min_price
+        )
+
+    if max_price:
+        products = products.filter(
+            price__lte=max_price
+        )
+
+    # =========================
+    # SORTING
+    # =========================
+    if sort == "price_low":
+        products = products.order_by("price")
+
+    elif sort == "price_high":
+        products = products.order_by("-price")
+
+    elif sort == "newest":
+        products = products.order_by("-id")
+
+    else:
+        products = products.order_by("-id")
 
     bundles = Bundle.objects.filter(
         id__in=data["bundle_ids"],
@@ -306,8 +351,14 @@ def store_detail(request, store_id):
         "store": store,
         "products": products,
         "bundles": bundles,
-        "show_floating_cart": True
-    })
+        "show_floating_cart": True,
+
+        # FILTER VALUES
+        "query": query,
+        "selected_sort": sort,
+        "min_price": min_price,
+        "max_price": max_price,
+            })
 
 def add_bundle_to_cart(request, bundle_id):
 
