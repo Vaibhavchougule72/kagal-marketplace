@@ -352,13 +352,14 @@ def store_detail(request, store_id):
         "products": products,
         "bundles": bundles,
         "show_floating_cart": True,
+        "simple_navbar": True,
 
         # FILTER VALUES
         "query": query,
         "selected_sort": sort,
         "min_price": min_price,
         "max_price": max_price,
-            })
+    })
 
 def add_bundle_to_cart(request, bundle_id):
 
