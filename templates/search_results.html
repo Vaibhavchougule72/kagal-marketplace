@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block content %}
+{% load static %}
 
 <div class="container page-content">
 
@@ -111,9 +112,17 @@
                 <!-- IMAGE -->
                 <div class="loka-product-image position-relative">
 
+                    {% if product.image %}
                     <img src="{{ product.image.url }}"
                         class="img-fluid product-img"
-                        alt="{{ product.name }}" loading="lazy">
+                        alt="{{ product.name }}"
+                        loading="lazy">
+                    {% else %}
+                    <img src="{% static 'images/no-image.png' %}"
+                        class="img-fluid product-img"
+                        alt="No image"
+                        loading="lazy">
+                    {% endif %}
 
                     <!-- 🔥 STATUS BADGE -->
                     {% if product.open_status %}
@@ -159,7 +168,11 @@
                     <!-- ⏰ OPEN TIME -->
                     {% if not product.open_status %}
                         <div class="small text-danger mb-1">
-                            ⏰ Opens at {{ product.store.next_open_time }}
+                            {% if product.store.next_open_time %}
+                            <div class="small text-danger mb-1">
+                                ⏰ Opens at {{ product.store.next_open_time }}
+                            </div>
+                            {% endif %}
                         </div>
                     {% endif %}
 
