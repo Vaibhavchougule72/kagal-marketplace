@@ -9,8 +9,27 @@ from .models import Banner
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    list_display = ('title', 'is_active', 'is_popup', 'priority')
-    list_filter = ('is_active', 'is_popup')
+
+    list_display = (
+        'title',
+        'is_active',
+        'is_popup',
+        'priority'
+    )
+
+    list_filter = (
+        'is_active',
+        'is_popup'
+    )
+
+    search_fields = (
+        'title',
+    )
+
+    autocomplete_fields = (
+        "product",
+        "bundle",
+    )
 
 
 @admin.register(Category)
@@ -27,10 +46,23 @@ class StoreHolidayInline(admin.TabularInline):
     
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'commission_percent')
-    list_filter = ('category',)
-    inlines = [StoreTimingInline, StoreHolidayInline]
 
+    list_display = (
+        'name',
+        'category',
+        'commission_percent'
+    )
+
+    list_filter = ('category',)
+
+    search_fields = (
+        'name',
+    )
+
+    inlines = [
+        StoreTimingInline,
+        StoreHolidayInline
+    ]
 
 from django.contrib import admin
 from django.urls import path, reverse
@@ -388,11 +420,48 @@ class BundleItemInline(admin.TabularInline):
     model = BundleItem
     extra = 1
 
+    autocomplete_fields = ["product"]
+
+    def formfield_for_foreignkey(
+        self,
+        db_field,
+        request,
+        **kwargs
+    ):
+
+        if db_field.name == "product":
+
+            try:
+
+                object_id = request.resolver_match.kwargs.get("object_id")
+
+                if object_id:
+
+                    bundle = Bundle.objects.get(id=object_id)
+
+                    kwargs["queryset"] = Product.objects.filter(
+                        store=bundle.store
+                    )
+
+                else:
+                    kwargs["queryset"] = Product.objects.none()
+
+            except Exception:
+
+                kwargs["queryset"] = Product.objects.none()
+
+        return super().formfield_for_foreignkey(
+            db_field,
+            request,
+            **kwargs
+        )
 
 @admin.register(Bundle)
 class BundleAdmin(admin.ModelAdmin):
-    inlines = [BundleItemInline]
 
+    search_fields = ("name",)
+
+    inlines = [BundleItemInline]
 from .models import Coupon
 
 admin.site.register(Coupon)

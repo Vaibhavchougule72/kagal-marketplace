@@ -530,7 +530,12 @@ class Banner(models.Model):
         null=True
     )
     product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)
-    
+    bundle = models.ForeignKey(
+        Bundle,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
     button_text = models.CharField(max_length=50, default="Order Now")
     button_link = models.CharField(max_length=200, blank=True, null=True)
 
@@ -540,6 +545,20 @@ class Banner(models.Model):
     priority = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
+    def clean(self):
+
+        from django.core.exceptions import ValidationError
+
+        if self.product and self.bundle:
+            raise ValidationError(
+                "Select either product OR bundle."
+            )
+
+        if not self.product and not self.bundle:
+            raise ValidationError(
+                "Select at least one product or bundle."
+            )

@@ -23,10 +23,21 @@
                 {{ main_banner.subtitle }}
             </p>
 
-            {% if main_banner.button_link %}
-            <a href="{{ main_banner.button_link }}" class="btn btn-danger fw-bold">
+            {% if main_banner.product or main_banner.bundle %}
+            <button class="banner-order-btn"
+
+                {% if main_banner.product %}
+                data-id="{{ main_banner.product.id }}"
+                data-type="product"
+
+                {% elif main_banner.bundle %}
+                data-id="{{ main_banner.bundle.id }}"
+                data-type="bundle"
+                {% endif %}
+
+            >
                 {{ main_banner.button_text }}
-            </a>
+            </button>
 
             {% endif %}
 
@@ -507,7 +518,7 @@ justify-content:center;
     ">
 
     {% if popup_banner.image %}
-    <img src="{{ popup_banner.image.url }}?v={{ popup_banner.id }}"
+    <img src="{{ popup_banner.image.url }}?v={{ popup_banner.updated_at|date:'U' }}"
         style="
         width:100%;
         height:240px;
@@ -524,7 +535,15 @@ justify-content:center;
         color:#111;
         line-height:1;
         ">
+        {% if popup_banner.product %}
+
         ₹{{ popup_banner.product.discount_price|default:popup_banner.product.price }}
+
+        {% elif popup_banner.bundle %}
+
+        ₹{{ popup_banner.bundle.price }}
+
+        {% endif %}
         </div>
         <div style="
         color:#ff3d00;
@@ -546,7 +565,13 @@ justify-content:center;
         {% endif %}
 
         <button id="popupAddBtn"
+                {% if popup_banner.product %}
                 data-id="{{ popup_banner.product.id }}"
+                data-type="product"
+                {% elif popup_banner.bundle %}
+                data-id="{{ popup_banner.bundle.id }}"
+                data-type="bundle"
+                {% endif %}
                 class="btn btn-danger w-100 fw-bold py-2"
                 style="
                 border-radius:12px;
@@ -596,7 +621,17 @@ document.addEventListener("DOMContentLoaded", function(){
             return;
         }
 
-        fetch(`/add-to-cart/${productId}/?source=popup`)
+        const type = this.dataset.type;
+
+        let url = "";
+
+        if(type === "bundle"){
+            url = `/add-bundle/${productId}/`;
+        }else{
+            url = `/add-to-cart/${productId}/?source=popup`;
+        }
+
+        fetch(url)
         .then(res => res.json())
         .then(data => {
 
@@ -694,6 +729,52 @@ document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
     });
 
 });
+</script>
+
+<script>
+
+document.querySelector(".banner-order-btn")?.addEventListener("click", function(){
+
+    const id = this.dataset.id;
+
+    const type = this.dataset.type;
+
+    let url = "";
+
+    if(type === "bundle"){
+        url = `/add-bundle/${id}/`;
+    }else{
+        url = `/add-to-cart/${id}/?source=banner`;
+    }
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+
+        refreshCartBadge();
+
+        document.getElementById("cartPanel").classList.add("open");
+
+        document.getElementById("cartOverlay").classList.add("active");
+
+        document.body.style.overflow = "hidden";
+
+        fetch("/cart/", {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+
+            document.getElementById("cartContent").innerHTML = html;
+
+        });
+
+    });
+
+});
+
 </script>
 
 {% endblock %}
