@@ -997,13 +997,24 @@ def checkout(request):
                         qty = int(item.get("quantity", 1))
 
                         if item_id.isdigit():
+                            
                             product = products_map.get(int(item_id))
                             if product:
+                                final_price = product.discount_price or product.price
                                 OrderItem.objects.create(
                                     order=order,
                                     product=product,
-                                    price=product.discount_price or product.price,
-                                    quantity=qty
+                                    quantity=qty,
+                                    #customer price
+                                    price=final_price,
+
+                                    # actual store price
+                                    original_price=product.price,
+
+                                    # platform discount
+                                    discount_amount=(
+                                        product.price - final_price
+                                    )
                                 )
 
                         elif item_id.startswith("bundle_"):
@@ -1930,11 +1941,27 @@ def payment_success(request):
                     try:
                         product = Product.objects.get(id=int(item_id))
 
+                        final_price = (
+                            product.discount_price
+                            if product.discount_price
+                            else product.price
+                        )
+
                         OrderItem.objects.create(
                             order=order,
                             product=product,
                             quantity=int(item.get("quantity", 1)),
-                            price = product.discount_price if product.discount_price else product.price
+
+                            # customer price
+                            price=final_price,
+
+                            # store original price
+                            original_price=product.price,
+
+                            # platform discount
+                            discount_amount=(
+                                product.price - final_price
+                            )
                         )
                     except Exception as e:
                         logger.warning(f"Product skipped: {e}")
@@ -2256,7 +2283,7 @@ def generate_store_pdf(request, order_id):
         data.append([
             item.product.name if item.product else item.bundle_name,
             str(item.quantity),
-            f"₹{item.price}"
+            f"₹{item.original_price or item.price}"
         ])
 
     data.append(["", "Total:", f"₹{order.subtotal}"])
@@ -2680,16 +2707,60 @@ def store_dashboard(request):
 
         order_count = orders.count()
 
-        commission = sales * store.commission_percent / 100
+        from decimal import Decimal
 
-        payout = sales - commission
+        original_sales = Decimal(0)
+        discount_sales = Decimal(0)
+
+        for order in orders:
+
+            for item in order.items.all():
+
+                qty = item.quantity
+
+                original_price = (
+                    item.original_price
+                    if item.original_price
+                    else item.price
+                )
+
+                customer_price = item.price
+
+                original_sales += (
+                    Decimal(original_price) * qty
+                )
+
+                discount_sales += (
+                    (Decimal(original_price) - Decimal(customer_price)) * qty
+                )
+
+        commission_percent = (
+            Decimal(store.commission_percent) / Decimal(100)
+        )
+
+        platform_commission = (
+            original_sales * commission_percent
+        )
+
+        platform_earn = (
+            platform_commission - discount_sales
+        )
+
+        store_payout = (
+            original_sales - platform_commission
+        )
+
+        loss = discount_sales
 
         store_data.append({
             "store": store,
             "orders": order_count,
             "sales": round(sales,2),
-            "commission": round(commission,2),
-            "payout": round(payout,2)
+            "original_sales": original_sales,
+            "discount_sales": discount_sales,
+            "loss": loss,
+            "platform_earn": platform_earn,
+            "payout": store_payout,
         })
 
     context = {

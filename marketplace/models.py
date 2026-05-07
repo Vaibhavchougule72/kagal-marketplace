@@ -273,11 +273,48 @@ class DeliveryPartnerProfile(models.Model):
         return self.user.username
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
-    bundle_name = models.CharField(max_length=200, null=True, blank=True)
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    bundle_name = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
+
     quantity = models.IntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # customer paid price
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    # actual product/store price
+    original_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    # platform discount per item
+    discount_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
 
     def __str__(self):
 
@@ -487,7 +524,11 @@ class Banner(models.Model):
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=200, blank=True, null=True)
 
-    image = CloudinaryField('image')
+    image = CloudinaryField(
+        'image',
+        blank=True,
+        null=True
+    )
     product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL)
     
     button_text = models.CharField(max_length=50, default="Order Now")
