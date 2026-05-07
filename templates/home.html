@@ -52,16 +52,22 @@
     <div class="partner-track">
 
         {% for store in stores %}
-        <div class="partner-card">
+        <a href="{% url 'store_detail' store.id %}"
+        class="partner-card text-decoration-none">
+
             {{ store.name }}
-        </div>
+
+        </a>
         {% endfor %}
 
         <!-- Duplicate for infinite scroll -->
         {% for store in stores %}
-        <div class="partner-card">
+        <a href="{% url 'store_detail' store.id %}"
+        class="partner-card text-decoration-none">
+
             {{ store.name }}
-        </div>
+
+        </a>
         {% endfor %}
 
     </div>
