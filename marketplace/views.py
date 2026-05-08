@@ -1032,16 +1032,14 @@ def checkout(request):
 
                                     quantity=qty,
 
-                                    # customer combo price
+                                    # customer paid
                                     price=bundle.price,
 
-                                    # actual combo value
-                                    original_price=bundle.original_price(),
+                                    # same as selling price
+                                    original_price=bundle.price,
 
-                                    # platform discount
-                                    discount_amount=(
-                                        bundle.original_price() - bundle.price
-                                    )
+                                    # no discount
+                                    discount_amount=0
                                 )
 
                 request.session["cart"] = {"store_id": None, "items": {}}
@@ -1993,21 +1991,24 @@ def payment_success(request):
 
                         OrderItem.objects.create(
                             order=order,
-                            product=None,
+
+                            # bundle
                             bundle=bundle,
                             bundle_name=bundle.name,
+
+                            # no product
+                            product=None,
+
                             quantity=int(item.get("quantity", 1)),
 
-                            # customer combo price
+                            # customer paid
                             price=bundle.price,
 
-                            # original combo value
-                            original_price=bundle.original_price(),
+                            # same as selling price
+                            original_price=bundle.price,
 
-                            # platform discount
-                            discount_amount=(
-                                bundle.original_price() - bundle.price
-                            )
+                            # no discount
+                            discount_amount=0
                         )
 
                     except Exception as e:

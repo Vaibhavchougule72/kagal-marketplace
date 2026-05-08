@@ -419,14 +419,7 @@ class Bundle(models.Model):
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
-
-    def original_price(self):
-        total = Decimal(0)
-
-        for item in self.items.all():
-            total += item.product.price * item.quantity
-
-        return total
+    
     def savings(self):
         return int(self.original_price() - self.price)
 
