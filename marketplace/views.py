@@ -1967,17 +1967,36 @@ def payment_success(request):
                         logger.warning(f"Product skipped: {e}")
 
                 # BUNDLE
+                # BUNDLE
                 elif str(item_id).startswith("bundle_"):
-                    bundle_id = int(item_id.split("_")[1])
-                    bundle = Bundle.objects.get(id=bundle_id)
-                    OrderItem.objects.create(
-                        order=order,
-                        product=None,
-                        bundle_name=item.get("name", "Combo"),
-                        quantity=int(item.get("quantity", 1)),
-                        bundle = bundle,
-                        price = bundle.price
-                    )
+
+                    try:
+
+                        bundle_id = int(item_id.split("_")[1])
+
+                        bundle = Bundle.objects.get(id=bundle_id)
+
+                        OrderItem.objects.create(
+                            order=order,
+                            product=None,
+                            bundle=bundle,
+                            bundle_name=bundle.name,
+                            quantity=int(item.get("quantity", 1)),
+
+                            # customer combo price
+                            price=bundle.price,
+
+                            # original combo value
+                            original_price=bundle.original_price,
+
+                            # platform discount
+                            discount_amount=(
+                                bundle.original_price - bundle.price
+                            )
+                        )
+
+                    except Exception as e:
+                        logger.warning(f"Bundle skipped: {e}")
 
             # Mark processed
             pending.is_payment_processed = True
