@@ -101,7 +101,7 @@ import os
 class ProductAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'store', 'price', 'is_hero', 'discount_price', 'is_active', 'upi_only')
-    list_filter = ('store', 'is_active', 'is_hero')
+    list_filter = ('store', 'is_active', 'is_hero','is_featured')
     search_fields = ('name',)
 
     def get_urls(self):
