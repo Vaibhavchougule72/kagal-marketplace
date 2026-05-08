@@ -1022,11 +1022,26 @@ def checkout(request):
                             if bundle:
                                 OrderItem.objects.create(
                                     order=order,
+
+                                    # bundle
                                     bundle=bundle,
-                                    product=None,
                                     bundle_name=bundle.name,
+
+                                    # no product
+                                    product=None,
+
+                                    quantity=qty,
+
+                                    # customer combo price
                                     price=bundle.price,
-                                    quantity=qty
+
+                                    # actual combo value
+                                    original_price=bundle.original_price(),
+
+                                    # platform discount
+                                    discount_amount=(
+                                        bundle.original_price() - bundle.price
+                                    )
                                 )
 
                 request.session["cart"] = {"store_id": None, "items": {}}
@@ -1987,11 +2002,11 @@ def payment_success(request):
                             price=bundle.price,
 
                             # original combo value
-                            original_price=bundle.original_price,
+                            original_price=bundle.original_price(),
 
                             # platform discount
                             discount_amount=(
-                                bundle.original_price - bundle.price
+                                bundle.original_price() - bundle.price
                             )
                         )
 

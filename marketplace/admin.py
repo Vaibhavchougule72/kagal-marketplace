@@ -222,9 +222,24 @@ from .models import Order, OrderItem
 
 
 class OrderItemInline(admin.TabularInline):
+
     model = OrderItem
     extra = 0
 
+    autocomplete_fields = (
+        "product",
+        "bundle",
+    )
+
+    fields = (
+        "product",
+        "bundle",
+        "bundle_name",
+        "quantity",
+        "price",
+        "original_price",
+        "discount_amount",
+    )
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

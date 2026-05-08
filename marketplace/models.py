@@ -333,6 +333,13 @@ class OrderItem(models.Model):
             return self.bundle.name
 
         return self.bundle_name or "Bundle Item"
+    
+    def save(self, *args, **kwargs):
+
+        if self.bundle and not self.bundle_name:
+            self.bundle_name = self.bundle.name
+
+        super().save(*args, **kwargs)
 
 class PendingOrder(models.Model):
 
