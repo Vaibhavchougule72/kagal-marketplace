@@ -282,7 +282,7 @@ class OrderItem(models.Model):
 
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True
     )
@@ -334,6 +334,19 @@ class OrderItem(models.Model):
 
         return self.bundle_name or "Bundle Item"
     
+    @property
+    def display_name(self):
+
+        if self.product:
+            return self.product.name
+
+        if self.bundle:
+            return self.bundle.name
+
+        return self.bundle_name or "Unknown Item"
+    def __str__(self):
+
+        return self.display_name
     def save(self, *args, **kwargs):
 
         if self.bundle and not self.bundle_name:

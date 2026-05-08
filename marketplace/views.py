@@ -2382,7 +2382,7 @@ def combo_detail(request, combo_id):
     for item in combo.items.all():
 
         items.append({
-            "name": item.product.name,
+            "name": item.bundle_name,
             "price": float(item.product.price),
             "qty": item.quantity
         })

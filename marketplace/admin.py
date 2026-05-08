@@ -220,11 +220,11 @@ import traceback
 
 from .models import Order, OrderItem
 
-
 class OrderItemInline(admin.TabularInline):
 
     model = OrderItem
-    extra = 0
+
+    extra = 1
 
     autocomplete_fields = (
         "product",
@@ -382,6 +382,30 @@ class OrderAdmin(admin.ModelAdmin):
             '<a class="button" href="{}">Send Delivery OTP</a>',
             url
         )
+    def add_view(self, request, form_url='', extra_context=None):
+
+        try:
+            return super().add_view(
+                request,
+                form_url,
+                extra_context
+            )
+
+        except Exception:
+            return HttpResponse(
+                f"<pre>{traceback.format_exc()}</pre>"
+            )
+    def save_formset(self, request, form, formset, change):
+
+        try:
+
+            formset.save()
+
+        except Exception:
+
+            return HttpResponse(
+                f"<pre>{traceback.format_exc()}</pre>"
+            )
 
     send_otp_button.short_description = "Delivery OTP"
 
