@@ -187,7 +187,7 @@ def home(request):
 
     product_ids = cache.get(product_cache_key)
 
-    if not product_ids:
+    if product_ids is None:
 
         all_products = Product.objects.filter(is_featured=True)\
             .select_related('store')\
@@ -221,7 +221,13 @@ def home(request):
         product_ids = [p.id for p in final_products]
 
         cache.set(product_cache_key, product_ids, 30)
+    # remove deleted product ids from cache
+    valid_ids = list(
+        Product.objects.filter(id__in=product_ids)
+        .values_list("id", flat=True)
+    )
 
+    product_ids = [pid for pid in product_ids if pid in valid_ids]
     # 🔥 FETCH PRODUCTS FROM IDS (ORDER SAFE)
     products_qs = Product.objects.filter(id__in=product_ids)\
         .select_related('store')
