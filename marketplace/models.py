@@ -287,6 +287,14 @@ class OrderItem(models.Model):
         blank=True
     )
 
+    # ✅ ADD THIS
+    bundle = models.ForeignKey(
+        "Bundle",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
     bundle_name = models.CharField(
         max_length=200,
         null=True,
@@ -301,7 +309,7 @@ class OrderItem(models.Model):
         decimal_places=2
     )
 
-    # actual product/store price
+    # actual store price
     original_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -309,7 +317,7 @@ class OrderItem(models.Model):
         blank=True
     )
 
-    # platform discount per item
+    # platform discount
     discount_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -321,8 +329,10 @@ class OrderItem(models.Model):
         if self.product:
             return self.product.name
 
-        return self.bundle_name or "Bundle Item"
+        if self.bundle:
+            return self.bundle.name
 
+        return self.bundle_name or "Bundle Item"
 
 class PendingOrder(models.Model):
 
