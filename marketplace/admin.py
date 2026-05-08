@@ -387,6 +387,8 @@ class OrderAdmin(admin.ModelAdmin):
 
     pdf_buttons.short_description = "Download PDFs"
 
+
+
     def save_model(self, request, obj, form, change):
 
         if obj.status == "DELIVERED":
@@ -428,6 +430,59 @@ class OrderAdmin(admin.ModelAdmin):
                 obj.delivery_payout = 25
 
         super().save_model(request, obj, form, change)
+    
+    def add_view(self, request, form_url='', extra_context=None):
+
+        try:
+
+            return super().add_view(
+                request,
+                form_url,
+                extra_context
+            )
+
+        except Exception as e:
+
+            import traceback
+
+            error_trace = traceback.format_exc()
+
+            return HttpResponse(
+                f"""
+                <h1 style='color:red;'>
+                    🔥 ORDER ADD PAGE ERROR
+                </h1>
+
+                <pre style='font-size:15px;'>
+    {error_trace}
+                </pre>
+                """,
+                content_type="text/html"
+            )
+    def save_formset(self, request, form, formset, change):
+
+        try:
+
+            formset.save()
+
+        except Exception as e:
+
+            import traceback
+
+            error_trace = traceback.format_exc()
+
+            return HttpResponse(
+                f"""
+                <h1 style='color:red;'>
+                    🔥 ORDER ITEM SAVE ERROR
+                </h1>
+
+                <pre style='font-size:15px;'>
+    {error_trace}
+                </pre>
+                """,
+                content_type="text/html"
+            )
 
 from .models import Bundle, BundleItem
 
