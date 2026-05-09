@@ -167,6 +167,40 @@
         🚚 Delivery from ₹15 | ⚡ 30–50 mins | ⭐ Trusted local stores
     </small>
 </div>
+
+
+<!-- DOWNLOAD APP CTA -->
+<section class="py-3 bg-white">
+
+<div class="container">
+
+<div class="download-app-card">
+
+    <div>
+
+        <div class="fw-bold fs-5">
+            📲 Download LOKA App
+        </div>
+
+        <small class="text-muted">
+            Faster ordering • Live tracking • Better offers
+        </small>
+
+    </div>
+
+    <a href="{% url 'download_app' %}"
+       class="download-app-btn">
+
+        Download App
+
+    </a>
+
+</div>
+
+</div>
+
+</section>
+
 <!-- CATEGORIES -->
 <section class="py-5 bg-white" id="categories">
     <div class="container">
@@ -230,12 +264,13 @@
      data-price="{{ combo.price }}"
      data-items='[
         {% for item in combo.items.all %}
-            {"name": "{{ item.product.name }}",
-             "qty": "{{ item.quantity }}",
-             "price": "{{ item.product.price }}"}
-            {% if not forloop.last %},{% endif %}
+            {
+                "name": "{{ item.product.name|escapejs }}",
+                "qty": "{{ item.quantity }}",
+                "price": "{{ item.product.price }}"
+            }{% if not forloop.last %},{% endif %}
         {% endfor %}
-     ]'>
+        ]'>
 
 <div class="loka-product-image position-relative">
     <div style="
@@ -486,7 +521,78 @@
 </div>
 
 </div>
+<script>
 
+document.addEventListener("DOMContentLoaded", function(){
+
+    document.querySelectorAll(".combo-card").forEach(card => {
+
+        card.addEventListener("click", function(e){
+
+            // ✅ Prevent modal when clicking ADD button
+            if(e.target.closest(".add-bundle-btn")){
+                return;
+            }
+
+            // ✅ Get combo data
+            const comboName = this.dataset.name;
+
+            let items = [];
+
+            try{
+                items = JSON.parse(this.dataset.items);
+            }catch(err){
+                console.error(
+                    "Combo parse error:",
+                    err,
+                    this.dataset.items
+                );
+            }
+
+            // ✅ Set modal title
+            document.getElementById("comboTitle").innerText = comboName;
+
+            // ✅ Build product list
+            let html = "";
+
+            items.forEach(item => {
+
+                html += `
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                        <div>
+                            <strong>${item.name}</strong>
+                            <br>
+                            <small class="text-muted">
+                                Qty: ${item.qty}
+                            </small>
+                        </div>
+
+                        <div class="fw-bold">
+                            ₹${item.price}
+                        </div>
+
+                    </div>
+                `;
+            });
+
+            // ✅ Inject items
+            document.getElementById("comboItems").innerHTML = html;
+
+            // ✅ Open Bootstrap modal
+            const modal = new bootstrap.Modal(
+                document.getElementById("comboModal")
+            );
+
+            modal.show();
+
+        });
+
+    });
+
+});
+
+</script>
 
 {% if popup_banner %}
 <div id="popupBanner" style="
@@ -588,11 +694,24 @@ document.addEventListener("DOMContentLoaded", function(){
 
     const popup = document.getElementById("popupBanner");
 
+    // unique session key
+    const popupKey = "loka_popup_seen";
+
     if(popup){
 
-        setTimeout(() => {
-            popup.style.display = "flex";
-        }, 1200);
+        // show only once per session
+        if(!sessionStorage.getItem(popupKey)){
+
+            setTimeout(() => {
+
+                popup.style.display = "flex";
+
+                // mark as shown
+                sessionStorage.setItem(popupKey, "1");
+
+            }, 1200);
+
+        }
 
     }
 
