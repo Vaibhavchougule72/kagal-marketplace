@@ -139,13 +139,15 @@
 
 </div>
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+window.addEventListener("load", function(){
 
     const params = new URLSearchParams(window.location.search);
 
     const highlight = params.get("highlight");
 
-    if(highlight){
+    if(!highlight) return;
+
+    setTimeout(function(){
 
         const card = document.querySelector(
             `.product-card[data-id="${highlight}"]`
@@ -154,8 +156,8 @@ document.addEventListener("DOMContentLoaded", function(){
         if(card){
 
             card.scrollIntoView({
-                behavior:"smooth",
-                block:"center"
+                behavior: "smooth",
+                block: "center"
             });
 
             card.style.transition = "0.4s";
@@ -163,11 +165,17 @@ document.addEventListener("DOMContentLoaded", function(){
             card.style.boxShadow =
                 "0 0 0 4px #ff5722";
 
+            card.style.transform = "scale(1.02)";
+
             setTimeout(() => {
                 card.style.boxShadow = "";
-            }, 2500);
+                card.style.transform = "";
+            }, 3000);
+
         }
-    }
+
+    }, 700);
+
 });
 </script>
 {% endblock %}
