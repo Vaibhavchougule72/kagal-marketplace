@@ -93,7 +93,7 @@
                 data-name="{{ product.name }}"
                 data-price="{{ product.price }}"
                 data-desc="{{ product.description }}"
-                data-image="{{ product.image.url }}">
+                data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
 
                 <!-- PRODUCT IMAGE -->
                 <div class="loka-product-image">
@@ -138,5 +138,36 @@
     </div>
 
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
 
+    const params = new URLSearchParams(window.location.search);
+
+    const highlight = params.get("highlight");
+
+    if(highlight){
+
+        const card = document.querySelector(
+            `.product-card[data-id="${highlight}"]`
+        );
+
+        if(card){
+
+            card.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+
+            card.style.transition = "0.4s";
+
+            card.style.boxShadow =
+                "0 0 0 4px #ff5722";
+
+            setTimeout(() => {
+                card.style.boxShadow = "";
+            }, 2500);
+        }
+    }
+});
+</script>
 {% endblock %}

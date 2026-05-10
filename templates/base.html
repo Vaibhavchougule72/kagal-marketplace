@@ -670,14 +670,18 @@ document.addEventListener("DOMContentLoaded", function(){
 
                         option.href = item.type === "store"
                             ? `/store/${item.id}/`
-                            : `/search/?q=${item.name}`;
+                            : `/store/${item.store_id}/?highlight=${item.id}`;
 
                         option.classList.add("list-group-item");
 
                         option.innerHTML = `
                             <div>
                                 <strong>${item.name}</strong><br>
-                                <small style="color:gray">Tap to search</small>
+                                <small style="color:gray">
+                                ${item.type === "store"
+                                    ? "Store"
+                                    : item.store_name}
+                                </small>
                             </div>
                         `;
 
@@ -738,7 +742,11 @@ document.addEventListener("DOMContentLoaded", function(){
                     option.innerHTML = `
                         <div>
                             <strong>${item.name}</strong><br>
-                            <small style="color:gray">Tap to search</small>
+                            <small style="color:gray">
+                            ${item.type === "store"
+                                ? "Store"
+                                : item.store_name}
+                            </small>
                         </div>
                     `;
 

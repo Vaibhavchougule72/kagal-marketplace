@@ -107,7 +107,7 @@
                 data-name="{{ product.name }}"
                 data-price="{{ product.price }}"
                 data-desc="{{ product.description }}"
-                data-image="{{ product.image.url }}">
+                data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
 
                 <!-- IMAGE -->
                 <div class="loka-product-image position-relative">

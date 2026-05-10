@@ -1688,25 +1688,68 @@ def search_products(request):
         )
 
 def search_suggestions(request):
-    query = request.GET.get('q', '')
+
+    query = request.GET.get('q', '').strip()
 
     suggestions = []
 
     if query:
+
+        # =========================
+        # PRODUCTS
+        # =========================
         products = Product.objects.select_related('store')\
-            .filter(name__icontains=query)[:5]
+            .filter(name__icontains=query)[:6]
 
         for product in products:
+
             suggestions.append({
-            'type': 'product',
-            'id': product.id,
-            'name': product.name,
-            'store_id': product.store.id
-        })
-    
 
-    return JsonResponse({'results': suggestions})
+                'type': 'product',
 
+                'id': product.id,
+
+                'name': product.name,
+
+                'store_id': product.store.id,
+
+                'store_name': product.store.name,
+
+                'image': (
+                    product.image.url
+                    if product.image else ''
+                ),
+
+                'price': str(
+                    product.discount_price or product.price
+                )
+
+            })
+
+        # =========================
+        # STORES
+        # =========================
+        stores = Store.objects.filter(
+            name__icontains=query
+        )[:4]
+
+        for store in stores:
+
+            suggestions.append({
+
+                'type': 'store',
+
+                'id': store.id,
+
+                'name': store.name,
+
+                'store_name': store.name,
+
+            })
+
+    return JsonResponse({
+        'results': suggestions
+    })
 
 # =====================================================
 # AJAX DELIVERY CALCULATION
