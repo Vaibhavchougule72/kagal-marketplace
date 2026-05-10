@@ -31,13 +31,16 @@ from reportlab.pdfbase.ttfonts import TTFont
 from django.conf import settings
 import os
 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 font_path = os.path.join(
     settings.BASE_DIR,
-    "static/fonts/NotoSansDevanagari-Regular.ttf"
+    "static/fonts/NotoSans-Regular.ttf"
 )
 
 pdfmetrics.registerFont(
-    TTFont("Marathi", font_path)
+    TTFont("Noto", font_path)
 )
 
 def is_store_open_cached(store: Store):
@@ -2192,9 +2195,9 @@ def generate_invoice(request, order_id):
     elements = []
 
     styles = getSampleStyleSheet()
-    styles['Title'].fontName = 'Marathi'
-    styles['Heading2'].fontName = 'Marathi'
-    styles['Normal'].fontName = 'Marathi'
+    styles['Title'].fontName = 'Noto'
+    styles['Heading2'].fontName = 'Noto'
+    styles['Normal'].fontName = 'Noto'
 
     # 🔹 Title
     elements.append(Paragraph("<b>LOKA - Online Store</b>", styles['Title']))
@@ -2246,7 +2249,7 @@ def generate_invoice(request, order_id):
 
     table.setStyle(TableStyle([
 
-        ('FONTNAME', (0,0), (-1,-1), 'Marathi'),
+        ('FONTNAME', (0,0), (-1,-1), 'Noto'),
 
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
 
@@ -2294,8 +2297,9 @@ def generate_delivery_pdf(request, order_id):
     doc = SimpleDocTemplate(buffer)
     elements = []
     styles = getSampleStyleSheet()
-    styles['Title'].fontName = 'Marathi'
-    styles['Normal'].fontName = 'Marathi'
+    styles['Title'].fontName = 'Noto'
+    styles['Heading2'].fontName = 'Noto'
+    styles['Normal'].fontName = 'Noto'
 
     elements.append(Paragraph("<b>Delivery Slip</b>", styles['Title']))
     elements.append(Spacer(1, 0.3 * inch))
@@ -2359,11 +2363,13 @@ def generate_delivery_pdf(request, order_id):
     table = Table(data, colWidths=[2.5 * inch, 0.7 * inch, 1 * inch, 1 * inch])
     table.setStyle(TableStyle([
 
-        ('FONTNAME', (0,0), (-1,-1), 'Marathi'),
+        ('FONTNAME', (0,0), (-1,-1), 'Noto'),
 
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
 
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+
+        ('ALIGN', (1, 1), (-1, -1), 'CENTER')
 
     ]))
 
@@ -2382,8 +2388,9 @@ def generate_store_pdf(request, order_id):
     doc = SimpleDocTemplate(buffer)
     elements = []
     styles = getSampleStyleSheet()
-    styles['Title'].fontName = 'Marathi'
-    styles['Normal'].fontName = 'Marathi'
+    styles['Title'].fontName = 'Noto'
+    styles['Heading2'].fontName = 'Noto'
+    styles['Normal'].fontName = 'Noto'
 
     elements.append(Paragraph("<b>Store Order Slip</b>", styles['Title']))
     elements.append(Spacer(1, 0.3 * inch))
@@ -2406,14 +2413,15 @@ def generate_store_pdf(request, order_id):
     table = Table(data, colWidths=[3 * inch, 1 * inch, 1 * inch])
     table.setStyle(TableStyle([
 
-        ('FONTNAME', (0,0), (-1,-1), 'Marathi'),
+        ('FONTNAME', (0,0), (-1,-1), 'Noto'),
 
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
 
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
 
-    ]))
+        ('ALIGN', (1, 1), (-1, -1), 'CENTER')
 
+    ]))
     elements.append(table)
 
     doc.build(elements)
