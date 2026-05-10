@@ -734,25 +734,48 @@ document.addEventListener("DOMContentLoaded", function(){
 
                 data.results.forEach(item => {
 
-                    const option = document.createElement("a");
-                    option.href = item.type === "store"
-                        ? `/store/${item.id}/`
-                        : `/store/${item.store_id}/?highlight=${item.id}`;
-                    option.classList.add("list-group-item", "list-group-item-action");
-                    option.innerHTML = `
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            <small style="color:gray">
-                            ${item.type === "store"
-                                ? "Store"
-                                : item.store_name}
-                            </small>
-                        </div>
-                    `;
+                const option = document.createElement("div");
 
-                    mobileSuggestionBox.appendChild(option);
+                option.classList.add(
+                    "list-group-item",
+                    "list-group-item-action"
+                );
+
+                option.style.cursor = "pointer";
+
+                option.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        <small style="color:gray">
+                        ${item.type === "store"
+                            ? "Store"
+                            : item.store_name}
+                        </small>
+                    </div>
+                `;
+
+                option.addEventListener("click", function(e){
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if(item.type === "store"){
+
+                        window.location.href =
+                            `/store/${item.id}/`;
+
+                    }else{
+
+                        window.location.href =
+                            `/store/${item.store_id}/?highlight=${item.id}`;
+
+                    }
 
                 });
+
+                mobileSuggestionBox.appendChild(option);
+
+            });
 
                 mobileSuggestionBox.style.display = "block";
             });
