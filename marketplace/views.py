@@ -36,8 +36,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 from django.views.decorators.csrf import csrf_exempt
 import json
 import razorpay
+from django.db.models import Avg
+from django.views.decorators.http import require_POST
+from .models import StoreRating
 
-MAX_CART_QTY = 20
+MAX_CART_QTY = 50
 
 def safe_qty(value):
 
@@ -1884,8 +1887,11 @@ def order_success(request, order_id):
 
 def order_tracking(request, order_id):
     order = get_object_or_404(Order, id=order_id)
+    existing_rating = StoreRating.objects.filter(
+        order=order
+    ).first()
     return render(request, 'order_tracking.html', {'order': order,
-    "show_floating_cart": False, 'simple_navbar': True,
+    "show_floating_cart": False, 'simple_navbar': True, "existing_rating": existing_rating,
     })
 
 
@@ -3398,4 +3404,123 @@ def download_app(request):
     return render(request, "download_app.html", {
         "show_floating_cart": False,
         "simple_navbar": True
+    })
+
+@require_POST
+def submit_rating(request, order_id):
+
+    try:
+        order = Order.objects.get(id=order_id)
+
+    except Order.DoesNotExist:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Order not found"
+        })
+
+    # -----------------------------------
+    # SECURITY 1
+    # ONLY DELIVERED ORDER
+    # -----------------------------------
+
+    if order.status != "DELIVERED":
+
+        return JsonResponse({
+            "success": False,
+            "message": "Rating allowed only after delivery"
+        })
+
+    # -----------------------------------
+    # SECURITY 2
+    # SAME CUSTOMER ONLY
+    # -----------------------------------
+
+    customer_phone = request.session.get("customer_phone")
+
+    if not customer_phone:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Login required"
+        })
+
+    if customer_phone != order.phone:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Unauthorized"
+        })
+
+    # -----------------------------------
+    # SECURITY 3
+    # ONE RATING PER ORDER
+    # -----------------------------------
+
+    if StoreRating.objects.filter(order=order).exists():
+
+        return JsonResponse({
+            "success": False,
+            "message": "Rating already submitted"
+        })
+
+    # -----------------------------------
+    # GET DATA
+    # -----------------------------------
+
+    rating = request.POST.get("rating")
+    comment = request.POST.get("comment", "")
+
+    if not rating:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Rating required"
+        })
+
+    rating = int(rating)
+
+    if rating < 1 or rating > 5:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid rating"
+        })
+
+    # -----------------------------------
+    # CREATE RATING
+    # -----------------------------------
+
+    StoreRating.objects.create(
+        order=order,
+        store=order.store,
+        customer_phone=customer_phone,
+        rating=rating,
+        comment=comment
+    )
+
+    # -----------------------------------
+    # UPDATE STORE AVERAGE
+    # -----------------------------------
+
+    ratings = StoreRating.objects.filter(
+        store=order.store
+    )
+
+    avg_rating = ratings.aggregate(
+        Avg("rating")
+    )["rating__avg"] or 0
+
+    total_ratings = ratings.count()
+
+    order.store.average_rating = round(avg_rating, 1)
+    order.store.total_ratings = total_ratings
+
+    order.store.save(update_fields=[
+        "average_rating",
+        "total_ratings"
+    ])
+
+    return JsonResponse({
+        "success": True
     })

@@ -39,6 +39,17 @@
   color:#666;
   margin-top:10px;
 }
+
+.star{
+  font-size:32px;
+  color:#ddd;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.star.active{
+  color:#ffc107;
+}
 </style>
 
 <div class="container page-content">
@@ -110,6 +121,86 @@
         {% endif %}"></div>
         {% trans "Delivered" %}
     </div>
+    {% if order.status == "DELIVERED" %}
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4 mt-4">
+
+        <div class="card-body">
+
+            {% if existing_rating %}
+
+                <h5 class="mb-2">
+                    ⭐ धन्यवाद!
+                </h5>
+
+                <div class="mb-2">
+
+                    {% for i in "12345" %}
+
+                        {% if forloop.counter <= existing_rating.rating %}
+                            <span style="font-size:24px;color:#ffc107;">
+                                ★
+                            </span>
+                        {% else %}
+                            <span style="font-size:24px;color:#ddd;">
+                                ★
+                            </span>
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+                {% if existing_rating.comment %}
+
+                <p class="text-muted mb-0">
+                    {{ existing_rating.comment }}
+                </p>
+
+                {% endif %}
+
+            {% else %}
+
+            <h5 class="mb-3">
+                ⭐ Store ला रेटिंग द्या
+            </h5>
+
+            <div id="ratingStars" class="mb-3">
+
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+
+            </div>
+
+            <textarea
+                id="ratingComment"
+                class="form-control mb-3"
+                rows="3"
+                placeholder="Comment (optional)"
+            ></textarea>
+
+            <button
+                class="btn btn-dark w-100"
+                id="submitRatingBtn"
+            >
+                Submit Rating
+            </button>
+
+            <div
+                id="ratingMessage"
+                class="mt-3 text-center"
+            ></div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
 
     <!-- FAILED -->
     {% if order.status == "FAILED" %}
@@ -264,6 +355,88 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 });
+
+let selectedRating = 0;
+
+const stars = document.querySelectorAll(".star");
+
+stars.forEach(star => {
+
+    star.addEventListener("click", function(){
+
+        selectedRating = this.dataset.value;
+
+        stars.forEach(s => {
+            s.classList.remove("active");
+        });
+
+        stars.forEach(s => {
+
+            if(s.dataset.value <= selectedRating){
+                s.classList.add("active");
+            }
+
+        });
+
+    });
+
+});
+
+const submitBtn = document.getElementById("submitRatingBtn");
+
+if(submitBtn){
+
+    submitBtn.addEventListener("click", function(){
+
+        if(selectedRating == 0){
+
+            alert("Please select rating");
+
+            return;
+        }
+
+        fetch("/submit-rating/{{ order.id }}/", {
+
+            method: "POST",
+
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+
+            body:
+                "rating=" + selectedRating +
+                "&comment=" +
+                encodeURIComponent(
+                    document.getElementById("ratingComment").value
+                )
+
+        })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if(data.success){
+
+                document.getElementById("ratingMessage").innerHTML =
+                    "<span class='text-success'>Thank you for your feedback ❤️</span>";
+
+                document.getElementById("submitRatingBtn").disabled = true;
+
+            } else {
+
+                document.getElementById("ratingMessage").innerHTML =
+                    "<span class='text-danger'>" +
+                    data.message +
+                    "</span>";
+            }
+
+        });
+
+    });
+
+}
 </script>
 
 {% endblock %}
