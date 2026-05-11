@@ -79,6 +79,11 @@ urlpatterns = [
         views.check_payment_status,
         name="check_payment_status"
     ),
+    path(
+        "upi_payment/",
+        views.upi_payment,
+        name="upi_payment"
+    ),
 
 ]
 

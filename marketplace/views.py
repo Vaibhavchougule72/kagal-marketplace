@@ -1241,116 +1241,40 @@ def checkout(request):
             if payment == "UPI":
 
                 import razorpay
-                pending_id = request.session.get("pending_id")
 
-                pending = None
+                import copy
 
-                if pending_id:
-                    try:
-                        pending = PendingOrder.objects.get(id=pending_id)
-                        # 🔥 STALE PENDING CHECK
+                # ALWAYS CREATE NEW PENDING ORDER
+                pending = PendingOrder.objects.create(
+                    store_id=store_id,
 
-                        if pending.phone != phone:
+                    customer_name=name,
+                    phone=phone,
+                    address=address,
 
-                            pending.delete()
-                            request.session.pop("pending_id", None)
+                    latitude=latitude,
+                    longitude=longitude,
 
-                            pending = None
+                    subtotal=subtotal,
+                    delivery_fee=delivery_fee,
+                    handling_fee=handling_fee,
+                    discount=discount,
 
-                        elif pending.subtotal != subtotal:
+                    coupon_code=coupon_code,
+                    total=total,
 
-                            pending.delete()
-                            request.session.pop("pending_id", None)
+                    payment_method="UPI",
 
-                            pending = None
+                    cart_data=copy.deepcopy(cart),
 
-                        # 🔥 IMPORTANT: check if total changed
-                        if pending.total != total:
-                            pending.delete()
-                            request.session.pop("pending_id", None)
-                            pending = None
+                    items_snapshot=items,
 
-                    except PendingOrder.DoesNotExist:
-                        pending = None
-                coupon = None
+                    otp_expiry=timezone.now() + timedelta(minutes=5),
+                )
 
-                if coupon_code:
-
-                    try:
-
-                        coupon = Coupon.objects.select_for_update().get(
-                            code=coupon_code,
-                            is_active=True
-                        )
-
-                    except Coupon.DoesNotExist:
-
-                        context["error"] = "Invalid coupon"
-
-                        return render(request, "checkout.html", context)
-
-                    # -----------------------------------
-                    # RECHECK LIMIT
-                    # -----------------------------------
-                    if coupon.used_count >= coupon.usage_limit:
-
-                        context["error"] = "Coupon fully used"
-
-                        return render(request, "checkout.html", context)
-
-                    # -----------------------------------
-                    # RECHECK USER
-                    # -----------------------------------
-                    already_used = CouponUsage.objects.filter(
-                        coupon=coupon,
-                        phone=phone
-                    ).exists()
-
-                    if already_used:
-
-                        context["error"] = "Coupon already used"
-
-                        return render(request, "checkout.html", context)
-                    
-                    if subtotal < coupon.min_order_value:
-
-                        context["error"] = "Minimum order not met"
-
-                        return render(request, "checkout.html", context)
-
-                    # -------------------------
-                    # CALCULATE DISCOUNT
-                    # -------------------------
-                    if coupon.discount_type == "PERCENT":
-
-                        discount = subtotal * coupon.discount_value / 100
-
-                        if coupon.max_discount:
-                            discount = min(discount, coupon.max_discount)
-
-                    else:
-
-                        discount = coupon.discount_value
-
-                if not pending:
-                    pending = PendingOrder.objects.create(
-                        store_id=store_id,
-                        customer_name=name,
-                        phone=phone,
-                        address=address,
-                        latitude=latitude,
-                        longitude=longitude,
-                        subtotal=subtotal,
-                        delivery_fee=delivery_fee,
-                        handling_fee=handling_fee,
-                        discount=discount,
-                        coupon_code=coupon_code,
-                        total=total,
-                        payment_method="UPI",
-                        otp_expiry=timezone.now() + timedelta(minutes=5),
-                        
-                    )
-                    request.session["pending_id"] = pending.id
+                # SAVE NEW SESSION
+                request.session["pending_id"] = pending.id
+                request.session.modified = True
 
                 client = razorpay.Client(auth=(
                         settings.RAZORPAY_KEY_ID,
@@ -1399,10 +1323,15 @@ def checkout(request):
                     "simple_navbar": True,
                 }
                 request.session["customer_phone"] = phone
+                from django.urls import reverse
+
+                upi_url = reverse("upi_payment")
+
                 return redirect(
-                    f"/upi_payment/?amount={amount_paise}"
+                    f"{upi_url}"
+                    f"?amount={amount_paise}"
                     f"&order_id={razorpay_order_id}"
-                    f"&display_amount={total}"
+                    f"&display_amount={float(total)}"
                     f"&name={name}"
                     f"&phone={phone}"
                     f"&pending_id={pending.id}"
@@ -1432,8 +1361,6 @@ def razorpay_webhook(request):
         "X-Razorpay-Signature"
     )
 
-    webhook_secret = settings.RAZORPAY_WEBHOOK_SECRET
-
     client = razorpay.Client(
         auth=(
             settings.RAZORPAY_KEY_ID,
@@ -1449,7 +1376,7 @@ def razorpay_webhook(request):
         client.utility.verify_webhook_signature(
             body.decode(),
             received_signature,
-            webhook_secret
+            settings.RAZORPAY_WEBHOOK_SECRET
         )
 
     except Exception as e:
@@ -1463,7 +1390,7 @@ def razorpay_webhook(request):
     event = payload.get("event")
 
     # -----------------------------------
-    # ONLY HANDLE SUCCESS PAYMENTS
+    # ONLY SUCCESS PAYMENT
     # -----------------------------------
     if event != "payment.captured":
         return HttpResponse(status=200)
@@ -1481,7 +1408,7 @@ def razorpay_webhook(request):
         with transaction.atomic():
 
             # -----------------------------------
-            # LOCK PENDING ORDER
+            # FIND PENDING
             # -----------------------------------
             pending = PendingOrder.objects.select_for_update().filter(
                 razorpay_order_id=razorpay_order_id
@@ -1490,19 +1417,6 @@ def razorpay_webhook(request):
             if not pending:
 
                 logger.warning("Pending order missing")
-
-                return HttpResponse(status=200)
-
-            # -----------------------------------
-            # DUPLICATE CHECK
-            # -----------------------------------
-            existing_order = Order.objects.filter(
-                payment_id=razorpay_payment_id
-            ).first()
-
-            if existing_order:
-
-                logger.warning("Duplicate webhook ignored")
 
                 return HttpResponse(status=200)
 
@@ -1516,25 +1430,17 @@ def razorpay_webhook(request):
                 return HttpResponse(status=200)
 
             # -----------------------------------
-            # ALREADY PROCESSING
+            # DUPLICATE PAYMENT CHECK
             # -----------------------------------
-            if (
-                    pending.is_payment_processing and
-                    pending.updated_at > timezone.now() - timedelta(minutes=2)
-                ):
+            existing_order = Order.objects.filter(
+                payment_id=razorpay_order_id
+            ).first()
 
-                logger.warning("Payment already processing")
+            if existing_order:
+
+                logger.warning("Duplicate webhook")
 
                 return HttpResponse(status=200)
-
-            # -----------------------------------
-            # MARK PROCESSING
-            # -----------------------------------
-            pending.is_payment_processing = True
-
-            pending.save(
-                update_fields=["is_payment_processing"]
-            )
 
             # -----------------------------------
             # CREATE ORDER
@@ -1553,12 +1459,12 @@ def razorpay_webhook(request):
                 coupon_code=pending.coupon_code,
                 total=pending.total,
                 payment_method="UPI",
-                payment_id=razorpay_payment_id,
+                payment_id=razorpay_order_id,
                 status="REQUEST_SUBMITTED"
             )
 
             # -----------------------------------
-            # CREATE ITEMS
+            # CREATE ORDER ITEMS
             # -----------------------------------
             cart_data = pending.cart_data
 
@@ -1635,56 +1541,27 @@ def razorpay_webhook(request):
                         original_price=bundle.price,
                         discount_amount=0
                     )
-            
+
+            # -----------------------------------
+            # SAFETY CHECK
+            # -----------------------------------
             if not order.items.exists():
 
-                logger.error("Webhook order has zero valid items")
+                logger.error("No valid items")
 
                 order.delete()
 
-                pending.is_payment_processing = False
-
-                pending.save(
-                    update_fields=["is_payment_processing"]
-                )
-
                 return HttpResponse(status=400)
-            
-            if pending.coupon_code:
-
-                coupon = Coupon.objects.filter(
-                    code=pending.coupon_code
-                ).first()
-
-                if coupon:
-
-                    CouponUsage.objects.get_or_create(
-                        coupon=coupon,
-                        phone=pending.phone
-                    )
-
-                    Coupon.objects.filter(
-                        id=coupon.id
-                    ).update(
-                        used_count=F("used_count") + 1
-            )
 
             # -----------------------------------
             # MARK COMPLETED
             # -----------------------------------
             pending.is_completed = True
             pending.is_payment_processed = True
-            pending.is_payment_processing = False
-
-            pending.payment_id = razorpay_payment_id
-            pending.created_order = order
 
             pending.save(update_fields=[
                 "is_completed",
-                "is_payment_processed",
-                "is_payment_processing",
-                "payment_id",
-                "created_order",
+                "is_payment_processed"
             ])
 
             logger.info(f"Webhook order created: {order.id}")
@@ -1696,20 +1573,10 @@ def razorpay_webhook(request):
             exc_info=True
         )
 
-        try:
-
-            pending.is_payment_processing = False
-
-            pending.save(
-                update_fields=["is_payment_processing"]
-            )
-
-        except:
-            pass
-
         return HttpResponse(status=500)
 
     return HttpResponse(status=200)
+
 
 # =====================================================
 # VERIFY OTP
@@ -2380,7 +2247,6 @@ logger = logging.getLogger(__name__)
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
-
 @csrf_exempt
 def payment_success(request):
 
@@ -2389,45 +2255,40 @@ def payment_success(request):
     if not pending_id:
         return render(request, "payment_processing.html")
 
-    try:
+    pending = PendingOrder.objects.filter(
+        id=pending_id
+    ).first()
 
-        pending = PendingOrder.objects.filter(
-            id=pending_id
-        ).first()
-
-        if not pending:
-            return render(request, "payment_processing.html")
-
-        # ✅ ORDER READY
-        if pending.created_order_id:
-
-            request.session["cart"] = {
-                "store_id": None,
-                "items": {}
-            }
-
-            request.session.pop("pending_id", None)
-
-            request.session.modified = True
-
-            return redirect(
-                "order_success",
-                order_id=pending.created_order.id
-            )
-
-
-        # ⏳ STILL PROCESSING
+    if not pending:
         return render(request, "payment_processing.html")
 
-    except Exception as e:
+    # find created order
+    order = Order.objects.filter(
+        payment_id=pending.razorpay_order_id
+    ).first()
 
-        logger.error(
-            f"PAYMENT SUCCESS ERROR: {e}",
-            exc_info=True
+    # success
+    if order:
+
+        request.session["cart"] = {
+            "store_id": None,
+            "items": {}
+        }
+
+        request.session.pop("pending_id", None)
+
+        request.session.modified = True
+
+        return redirect(
+            "order_success",
+            order_id=order.id
         )
 
-        return render(request, "payment_processing.html")
-    
+    # still processing
+    return render(
+        request,
+        "payment_processing.html"
+    ) 
 
 from django.http import JsonResponse
 
@@ -2436,6 +2297,7 @@ def check_payment_status(request):
     pending_id = request.GET.get("pending_id")
 
     if not pending_id:
+
         return JsonResponse({
             "success": False
         })
@@ -2445,22 +2307,39 @@ def check_payment_status(request):
     ).first()
 
     if not pending:
+
         return JsonResponse({
             "success": False
         })
 
-    # ✅ ORDER CREATED
-    if pending.created_order_id:
+    # -----------------------------------
+    # FIND CREATED ORDER
+    # -----------------------------------
+    order = Order.objects.filter(
+        payment_id=pending.razorpay_order_id
+    ).first()
+
+    # fallback
+    if not order:
+
+        order = Order.objects.filter(
+            phone=pending.phone,
+            total=pending.total
+        ).order_by("-id").first()
+
+    # -----------------------------------
+    # SUCCESS
+    # -----------------------------------
+    if order:
 
         return JsonResponse({
             "success": True,
-            "redirect_url": f"/order-success/{pending.created_order.id}/"
+            "redirect_url": f"/order-success/{order.id}/"
         })
 
     return JsonResponse({
         "success": False
     })
-
 
 def mark_out_for_delivery(request, order_id):
 
