@@ -1680,7 +1680,6 @@ def razorpay_webhook(request):
             pending.save(update_fields=[
                 "is_completed",
                 "is_payment_processing",
-                "payment_id"
             ])
 
             logger.info(f"Webhook order created: {order.id}")
