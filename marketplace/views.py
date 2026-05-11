@@ -1540,7 +1540,7 @@ def razorpay_webhook(request):
             # CREATE ORDER
             # -----------------------------------
             order = Order.objects.create(
-                store=pending.store_id,
+                store_id=pending.store_id,
                 customer_name=pending.customer_name,
                 phone=pending.phone,
                 address=pending.address,
