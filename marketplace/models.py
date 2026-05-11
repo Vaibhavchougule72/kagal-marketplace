@@ -404,6 +404,19 @@ class PendingOrder(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    created_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    payment_id = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
 
 
     from django.utils import timezone

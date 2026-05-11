@@ -1675,11 +1675,16 @@ def razorpay_webhook(request):
             pending.is_completed = True
             pending.is_payment_processed = True
             pending.is_payment_processing = False
+
             pending.payment_id = razorpay_payment_id
+            pending.created_order = order
 
             pending.save(update_fields=[
                 "is_completed",
+                "is_payment_processed",
                 "is_payment_processing",
+                "payment_id",
+                "created_order",
             ])
 
             logger.info(f"Webhook order created: {order.id}")
@@ -1703,7 +1708,7 @@ def razorpay_webhook(request):
         except:
             pass
 
-    return HttpResponse(status=500)
+    return HttpResponse(status=200)
 
 # =====================================================
 # VERIFY OTP
@@ -2517,39 +2522,34 @@ def payment_success(request):
 
         for i in range(25):
 
-            order = Order.objects.filter(
-                payment_id=payment_id
-            ).first()
+            pending = PendingOrder.objects.filter(
+                razorpay_order_id=razorpay_order_id
+            ).select_related("created_order").first()
 
-            if order:
+            if pending and pending.created_order:
+
+                order = pending.created_order
                 break
 
             time.sleep(1)
 
-        if not order:
-            logger.error("Webhook order not created yet")
-            return HttpResponse(
-                "Payment received. Order processing. Please refresh after few seconds."
+        if order:
+
+            request.session["cart"] = {
+                "store_id": None,
+                "items": {}
+            }
+
+            request.session.modified = True
+
+            return redirect(
+                "order_success",
+                order_id=order.id
             )
-        # --------------------------------------------------
-        # STEP 11 : CLEANUP
-        # --------------------------------------------------
-        request.session.pop("pending_id", None)
-        request.session.pop("razorpay_order_id", None)
-        request.session.pop("razorpay_amount", None)
-        request.session["cart"] = {
-            "store_id": None,
-            "items": {}
-        }
 
-        logger.info(f"ORDER CREATED: {order.id}")
-        logger.info("========== PAYMENT SUCCESS END ==========")
-
-        # --------------------------------------------------
-        # STEP 12 : SUCCESS PAGE
-        # --------------------------------------------------
-        return redirect("order_success", order_id=order.id)
-
+        return HttpResponse(
+            "Payment received. Order processing. Please refresh after few seconds."
+        )
     except Exception as e:
         logger.error(f"CRITICAL PAYMENT ERROR: {str(e)}", exc_info=True)
         return HttpResponse("Something went wrong. Please contact support.")
