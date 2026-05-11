@@ -69,6 +69,11 @@ urlpatterns = [
         name="update_rider_location"
     ),
     path("download-app/", views.download_app, name="download_app"),
+    path(
+        "razorpay/webhook/",
+        views.razorpay_webhook,
+        name="razorpay_webhook"
+    ),
 ]
 
 

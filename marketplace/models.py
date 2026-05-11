@@ -386,13 +386,21 @@ class PendingOrder(models.Model):
 
     is_payment_processed = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
     razorpay_order_id = models.CharField(
-        max_length=120,
+        max_length=200,
         blank=True,
-        null=True,
-        db_index=True
+        null=True
     )
+
+    cart_data = models.JSONField(
+        default=dict
+    )
+
+    is_completed = models.BooleanField(
+        default=False
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
     
     from django.utils import timezone
 
@@ -499,7 +507,7 @@ class CouponUsage(models.Model):
 
     phone = models.CharField(max_length=10, db_index=True)
 
-    used_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("coupon", "phone")

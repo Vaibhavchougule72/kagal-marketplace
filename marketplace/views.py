@@ -33,6 +33,29 @@ import os
 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from django.views.decorators.csrf import csrf_exempt
+import json
+import razorpay
+
+MAX_CART_QTY = 20
+
+def safe_qty(value):
+
+    try:
+
+        qty = int(value)
+
+    except:
+
+        return 1
+
+    if qty < 1:
+        return 1
+
+    if qty > MAX_CART_QTY:
+        return MAX_CART_QTY
+
+    return qty
 
 font_path = os.path.join(
     settings.BASE_DIR,
@@ -79,7 +102,7 @@ def get_cart_details(cart):
 
     for item_id, item in cart.get("items", {}).items():
 
-        qty = int(item.get("quantity", 1))
+        qty = safe_qty(item.get("quantity", 1))
 
         if item_id.isdigit():
             product = products.get(int(item_id))
@@ -533,7 +556,9 @@ def add_to_cart(request, product_id):
 
     # 🔥 GET quantity from request
     try:
-        qty = max(1, int(request.GET.get("qty", 1)))
+        qty = safe_qty(
+            request.GET.get("qty", 1)
+        )
     except:
         qty = 1
 
@@ -655,6 +680,41 @@ def view_cart(request):
     # =========================
     store_status_map = {}
 
+    cleaned_items = {}
+
+    for item_id, item in cart["items"].items():
+
+        # PRODUCT
+        if item_id.isdigit():
+
+            if int(item_id) not in products_map:
+                continue
+
+        # BUNDLE
+        elif item_id.startswith("bundle_"):
+
+            try:
+
+                bundle_id = int(item_id.split("_")[1])
+
+            except:
+                continue
+
+            if bundle_id not in bundles_map:
+                continue
+
+        else:
+            continue
+
+        cleaned_items[item_id] = {
+            "quantity": safe_qty(
+                item.get("quantity", 1)
+            )
+        }
+
+    cart["items"] = cleaned_items
+    request.session["cart"] = cart
+    request.session.modified = True
     
 
     # =========================
@@ -662,7 +722,7 @@ def view_cart(request):
     # =========================
     for item_id, item in cart['items'].items():
 
-        qty = int(item.get('quantity', 1))
+        qty = safe_qty(item.get('quantity', 1))
 
         # ----------------------
         # PRODUCT
@@ -791,7 +851,7 @@ def checkout(request):
     # CLEAN OLD PENDING ORDERS
     # -------------------------
     PendingOrder.objects.filter(
-        created_at__lt=timezone.now() - timedelta(hours=1)
+        created_at__lt=timezone.now() - timedelta(days=1)
     ).delete()
 
     cart = request.session.get('cart', {'store_id': None, 'items': {}})
@@ -835,13 +895,61 @@ def checkout(request):
             "error": "Cart contains items from multiple stores",
             "show_floating_cart": False
         })
+    
+    if not store_ids:
+
+        context["error"] = "Cart is empty"
+
+        return render(request, "checkout.html", context)
 
     store_id = list(store_ids)[0]
     store = get_object_or_404(Store, id=store_id)
 
+    # -------------------------
+    # BUILD CART ITEMS
+    # -------------------------
+    items = []
+
+    for item_id, item in cart['items'].items():
+
+        qty = safe_qty(item.get("quantity", 1))
+
+        # PRODUCT
+        if item_id.isdigit():
+
+            product = products_map.get(int(item_id))
+
+            if not product:
+                continue
+
+            final_price = product.discount_price or product.price
+
+            items.append({
+                "name": product.name,
+                "price": final_price,
+                "quantity": qty,
+                "subtotal": final_price * qty
+            })
+
+        # BUNDLE
+        elif item_id.startswith("bundle_"):
+
+            bundle = bundles_map.get(int(item_id.split("_")[1]))
+
+            if not bundle:
+                continue
+
+            items.append({
+                "name": bundle.name,
+                "price": bundle.price,
+                "quantity": qty,
+                "subtotal": bundle.price * qty
+            })
+
     context = {
         "cart": cart,
         "store": store,
+        "items": items,
         "show_floating_cart": False,
         "simple_navbar": True,
     }
@@ -857,6 +965,26 @@ def checkout(request):
     # SAFE SUBTOTAL (🔥 FIXED)
     # -------------------------
     subtotal = get_cart_details(cart)
+
+    # =========================
+    # 🔥 VALIDATE CART AGAIN
+    # =========================
+    validated_subtotal = get_cart_details(cart)
+
+    if validated_subtotal <= 0:
+
+        request.session["cart"] = {
+            "store_id": None,
+            "items": {}
+        }
+
+        request.session.modified = True
+
+        context["error"] = "Invalid cart"
+
+        return render(request, "checkout.html", context)
+
+    subtotal = validated_subtotal
 
     # -------------------------
     # UPI ONLY CHECK
@@ -893,7 +1021,7 @@ def checkout(request):
         try:
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
-            confirm_phone = request.POST.get("confirm_phone")
+            confirm_phone = request.POST.get("confirm_phone") == "on"
             address = request.POST.get("address")
             payment = request.POST.get("payment")
             latitude = request.POST.get("latitude")
@@ -923,8 +1051,16 @@ def checkout(request):
                 context["error"] = "Select delivery location"
                 return render(request, "checkout.html", context)
 
-            latitude = float(latitude)
-            longitude = float(longitude)
+            try:
+
+                latitude = float(latitude)
+                longitude = float(longitude)
+
+            except:
+
+                context["error"] = "Invalid location"
+
+                return render(request, "checkout.html", context)
 
             # -------------------------
             # DELIVERY CALCULATION
@@ -961,28 +1097,7 @@ def checkout(request):
             # COUPON
             # -------------------------
             discount = Decimal(0)
-
-            if coupon_code:
-                try:
-                    coupon = Coupon.objects.get(code=coupon_code, is_active=True)
-
-                    if CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
-                        raise Exception("Coupon already used")
-
-                    if subtotal < coupon.min_order_value:
-                        raise Exception("Minimum order not met")
-
-                    if coupon.discount_type == "PERCENT":
-                        discount = subtotal * coupon.discount_value / 100
-                        if coupon.max_discount:
-                            discount = min(discount, coupon.max_discount)
-                    else:
-                        discount = coupon.discount_value
-
-                except Exception as e:
-                    context["error"] = str(e)
-                    return render(request, "checkout.html", context)
-
+            
             total = (subtotal + delivery_fee + handling_fee - discount).quantize(
                 Decimal("1"), rounding=ROUND_HALF_UP
             )
@@ -991,12 +1106,53 @@ def checkout(request):
                 context["error"] = "COD not allowed below ₹149"
                 return render(request, "checkout.html", context)
 
+            coupon = None
+
+            if coupon_code:
+
+                try:
+
+                    coupon = Coupon.objects.select_for_update().get(
+                        code=coupon_code,
+                        is_active=True
+                    )
+
+                except Coupon.DoesNotExist:
+
+                    context["error"] = "Invalid coupon"
+
+                    return render(request, "checkout.html", context)
+
+                # -----------------------------------
+                # RECHECK LIMIT
+                # -----------------------------------
+                if coupon.used_count >= coupon.usage_limit:
+
+                    context["error"] = "Coupon fully used"
+
+                    return render(request, "checkout.html", context)
+
+                # -----------------------------------
+                # RECHECK USER
+                # -----------------------------------
+                already_used = CouponUsage.objects.filter(
+                    coupon=coupon,
+                    phone=phone
+                ).exists()
+
+                if already_used:
+
+                    context["error"] = "Coupon already used"
+
+                    return render(request, "checkout.html", context)
             # =========================
             # COD FLOW
             # =========================
             if payment == "COD":
 
                 with transaction.atomic():
+
+                    
 
                     order = Order.objects.create(
                         store=store,
@@ -1014,9 +1170,10 @@ def checkout(request):
                         payment_method="COD",
                         status="REQUEST_SUBMITTED"
                     )
+                    request.session["customer_phone"] = phone
 
                     for item_id, item in cart["items"].items():
-                        qty = int(item.get("quantity", 1))
+                        qty = safe_qty(item.get("quantity", 1))
 
                         if item_id.isdigit():
                             
@@ -1065,7 +1222,16 @@ def checkout(request):
                                 )
 
                 request.session["cart"] = {"store_id": None, "items": {}}
+                if coupon:
 
+                    CouponUsage.objects.get_or_create(
+                        coupon=coupon,
+                        phone=phone
+                    )
+
+                    coupon.used_count = F("used_count") + 1
+
+                    coupon.save(update_fields=["used_count"])
                 return redirect("order_success", order_id=order.id)
 
 
@@ -1082,14 +1248,89 @@ def checkout(request):
                 if pending_id:
                     try:
                         pending = PendingOrder.objects.get(id=pending_id)
+                        # 🔥 STALE PENDING CHECK
+
+                        if pending.phone != phone:
+
+                            pending.delete()
+                            request.session.pop("pending_id", None)
+
+                            pending = None
+
+                        elif pending.subtotal != subtotal:
+
+                            pending.delete()
+                            request.session.pop("pending_id", None)
+
+                            pending = None
 
                         # 🔥 IMPORTANT: check if total changed
                         if pending.total != total:
                             pending.delete()
+                            request.session.pop("pending_id", None)
                             pending = None
 
                     except PendingOrder.DoesNotExist:
                         pending = None
+                coupon = None
+
+                if coupon_code:
+
+                    try:
+
+                        coupon = Coupon.objects.select_for_update().get(
+                            code=coupon_code,
+                            is_active=True
+                        )
+
+                    except Coupon.DoesNotExist:
+
+                        context["error"] = "Invalid coupon"
+
+                        return render(request, "checkout.html", context)
+
+                    # -----------------------------------
+                    # RECHECK LIMIT
+                    # -----------------------------------
+                    if coupon.used_count >= coupon.usage_limit:
+
+                        context["error"] = "Coupon fully used"
+
+                        return render(request, "checkout.html", context)
+
+                    # -----------------------------------
+                    # RECHECK USER
+                    # -----------------------------------
+                    already_used = CouponUsage.objects.filter(
+                        coupon=coupon,
+                        phone=phone
+                    ).exists()
+
+                    if already_used:
+
+                        context["error"] = "Coupon already used"
+
+                        return render(request, "checkout.html", context)
+                    
+                    if subtotal < coupon.min_order_value:
+
+                        context["error"] = "Minimum order not met"
+
+                        return render(request, "checkout.html", context)
+
+                    # -------------------------
+                    # CALCULATE DISCOUNT
+                    # -------------------------
+                    if coupon.discount_type == "PERCENT":
+
+                        discount = subtotal * coupon.discount_value / 100
+
+                        if coupon.max_discount:
+                            discount = min(discount, coupon.max_discount)
+
+                    else:
+
+                        discount = coupon.discount_value
 
                 if not pending:
                     pending = PendingOrder.objects.create(
@@ -1107,10 +1348,7 @@ def checkout(request):
                         total=total,
                         payment_method="UPI",
                         otp_expiry=timezone.now() + timedelta(minutes=5),
-                        items_snapshot={
-                            "store_id": store_id,
-                            "items": cart["items"]
-                        }
+                        
                     )
                     request.session["pending_id"] = pending.id
 
@@ -1131,7 +1369,14 @@ def checkout(request):
 
                 razorpay_order_id = razorpay_order["id"]
                 pending.razorpay_order_id = razorpay_order_id
-                pending.save(update_fields=["razorpay_order_id"])
+                pending.cart_data = copy.deepcopy(cart)
+
+                pending.save(
+                    update_fields=[
+                        "razorpay_order_id",
+                        "cart_data"
+                    ]
+                )
 
                 # optional (just for debugging / reference)
                 request.session["razorpay_order_id"] = razorpay_order_id
@@ -1153,7 +1398,7 @@ def checkout(request):
                     "show_floating_cart": False,
                     "simple_navbar": True,
                 }
-
+                request.session["customer_phone"] = phone
                 return redirect(
                     f"/upi_payment/?amount={amount_paise}"
                     f"&order_id={razorpay_order_id}"
@@ -1173,6 +1418,298 @@ def checkout(request):
             return render(request, "checkout.html", context)
 
     return render(request, "checkout.html", context)
+
+
+@csrf_exempt
+def razorpay_webhook(request):
+
+    if request.method != "POST":
+        return HttpResponse(status=400)
+
+    body = request.body
+
+    received_signature = request.headers.get(
+        "X-Razorpay-Signature"
+    )
+
+    webhook_secret = settings.RAZORPAY_WEBHOOK_SECRET
+
+    client = razorpay.Client(
+        auth=(
+            settings.RAZORPAY_KEY_ID,
+            settings.RAZORPAY_KEY_SECRET
+        )
+    )
+
+    # -----------------------------------
+    # VERIFY SIGNATURE
+    # -----------------------------------
+    try:
+
+        client.utility.verify_webhook_signature(
+            body.decode(),
+            received_signature,
+            webhook_secret
+        )
+
+    except Exception as e:
+
+        logger.error(f"Webhook verification failed: {e}")
+
+        return HttpResponse(status=400)
+
+    payload = json.loads(body)
+
+    event = payload.get("event")
+
+    # -----------------------------------
+    # ONLY HANDLE SUCCESS PAYMENTS
+    # -----------------------------------
+    if event != "payment.captured":
+        return HttpResponse(status=200)
+
+    payment = payload["payload"]["payment"]["entity"]
+
+    razorpay_payment_id = payment["id"]
+
+    razorpay_order_id = payment["order_id"]
+
+    logger.info(f"Webhook received: {razorpay_payment_id}")
+
+    try:
+
+        with transaction.atomic():
+
+            # -----------------------------------
+            # LOCK PENDING ORDER
+            # -----------------------------------
+            pending = PendingOrder.objects.select_for_update().filter(
+                razorpay_order_id=razorpay_order_id
+            ).first()
+
+            if not pending:
+
+                logger.warning("Pending order missing")
+
+                return HttpResponse(status=200)
+
+            # -----------------------------------
+            # DUPLICATE CHECK
+            # -----------------------------------
+            existing_order = Order.objects.filter(
+                payment_id=razorpay_payment_id
+            ).first()
+
+            if existing_order:
+
+                logger.warning("Duplicate webhook ignored")
+
+                return HttpResponse(status=200)
+
+            # -----------------------------------
+            # ALREADY COMPLETED
+            # -----------------------------------
+            if pending.is_completed:
+
+                logger.warning("Pending already completed")
+
+                return HttpResponse(status=200)
+
+            # -----------------------------------
+            # ALREADY PROCESSING
+            # -----------------------------------
+            if (
+                    pending.is_payment_processing and
+                    pending.updated_at > timezone.now() - timedelta(minutes=2)
+                ):
+
+                logger.warning("Payment already processing")
+
+                return HttpResponse(status=200)
+
+            # -----------------------------------
+            # MARK PROCESSING
+            # -----------------------------------
+            pending.is_payment_processing = True
+
+            pending.save(
+                update_fields=["is_payment_processing"]
+            )
+
+            if not is_store_open_cached(pending.store):
+
+                logger.warning("Store closed during payment")
+
+                return HttpResponse(status=400)
+
+            # -----------------------------------
+            # CREATE ORDER
+            # -----------------------------------
+            order = Order.objects.create(
+                store=pending.store,
+                customer_name=pending.customer_name,
+                phone=pending.phone,
+                address=pending.address,
+                latitude=pending.latitude,
+                longitude=pending.longitude,
+                subtotal=pending.subtotal,
+                delivery_fee=pending.delivery_fee,
+                handling_fee=pending.handling_fee,
+                discount=pending.discount,
+                coupon_code=pending.coupon_code,
+                total=pending.total,
+                payment_method="UPI",
+                payment_id=razorpay_payment_id,
+                status="REQUEST_SUBMITTED"
+            )
+
+            # -----------------------------------
+            # CREATE ITEMS
+            # -----------------------------------
+            cart_data = pending.cart_data
+
+            product_ids = [
+                int(i)
+                for i in cart_data["items"]
+                if i.isdigit()
+            ]
+
+            bundle_ids = [
+                int(i.split("_")[1])
+                for i in cart_data["items"]
+                if i.startswith("bundle_")
+            ]
+
+            products_map = {
+                p.id: p
+                for p in Product.objects.filter(
+                    id__in=product_ids
+                )
+            }
+
+            bundles_map = {
+                b.id: b
+                for b in Bundle.objects.filter(
+                    id__in=bundle_ids
+                )
+            }
+
+            for item_id, item in cart_data["items"].items():
+
+                qty = safe_qty(item.get("quantity", 1))
+
+                # PRODUCT
+                if item_id.isdigit():
+
+                    product = products_map.get(int(item_id))
+
+                    if not product:
+                        continue
+
+                    final_price = (
+                        product.discount_price
+                        or product.price
+                    )
+
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=qty,
+                        price=final_price,
+                        original_price=product.price,
+                        discount_amount=(
+                            product.price - final_price
+                        )
+                    )
+
+                # BUNDLE
+                elif item_id.startswith("bundle_"):
+
+                    bundle = bundles_map.get(
+                        int(item_id.split("_")[1])
+                    )
+
+                    if not bundle:
+                        continue
+
+                    OrderItem.objects.create(
+                        order=order,
+                        bundle=bundle,
+                        bundle_name=bundle.name,
+                        quantity=qty,
+                        price=bundle.price,
+                        original_price=bundle.price,
+                        discount_amount=0
+                    )
+            
+            if not order.items.exists():
+
+                logger.error("Webhook order has zero valid items")
+
+                order.delete()
+
+                pending.is_payment_processing = False
+
+                pending.save(
+                    update_fields=["is_payment_processing"]
+                )
+
+                return HttpResponse(status=400)
+            
+            if pending.coupon_code:
+
+                coupon = Coupon.objects.filter(
+                    code=pending.coupon_code
+                ).first()
+
+                if coupon:
+
+                    CouponUsage.objects.get_or_create(
+                        coupon=coupon,
+                        phone=pending.phone
+                    )
+
+                    Coupon.objects.filter(
+                        id=coupon.id
+                    ).update(
+                        used_count=F("used_count") + 1
+            )
+
+            # -----------------------------------
+            # MARK COMPLETED
+            # -----------------------------------
+            pending.is_completed = True
+            pending.is_payment_processing = False
+            pending.payment_id = razorpay_payment_id
+
+            pending.save(update_fields=[
+                "is_completed",
+                "is_payment_processing",
+                "payment_id"
+            ])
+
+            logger.info(f"Webhook order created: {order.id}")
+
+    except Exception as e:
+
+        logger.error(
+            f"WEBHOOK ERROR: {str(e)}",
+            exc_info=True
+        )
+
+        # Reset processing lock
+        try:
+
+            pending.is_payment_processing = False
+
+            pending.save(
+                update_fields=["is_payment_processing"]
+            )
+
+        except:
+            pass
+
+    return HttpResponse(status=200)
 
 # =====================================================
 # VERIFY OTP
@@ -1962,127 +2499,44 @@ def payment_success(request):
         if actual_amount != expected_amount:
             logger.error("Amount mismatch")
             return HttpResponse("Invalid payment amount")
+        
 
-        # --------------------------------------------------
-        # STEP 9 : STORE STATUS CHECK
-        # --------------------------------------------------
-        try:
-            store = Store.objects.get(id=pending.store_id)
-        except:
-            logger.error("Store missing")
-            return HttpResponse("Store unavailable")
+        if Order.objects.filter(
+            payment_id=payment_id
+        ).exists():
 
-        if not is_store_open_cached(store):
-            logger.warning("Store closed after payment")
-            return HttpResponse("Store temporarily unavailable. Contact support.")
-
-        # --------------------------------------------------
-        # STEP 10 : CREATE ORDER (ATOMIC)
-        # --------------------------------------------------
-        with transaction.atomic():
-
-            # Lock pending row
-            pending = PendingOrder.objects.select_for_update().get(id=pending.id)
-
-            if pending.is_payment_processed:
-                existing_order = Order.objects.filter(
-                    payment_id=payment_id
-                ).first()
-
-                if existing_order:
-                    return redirect("order_success", order_id=existing_order.id)
-
-            order = Order.objects.create(
-                store_id=pending.store_id,
-                customer_name=pending.customer_name,
-                phone=pending.phone,
-                address=pending.address,
-                latitude=pending.latitude,
-                longitude=pending.longitude,
-                subtotal=pending.subtotal,
-                delivery_fee=pending.delivery_fee,
-                handling_fee=pending.handling_fee,
-                discount=pending.discount,
-                coupon_code=pending.coupon_code,
-                total=pending.total,
-                payment_method="UPI",
-                payment_id=payment_id,
-                status="REQUEST_SUBMITTED"
+            existing = Order.objects.get(
+                payment_id=payment_id
             )
 
-            cart_items = pending.items_snapshot or {}
+            return redirect(
+                "order_success",
+                order_id=existing.id
+            )
+        # --------------------------------------------------
+        # STEP 10 : WAIT FOR WEBHOOK ORDER
+        # --------------------------------------------------
 
-            for item_id, item in cart_items.get("items", {}).items():
+        import time
 
-                # PRODUCT
-                if str(item_id).isdigit():
-                    try:
-                        product = Product.objects.get(id=int(item_id))
+        order = None
 
-                        final_price = (
-                            product.discount_price
-                            if product.discount_price
-                            else product.price
-                        )
+        for i in range(25):
 
-                        OrderItem.objects.create(
-                            order=order,
-                            product=product,
-                            quantity=int(item.get("quantity", 1)),
+            order = Order.objects.filter(
+                payment_id=payment_id
+            ).first()
 
-                            # customer price
-                            price=final_price,
+            if order:
+                break
 
-                            # store original price
-                            original_price=product.price,
+            time.sleep(1)
 
-                            # platform discount
-                            discount_amount=(
-                                product.price - final_price
-                            )
-                        )
-                    except Exception as e:
-                        logger.warning(f"Product skipped: {e}")
-
-                # BUNDLE
-                # BUNDLE
-                elif str(item_id).startswith("bundle_"):
-
-                    try:
-
-                        bundle_id = int(item_id.split("_")[1])
-
-                        bundle = Bundle.objects.get(id=bundle_id)
-
-                        OrderItem.objects.create(
-                            order=order,
-
-                            # bundle
-                            bundle=bundle,
-                            bundle_name=bundle.name,
-
-                            # no product
-                            product=None,
-
-                            quantity=int(item.get("quantity", 1)),
-
-                            # customer paid
-                            price=bundle.price,
-
-                            # same as selling price
-                            original_price=bundle.price,
-
-                            # no discount
-                            discount_amount=0
-                        )
-
-                    except Exception as e:
-                        logger.warning(f"Bundle skipped: {e}")
-
-            # Mark processed
-            pending.is_payment_processed = True
-            pending.save()
-
+        if not order:
+            logger.error("Webhook order not created yet")
+            return HttpResponse(
+                "Payment received. Order processing. Please refresh after few seconds."
+            )
         # --------------------------------------------------
         # STEP 11 : CLEANUP
         # --------------------------------------------------
@@ -2093,8 +2547,6 @@ def payment_success(request):
             "store_id": None,
             "items": {}
         }
-
-        pending.delete()
 
         logger.info(f"ORDER CREATED: {order.id}")
         logger.info("========== PAYMENT SUCCESS END ==========")
@@ -2135,25 +2587,42 @@ def mark_out_for_delivery(request, order_id):
 import razorpay
 from django.conf import settings
 
+from django.http import HttpResponseForbidden
+
 def cancel_order(request, order_id):
 
     order = get_object_or_404(Order, id=order_id)
 
-    # Allow cancellation only before delivery process advances
+    # --------------------------------
+    # SECURITY CHECK
+    # --------------------------------
+    customer_phone = request.session.get("customer_phone")
+
+    if not customer_phone:
+        return HttpResponseForbidden("Unauthorized")
+
+    if customer_phone != order.phone:
+        return HttpResponseForbidden("Unauthorized")
+
+    # --------------------------------
+    # ALLOW ONLY EARLY CANCELLATION
+    # --------------------------------
     if order.status not in ["REQUEST_SUBMITTED", "ACCEPTED"]:
         return redirect("order_tracking", order_id=order.id)
 
-    # -----------------------
-    # CASE 1: COD
-    # -----------------------
+    # --------------------------------
+    # COD FLOW
+    # --------------------------------
     if order.payment_method == "COD":
+
         order.status = "CANCELLED"
-        order.save()
+        order.save(update_fields=["status"])
+
         return redirect("order_tracking", order_id=order.id)
 
-    # -----------------------
-    # CASE 2: UPI → Refund Required
-    # -----------------------
+    # --------------------------------
+    # UPI REFUND FLOW
+    # --------------------------------
     if order.payment_method == "UPI":
 
         if order.is_refunded:
@@ -2164,19 +2633,40 @@ def cancel_order(request, order_id):
             settings.RAZORPAY_KEY_SECRET
         ))
 
-        refund_amount = int(order.total * 100)
+        refund_amount = to_paise(order.total)
 
-        refund = client.payment.refund(order.payment_id, {
-            "amount": refund_amount
-        })
+        try:
 
-        order.status = "CANCELLED"
-        order.refund_id = refund["id"]
-        order.refund_amount = order.total
-        order.is_refunded = True
-        order.save()
+            refund = client.payment.refund(
+                order.payment_id,
+                {
+                    "amount": refund_amount
+                }
+            )
+
+            order.status = "CANCELLED"
+            order.refund_id = refund["id"]
+            order.refund_amount = order.total
+            order.is_refunded = True
+
+            order.save(update_fields=[
+                "status",
+                "refund_id",
+                "refund_amount",
+                "is_refunded"
+            ])
+
+        except Exception as e:
+
+            logger.error(f"Refund failed: {e}")
+
+            return HttpResponse(
+                "Refund failed. Contact support."
+            )
 
         return redirect("order_tracking", order_id=order.id)
+
+    return redirect("order_tracking", order_id=order.id)
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
@@ -2645,81 +3135,125 @@ from .models import CouponUsage
 @transaction.atomic
 def apply_coupon(request):
 
-    code = request.GET.get("code", "").upper()
+    code = request.GET.get("code", "").strip().upper()
+    phone = request.GET.get("phone", "").strip()
 
     if not code:
         return JsonResponse({
             "success": False,
             "message": "Enter coupon code"
         })
-    
+
     try:
-        coupon = Coupon.objects.get(
+
+        # -----------------------------------
+        # LOCK COUPON ROW
+        # -----------------------------------
+        coupon = Coupon.objects.select_for_update().get(
             code=code,
             is_active=True
         )
 
     except Coupon.DoesNotExist:
+
         return JsonResponse({
             "success": False,
             "message": "Invalid coupon"
         })
-    
-    # 🚨 Prevent reuse per phone
-    phone = request.GET.get("phone", "").strip()
 
-    if phone and CouponUsage.objects.filter(coupon=coupon, phone=phone).exists():
-        return JsonResponse({
-            "success": False,
-            "message": "Coupon already used"
-        })
-    
+    # -----------------------------------
+    # CART
+    # -----------------------------------
     try:
-        cart = request.session.get('cart') or {'items': {}}
-        items = cart.get('items', {})
 
-        subtotal = Decimal(0)
+        cart = request.session.get("cart") or {
+            "items": {}
+        }
+
         subtotal = get_cart_details(cart)
+
     except:
+
         subtotal = Decimal(0)
 
     now = timezone.now()
 
+    # -----------------------------------
+    # DATE VALIDATION
+    # -----------------------------------
     if now < coupon.valid_from or now > coupon.valid_to:
+
         return JsonResponse({
             "success": False,
             "message": "Coupon expired"
         })
 
-
+    # -----------------------------------
+    # MIN ORDER
+    # -----------------------------------
     if subtotal < coupon.min_order_value:
+
         return JsonResponse({
             "success": False,
             "message": f"Minimum order ₹{coupon.min_order_value} required"
         })
 
-
+    # -----------------------------------
+    # USAGE LIMIT
+    # -----------------------------------
     if coupon.used_count >= coupon.usage_limit:
+
         return JsonResponse({
             "success": False,
-            "message": "Coupon usage limit reached"
+            "message": "Coupon fully used"
         })
 
-    
+    # -----------------------------------
+    # PHONE REUSE CHECK
+    # -----------------------------------
+    if phone:
 
-    # Calculate discount
+        already_used = CouponUsage.objects.filter(
+            coupon=coupon,
+            phone=phone
+        ).exists()
 
+        if already_used:
+
+            return JsonResponse({
+                "success": False,
+                "message": "Coupon already used"
+            })
+
+    # -----------------------------------
+    # CALCULATE DISCOUNT
+    # -----------------------------------
     if coupon.discount_type == "PERCENT":
 
-        discount = subtotal * coupon.discount_value / 100
+        discount = (
+            subtotal * coupon.discount_value / 100
+        )
 
         if coupon.max_discount:
-            discount = min(discount, coupon.max_discount)
+
+            discount = min(
+                discount,
+                coupon.max_discount
+            )
 
     else:
 
         discount = coupon.discount_value
 
+    # -----------------------------------
+    # SAVE TEMP SESSION
+    # -----------------------------------
+    request.session["applied_coupon"] = {
+        "code": coupon.code,
+        "discount": str(discount)
+    }
+
+    request.session.modified = True
 
     return JsonResponse({
 
@@ -2918,18 +3452,6 @@ def privacy_policy(request):
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-@csrf_exempt
-def razorpay_webhook(request):
-    data = json.loads(request.body)
-
-    if data['event'] == 'payment.captured':
-        payment = data['payload']['payment']['entity']
-        payment_id = payment['id']
-        order_id = payment['order_id']
-
-        # mark order as paid safely
-
-    return HttpResponse("OK")
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum

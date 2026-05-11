@@ -1,7 +1,24 @@
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-from .models import Order
+from django.db.models.signals import (
+    pre_save,
+    post_save,
+    post_delete
+)
 
+from django.dispatch import receiver
+from django.core.cache import cache
+
+from .models import (
+    Order,
+    Product,
+    Store,
+    Bundle,
+    StoreTiming,
+    Banner
+)
+
+# =====================================================
+# ORDER STATUS NOTIFICATION
+# =====================================================
 
 @receiver(pre_save, sender=Order)
 def order_status_changed(sender, instance, **kwargs):
@@ -11,6 +28,7 @@ def order_status_changed(sender, instance, **kwargs):
 
     try:
         old_order = Order.objects.get(id=instance.id)
+
     except Order.DoesNotExist:
         return
 
@@ -39,44 +57,71 @@ def order_status_changed(sender, instance, **kwargs):
 
         print("NOTIFICATION →", phone, message)
 
-from django.db.models.signals import post_save, post_delete
-from django.core.cache import cache
 
-from .models import Product, Store, Bundle
+# =====================================================
+# PRODUCT CACHE CLEAR
+# =====================================================
 
+@receiver([post_save, post_delete], sender=Product)
+def invalidate_product_cache(sender, instance, **kwargs):
 
-@receiver(post_save, sender=Product)
-@receiver(post_delete, sender=Product)
-def clear_product_cache(sender, instance, **kwargs):
-
-    cache.delete("home_page")
-
-    cache.delete(f"store_{instance.store.id}")
-
-
-@receiver(post_save, sender=Bundle)
-@receiver(post_delete, sender=Bundle)
-def clear_bundle_cache(sender, instance, **kwargs):
-
-    cache.delete("home_page")
-
-    cache.delete(f"store_{instance.store.id}")
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.core.cache import cache
-from .models import Product, Bundle, Store
-
-@receiver(post_save, sender=Product)
-def clear_product_cache(sender, instance, **kwargs):
-    cache.delete(f"store_{instance.store.id}")
     cache.delete("home_featured_ids")
 
-@receiver(post_save, sender=Bundle)
-def clear_bundle_cache(sender, instance, **kwargs):
     cache.delete(f"store_{instance.store.id}")
+
+    cache.delete(f"store_open_{instance.store.id}")
+
+    # optional
     cache.delete("home_combos")
 
-@receiver(post_save, sender=Store)
-def clear_store_cache(sender, instance, **kwargs):
+
+# =====================================================
+# BUNDLE CACHE CLEAR
+# =====================================================
+
+@receiver([post_save, post_delete], sender=Bundle)
+def invalidate_bundle_cache(sender, instance, **kwargs):
+
+    cache.delete("home_combos")
+
+    cache.delete(f"store_{instance.store.id}")
+
+
+# =====================================================
+# STORE CACHE CLEAR
+# =====================================================
+
+@receiver([post_save, post_delete], sender=Store)
+def invalidate_store_cache(sender, instance, **kwargs):
+
     cache.delete(f"store_{instance.id}")
+
+    cache.delete(f"store_open_{instance.id}")
+
+    cache.delete("home_featured_ids")
+
+    cache.delete("home_combos")
+
+
+# =====================================================
+# STORE TIMING CACHE CLEAR
+# =====================================================
+
+@receiver([post_save, post_delete], sender=StoreTiming)
+def invalidate_store_timing_cache(sender, instance, **kwargs):
+
+    cache.delete(f"store_open_{instance.store.id}")
+
+    cache.delete("home_featured_ids")
+
+    cache.delete("home_combos")
+
+
+# =====================================================
+# BANNER CACHE CLEAR
+# =====================================================
+
+@receiver([post_save, post_delete], sender=Banner)
+def invalidate_banner_cache(sender, instance, **kwargs):
+
+    cache.delete("home_banners")
