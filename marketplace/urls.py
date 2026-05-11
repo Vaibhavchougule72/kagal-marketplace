@@ -20,6 +20,11 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('order-success/<int:order_id>/', views.order_success, name='order_success'),
     path('order/<int:order_id>/tracking/', views.order_tracking, name='order_tracking'),
+    path(
+        "submit-rating/<int:order_id>/",
+        views.submit_rating,
+        name="submit_rating"
+    ),
     path('my-orders/', views.my_orders, name='my_orders'),
     path('search/', views.search_products, name='search_products'),
     path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
@@ -83,6 +88,11 @@ urlpatterns = [
         "upi_payment/",
         views.upi_payment,
         name="upi_payment"
+    ),
+    path(
+        "submit-rating/<int:order_id>/",
+        views.submit_rating,
+        name="submit_rating"
     ),
 
 ]
