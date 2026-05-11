@@ -3373,35 +3373,26 @@ def update_rider_location(request, order_id):
 
 def upi_payment(request):
 
-    data = request.session.get("payment_data")
+    context = {
+        "razorpay_key": settings.RAZORPAY_KEY_ID,
+        "amount": request.GET.get("amount"),
+        "razorpay_order_id": request.GET.get("order_id"),
+        "display_amount": request.GET.get("display_amount"),
+        "customer_name": request.GET.get("name"),
+        "phone": request.GET.get("phone"),
+        "pending_id": request.GET.get("pending_id"),
+        "show_floating_cart": False,
+        "simple_navbar": True,
+    }
 
-    # ---------------------------------
-    # If session missing, rebuild from URL
-    # ---------------------------------
-    if not data:
+    print("UPI PAYMENT PENDING ID:",
+          context["pending_id"])
 
-        amount = request.GET.get("amount")
-        order_id = request.GET.get("order_id")
-        display_amount = request.GET.get("display_amount")
-        name = request.GET.get("name", "")
-        phone = request.GET.get("phone", "")
-
-        if not amount or not order_id:
-            return redirect("view_cart")
-
-        data = {
-            "razorpay_key": settings.RAZORPAY_KEY_ID,
-            "amount": amount,
-            "razorpay_order_id": order_id,
-            "display_amount": display_amount,
-            "customer_name": name,
-            "phone": phone,
-            "pending_id": request.GET.get("pending_id"),
-            "show_floating_cart": False,
-            "simple_navbar": True,
-        }
-
-    return render(request, "upi_payment.html", data)
+    return render(
+        request,
+        "upi_payment.html",
+        context
+    )
 
 def download_app(request):
     return render(request, "download_app.html", {
