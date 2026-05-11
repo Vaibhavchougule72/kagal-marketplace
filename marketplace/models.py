@@ -384,6 +384,8 @@ class PendingOrder(models.Model):
 
     resend_count = models.IntegerField(default=0)
 
+    is_payment_processing = models.BooleanField(default=False)
+
     is_payment_processed = models.BooleanField(default=False)
 
     razorpay_order_id = models.CharField(
@@ -401,7 +403,9 @@ class PendingOrder(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
-    
+    updated_at = models.DateTimeField(auto_now=True)
+
+
     from django.utils import timezone
 
     def is_expired(self):

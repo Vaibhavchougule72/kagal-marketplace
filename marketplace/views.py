@@ -1536,12 +1536,6 @@ def razorpay_webhook(request):
                 update_fields=["is_payment_processing"]
             )
 
-            if not is_store_open_cached(pending.store):
-
-                logger.warning("Store closed during payment")
-
-                return HttpResponse(status=400)
-
             # -----------------------------------
             # CREATE ORDER
             # -----------------------------------
@@ -1679,6 +1673,7 @@ def razorpay_webhook(request):
             # MARK COMPLETED
             # -----------------------------------
             pending.is_completed = True
+            pending.is_payment_processed = True
             pending.is_payment_processing = False
             pending.payment_id = razorpay_payment_id
 
