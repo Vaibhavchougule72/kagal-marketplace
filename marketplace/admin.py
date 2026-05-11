@@ -6,6 +6,8 @@ from .views import generate_delivery_pdf, generate_store_pdf
 from django.urls import reverse
 from .models import StoreTiming, StoreHoliday
 from .models import Banner
+from .models import StoreRating
+admin.site.register(StoreRating)
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
