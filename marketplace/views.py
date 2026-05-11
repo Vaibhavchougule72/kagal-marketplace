@@ -1490,7 +1490,7 @@ def razorpay_webhook(request):
                 coupon_code=pending.coupon_code,
                 total=pending.total,
                 payment_method="UPI",
-                payment_id=razorpay_order_id,
+                payment_id=razorpay_payment_id,
                 status="REQUEST_SUBMITTED"
             )
 
@@ -1587,6 +1587,7 @@ def razorpay_webhook(request):
             # -----------------------------------
             # MARK COMPLETED
             # -----------------------------------
+            
             pending.is_completed = True
             pending.is_payment_processed = True
 
@@ -2295,8 +2296,8 @@ def payment_success(request):
 
     # find created order
     order = Order.objects.filter(
-        payment_id=pending.razorpay_order_id
-    ).first()
+        payment_id=request.GET.get("razorpay_payment_id")
+        ).first()
 
     # success
     if order:
@@ -2347,9 +2348,9 @@ def check_payment_status(request):
     # FIND CREATED ORDER
     # -----------------------------------
     order = Order.objects.filter(
-        payment_id=pending.razorpay_order_id
-    ).first()
-
+        phone=pending.phone,
+        payment_method="UPI"
+    ).order_by("-id").first()
     # fallback
     if not order:
 
