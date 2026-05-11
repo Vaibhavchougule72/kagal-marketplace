@@ -387,6 +387,18 @@ class PendingOrder(models.Model):
     is_payment_processing = models.BooleanField(default=False)
 
     is_payment_processed = models.BooleanField(default=False)
+    created_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    payment_id = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
 
     razorpay_order_id = models.CharField(
         max_length=200,
@@ -405,18 +417,6 @@ class PendingOrder(models.Model):
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    created_order = models.ForeignKey(
-        "Order",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
-    payment_id = models.CharField(
-        max_length=200,
-        null=True,
-        blank=True
-    )
 
 
     from django.utils import timezone

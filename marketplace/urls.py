@@ -74,6 +74,12 @@ urlpatterns = [
         views.razorpay_webhook,
         name="razorpay_webhook"
     ),
+    path(
+        "check-payment-status/",
+        views.check_payment_status,
+        name="check_payment_status"
+    ),
+
 ]
 
 

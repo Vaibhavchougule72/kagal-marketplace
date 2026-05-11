@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container py-5 text-center">
+
+    <h3 class="text-success">
+        Payment Successful
+    </h3>
+
+    <p class="mt-3">
+        Your order is being confirmed...
+    </p>
+
+    <div class="spinner-border text-success mt-3"></div>
+
+</div>
+
+<script>
+
+const urlParams = new URLSearchParams(window.location.search);
+
+const pendingId = urlParams.get("pending_id");
+
+function checkStatus(){
+
+    fetch(`/check-payment-status/?pending_id=${pendingId}`)
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if(data.success){
+
+            window.location.href = data.redirect_url;
+
+        } else {
+
+            setTimeout(checkStatus, 2000);
+
+        }
+
+    })
+
+    .catch(() => {
+
+        setTimeout(checkStatus, 3000);
+
+    });
+
+}
+
+checkStatus();
+
+</script>
+
+{% endblock %}

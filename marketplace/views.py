@@ -1696,7 +1696,6 @@ def razorpay_webhook(request):
             exc_info=True
         )
 
-        # Reset processing lock
         try:
 
             pending.is_payment_processing = False
@@ -1707,6 +1706,8 @@ def razorpay_webhook(request):
 
         except:
             pass
+
+        return HttpResponse(status=500)
 
     return HttpResponse(status=200)
 
@@ -2376,183 +2377,90 @@ from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
-def payment_success(request):
-    import razorpay
-    import logging
-    from decimal import Decimal
-    from django.http import HttpResponse
-    from django.shortcuts import redirect
-    from django.conf import settings
-    from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
 
-    logger = logging.getLogger(__name__)
+@csrf_exempt
+def payment_success(request):
+
+    pending_id = request.GET.get("pending_id")
+
+    if not pending_id:
+        return render(request, "payment_processing.html")
 
     try:
-        # --------------------------------------------------
-        # STEP 1 : GET RAZORPAY RESPONSE PARAMS
-        # --------------------------------------------------
-        payment_id = request.GET.get("razorpay_payment_id", "").strip()
-        razorpay_order_id = request.GET.get("razorpay_order_id", "").strip()
-        signature = request.GET.get("razorpay_signature", "").strip()
-        pending_id = request.GET.get("pending_id", "").strip()
 
-        logger.info("========== PAYMENT SUCCESS START ==========")
-        logger.info(f"PAYMENT_ID: {payment_id}")
-        logger.info(f"ORDER_ID: {razorpay_order_id}")
-        logger.info(f"PENDING_ID: {pending_id}")
-
-        # --------------------------------------------------
-        # STEP 2 : BASIC VALIDATION
-        # --------------------------------------------------
-        if not payment_id or not razorpay_order_id or not signature:
-            logger.error("Missing Razorpay parameters")
-            return HttpResponse("Invalid payment response")
-
-        pending = None
-
-        # First try pending_id
-        if pending_id:
-            pending = PendingOrder.objects.filter(id=int(pending_id)).first()
-
-        # Fallback by Razorpay order id
-        if not pending:
-            pending = PendingOrder.objects.filter(
-                razorpay_order_id=razorpay_order_id
-            ).first()
+        pending = PendingOrder.objects.filter(
+            id=pending_id
+        ).first()
 
         if not pending:
-            return HttpResponse("Invalid order reference")
+            return render(request, "payment_processing.html")
 
-        # --------------------------------------------------
-        # STEP 3 : DUPLICATE ORDER PROTECTION
-        # --------------------------------------------------
-        existing_order = Order.objects.filter(payment_id=payment_id).first()
-
-        if existing_order:
-            logger.warning("Duplicate callback detected")
-            return redirect("order_success", order_id=existing_order.id)
-
-        # --------------------------------------------------
-        # STEP 4 : FETCH PENDING ORDER
-        # --------------------------------------------------
-
-        if pending.payment_method != "UPI":
-            logger.error("Pending order not UPI")
-            return HttpResponse("Invalid payment flow")
-
-        # Prevent duplicate process
-        if pending.is_payment_processed:
-            existing_order = Order.objects.filter(
-                phone=pending.phone,
-                payment_id=payment_id
-            ).first()
-
-            if existing_order:
-                return redirect("order_success", order_id=existing_order.id)
-
-        # --------------------------------------------------
-        # STEP 5 : RAZORPAY CLIENT
-        # --------------------------------------------------
-        client = razorpay.Client(auth=(
-            settings.RAZORPAY_KEY_ID,
-            settings.RAZORPAY_KEY_SECRET
-        ))
-
-        # --------------------------------------------------
-        # STEP 6 : SIGNATURE VERIFY
-        # --------------------------------------------------
-        try:
-            client.utility.verify_payment_signature({
-                "razorpay_order_id": razorpay_order_id,
-                "razorpay_payment_id": payment_id,
-                "razorpay_signature": signature
-            })
-        except Exception as e:
-            logger.error(f"Signature failed: {str(e)}")
-            return HttpResponse("Payment verification failed")
-
-        # --------------------------------------------------
-        # STEP 7 : FETCH PAYMENT DETAILS
-        # --------------------------------------------------
-        try:
-            payment = client.payment.fetch(payment_id)
-        except Exception as e:
-            logger.error(f"Payment fetch failed: {str(e)}")
-            return HttpResponse("Unable to verify payment")
-
-        payment_status = payment.get("status")
-        actual_amount = payment.get("amount")
-        expected_amount = to_paise(pending.total)
-
-        logger.info(f"PAYMENT STATUS: {payment_status}")
-        logger.info(f"EXPECTED: {expected_amount}")
-        logger.info(f"ACTUAL: {actual_amount}")
-
-        # --------------------------------------------------
-        # STEP 8 : STRICT CHECKS
-        # --------------------------------------------------
-        if payment_status != "captured":
-            logger.error("Payment not captured")
-            return HttpResponse("Payment not completed")
-
-        if actual_amount != expected_amount:
-            logger.error("Amount mismatch")
-            return HttpResponse("Invalid payment amount")
-        
-
-        if Order.objects.filter(
-            payment_id=payment_id
-        ).exists():
-
-            existing = Order.objects.get(
-                payment_id=payment_id
-            )
-
-            return redirect(
-                "order_success",
-                order_id=existing.id
-            )
-        # --------------------------------------------------
-        # STEP 10 : WAIT FOR WEBHOOK ORDER
-        # --------------------------------------------------
-
-        import time
-
-        order = None
-
-        for i in range(25):
-
-            pending = PendingOrder.objects.filter(
-                razorpay_order_id=razorpay_order_id
-            ).select_related("created_order").first()
-
-            if pending and pending.created_order:
-
-                order = pending.created_order
-                break
-
-            time.sleep(1)
-
-        if order:
+        # ✅ ORDER READY
+        if pending.created_order_id:
 
             request.session["cart"] = {
                 "store_id": None,
                 "items": {}
             }
 
+            request.session.pop("pending_id", None)
+
             request.session.modified = True
 
             return redirect(
                 "order_success",
-                order_id=order.id
+                order_id=pending.created_order.id
             )
 
-        return HttpResponse(
-            "Payment received. Order processing. Please refresh after few seconds."
-        )
+
+        # ⏳ STILL PROCESSING
+        return render(request, "payment_processing.html")
+
     except Exception as e:
-        logger.error(f"CRITICAL PAYMENT ERROR: {str(e)}", exc_info=True)
-        return HttpResponse("Something went wrong. Please contact support.")
+
+        logger.error(
+            f"PAYMENT SUCCESS ERROR: {e}",
+            exc_info=True
+        )
+
+        return render(request, "payment_processing.html")
+    
+
+from django.http import JsonResponse
+
+def check_payment_status(request):
+
+    pending_id = request.GET.get("pending_id")
+
+    if not pending_id:
+        return JsonResponse({
+            "success": False
+        })
+
+    pending = PendingOrder.objects.filter(
+        id=pending_id
+    ).first()
+
+    if not pending:
+        return JsonResponse({
+            "success": False
+        })
+
+    # ✅ ORDER CREATED
+    if pending.created_order_id:
+
+        return JsonResponse({
+            "success": True,
+            "redirect_url": f"/order-success/{pending.created_order.id}/"
+        })
+
+    return JsonResponse({
+        "success": False
+    })
+
 
 def mark_out_for_delivery(request, order_id):
 
