@@ -20,6 +20,19 @@
                         {% if store.image %}
                             <img src="{{ store.image.url }}" alt="{{ store.name }}" loading="lazy">
                         {% endif %}
+                        {% if store.total_ratings > 0 %}
+
+                        <div class="rating-badge">
+
+                            ⭐ {{ store.average_rating }}
+
+                            <small>
+                                ({{ store.total_ratings }})
+                            </small>
+
+                        </div>
+
+                        {% endif %}
 
                         <!-- STATUS BADGE -->
                         {% if store.is_open %}
