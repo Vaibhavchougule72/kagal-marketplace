@@ -16,7 +16,7 @@
                 <div class="loka-store-card {% if not store.is_open %}store-closed{% endif %}">
 
                     <!-- IMAGE -->
-                    <div class="loka-store-image position-relative">
+                    <div class="loka-store-image">
                         {% if store.image %}
                             <img src="{{ store.image.url }}" alt="{{ store.name }}" loading="lazy">
                         {% endif %}
