@@ -427,7 +427,11 @@ section h3 {
 
     height: 100%;
 
-    object-fit: cover;
+    object-fit: contain;
+
+    padding: 8px;
+
+    background: white;
 
     display: block;
 }
