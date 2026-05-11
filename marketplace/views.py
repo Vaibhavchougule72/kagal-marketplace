@@ -1540,7 +1540,7 @@ def razorpay_webhook(request):
             # CREATE ORDER
             # -----------------------------------
             order = Order.objects.create(
-                store=pending.store,
+                store=pending.store_id,
                 customer_name=pending.customer_name,
                 phone=pending.phone,
                 address=pending.address,
@@ -1704,7 +1704,7 @@ def razorpay_webhook(request):
         except:
             pass
 
-    return HttpResponse(status=200)
+    return HttpResponse(status=500)
 
 # =====================================================
 # VERIFY OTP
