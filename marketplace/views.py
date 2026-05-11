@@ -1244,6 +1244,37 @@ def checkout(request):
 
                 import copy
 
+                # -----------------------------------
+                # SAFE JSON DATA
+                # -----------------------------------
+                def convert_decimals(obj):
+
+                    if isinstance(obj, Decimal):
+                        return float(obj)
+
+                    if isinstance(obj, dict):
+                        return {
+                            k: convert_decimals(v)
+                            for k, v in obj.items()
+                        }
+
+                    if isinstance(obj, list):
+                        return [
+                            convert_decimals(i)
+                            for i in obj
+                        ]
+
+                    return obj
+
+
+                safe_cart = convert_decimals(
+                    copy.deepcopy(cart)
+                )
+
+                safe_items = convert_decimals(
+                    copy.deepcopy(items)
+                )
+
                 # ALWAYS CREATE NEW PENDING ORDER
                 pending = PendingOrder.objects.create(
                     store_id=store_id,
@@ -1265,9 +1296,9 @@ def checkout(request):
 
                     payment_method="UPI",
 
-                    cart_data=copy.deepcopy(cart),
+                    cart_data=safe_cart,
 
-                    items_snapshot=items,
+                    items_snapshot=safe_items,
 
                     otp_expiry=timezone.now() + timedelta(minutes=5),
                 )
@@ -1293,7 +1324,7 @@ def checkout(request):
 
                 razorpay_order_id = razorpay_order["id"]
                 pending.razorpay_order_id = razorpay_order_id
-                pending.cart_data = copy.deepcopy(cart)
+                pending.cart_data = safe_cart
 
                 pending.save(
                     update_fields=[
