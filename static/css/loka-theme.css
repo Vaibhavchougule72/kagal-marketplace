@@ -657,40 +657,69 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 =========================== */
 
 /* Main cart container */
+/* =========================
+   MOBILE SAFE CART LAYOUT
+========================= */
+
 .cart-wrapper{
     display:flex;
     flex-direction:column;
-    height:calc(100vh - 60px);
+
+    height:100%;
+
+    min-height:0;
+
     overflow:hidden;
+
+    background:#fff;
 }
 
-/* Scrollable item area */
+/* SCROLLABLE ITEMS */
 .cart-items{
     flex:1;
+
     overflow-y:auto;
-    padding:10px;
+    overflow-x:hidden;
+
     min-height:0;
+
+    padding:10px;
+
     -webkit-overflow-scrolling:touch;
 }
 
-/* Bottom sticky checkout section */
+/* FIXED BOTTOM SECTION */
 .cart-summary-sticky{
-    background:#fff;
-    padding:14px;
-    border-top:1px solid #eee;
-    box-shadow:0 -4px 20px rgba(0,0,0,0.08);
     flex-shrink:0;
+
+    background:#fff;
+
+    padding:14px;
+
+    border-top:1px solid #eee;
+
+    box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
 }
 
-/* Better cart card spacing */
-.cart-item-row{
-    border-radius:16px;
-}
-
-/* Prevent body scroll behind cart */
+/* BOOTSTRAP OFFCANVAS */
 .offcanvas-body{
+    padding:0 !important;
+
     overflow:hidden !important;
+
     display:flex;
     flex-direction:column;
+
     height:100%;
+}
+
+.offcanvas{
+    height:100dvh;
+}
+
+.offcanvas-body{
+    height:100dvh;
+    min-height:0;
 }
