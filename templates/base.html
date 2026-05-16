@@ -89,7 +89,7 @@
             right: -100%;
             width: 100%;
             max-width: 400px;
-            height: 100%;
+            height: 100dvh;
             background: #fff;
             box-shadow: -4px 0 20px rgba(0,0,0,0.15);
             transition: right 0.3s ease;
@@ -216,6 +216,20 @@
             font-size: 12px;
             padding: 4px 7px;
             border-radius: 50%;
+        }
+
+        /* CART BODY */
+        .cart-body {
+
+            flex: 1;
+
+            min-height: 0;
+
+            overflow: hidden;
+
+            display: flex;
+
+            flex-direction: column;
         }
 
     </style>
@@ -351,7 +365,7 @@
         <h5>{% trans "Your Cart" %}</h5>
         <button class="btn btn-sm btn-outline-dark" id="closeCart">X</button>
     </div>
-    <div class="cart-body p-3" id="cartContent">
+    <div class="cart-body p-3 d-flex flex-column" id="cartContent">
         Loading...
     </div>
 </div>
