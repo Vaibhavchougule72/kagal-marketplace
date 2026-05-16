@@ -680,6 +680,10 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     padding-bottom: 20px;
 
     -webkit-overflow-scrolling: touch;
+
+    overscroll-behavior: contain;
+
+    touch-action: pan-y;
 }
 
 .cart-summary-sticky {
