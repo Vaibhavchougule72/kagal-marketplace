@@ -684,4 +684,5 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     max-height:100vh;
 
     -webkit-overflow-scrolling:touch;
+    padding-bottom:30px;
 }
