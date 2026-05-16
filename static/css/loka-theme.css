@@ -656,20 +656,6 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
    CART DRAWER / CART PARTIAL
 =========================== */
 
-/* Main cart container */
-/* =========================
-   MOBILE SAFE CART LAYOUT
-========================= */
-
-/* =========================
-   CART DRAWER LAYOUT
-========================= */
-
-/* Bootstrap offcanvas */
-/* =========================
-   SIMPLE SCROLLABLE CART
-========================= */
-
 .cart-wrapper{
     padding:10px;
 }
@@ -686,4 +672,16 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     border-top:1px solid #eee;
 
     margin-bottom:20px;
+}
+
+/* =========================
+   OFFCANVAS SCROLL FIX
+========================= */
+
+.offcanvas-body{
+    overflow-y:auto !important;
+
+    max-height:100vh;
+
+    -webkit-overflow-scrolling:touch;
 }
