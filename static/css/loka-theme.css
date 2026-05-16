@@ -683,7 +683,10 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
 /* Main cart wrapper */
 .cart-wrapper{
+    position:relative;
+
     display:flex;
+
     flex-direction:column;
 
     height:100%;
@@ -706,9 +709,13 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
 /* Bottom checkout section */
 .cart-summary-sticky{
-    position:sticky;
+    position:absolute;
 
     bottom:0;
+
+    left:0;
+
+    width:100%;
 
     z-index:20;
 
