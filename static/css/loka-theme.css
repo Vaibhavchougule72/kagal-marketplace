@@ -661,20 +661,43 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
    MOBILE SAFE CART LAYOUT
 ========================= */
 
+/* =========================
+   CART DRAWER LAYOUT
+========================= */
+
+/* Bootstrap offcanvas */
+.offcanvas{
+    height:100dvh;
+}
+
+/* Offcanvas body */
+.offcanvas-body{
+    padding:0 !important;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden !important;
+
+    height:100%;
+    min-height:0;
+}
+
+/* Main cart wrapper */
 .cart-wrapper{
     display:flex;
     flex-direction:column;
 
-    height:100%;
+    flex:1;
 
     min-height:0;
 
-    overflow:hidden;
-
     background:#fff;
+
+    overflow:hidden;
 }
 
-/* SCROLLABLE ITEMS */
+/* Scrollable products */
 .cart-items{
     flex:1;
 
@@ -688,7 +711,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     -webkit-overflow-scrolling:touch;
 }
 
-/* FIXED BOTTOM SECTION */
+/* Bottom checkout section */
 .cart-summary-sticky{
     flex-shrink:0;
 
@@ -701,25 +724,4 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     box-shadow:0 -4px 20px rgba(0,0,0,0.08);
 
     padding-bottom:calc(14px + env(safe-area-inset-bottom));
-}
-
-/* BOOTSTRAP OFFCANVAS */
-.offcanvas-body{
-    padding:0 !important;
-
-    overflow:hidden !important;
-
-    display:flex;
-    flex-direction:column;
-
-    height:100%;
-}
-
-.offcanvas{
-    height:100dvh;
-}
-
-.offcanvas-body{
-    height:100dvh;
-    min-height:0;
 }
