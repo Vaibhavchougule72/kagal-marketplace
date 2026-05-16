@@ -660,8 +660,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 .cart-wrapper{
     display:flex;
     flex-direction:column;
-    height:100%;
-    max-height:100vh;
+    height:calc(100vh - 60px);
     overflow:hidden;
 }
 
@@ -669,19 +668,18 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 .cart-items{
     flex:1;
     overflow-y:auto;
-    padding-bottom:120px;
+    padding:10px;
+    min-height:0;
     -webkit-overflow-scrolling:touch;
 }
 
 /* Bottom sticky checkout section */
 .cart-summary-sticky{
-    position:sticky;
-    bottom:0;
     background:#fff;
     padding:14px;
     border-top:1px solid #eee;
     box-shadow:0 -4px 20px rgba(0,0,0,0.08);
-    z-index:20;
+    flex-shrink:0;
 }
 
 /* Better cart card spacing */
