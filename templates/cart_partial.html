@@ -15,107 +15,130 @@
 
 {% else %}
 
-<div class="cart-items">
+<div class="cart-wrapper">
 
-    {% for item in items %}
-    <div class="card mb-3 p-3 shadow-sm cart-item-row"
-        data-qty="{{ item.quantity }}">
+    <!-- SCROLLABLE ITEMS -->
+    <div class="cart-items">
 
-        <div class="d-flex justify-content-between align-items-center">
+        {% for item in items %}
+        <div class="card mb-3 p-3 shadow-sm cart-item-row"
+            data-qty="{{ item.quantity }}">
 
-            <div>
-                <strong>
-                    {% if item.product %}
-                    {{ item.product.name }}
-                    {% else %}
-                    {{ item.name }}
-                    {% endif %}
-                </strong>
-                <small class="text-muted">
-                    ₹{% if item.product %}{{ item.product.price }}{% else %}{{ item.price }}{% endif %}
-                </small>
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <strong>
+                        {% if item.product %}
+                        {{ item.product.name }}
+                        {% else %}
+                        {{ item.name }}
+                        {% endif %}
+                    </strong>
+
+                    <small class="text-muted">
+                        ₹{% if item.product %}{{ item.product.price }}{% else %}{{ item.price }}{% endif %}
+                    </small>
+                </div>
+
+                <div class="d-flex align-items-center">
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-dark qty-btn"
+                            data-id="{{ item.key }}"
+                            data-action="decrease">
+                        -
+                    </button>
+
+                    <span class="mx-2 fw-bold">
+                        {{ item.quantity }}
+                    </span>
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-dark qty-btn"
+                            data-id="{{ item.key }}"
+                            data-action="add">
+                        +
+                    </button>
+
+                </div>
+
             </div>
 
-            <div class="d-flex align-items-center">
+            <div class="mt-2 d-flex justify-content-between align-items-center">
 
-                <button type="button" class="btn btn-sm btn-outline-dark qty-btn"
-                        data-id="{{ item.key }}"
-    
-                        data-action="decrease">
-                    -
-                </button>
+                <div>
+                    {% trans "Subtotal" %}:
+                    <strong>₹{{ item.subtotal }}</strong>
+                </div>
 
-                <span class="mx-2 fw-bold">{{ item.quantity }}</span>
-
-                <button type="button" class="btn btn-sm btn-outline-dark qty-btn"
-                        data-id="{{ item.key }}"
-                        data-action="add">
-                    +
+                <button type="button"
+                        class="btn btn-sm text-danger remove-btn"
+                        data-id="{{ item.key }}">
+                    {% trans "Remove" %}
                 </button>
 
             </div>
 
         </div>
+        {% endfor %}
 
-        <div class="mt-2 d-flex justify-content-between align-items-center">
-            <div>
-                {% trans "Subtotal" %}: <strong>₹{{ item.subtotal }}</strong>
+    </div>
+
+    <!-- STICKY BOTTOM -->
+    <div class="cart-summary-sticky">
+
+        <div class="mb-3">
+
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"
+                    data-width="{{ progress_percent|default:0 }}">
+                </div>
             </div>
 
-            <button type="button" class="btn btn-sm text-danger remove-btn"
-                    data-id="{{ item.key }}">
-                {% trans "Remove" %}
-            </button>
+            <small>
+                {% if remaining_amount > 0 %}
+                Add ₹{{ remaining_amount|floatformat:0 }} more for FREE delivery 🚀
+                {% else %}
+                🎉 You unlocked FREE delivery!
+                {% endif %}
+            </small>
+
+        </div>
+
+        <small style="color:red;">
+            ⏰ Prices may change soon
+        </small>
+
+        <div class="mt-3 border-top pt-3">
+
+            <div class="d-flex justify-content-between mb-2">
+
+                {% if total_savings > 0 %}
+                <p style="color:green; font-weight:600;">
+                    🎉 You saved ₹{{ total_savings|floatformat:0 }}
+                </p>
+                {% endif %}
+
+                <strong>Total:</strong>
+                <strong>₹{{ subtotal }}</strong>
+
+            </div>
+
+            <div class="text-center mb-2">
+
+                <small>🚚 30–50 mins delivery</small><br>
+                <small>💵 Cash on Delivery available</small>
+
+            </div>
+
+            <a href="{% url 'checkout' %}"
+            class="btn btn-success w-100">
+                🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
+            </a>
+
         </div>
 
     </div>
-    {% endfor %}
-
-</div>
-
-<div class="mb-3">
-
-    <div class="progress-bar-bg">
-        <div class="progress-bar-fill"
-             data-width="{{ progress_percent|default:0 }}"></div>
-    </div>
-
-    <small>
-        {% if remaining_amount > 0 %}
-        Add ₹{{ remaining_amount|floatformat:0 }} more for FREE delivery 🚀
-        {% else %}
-        🎉 You unlocked FREE delivery!
-        {% endif %}
-    </small>
-
-</div>
-<!-- Cart Summary -->
-<small style="color:red;">
-        ⏰ Prices may change soon
-</small>
-<div class="mt-3 border-top pt-3">
-
-    <div class="d-flex justify-content-between mb-2">
-        {% if total_savings > 0 %}
-        <p style="color:green; font-weight:600;">
-        🎉 You saved ₹{{ total_savings|floatformat:0 }}
-        </p>
-        {% endif %}
-        
-        <strong>Total:</strong>
-        <strong>₹{{ subtotal }}</strong>
-    </div>
-
-    <div class="text-center mb-2">
-
-    <small>🚚 30–50 mins delivery</small><br>
-    <small>💵 Cash on Delivery available</small>
-
-    </div>
-
-    <a href="{% url 'checkout' %}" class="btn btn-success w-100">
-        🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
-    </a>
 
 </div>
 

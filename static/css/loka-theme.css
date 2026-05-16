@@ -652,3 +652,47 @@ pointer-events:none;
 transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 }
 
+/* ===========================
+   CART DRAWER / CART PARTIAL
+=========================== */
+
+/* Main cart container */
+.cart-wrapper{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    max-height:100vh;
+    overflow:hidden;
+}
+
+/* Scrollable item area */
+.cart-items{
+    flex:1;
+    overflow-y:auto;
+    padding-bottom:120px;
+    -webkit-overflow-scrolling:touch;
+}
+
+/* Bottom sticky checkout section */
+.cart-summary-sticky{
+    position:sticky;
+    bottom:0;
+    background:#fff;
+    padding:14px;
+    border-top:1px solid #eee;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+    z-index:20;
+}
+
+/* Better cart card spacing */
+.cart-item-row{
+    border-radius:16px;
+}
+
+/* Prevent body scroll behind cart */
+.offcanvas-body{
+    overflow:hidden !important;
+    display:flex;
+    flex-direction:column;
+    height:100%;
+}
