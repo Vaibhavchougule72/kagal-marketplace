@@ -666,66 +666,24 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 ========================= */
 
 /* Bootstrap offcanvas */
-.offcanvas{
-    height:100dvh;
-}
+/* =========================
+   SIMPLE SCROLLABLE CART
+========================= */
 
-/* Offcanvas body */
-.offcanvas-body{
-    padding:0 !important;
-
-    display:flex;
-    flex-direction:column;
-
-    height:100%;
-  
-}
-
-/* Main cart wrapper */
 .cart-wrapper{
-    position:relative;
-
-    display:flex;
-
-    flex-direction:column;
-
-    height:100%;
-
-    background:#fff;
-}
-
-/* Scrollable products */
-.cart-items{
-    flex:1;
-
-    overflow-y:auto;
-
     padding:10px;
-
-    padding-bottom:220px;
-
-    -webkit-overflow-scrolling:touch;
 }
 
-/* Bottom checkout section */
+.cart-items{
+    margin-bottom:20px;
+}
+
 .cart-summary-sticky{
-    position:absolute;
-
-    bottom:0;
-
-    left:0;
-
-    width:100%;
-
-    z-index:20;
-
     background:#fff;
 
     padding:14px;
 
     border-top:1px solid #eee;
 
-    box-shadow:0 -4px 20px rgba(0,0,0,0.08);
-
-    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+    margin-bottom:20px;
 }
