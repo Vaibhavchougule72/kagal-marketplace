@@ -304,7 +304,8 @@ const DELIVERY_RADIUS_KM = 10;
 const subtotal = parseFloat("{{ subtotal }}");
 const handlingFee = parseFloat("{{ handling_fee }}");
 
-let freeDeliveryUnlocked = false;
+let freeDeliveryUnlocked =
+    "{{ free_delivery_order|yesno:'true,false' }}" === "true";
 
 var map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
 
@@ -467,11 +468,18 @@ function updateDelivery(lat, lng){
         mapError.classList.add("d-none");
     }
 
-    fetch(`/calculate-delivery/?latitude=${lat}&longitude=${lng}`)
+    const phone = document.getElementById("phoneInput").value;
+
+    fetch(`/calculate-delivery/?latitude=${lat}&longitude=${lng}&phone=${phone}`)
     .then(res => res.json())
     .then(data => {
 
-        const deliveryFee = freeDeliveryUnlocked ? 0 : data.delivery_fee;
+        freeDeliveryUnlocked = data.free_delivery;
+
+        document.getElementById("freeDeliveryInput").value =
+            freeDeliveryUnlocked ? "true" : "false";
+
+        const deliveryFee = data.delivery_fee;
         const total = freeDeliveryUnlocked
             ? (subtotal + handlingFee - appliedDiscount)
             : data.total;
@@ -557,7 +565,10 @@ const handlingFee = parseFloat("{{ handling_fee }}")
 
 // Delivery from UI
 const deliveryText = document.getElementById("deliveryFee").innerText
-const deliveryValue = parseFloat(deliveryText.replace("₹",""))
+const deliveryValue =
+    deliveryText.includes("FREE")
+    ? 0
+    : parseFloat(deliveryText.replace("₹",""))
 
 const newTotal = subtotalValue + handlingFee + deliveryValue - appliedDiscount
 

@@ -64,6 +64,15 @@ margin-bottom:15px;
 
 <div class="col-md-2">
 <div class="card p-3">
+<div class="text-muted">Platform Commission</div>
+<div class="metric text-danger">
+₹{{ platform_commission }}
+</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card p-3">
 <div class="text-muted">Orders</div>
 <div class="metric">{{ total_orders }}</div>
 </div>
@@ -235,9 +244,9 @@ margin-bottom:15px;
 
 <script>
 
-const labels = {{ labels|safe }};
-const revenues = {{ revenues|safe }};
-const hourly = {{ hourly_orders|safe }};
+const labels = JSON.parse('{{ labels|escapejs }}');
+const revenues = JSON.parse('{{ revenues|escapejs }}');
+const hourly = JSON.parse('{{ hourly_orders|escapejs }}');
 
 new Chart(document.getElementById("revenueChart"), {
 
@@ -276,7 +285,10 @@ labels:["COD","UPI"],
 
 datasets:[{
 
-data:[{{ cod_orders }},{{ upi_orders }}],
+data:[
+Number('{{ cod_orders }}'),
+Number('{{ upi_orders }}')
+],
 
 backgroundColor:["#ffc107","#0d6efd"]
 
@@ -293,7 +305,20 @@ type:"bar",
 
 data:{
 
-labels:["8","9","10","11","12","1","2","3","4","5","6","7"],
+labels:[
+"10 AM",
+"11 AM",
+"12 PM",
+"1 PM",
+"2 PM",
+"3 PM",
+"4 PM",
+"5 PM",
+"6 PM",
+"7 PM",
+"8 PM",
+"9 PM"
+],
 
 datasets:[{
 

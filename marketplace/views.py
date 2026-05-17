@@ -1010,11 +1010,26 @@ def checkout(request):
                         break
 
     handling_fee = Decimal(5) if subtotal < 100 else Decimal(9)
+    free_delivery_order = False
+
+    customer_phone = request.session.get("customer_phone")
+
+    if customer_phone:
+
+        delivered_orders = Order.objects.filter(
+            phone=customer_phone,
+            status="DELIVERED"
+        ).count()
+
+        free_delivery_order = (
+            ((delivered_orders + 1) % 5 == 0)
+        )
 
     context.update({
         "subtotal": subtotal,
         "handling_fee": handling_fee,
-        "upi_only_required": upi_only_required
+        "upi_only_required": upi_only_required,
+        "free_delivery_order": free_delivery_order
     })
 
     # =========================
@@ -1077,22 +1092,48 @@ def checkout(request):
                 context["error"] = "Delivery not available"
                 return render(request, "checkout.html", context)
 
-            if subtotal >= 499:
+            # -------------------------
+            # FREE DELIVERY LOGIC
+            # -------------------------
+
+            delivered_orders = Order.objects.filter(
+                phone=phone,
+                status="DELIVERED"
+            ).count()
+
+            # 1st order OR every 5th order
+            is_free_delivery_order = (
+                ((delivered_orders + 1) % 5 == 0)
+            )
+
+            if is_free_delivery_order:
+
                 delivery_fee = Decimal(0)
+
+            elif subtotal >= 499:
+
+                delivery_fee = Decimal(0)
+
             else:
 
                 if distance <= 2:
                     delivery_fee = Decimal(15)
+
                 elif distance <= 3:
                     delivery_fee = Decimal(18)
+
                 elif distance <= 4:
                     delivery_fee = Decimal(20)
+
                 elif distance <= 5:
                     delivery_fee = Decimal(23)
+
                 elif distance <= 6:
                     delivery_fee = Decimal(27)
+
                 elif distance <= 7:
                     delivery_fee = Decimal(30)
+
                 else:
                     delivery_fee = Decimal(40)
 
@@ -1100,10 +1141,6 @@ def checkout(request):
             # COUPON
             # -------------------------
             discount = Decimal(0)
-            
-            total = (subtotal + delivery_fee + handling_fee - discount).quantize(
-                Decimal("1"), rounding=ROUND_HALF_UP
-            )
 
             if subtotal < 149 and payment == "COD":
                 context["error"] = "COD not allowed below ₹149"
@@ -1148,6 +1185,40 @@ def checkout(request):
                     context["error"] = "Coupon already used"
 
                     return render(request, "checkout.html", context)
+            # -----------------------------------
+            # APPLY COUPON DISCOUNT
+            # -----------------------------------
+
+            if coupon:
+
+                if coupon.discount_type == "PERCENTAGE":
+
+                    discount = (
+                        subtotal * coupon.discount_value
+                    ) / 100
+
+                elif coupon.discount_type == "FIXED":
+
+                    discount = coupon.discount_value
+
+            # Prevent negative discount
+            if discount > subtotal:
+                discount = subtotal
+
+            # FINAL TOTAL
+            total = (
+                subtotal
+                + delivery_fee
+                + handling_fee
+                - discount
+            ).quantize(
+                Decimal("1"),
+                rounding=ROUND_HALF_UP
+            )
+
+            # Prevent negative total
+            if total < 0:
+                total = Decimal(0)
             # =========================
             # COD FLOW
             # =========================
@@ -2206,6 +2277,21 @@ def calculate_delivery(request):
     
     subtotal = get_cart_details(cart)
 
+    phone = request.GET.get("phone", "").strip()
+
+    delivered_orders = 0
+
+    if re.match(r'^[6-9]\d{9}$', phone):
+
+        delivered_orders = Order.objects.filter(
+            phone=phone,
+            status="DELIVERED"
+        ).count()
+
+    free_delivery = (
+        ((delivered_orders + 1) % 5 == 0)
+    )
+
     if not latitude or not longitude:
         return JsonResponse({"error": "Missing data"}, status=400)
 
@@ -2234,8 +2320,12 @@ def calculate_delivery(request):
 
     delivery_fee = 15
 
-    if subtotal >= 499:
+    if free_delivery:
         delivery_fee = Decimal(0)
+
+    elif subtotal >= 499:
+        delivery_fee = Decimal(0)
+
     else:
 
         if distance <= 2:
@@ -2270,8 +2360,11 @@ def calculate_delivery(request):
     return JsonResponse({
         "delivery_fee": float(delivery_fee),
         "total": float(total),
-        "distance": round(distance, 2)
+        "distance": round(distance, 2),
+        "free_delivery": free_delivery
     })
+
+
 import razorpay
 import logging
 from django.http import HttpResponse
@@ -2923,6 +3016,28 @@ def admin_dashboard(request):
         count=Count("id")
     ).order_by("hour")
 
+    from decimal import Decimal
+    from django.db.models import Sum
+
+    # Delivered orders only
+    delivered_orders = Order.objects.filter(
+        status="DELIVERED"
+    )
+
+    platform_commission = Decimal(0)
+
+    for order in delivered_orders.select_related("store"):
+
+        commission_percent = (
+            order.store.commission_percent or Decimal(0)
+        )
+
+        commission = (
+            order.subtotal * commission_percent
+        ) / Decimal(100)
+
+        platform_commission += commission
+
     context = {
 
         "total_revenue": total_revenue,
@@ -2942,6 +3057,7 @@ def admin_dashboard(request):
         "labels": json.dumps(labels),
         "revenues": json.dumps(revenues),
         "show_floating_cart": False,
+        "platform_commission": round(platform_commission, 2),
 
         "hourly_orders": json.dumps([h["count"] for h in hourly_orders])
     }
