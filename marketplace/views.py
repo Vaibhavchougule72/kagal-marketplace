@@ -3710,3 +3710,27 @@ def submit_rating(request, order_id):
     return JsonResponse({
         "success": True
     })
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from .models import DeviceToken
+
+@api_view(['POST'])
+def save_fcm_token(request):
+
+    token = request.data.get("token")
+
+    if not token:
+        return Response({
+            "error": "Token missing"
+        }, status=400)
+
+    DeviceToken.objects.get_or_create(
+        token=token
+    )
+
+    return Response({
+        "message": "Token saved"
+    })

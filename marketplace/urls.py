@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import save_fcm_token
 from django.views.generic import TemplateView
 from django.conf.urls.i18n import set_language
 
@@ -93,6 +94,10 @@ urlpatterns = [
         "submit-rating/<int:order_id>/",
         views.submit_rating,
         name="submit_rating"
+    ),
+    path(
+        'save-fcm-token/',
+        save_fcm_token
     ),
 
 ]
