@@ -597,6 +597,123 @@ document.getElementById("applied_coupon").value = code
 })
 
 }
+
+// =====================================
+// AUTO RECALCULATE AFTER AUTOFILL
+// =====================================
+
+// =====================================
+// AUTO DETECT AUTOFILL + LOCATION
+// =====================================
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    let attempts = 0;
+
+    const interval = setInterval(function(){
+
+        const lat =
+            document.getElementById("latitude").value;
+
+        const lng =
+            document.getElementById("longitude").value;
+
+        const phone =
+            document.getElementById("phoneInput").value;
+
+        // both ready
+        if(lat && lng && phone.length === 10){
+
+            updateDelivery(lat, lng);
+
+            // 🔥 UPDATE FREE DELIVERY MESSAGE
+            fetch(`/check-free-delivery/?phone=${phone}`)
+            .then(res => res.json())
+            .then(data => {
+
+                let infoBox =
+                    document.getElementById("deliveryInfo");
+
+                if(data.next_is_free){
+
+                    infoBox.innerHTML =
+                    "🎉 Congratulations! This order has FREE delivery";
+
+                } else {
+
+                    let remaining =
+                        5 - (data.order_count % 5);
+
+                    infoBox.innerHTML =
+                        `${remaining} more orders to unlock FREE delivery`;
+
+                }
+
+            });
+
+            clearInterval(interval);
+
+        }
+
+        attempts++;
+
+        // stop after 10 sec
+        if(attempts > 20){
+
+            clearInterval(interval);
+
+        }
+
+    }, 500);
+
+});
+
+// =====================================
+// LIVE PHONE CHANGE RECALCULATION
+// =====================================
+
+document.getElementById("phoneInput")
+.addEventListener("input", function(){
+
+    const lat =
+        document.getElementById("latitude").value;
+
+    const lng =
+        document.getElementById("longitude").value;
+
+    const phone = this.value;
+
+    if(lat && lng && phone.length === 10){
+
+        updateDelivery(lat, lng);
+
+        fetch(`/check-free-delivery/?phone=${phone}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let infoBox =
+                document.getElementById("deliveryInfo");
+
+            if(data.next_is_free){
+
+                infoBox.innerHTML =
+                "🎉 Congratulations! This order has FREE delivery";
+
+            } else {
+
+                let remaining =
+                    5 - (data.order_count % 5);
+
+                infoBox.innerHTML =
+                    `${remaining} more orders to unlock FREE delivery`;
+
+            }
+
+        });
+
+    }
+
+});
 </script>
 
 
@@ -779,49 +896,5 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 
-<script>
-    
-document.getElementById("phoneInput").addEventListener("blur", function(){
-
-    let phone = this.value;
-
-    if(phone.length < 10) return;
-
-    fetch(`/check-free-delivery/?phone=${phone}`)
-    .then(res => res.json())
-    .then(data => {
-
-        let infoBox = document.getElementById("deliveryInfo");
-
-        if(data.next_is_free){
-
-            infoBox.innerHTML =
-            "🎉 Congratulations! This order has FREE delivery";
-
-            freeDeliveryUnlocked = true;
-
-        } else {
-
-            let remaining = 5 - (data.order_count % 5);
-
-            infoBox.innerHTML =
-            `${remaining} more orders to unlock FREE delivery`;
-
-            freeDeliveryUnlocked = false;
-
-        }
-
-        // Recalculate delivery if location already selected
-        const lat = document.getElementById("latitude").value;
-        const lng = document.getElementById("longitude").value;
-
-        if(lat && lng){
-            updateDelivery(lat, lng);
-        }
-
-    });
-
-});
-</script>
 
 {% endblock %}
