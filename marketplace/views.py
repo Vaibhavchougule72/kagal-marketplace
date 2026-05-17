@@ -2929,141 +2929,211 @@ from django.db.models.functions import TruncDate, ExtractHour
 import json
 
 
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
+
 def admin_dashboard(request):
 
-    if not request.user.is_staff:
-        return redirect("home")
+    try:
 
-    today = timezone.now().date()
+        # ====================================
+        # YOUR EXISTING CODE
+        # ====================================
 
-    # Total orders
-    total_orders = Order.objects.filter(status="DELIVERED").count()
-
-    # Revenue
-    total_revenue = Order.objects.filter(
-        status="DELIVERED"
-    ).aggregate(Sum("subtotal"))["subtotal__sum"] or 0
-
-    # Today's orders
-    todays_orders = Order.objects.filter(
-        status="DELIVERED",
-        created_at__date=today
-    ).count()
-
-    # Average order value
-    avg_order_value = total_revenue / total_orders if total_orders else 0
-
-    # Payment split
-    cod_orders = Order.objects.filter(
-        status="DELIVERED",
-        payment_method="COD"
-    ).count()
-
-    upi_orders = Order.objects.filter(
-        status="DELIVERED",
-        payment_method="UPI"
-    ).count()
-
-    # Top products
-    top_products = OrderItem.objects.filter(
-        order__status="DELIVERED",
-        product__isnull=False
-    ).values(
-        "product__name"
-    ).annotate(
-        total_qty=Sum("quantity")
-    ).order_by("-total_qty")[:5]
-
-    # Daily revenue
-    daily_sales = Order.objects.filter(
-        status="DELIVERED"
-    ).annotate(
-        day=TruncDate("created_at")
-    ).values("day").annotate(
-        revenue=Sum("subtotal")
-    ).order_by("day")
-
-    # Convert chart data
-    labels = [str(d["day"]) for d in daily_sales]
-    revenues = [float(d["revenue"]) for d in daily_sales]
-
-    # Repeat customers
-    repeat_customers = Order.objects.values("phone").annotate(
-        count=Count("id")
-    ).filter(count__gt=1).count()
-
-    # Delivery success rate
-    delivered = Order.objects.filter(status="DELIVERED").count()
-    total = Order.objects.count()
-
-    delivery_success = round((delivered / total) * 100, 2) if total else 0
-
-    # Store leaderboard
-    top_stores = Order.objects.filter(
-        status="DELIVERED"
-    ).values(
-        "store__name"
-    ).annotate(
-        revenue=Sum("subtotal")
-    ).order_by("-revenue")[:5]
-
-    # Hourly demand
-    hourly_orders = Order.objects.filter(
-        status="DELIVERED"
-    ).annotate(
-        hour=ExtractHour("created_at")
-    ).values("hour").annotate(
-        count=Count("id")
-    ).order_by("hour")
-
-    from decimal import Decimal
-    from django.db.models import Sum
-
-    # Delivered orders only
-    delivered_orders = Order.objects.filter(
-        status="DELIVERED"
-    )
-
-    platform_commission = Decimal(0)
-
-    for order in delivered_orders.select_related("store"):
-
-        commission_percent = (
-            order.store.commission_percent or Decimal(0)
+        total_revenue = (
+            Order.objects.filter(status="DELIVERED")
+            .aggregate(total=Sum("total"))["total"] or 0
         )
 
-        commission = (
-            order.subtotal * commission_percent
-        ) / Decimal(100)
+        total_orders = Order.objects.count()
 
-        platform_commission += commission
+        todays_orders = Order.objects.filter(
+            created_at__date=timezone.now().date()
+        ).count()
 
-    context = {
+        avg_order_value = (
+            total_revenue / total_orders
+            if total_orders > 0 else 0
+        )
 
-        "total_revenue": total_revenue,
-        "total_orders": total_orders,
-        "todays_orders": todays_orders,
-        "avg_order_value": avg_order_value,
+        repeat_customers = (
+            Order.objects.values("phone")
+            .annotate(c=Count("id"))
+            .filter(c__gt=1)
+            .count()
+        )
 
-        "cod_orders": cod_orders,
-        "upi_orders": upi_orders,
+        delivered = Order.objects.filter(
+            status="DELIVERED"
+        ).count()
 
-        "top_products": top_products,
-        "top_stores": top_stores,
+        delivery_success = (
+            round((delivered / total_orders) * 100, 2)
+            if total_orders else 0
+        )
 
-        "repeat_customers": repeat_customers,
-        "delivery_success": delivery_success,
+        cod_orders = Order.objects.filter(
+            payment_method="COD"
+        ).count()
 
-        "labels": json.dumps(labels),
-        "revenues": json.dumps(revenues),
-        "show_floating_cart": False,
-        "platform_commission": round(platform_commission, 2),
+        upi_orders = Order.objects.filter(
+            payment_method="UPI"
+        ).count()
 
-        "hourly_orders": json.dumps([h["count"] for h in hourly_orders])
-    }
+        # ====================================
+        # PLATFORM COMMISSION
+        # ====================================
 
-    return render(request, "admin_dashboard.html", context)
+        platform_commission = Decimal(0)
 
+        delivered_orders = Order.objects.filter(
+            status="DELIVERED"
+        ).select_related("store")
+
+        for order in delivered_orders:
+
+            store_percent = (
+                order.store.commission_percent or 0
+            )
+
+            commission = (
+                Decimal(order.subtotal)
+                * Decimal(store_percent)
+            ) / Decimal(100)
+
+            platform_commission += commission
+
+        # ====================================
+        # TOP PRODUCTS
+        # ====================================
+
+        top_products = (
+            OrderItem.objects
+            .values("product__name")
+            .annotate(total_qty=Sum("quantity"))
+            .order_by("-total_qty")[:10]
+        )
+
+        # ====================================
+        # TOP STORES
+        # ====================================
+
+        top_stores = (
+            Order.objects
+            .values("store__name")
+            .annotate(revenue=Sum("total"))
+            .order_by("-revenue")[:10]
+        )
+
+        # ====================================
+        # CHART DATA
+        # ====================================
+
+        last_7_days = []
+
+        labels = []
+        revenues = []
+
+        for i in range(6, -1, -1):
+
+            day = timezone.now().date() - timedelta(days=i)
+
+            revenue = (
+                Order.objects.filter(
+                    created_at__date=day,
+                    status="DELIVERED"
+                ).aggregate(
+                    total=Sum("total")
+                )["total"] or 0
+            )
+
+            labels.append(day.strftime("%d %b"))
+            revenues.append(float(revenue))
+
+        # ====================================
+        # HOURLY ORDERS
+        # ====================================
+
+        hourly_orders = []
+
+        for hour in range(10, 22):
+
+            count = Order.objects.filter(
+                created_at__hour=hour
+            ).count()
+
+            hourly_orders.append(count)
+
+        # ====================================
+        # TEMPLATE RENDER
+        # ====================================
+
+        return render(request, "admin_dashboard.html", {
+
+            "total_revenue": total_revenue,
+            "platform_commission": round(platform_commission, 2),
+            "total_orders": total_orders,
+            "todays_orders": todays_orders,
+            "avg_order_value": avg_order_value,
+            "repeat_customers": repeat_customers,
+            "delivery_success": delivery_success,
+
+            "cod_orders": cod_orders,
+            "upi_orders": upi_orders,
+
+            "top_products": top_products,
+            "top_stores": top_stores,
+
+            "labels": json.dumps(labels),
+            "revenues": json.dumps(revenues),
+            "hourly_orders": json.dumps(hourly_orders),
+
+        })
+
+    except Exception as e:
+
+        print("\n" + "="*80)
+        print("🚨 ADMIN DASHBOARD ERROR")
+        print("="*80)
+
+        print("\nERROR TYPE:")
+        print(type(e).__name__)
+
+        print("\nERROR MESSAGE:")
+        print(str(e))
+
+        print("\nFULL TRACEBACK:")
+        traceback.print_exc()
+
+        print("\nDATABASE QUERIES:")
+        try:
+            for q in connection.queries[-10:]:
+                print(q)
+        except:
+            print("Could not fetch queries")
+
+        print("="*80 + "\n")
+
+        logger.error(
+            "ADMIN DASHBOARD ERROR",
+            exc_info=True
+        )
+
+        return HttpResponse(
+
+            f"""
+            <h1>Dashboard Error</h1>
+
+            <h3>{type(e).__name__}</h3>
+
+            <pre>{str(e)}</pre>
+            """,
+
+            status=500
+        )
+    
 from .models import Coupon
 from .models import CouponUsage
 
