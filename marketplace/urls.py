@@ -104,6 +104,11 @@ urlpatterns = [
         views.pending_orders_dashboard,
         name="pending_orders_dashboard"
     ),
+    path(
+        "save-checkout-lead/",
+        views.save_checkout_lead,
+        name="save_checkout_lead"
+    ),
 
 ]
 

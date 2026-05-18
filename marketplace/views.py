@@ -1484,6 +1484,82 @@ def checkout(request):
 
     return render(request, "checkout.html", context)
 
+@csrf_exempt
+def save_checkout_lead(request):
+
+    if request.method == "POST":
+
+        try:
+
+            data = json.loads(request.body)
+
+            name = data.get("name", "")
+            phone = data.get("phone", "").strip()
+            address = data.get("address", "")
+            payment = data.get("payment", "")
+            total = data.get("total", 0)
+            store_id = data.get("store_id")
+
+            # VALID PHONE
+            if not re.match(r'^[6-9]\d{9}$', phone):
+
+                return JsonResponse({
+                    "success": False
+                })
+
+            store = None
+
+            if store_id:
+
+                store = Store.objects.filter(
+                    id=store_id
+                ).first()
+
+            lead, created = CheckoutLead.objects.get_or_create(
+
+                phone=phone,
+
+                defaults={
+
+                    "name": name,
+                    "address": address,
+                    "last_cart_value": total,
+                    "last_payment_method": payment,
+                    "last_store": store
+
+                }
+            )
+
+            if not created:
+
+                lead.name = name
+                lead.address = address
+                lead.last_cart_value = total
+                lead.last_payment_method = payment
+                lead.last_store = store
+
+                lead.checkout_attempts += 1
+
+                lead.save()
+
+            print("✅ AUTO LEAD SAVED:", phone)
+
+            return JsonResponse({
+                "success": True
+            })
+
+        except Exception as e:
+
+            print("❌ AUTO SAVE ERROR:", e)
+
+            return JsonResponse({
+                "success": False
+            })
+
+    return JsonResponse({
+        "success": False
+    })
+
 
 @csrf_exempt
 def razorpay_webhook(request):
@@ -3783,3 +3859,76 @@ def pending_orders_dashboard(request):
             "pending_orders": pending_orders
         }
     )
+
+
+from django.http import JsonResponse
+
+def save_checkout_lead(request):
+
+    if request.method == "POST":
+
+        try:
+
+            name = request.POST.get("name")
+            phone = request.POST.get("phone", "").strip()
+            address = request.POST.get("address")
+            payment = request.POST.get("payment")
+
+            total = request.POST.get("total", 0)
+
+            store_id = request.POST.get("store_id")
+
+            # VALID PHONE ONLY
+            if not re.match(r'^[6-9]\d{9}$', phone):
+
+                return JsonResponse({
+                    "success": False
+                })
+
+            store = None
+
+            if store_id:
+                store = Store.objects.filter(
+                    id=store_id
+                ).first()
+
+            lead, created = CheckoutLead.objects.get_or_create(
+
+                phone=phone,
+
+                defaults={
+                    "name": name,
+                    "address": address,
+                    "last_cart_value": total,
+                    "last_payment_method": payment,
+                    "last_store": store
+                }
+            )
+
+            if not created:
+
+                lead.name = name
+                lead.address = address
+                lead.last_cart_value = total
+                lead.last_payment_method = payment
+                lead.last_store = store
+
+                lead.checkout_attempts += 1
+
+                lead.save()
+
+            return JsonResponse({
+                "success": True
+            })
+
+        except Exception as e:
+
+            print("SAVE CHECKOUT LEAD ERROR:", e)
+
+            return JsonResponse({
+                "success": False
+            })
+
+    return JsonResponse({
+        "success": False
+    })

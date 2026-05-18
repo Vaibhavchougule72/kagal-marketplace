@@ -894,6 +894,201 @@ document.addEventListener("DOMContentLoaded", function(){
     validateForm();
 
 });
+
+// ====================================
+// AUTO SAVE CHECKOUT LEAD
+// ====================================
+
+let leadSaved = false;
+
+function autoSaveLead(){
+
+    if(leadSaved) return;
+
+    const name =
+        document.getElementById("name").value;
+
+    const phone =
+        document.getElementById("phoneInput").value;
+
+    const address =
+        document.getElementById("address").value;
+
+    const payment =
+        document.querySelector(
+            'input[name="payment_method"]:checked'
+        )?.value || "";
+
+    const total =
+        document.getElementById("finalTotal")
+        ?.innerText || 0;
+
+    // VALIDATION
+    if(
+        name.length < 2 ||
+        phone.length !== 10 ||
+        address.length < 5
+    ){
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("name", name);
+    formData.append("phone", phone);
+    formData.append("address", address);
+    formData.append("payment", payment);
+    formData.append("total", total);
+    formData.append("store_id", "{{ store.id }}");
+
+    fetch("/save-checkout-lead/", {
+
+        method: "POST",
+
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+
+        body: formData
+
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+
+            leadSaved = true;
+
+            console.log("Lead saved");
+
+        }
+
+    });
+
+}
+
+// AUTO SAVE AFTER USER STOPS TYPING
+
+let typingTimer;
+
+["name", "phoneInput", "address"].forEach(id => {
+
+    const el = document.getElementById(id);
+
+    if(!el) return;
+
+    el.addEventListener("input", function(){
+
+        clearTimeout(typingTimer);
+
+        typingTimer = setTimeout(autoSaveLead, 1500);
+
+    });
+
+});
+
+// ======================================
+// AUTO SAVE CHECKOUT LEAD
+// ======================================
+
+let autoSaveTimer;
+
+function autoSaveCheckoutLead(){
+
+    const name =
+        document.getElementById("nameInput")?.value || "";
+
+    const phone =
+        document.getElementById("phoneInput")?.value || "";
+
+    const address =
+        document.getElementById("addressInput")?.value || "";
+
+    const payment =
+        document.querySelector(
+            'input[name="payment"]:checked'
+        )?.value || "";
+
+    const total =
+        document.getElementById("orderTotal")
+        ?.innerText.replace("₹","") || "0";
+
+    // VALIDATION
+    if(
+        name.length < 2 ||
+        phone.length !== 10 ||
+        address.length < 5
+    ){
+        return;
+    }
+
+    fetch("/save-checkout-lead/", {
+
+        method: "POST",
+
+        headers: {
+
+            "Content-Type": "application/json",
+
+            "X-CSRFToken":
+                document.querySelector(
+                    "[name=csrfmiddlewaretoken]"
+                ).value
+        },
+
+        body: JSON.stringify({
+
+            name: name,
+            phone: phone,
+            address: address,
+            payment: payment,
+            total: total,
+            store_id: "{{ store.id }}"
+
+        })
+
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        console.log("✅ Lead auto saved");
+
+    })
+    .catch(err => {
+
+        console.log("❌ Lead save failed");
+
+    });
+
+}
+
+
+// ======================================
+// AUTO SAVE AFTER USER TYPES
+// ======================================
+
+[
+    "nameInput",
+    "phoneInput",
+    "addressInput"
+].forEach(id => {
+
+    const el = document.getElementById(id);
+
+    if(!el) return;
+
+    el.addEventListener("input", function(){
+
+        clearTimeout(autoSaveTimer);
+
+        autoSaveTimer = setTimeout(
+            autoSaveCheckoutLead,
+            1500
+        );
+
+    });
+
+});
 </script>
 
 
