@@ -100,7 +100,7 @@ urlpatterns = [
         save_fcm_token
     ),
     path(
-        "admin/pending-orders/",
+        "pending-orders-dashboard/",
         views.pending_orders_dashboard,
         name="pending_orders_dashboard"
     ),
