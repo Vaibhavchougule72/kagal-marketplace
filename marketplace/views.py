@@ -854,7 +854,7 @@ def checkout(request):
     # CLEAN OLD PENDING ORDERS
     # -------------------------
     PendingOrder.objects.filter(
-        created_at__lt=timezone.now() - timedelta(days=1)
+        created_at__lt=timezone.now() - timedelta(days=7)
     ).delete()
 
     cart = request.session.get('cart', {'store_id': None, 'items': {}})
@@ -3734,3 +3734,21 @@ def save_fcm_token(request):
     return Response({
         "message": "Token saved"
     })
+
+
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def pending_orders_dashboard(request):
+
+    pending_orders = PendingOrder.objects.order_by(
+        "-created_at"
+    )
+
+    return render(
+        request,
+        "pending_orders_dashboard.html",
+        {
+            "pending_orders": pending_orders
+        }
+    )

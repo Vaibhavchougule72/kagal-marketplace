@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>🕒 Pending Orders Dashboard</h2>
+
+<div class="card mt-3">
+
+<div class="table-responsive">
+
+<table class="table table-striped">
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Total</th>
+<th>Payment</th>
+<th>Completed</th>
+<th>Created</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for p in pending_orders %}
+
+<tr>
+
+<td>#{{ p.id }}</td>
+
+<td>{{ p.customer_name }}</td>
+
+<td>{{ p.phone }}</td>
+
+<td>₹{{ p.total }}</td>
+
+<td>{{ p.payment_method }}</td>
+
+<td>
+
+{% if p.is_completed %}
+<span class="badge bg-success">
+Completed
+</span>
+{% else %}
+<span class="badge bg-warning text-dark">
+Pending
+</span>
+{% endif %}
+
+</td>
+
+<td>{{ p.created_at }}</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="7" class="text-center">
+No pending orders
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
