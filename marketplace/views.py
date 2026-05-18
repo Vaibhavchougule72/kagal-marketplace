@@ -10,7 +10,7 @@ import math
 import re
 from django.conf import settings
 from django.contrib import messages
-from .models import Category, Store, Product, Order, OrderItem, PendingOrder
+from .models import Category, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead
 from .cart import Cart
 from django.contrib.auth.models import User
 from .models import Bundle
@@ -1037,6 +1037,7 @@ def checkout(request):
     # =========================
     if request.method == "POST":
         try:
+            
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
             confirm_phone = request.POST.get("confirm_phone") == "on"
@@ -1052,6 +1053,7 @@ def checkout(request):
             if not re.match(r'^[6-9]\d{9}$', phone):
                 context["error"] = "Invalid phone number"
                 return render(request, "checkout.html", context)
+            
 
             if not confirm_phone:
                 context["error"] = "Please confirm mobile number"
@@ -1065,6 +1067,7 @@ def checkout(request):
                 context["error"] = "Only UPI allowed for selected items"
                 return render(request, "checkout.html", context)
 
+            
             if not latitude or not longitude:
                 context["error"] = "Select delivery location"
                 return render(request, "checkout.html", context)
@@ -1215,6 +1218,34 @@ def checkout(request):
                 Decimal("1"),
                 rounding=ROUND_HALF_UP
             )
+
+            # ===================================
+            # SAVE CHECKOUT LEAD
+            # ===================================
+
+            if phone:
+
+                lead, created = CheckoutLead.objects.get_or_create(
+                    phone=phone,
+                    defaults={
+                        "name": name,
+                        "address": address,
+                        "last_cart_value": total,
+                        "last_payment_method": payment,
+                        "last_store": store
+                    }
+                )
+
+                if not created:
+
+                    lead.name = name
+                    lead.address = address
+                    lead.last_cart_value = total
+                    lead.last_payment_method = payment
+                    lead.last_store = store
+                    lead.checkout_attempts += 1
+
+                    lead.save()
 
             # Prevent negative total
             if total < 0:

@@ -667,3 +667,56 @@ class DeviceToken(models.Model):
 
     def __str__(self):
         return self.token
+    
+
+class CheckoutLead(models.Model):
+
+    name = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    phone = models.CharField(
+        max_length=10,
+        db_index=True
+    )
+
+    address = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    last_cart_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    last_payment_method = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    last_store = models.ForeignKey(
+        Store,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    checkout_attempts = models.IntegerField(
+        default=1
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return f"{self.phone} - {self.name}"

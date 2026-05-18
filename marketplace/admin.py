@@ -8,6 +8,8 @@ from .models import StoreTiming, StoreHoliday
 from .models import Banner
 from .models import StoreRating
 admin.site.register(StoreRating)
+from .models import CheckoutLead
+admin.site.register(CheckoutLead)
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
