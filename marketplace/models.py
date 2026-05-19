@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 from decimal import Decimal
+from .firebase import send_push_notification
 
 
 class Category(models.Model):
@@ -200,6 +201,18 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
 
+        old_status = None
+
+        if self.pk:
+
+            try:
+
+                old_status = Order.objects.get(pk=self.pk).status
+
+            except Order.DoesNotExist:
+
+                pass
+
         from .views import calculate_distance  # import here to avoid circular import
         import math
 
@@ -264,6 +277,85 @@ class Order(models.Model):
                 print("DELIVERY CALCULATION ERROR:", e)
 
         super().save(*args, **kwargs)
+        # ==================================================
+        # PUSH NOTIFICATIONS
+        # ==================================================
+
+        if old_status != self.status:
+
+            title = ""
+            body = ""
+
+            # -----------------------------------
+            # ORDER ACCEPTED
+            # -----------------------------------
+            if self.status == "ACCEPTED":
+
+                title = "Order Accepted ✅"
+
+                body = (
+                    f"Your order #{self.id} "
+                    f"has been accepted by restaurant."
+                )
+
+            # -----------------------------------
+            # PICKED UP
+            # -----------------------------------
+            elif self.status == "PICKED_UP":
+
+                title = "Order Picked Up 🛵"
+
+                body = (
+                    f"Your order #{self.id} "
+                    f"has been picked up."
+                )
+
+            # -----------------------------------
+            # OUT FOR DELIVERY
+            # -----------------------------------
+            elif self.status == "OUT_FOR_DELIVERY":
+
+                title = "Out for Delivery 🚚"
+
+                body = (
+                    f"Rider is on the way with "
+                    f"your order #{self.id}."
+                )
+
+            # -----------------------------------
+            # DELIVERED
+            # -----------------------------------
+            elif self.status == "DELIVERED":
+
+                title = "Order Delivered 🎉"
+
+                body = (
+                    f"Your order #{self.id} "
+                    f"was delivered successfully."
+                )
+
+            # -----------------------------------
+            # SEND PUSH
+            # -----------------------------------
+            if title:
+
+                devices = DeviceToken.objects.filter(
+                    phone=self.phone
+                )
+
+                for device in devices:
+
+                    try:
+
+                        send_push_notification(
+                            device.token,
+                            title,
+                            body
+                        )
+
+                    except Exception as e:
+
+                        print("Push Notification Error:", e)
 
 from django.contrib.auth.models import User
 
@@ -654,6 +746,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class DeviceToken(models.Model):
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -661,12 +754,25 @@ class DeviceToken(models.Model):
         blank=True
     )
 
-    token = models.TextField(unique=True)
+    # ✅ CUSTOMER PHONE
+    phone = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        db_index=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    token = models.TextField(
+        unique=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
-        return self.token
+
+        return f"{self.phone} - {self.token[:20]}"
     
 
 class CheckoutLead(models.Model):

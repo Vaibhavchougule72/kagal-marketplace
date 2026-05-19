@@ -39,6 +39,8 @@ import razorpay
 from django.db.models import Avg
 from django.views.decorators.http import require_POST
 from .models import StoreRating
+from .firebase import send_push_notification
+from .models import DeviceToken
 
 MAX_CART_QTY = 50
 
@@ -3824,18 +3826,26 @@ from rest_framework.response import Response
 
 from .models import DeviceToken
 
-@api_view(['POST'])
+@api_view(["POST"])
 def save_fcm_token(request):
 
     token = request.data.get("token")
 
+    phone = request.data.get("phone")
+
     if not token:
+
         return Response({
             "error": "Token missing"
         }, status=400)
 
-    DeviceToken.objects.get_or_create(
-        token=token
+    DeviceToken.objects.update_or_create(
+
+        token=token,
+
+        defaults={
+            "phone": phone
+        }
     )
 
     return Response({
