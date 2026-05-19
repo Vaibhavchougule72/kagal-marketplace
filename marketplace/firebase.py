@@ -1,13 +1,24 @@
+import os
+import json
 import firebase_admin
 
 from firebase_admin import credentials
 from firebase_admin import messaging
 
-cred = credentials.Certificate(
-    "serviceAccountKey.json"
+firebase_json = os.environ.get(
+    "FIREBASE_CREDENTIALS"
 )
 
-firebase_admin.initialize_app(cred)
+cred_dict = json.loads(firebase_json)
+
+cred = credentials.Certificate(
+    cred_dict
+)
+
+if not firebase_admin._apps:
+
+    firebase_admin.initialize_app(cred)
+
 
 def send_push_notification(
     token,
