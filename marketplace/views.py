@@ -2112,6 +2112,7 @@ def search_products(request):
     try:
 
         query = request.GET.get('q', '').strip()
+        highlight_id = request.GET.get("highlight")
 
         if not query:
             return render(request, 'search_results.html', {
@@ -2271,6 +2272,7 @@ def search_products(request):
             'selected_sort': sort,
             'min_price': min_price,
             'max_price': max_price,
+            "highlight_id": highlight_id,
             "show_floating_cart": True
         })
 

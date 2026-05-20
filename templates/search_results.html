@@ -102,7 +102,16 @@
 
         <div class="col-6 col-md-4 col-lg-3">
 
-            <div class="loka-product-card product-card position-relative {% if not product.open_status %}opacity-50{% endif %}"
+            <div class="loka-product-card product-card position-relative
+
+                {% if highlight_id == product.id|stringformat:'s' %}
+                highlight-product
+                {% endif %}
+
+                {% if not product.open_status %}
+                opacity-50
+                {% endif %}
+                "
                 data-id="{{ product.id }}"
                 data-name="{{ product.name }}"
                 data-price="{{ product.price }}"
@@ -227,20 +236,59 @@
 
 </div>
 
-<!-- ⚡ UX SCRIPT -->
 <script>
+
 document.querySelector("form")?.addEventListener("submit", function(){
+
     document.getElementById("searchLoading").style.display = "block";
+
 });
+
+window.addEventListener("load", () => {
+
+    const highlighted =
+        document.querySelector(".highlight-product");
+
+    if(highlighted){
+
+        highlighted.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+    }
+
+});
+
 </script>
 
 <style>
+
 .loka-product-card {
     transition: transform 0.2s ease;
 }
+
 .loka-product-card:hover {
     transform: scale(1.03);
 }
+
+.highlight-product{
+    border: 3px solid #ff5722;
+    box-shadow: 0 0 20px rgba(255,87,34,0.5);
+    animation: pulseGlow 1s infinite alternate;
+    scroll-margin-top: 120px;
+    border-radius: 18px;
+}
+
+@keyframes pulseGlow{
+    from{
+        transform: scale(1);
+    }
+    to{
+        transform: scale(1.03);
+    }
+}
+
 </style>
 
 {% endblock %}

@@ -694,7 +694,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
                         option.href = item.type === "store"
                             ? `/store/${item.id}/`
-                            : `/store/${item.store_id}/?highlight=${item.id}`;
+                            : `/search/?q=${encodeURIComponent(item.name)}&highlight=${item.id}`;
 
                         option.classList.add("list-group-item");
 
@@ -791,7 +791,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     }else{
 
                         window.location.href =
-                            `/store/${item.store_id}/?highlight=${item.id}`;
+                            `/search/?q=${encodeURIComponent(item.name)}&highlight=${item.id}`;
 
                     }
 
