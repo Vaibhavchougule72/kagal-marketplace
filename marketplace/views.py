@@ -3983,8 +3983,8 @@ def debug_view(view_func):
 @debug_view
 def income_expense_dashboard(request):
 
-    orders = Order.objects.filter(
-        payment_status="SUCCESS"
+    orders = Order.objects.exclude(
+        status="CANCELLED"
     )
 
     expenses = Expense.objects.all().order_by(
