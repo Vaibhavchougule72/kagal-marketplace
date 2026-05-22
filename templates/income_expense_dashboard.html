@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>💰 Income Expense Dashboard</h2>
+
+<!-- FILTER -->
+
+<form method="GET" class="row mb-4">
+
+<div class="col-md-4">
+<label>Start Date</label>
+<input type="date"
+name="start_date"
+value="{{ start_date }}"
+class="form-control">
+</div>
+
+<div class="col-md-4">
+<label>End Date</label>
+<input type="date"
+name="end_date"
+value="{{ end_date }}"
+class="form-control">
+</div>
+
+<div class="col-md-4 d-flex align-items-end">
+<button class="btn btn-primary w-100">
+Apply Filter
+</button>
+</div>
+
+</form>
+
+<!-- KPI -->
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-3">
+<div class="card p-3">
+<h6>Total Sales</h6>
+<h3>₹{{ total_sales }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h6>Delivery Fee</h6>
+<h3>₹{{ total_delivery_fee }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h6>Handling Fee</h6>
+<h3>₹{{ total_handling_fee }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h6>Commission</h6>
+<h3>₹{{ total_commission }}</h3>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card p-3">
+<h6>Total Expense</h6>
+<h3 class="text-danger">
+₹{{ total_expense }}
+</h3>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card p-3">
+<h6>Total Earned</h6>
+<h3 class="text-success">
+₹{{ total_earned }}
+</h3>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card p-3">
+<h6>Remaining Profit</h6>
+<h3 class="text-primary">
+₹{{ remaining }}
+</h3>
+</div>
+</div>
+
+</div>
+
+<!-- ADD EXPENSE -->
+
+<div class="card p-4 mb-4">
+
+<h4>Add Expense</h4>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="row g-3">
+
+<div class="col-md-3">
+<input type="text"
+name="reason"
+placeholder="Reason"
+class="form-control"
+required>
+</div>
+
+<div class="col-md-2">
+<input type="number"
+step="0.01"
+name="amount"
+placeholder="Amount"
+class="form-control"
+required>
+</div>
+
+<div class="col-md-3">
+<input type="text"
+name="payment_method"
+placeholder="Cash / UPI / Bank"
+class="form-control">
+</div>
+
+<div class="col-md-3">
+<input type="text"
+name="notes"
+placeholder="Notes"
+class="form-control">
+</div>
+
+<div class="col-md-1">
+<button class="btn btn-success w-100">
++
+</button>
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+<!-- EXPENSE TABLE -->
+
+<div class="card p-4">
+
+<h4>Expenses</h4>
+
+<div class="table-responsive">
+
+<table class="table table-striped">
+
+<thead>
+
+<tr>
+<th>Reason</th>
+<th>Amount</th>
+<th>Method</th>
+<th>Notes</th>
+<th>Date</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for e in expenses %}
+
+<tr>
+
+<td>{{ e.reason }}</td>
+
+<td class="text-danger">
+₹{{ e.amount }}
+</td>
+
+<td>{{ e.payment_method }}</td>
+
+<td>{{ e.notes }}</td>
+
+<td>{{ e.created_at }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

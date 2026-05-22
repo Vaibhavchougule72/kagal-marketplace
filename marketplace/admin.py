@@ -567,3 +567,7 @@ admin.site.register(Coupon)
 from .models import DeliveryPartnerProfile
 
 admin.site.register(DeliveryPartnerProfile)
+
+from .models import Expense
+
+admin.site.register(Expense)

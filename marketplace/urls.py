@@ -110,6 +110,12 @@ urlpatterns = [
         name="save_checkout_lead"
     ),
 
+    path(
+        "income-expense-dashboard/",
+        views.income_expense_dashboard,
+        name="income_expense_dashboard"
+    ),
+
 ]
 
 

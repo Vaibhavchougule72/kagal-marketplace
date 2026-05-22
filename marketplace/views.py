@@ -10,7 +10,7 @@ import math
 import re
 from django.conf import settings
 from django.contrib import messages
-from .models import Category, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead
+from .models import Category, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead, Expense
 from .cart import Cart
 from django.contrib.auth.models import User
 from .models import Bundle
@@ -41,6 +41,8 @@ from django.views.decorators.http import require_POST
 from .models import StoreRating
 from .firebase import send_push_notification
 from .models import DeviceToken
+from django.db.models import Sum
+from datetime import datetime
 
 MAX_CART_QTY = 50
 
@@ -3944,3 +3946,125 @@ def save_checkout_lead(request):
     return JsonResponse({
         "success": False
     })
+
+@staff_member_required
+def income_expense_dashboard(request):
+
+    orders = Order.objects.filter(
+        payment_status="SUCCESS"
+    )
+
+    expenses = Expense.objects.all().order_by(
+        "-created_at"
+    )
+
+    # =========================
+    # DATE FILTER
+    # =========================
+
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    if start_date and end_date:
+
+        orders = orders.filter(
+            created_at__date__range=[
+                start_date,
+                end_date
+            ]
+        )
+
+        expenses = expenses.filter(
+            created_at__date__range=[
+                start_date,
+                end_date
+            ]
+        )
+
+    # =========================
+    # TOTALS
+    # =========================
+
+    total_sales = sum(
+        o.subtotal for o in orders
+    )
+
+    total_delivery_fee = sum(
+        o.delivery_fee for o in orders
+    )
+
+    total_handling_fee = sum(
+        o.handling_fee for o in orders
+    )
+
+    total_commission = 0
+
+    for order in orders:
+
+        if order.store:
+
+            total_commission += (
+                order.subtotal *
+                order.store.commission_percent
+            ) / 100
+
+    total_expense = sum(
+        e.amount for e in expenses
+    )
+
+    total_earned = (
+        total_delivery_fee +
+        total_handling_fee +
+        total_commission
+    )
+
+    remaining = (
+        total_earned -
+        total_expense
+    )
+
+    # =========================
+    # ADD EXPENSE
+    # =========================
+
+    if request.method == "POST":
+
+        reason = request.POST.get("reason")
+        amount = request.POST.get("amount")
+        payment_method = request.POST.get(
+            "payment_method"
+        )
+
+        notes = request.POST.get("notes")
+
+        Expense.objects.create(
+
+            reason=reason,
+            amount=amount,
+            payment_method=payment_method,
+            notes=notes
+
+        )
+
+        return redirect(
+            "income_expense_dashboard"
+        )
+
+    return render(
+        request,
+        "income_expense_dashboard.html",
+        {
+
+            "total_sales": total_sales,
+            "total_delivery_fee": total_delivery_fee,
+            "total_handling_fee": total_handling_fee,
+            "total_commission": total_commission,
+            "total_expense": total_expense,
+            "total_earned": total_earned,
+            "remaining": remaining,
+            "expenses": expenses,
+            "start_date": start_date,
+            "end_date": end_date
+
+        }
+    )
