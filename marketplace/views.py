@@ -43,6 +43,7 @@ from .firebase import send_push_notification
 from .models import DeviceToken
 from django.db.models import Sum
 from datetime import datetime
+import traceback
 
 MAX_CART_QTY = 50
 
@@ -3947,7 +3948,39 @@ def save_checkout_lead(request):
         "success": False
     })
 
+def debug_view(view_func):
+
+    def wrapper(request, *args, **kwargs):
+
+        try:
+
+            return view_func(request, *args, **kwargs)
+
+        except Exception as e:
+
+            print("\n🔥🔥🔥 SERVER ERROR 🔥🔥🔥")
+            print("VIEW:", view_func.__name__)
+            print(traceback.format_exc())
+
+            logger.error(
+                f"ERROR IN {view_func.__name__}",
+                exc_info=True
+            )
+
+            return HttpResponse(
+                f"""
+                <h1>SERVER ERROR</h1>
+                <pre>
+{traceback.format_exc()}
+                </pre>
+                """,
+                status=500
+            )
+
+    return wrapper
+
 @staff_member_required
+@debug_view
 def income_expense_dashboard(request):
 
     orders = Order.objects.filter(
@@ -4068,3 +4101,4 @@ def income_expense_dashboard(request):
 
         }
     )
+
