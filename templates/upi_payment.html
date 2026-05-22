@@ -31,19 +31,27 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const paymentDone = sessionStorage.getItem(
-        "payment_done_{{ pending_id }}"
-    );
 
-    if (paymentDone) {
+    function checkPaymentCompleted(){
 
-        document.getElementById("rzp-button").style.display = "none";
+        const paymentDone = sessionStorage.getItem(
+            "payment_done_{{ pending_id }}"
+        );
 
-        document.getElementById("loader").style.display = "none";
+        if (paymentDone) {
 
-        document.getElementById("title").innerText =
-            "Payment Completed Successfully";
+            window.location.replace(
+                "/payment-success/?pending_id={{ pending_id }}"
+            );
 
+            return true;
+        }
+
+        return false;
+    }
+
+    // CHECK IMMEDIATELY
+    if(checkPaymentCompleted()){
         return;
     }
 
@@ -57,6 +65,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const params = new URLSearchParams(window.location.search);
     const startPayment = params.get("start_payment");
+
+    // ======================================
+    // DETECT RETURN FROM APP
+    // ======================================
+
+    document.addEventListener("visibilitychange", function () {
+
+        if (!document.hidden) {
+
+            checkPaymentCompleted();
+
+        }
+
+    });
 
     // -----------------------------------------
     // BACK BUTTON LOGIC
