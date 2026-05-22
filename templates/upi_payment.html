@@ -31,6 +31,22 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    const paymentDone = sessionStorage.getItem(
+        "payment_done_{{ pending_id }}"
+    );
+
+    if (paymentDone) {
+
+        document.getElementById("rzp-button").style.display = "none";
+
+        document.getElementById("loader").style.display = "none";
+
+        document.getElementById("title").innerText =
+            "Payment Completed Successfully";
+
+        return;
+    }
+
     const btn = document.getElementById("rzp-button");
     const loader = document.getElementById("loader");
     const title = document.getElementById("title");
@@ -147,6 +163,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             handler: function (response) {
 
+                // ✅ MARK PAYMENT COMPLETED
+                sessionStorage.setItem(
+                    "payment_done_{{ pending_id }}",
+                    "1"
+                );
+
                 window.location.href =
                     "https://www.loka-store.online/payment-success/?razorpay_payment_id="
                     + response.razorpay_payment_id
@@ -175,8 +197,17 @@ document.addEventListener("DOMContentLoaded", function () {
         rzp.open();
 
     }, 1200);
+});
+
+
+window.addEventListener("pageshow", function(event) {
+
+    if (event.persisted) {
+        window.location.reload();
+    }
 
 });
+
 </script>
 
 {% endblock %}
