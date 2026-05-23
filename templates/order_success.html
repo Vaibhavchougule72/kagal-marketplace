@@ -63,17 +63,15 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     // 🔽 YOUR EXISTING CODE (UNCHANGED)
-    const appUrl = "lokamarketplace://order-success/" + orderId;
+    const appUrl =
+        "intent://order-success/" + orderId +
+        "#Intent;" +
+        "scheme=lokamarketplace;" +
+        "package=com.lokamarketplace.app;" +
+        "end";
 
     function openApp(){
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.src = appUrl;
-        document.body.appendChild(iframe);
-
-        setTimeout(function(){
-            iframe.remove();
-        },1200);
+        window.location.href = appUrl;
     }
 
     const key = "opened_app_" + orderId;
