@@ -2064,9 +2064,27 @@ logger = logging.getLogger(__name__)
 # ORDERS
 # =====================================================
 def order_success(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    return render(request, 'order_success.html', {'order': order, "show_floating_cart": False, 'simple_navbar': True,})
 
+    # ✅ CLEAR CART ALWAYS
+    request.session["cart"] = {
+        "store_id": None,
+        "items": {}
+    }
+
+    request.session.modified = True
+
+    order = get_object_or_404(
+        Order,
+        id=order_id
+    )
+
+    return render(
+        request,
+        "order_success.html",
+        {
+            "order": order
+        }
+    )
 
 def order_tracking(request, order_id):
     order = get_object_or_404(Order, id=order_id)

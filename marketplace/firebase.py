@@ -16,6 +16,9 @@ if firebase_json:
         cred = credentials.Certificate(cred_dict)
 
         firebase_admin.initialize_app(cred)
+else:
+
+    print("❌ FIREBASE_CREDENTIALS missing")
 
 
 def send_push_notification(
