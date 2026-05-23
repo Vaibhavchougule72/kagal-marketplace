@@ -185,18 +185,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
             handler: function (response) {
 
-                // ✅ MARK PAYMENT COMPLETED
+                loader.style.display = "block";
+
+                title.innerText = "Verifying payment...";
+
+                // 🔥 SAVE PAYMENT ID
                 sessionStorage.setItem(
-                    "payment_done_{{ pending_id }}",
-                    "1"
+                    "last_payment_id",
+                    response.razorpay_payment_id
                 );
 
-                window.location.href =
-                    "https://www.loka-store.online/payment-success/?razorpay_payment_id="
-                    + response.razorpay_payment_id
-                    + "&razorpay_order_id=" + response.razorpay_order_id
-                    + "&razorpay_signature=" + response.razorpay_signature
-                    + "&pending_id={{ pending_id }}";
+                // 🔥 START POLLING
+                let attempts = 0;
+
+                const poll = setInterval(function(){
+
+                    attempts++;
+
+                    fetch(
+                        "/check-payment-status/?order_id={{ razorpay_order_id }}"
+                    )
+                    .then(res => res.json())
+                    .then(data => {
+
+                        if(data.success){
+
+                            sessionStorage.setItem(
+                                "payment_done_{{ pending_id }}",
+                                "1"
+                            );
+
+                            clearInterval(poll);
+
+                            window.location.href =
+                                data.redirect_url;
+                        }
+
+                        // timeout after 60 sec
+                        if(attempts > 30){
+
+                            clearInterval(poll);
+
+                            title.innerText =
+                                "Payment received. Please wait.";
+
+                            cancelBox.style.display = "block";
+                        }
+
+                    });
+
+                }, 2000);
             },
 
             modal: {

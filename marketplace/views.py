@@ -1650,7 +1650,7 @@ def razorpay_webhook(request):
             # DUPLICATE PAYMENT CHECK
             # -----------------------------------
             existing_order = Order.objects.filter(
-                payment_id=razorpay_order_id
+                payment_id=razorpay_payment_id
             ).first()
 
             if existing_order:
@@ -2539,16 +2539,16 @@ from django.http import JsonResponse
 
 def check_payment_status(request):
 
-    pending_id = request.GET.get("pending_id")
+    order_id = request.GET.get("order_id")
 
-    if not pending_id:
+    if not order_id:
 
         return JsonResponse({
             "success": False
         })
 
     pending = PendingOrder.objects.filter(
-        id=pending_id
+        razorpay_order_id=order_id
     ).first()
 
     if not pending:
@@ -2557,30 +2557,29 @@ def check_payment_status(request):
             "success": False
         })
 
-    # -----------------------------------
-    # FIND CREATED ORDER
-    # -----------------------------------
-    order = Order.objects.filter(
-        phone=pending.phone,
-        payment_method="UPI"
-    ).order_by("-id").first()
-    # fallback
-    if not order:
+    # webhook completed?
+    if pending.is_completed:
 
         order = Order.objects.filter(
             phone=pending.phone,
-            total=pending.total
+            total=pending.total,
+            payment_method="UPI"
         ).order_by("-id").first()
 
-    # -----------------------------------
-    # SUCCESS
-    # -----------------------------------
-    if order:
+        if order:
 
-        return JsonResponse({
-            "success": True,
-            "redirect_url": f"/order-success/{order.id}/"
-        })
+            request.session["cart"] = {
+                "store_id": None,
+                "items": {}
+            }
+
+            request.session.modified = True
+
+            return JsonResponse({
+                "success": True,
+                "redirect_url":
+                    f"/order-success/{order.id}/"
+            })
 
     return JsonResponse({
         "success": False
@@ -3939,7 +3938,6 @@ def save_checkout_lead(request):
         except Exception as e:
 
             print("SAVE CHECKOUT LEAD ERROR:", e)
-
             return JsonResponse({
                 "success": False
             })
