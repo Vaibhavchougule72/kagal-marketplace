@@ -410,6 +410,7 @@ def store_detail(request, store_id):
         "selected_sort": sort,
         "min_price": min_price,
         "max_price": max_price,
+        'simple_navbar': True,
     })
 
 def add_bundle_to_cart(request, bundle_id):
@@ -2082,7 +2083,8 @@ def order_success(request, order_id):
         request,
         "order_success.html",
         {
-            "order": order
+            "order": order,
+            "show_floating_cart": False, 'simple_navbar': True,
         }
     )
 
