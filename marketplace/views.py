@@ -2507,33 +2507,36 @@ def payment_success(request):
     if not pending:
         return render(request, "payment_processing.html")
 
-    # find created order
-    order = Order.objects.filter(
-        payment_id=request.GET.get("razorpay_payment_id")
-        ).first()
+    # webhook completed?
+    if pending.is_completed:
 
-    # success
-    if order:
+        order = Order.objects.filter(
+            phone=pending.phone,
+            total=pending.total,
+            payment_method="UPI"
+        ).order_by("-id").first()
 
-        request.session["cart"] = {
-            "store_id": None,
-            "items": {}
-        }
+        if order:
 
-        request.session.pop("pending_id", None)
+            # CLEAR CART
+            request.session["cart"] = {
+                "store_id": None,
+                "items": {}
+            }
 
-        request.session.modified = True
+            request.session.pop("pending_id", None)
 
-        return redirect(
-            "order_success",
-            order_id=order.id
-        )
+            request.session.modified = True
 
-    # still processing
+            return redirect(
+                "order_success",
+                order_id=order.id
+            )
+
     return render(
         request,
         "payment_processing.html"
-    ) 
+    )
 
 from django.http import JsonResponse
 
