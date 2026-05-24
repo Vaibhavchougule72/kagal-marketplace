@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2 class="mb-4">
+🏪 Store Orders Dashboard
+</h2>
+
+<form method="GET" class="row g-3 mb-4">
+
+<div class="col-md-4">
+
+<label>Store</label>
+
+<select
+name="store"
+class="form-control">
+
+<option value="">
+All Stores
+</option>
+
+{% for store in stores %}
+
+<option
+value="{{ store.id }}"
+{% if selected_store and selected_store.id == store.id %}
+selected
+{% endif %}
+>
+
+{{ store.name }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="col-md-3">
+
+<label>Start Date</label>
+
+<input
+type="date"
+name="start_date"
+value="{{ start_date }}"
+class="form-control">
+
+</div>
+
+<div class="col-md-3">
+
+<label>End Date</label>
+
+<input
+type="date"
+name="end_date"
+value="{{ end_date }}"
+class="form-control">
+
+</div>
+
+<div class="col-md-2 d-flex align-items-end">
+
+<button class="btn btn-primary w-100">
+Apply
+</button>
+
+</div>
+
+</form>
+
+{% if selected_store %}
+
+<h1 class="fw-bold mb-4">
+{{ selected_store.name }}
+</h1>
+
+{% endif %}
+
+<div class="row g-3 mb-4">
+
+<div class="col-md-3">
+
+<div class="card p-3">
+
+<h6>Total Orders</h6>
+
+<h3>
+{{ total_orders }}
+</h3>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card p-3">
+
+<h6>Total Sales</h6>
+
+<h3>
+₹{{ total_sales }}
+</h3>
+
+</div>
+
+</div>
+
+<div class="col-md-2">
+
+<div class="card p-3">
+
+<h6>Commission</h6>
+
+<h3>
+{{ commission_percent }}%
+</h3>
+
+</div>
+
+</div>
+
+<div class="col-md-2">
+
+<div class="card p-3">
+
+<h6>Platform Fee</h6>
+
+<h3>
+₹{{ platform_fee }}
+</h3>
+
+</div>
+
+</div>
+
+<div class="col-md-2">
+
+<div class="card p-3">
+
+<h6>Store Income</h6>
+
+<h3>
+₹{{ store_income }}
+</h3>
+
+</div>
+
+</div>
+
+</div>
+
+<a
+href="{% url 'store_orders_pdf' %}?store={{ request.GET.store }}&start_date={{ start_date }}&end_date={{ end_date }}"
+
+⬇ Download PDF
+
+</a>
+
+<div class="card p-4">
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>#</th>
+<th>Date & Time</th>
+<th>Items</th>
+<th>Subtotal</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for order in orders %}
+
+<tr>
+
+<td>
+{{ order.serial }}
+</td>
+
+<td>
+{{ order.date }}
+</td>
+
+<td>
+{{ order.items }}
+</td>
+
+<td>
+₹{{ order.subtotal }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+<tr class="fw-bold">
+
+<td colspan="3">
+TOTAL
+</td>
+
+<td>
+₹{{ total_sales }}
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

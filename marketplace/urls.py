@@ -115,6 +115,17 @@ urlpatterns = [
         views.income_expense_dashboard,
         name="income_expense_dashboard"
     ),
+    path(
+        "store-orders-dashboard/",
+        views.store_orders_dashboard,
+        name="store_orders_dashboard"
+    ),
+
+    path(
+        "store-orders-pdf/",
+        views.store_orders_pdf,
+        name="store_orders_pdf"
+    ),
 
 ]
 

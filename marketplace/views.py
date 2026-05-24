@@ -4122,3 +4122,315 @@ def income_expense_dashboard(request):
         }
     )
 
+from django.db.models import Sum
+from django.db.models import Count
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle
+)
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
+from io import BytesIO
+
+def store_orders_dashboard(request):
+
+    stores = Store.objects.all()
+
+    store_id = request.GET.get("store")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    orders = Order.objects.filter(
+        status="DELIVERED"
+    )
+
+    selected_store = None
+
+    if store_id:
+
+        orders = orders.filter(
+            store_id=store_id
+        )
+
+        selected_store = Store.objects.filter(
+            id=store_id
+        ).first()
+
+    if start_date:
+
+        orders = orders.filter(
+            created_at__date__gte=start_date
+        )
+
+    if end_date:
+
+        orders = orders.filter(
+            created_at__date__lte=end_date
+        )
+
+    total_orders = orders.count()
+
+    total_sales = (
+        orders.aggregate(
+            total=Sum("subtotal")
+        )["total"]
+        or 0
+    )
+
+    commission_percent = 0
+
+    if selected_store:
+        commission_percent = (
+            selected_store.commission_percent
+        )
+
+    platform_fee = (
+        total_sales * commission_percent
+    ) / 100 if commission_percent else 0
+
+    store_income = total_sales - platform_fee
+
+    all_orders = []
+
+    serial = 1
+
+    for order in orders.order_by("accepted_at"):
+
+        items = []
+
+        for item in order.items.all():
+
+            items.append(
+                f"{item.display_name} x {item.quantity}"
+            )
+
+        all_orders.append({
+            "serial": serial,
+            "date": order.accepted_at,
+            "items": ", ".join(items),
+            "subtotal": order.subtotal
+        })
+
+        serial += 1
+
+    return render(
+        request,
+        "store_orders_dashboard.html",
+        {
+            "stores": stores,
+            "selected_store": selected_store,
+            "start_date": start_date,
+            "end_date": end_date,
+            "total_orders": total_orders,
+            "total_sales": total_sales,
+            "commission_percent": commission_percent,
+            "platform_fee": platform_fee,
+            "store_income": store_income,
+            "orders": all_orders
+        }
+    )
+
+def store_orders_pdf(request):
+
+    store_id = request.GET.get("store")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    orders = Order.objects.filter(
+        status="DELIVERED"
+    )
+
+    selected_store = None
+
+    if store_id:
+
+        orders = orders.filter(
+            store_id=store_id
+        )
+
+        selected_store = Store.objects.filter(
+            id=store_id
+        ).first()
+
+    if start_date:
+
+        orders = orders.filter(
+            created_at__date__gte=start_date
+        )
+
+    if end_date:
+
+        orders = orders.filter(
+            created_at__date__lte=end_date
+        )
+
+    total_orders = orders.count()
+
+    total_sales = (
+        orders.aggregate(
+            total=Sum("subtotal")
+        )["total"]
+        or 0
+    )
+
+    commission_percent = 0
+
+    if selected_store:
+        commission_percent = (
+            selected_store.commission_percent
+        )
+
+    platform_fee = (
+        total_sales * commission_percent
+    ) / 100 if commission_percent else 0
+
+    store_income = total_sales - platform_fee
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter
+    )
+
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    elements.append(
+        Paragraph(
+            "Store Orders Report",
+            styles["Heading1"]
+        )
+    )
+
+    elements.append(
+        Spacer(1, 12)
+    )
+
+    elements.append(
+        Paragraph(
+            f"Store: {selected_store.name if selected_store else 'All Stores'}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            f"Date Range: {start_date} to {end_date}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Spacer(1, 12)
+    )
+
+    elements.append(
+        Paragraph(
+            f"Total Orders: {total_orders}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            f"Total Sales: ₹{total_sales}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            f"Commission: {commission_percent}%",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            f"Platform Fee: ₹{platform_fee}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            f"Store Income: ₹{store_income}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Spacer(1, 20)
+    )
+
+    data = [[
+        "S.No",
+        "Accepted Time",
+        "Items",
+        "Subtotal"
+    ]]
+
+    serial = 1
+
+    subtotal_total = 0
+
+    for order in orders.order_by("accepted_at"):
+
+        items = []
+
+        for item in order.items.all():
+
+            items.append(
+                f"{item.display_name} x {item.quantity}"
+            )
+
+        data.append([
+            serial,
+            str(order.accepted_at),
+            ", ".join(items),
+            f"₹{order.subtotal}"
+        ])
+
+        subtotal_total += order.subtotal
+
+        serial += 1
+
+    data.append([
+        "",
+        "",
+        "TOTAL",
+        f"₹{subtotal_total}"
+    ])
+
+    table = Table(data)
+
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+        ("GRID", (0,0), (-1,-1), 1, colors.black),
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    pdf = buffer.getvalue()
+
+    buffer.close()
+
+    response = HttpResponse(
+        pdf,
+        content_type="application/pdf"
+    )
+
+    response[
+        "Content-Disposition"
+    ] = 'attachment; filename="store_orders_report.pdf"'
+
+    return response
