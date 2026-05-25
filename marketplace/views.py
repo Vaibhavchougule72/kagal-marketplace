@@ -1219,6 +1219,12 @@ def checkout(request):
                 Decimal("1"),
                 rounding=ROUND_HALF_UP
             )
+            print("========== CHECKOUT DEBUG ==========")
+            print("COUPON CODE:", coupon_code)
+            print("DISCOUNT:", discount)
+            print("DELIVERY:", delivery_fee)
+            print("FINAL TOTAL:", total)
+            print("====================================")
 
             # ===================================
             # SAVE CHECKOUT LEAD

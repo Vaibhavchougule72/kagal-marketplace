@@ -115,6 +115,10 @@
 
             <input type="text" id="coupon_code" class="form-control">
             <input type="hidden" name="coupon_code" id="applied_coupon">
+            <input type="hidden"
+                name="discount_amount"
+                id="hidden_discount"
+                value="0">
             <button type="button" class="btn btn-primary mt-2" onclick="applyCoupon()">Apply Coupon</button>
 
             <p id="coupon_message"></p>
@@ -480,15 +484,19 @@ function updateDelivery(lat, lng){
             freeDeliveryUnlocked ? "true" : "false";
 
         const deliveryFee = data.delivery_fee;
-        const total = freeDeliveryUnlocked
-            ? (subtotal + handlingFee - appliedDiscount)
-            : data.total;
+        const baseTotal =
+        subtotal +
+        handlingFee +
+        data.delivery_fee;
+
+        const total =
+        baseTotal - appliedDiscount;
 
         document.getElementById("deliveryFee").innerText =
             deliveryFee === 0 ? "FREE 🎉" : "₹" + deliveryFee;
 
         document.getElementById("orderTotal").innerText =
-            "₹" + total;
+            "₹" + total.toFixed(0);
 
         document.getElementById("distanceInfo").innerText =
             "Distance: " + data.distance + " km | Delivery: 40–60 mins";
@@ -559,21 +567,13 @@ appliedDiscount = data.discount
 document.getElementById("discount_amount").innerText =
 "₹" + appliedDiscount
 
-// Get current values from page
-const subtotalValue = parseFloat("{{ subtotal }}")
-const handlingFee = parseFloat("{{ handling_fee }}")
+document.getElementById("hidden_discount").value =
+    appliedDiscount;
 
-// Delivery from UI
-const deliveryText = document.getElementById("deliveryFee").innerText
-const deliveryValue =
-    deliveryText.includes("FREE")
-    ? 0
-    : parseFloat(deliveryText.replace("₹",""))
-
-const newTotal = subtotalValue + handlingFee + deliveryValue - appliedDiscount
-
-document.getElementById("orderTotal").innerText =
-"₹" + newTotal.toFixed(0)
+updateDelivery(
+    document.getElementById("latitude").value,
+    document.getElementById("longitude").value
+)
 
 document.getElementById("coupon_message").innerText =
 "Coupon applied successfully"
