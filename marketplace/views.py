@@ -1160,37 +1160,33 @@ def checkout(request):
 
                 try:
 
-                    coupon = Coupon.objects.select_for_update().get(
-                        code=coupon_code,
-                        is_active=True
-                    )
+                    with transaction.atomic():
+
+                        coupon = Coupon.objects.select_for_update().get(
+                            code=coupon_code,
+                            is_active=True
+                        )
+
+                        if coupon.used_count >= coupon.usage_limit:
+
+                            context["error"] = "Coupon fully used"
+
+                            return render(request, "checkout.html", context)
+
+                        already_used = CouponUsage.objects.filter(
+                            coupon=coupon,
+                            phone=phone
+                        ).exists()
+
+                        if already_used:
+
+                            context["error"] = "Coupon already used"
+
+                            return render(request, "checkout.html", context)
 
                 except Coupon.DoesNotExist:
 
                     context["error"] = "Invalid coupon"
-
-                    return render(request, "checkout.html", context)
-
-                # -----------------------------------
-                # RECHECK LIMIT
-                # -----------------------------------
-                if coupon.used_count >= coupon.usage_limit:
-
-                    context["error"] = "Coupon fully used"
-
-                    return render(request, "checkout.html", context)
-
-                # -----------------------------------
-                # RECHECK USER
-                # -----------------------------------
-                already_used = CouponUsage.objects.filter(
-                    coupon=coupon,
-                    phone=phone
-                ).exists()
-
-                if already_used:
-
-                    context["error"] = "Coupon already used"
 
                     return render(request, "checkout.html", context)
             # -----------------------------------
@@ -4234,6 +4230,27 @@ def store_orders_dashboard(request):
         }
     )
 
+from io import BytesIO
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+
+from django.db.models import Sum
+from django.utils.timezone import localtime
+
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle
+)
+
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus.flowables import KeepTogether
+
 def store_orders_pdf(request):
 
     store_id = request.GET.get("store")
@@ -4242,6 +4259,9 @@ def store_orders_pdf(request):
 
     orders = Order.objects.filter(
         status="DELIVERED"
+    ).prefetch_related(
+        "items",
+        "items__product"
     )
 
     selected_store = None
@@ -4268,6 +4288,12 @@ def store_orders_pdf(request):
             created_at__date__lte=end_date
         )
 
+    orders = orders.order_by("accepted_at")
+
+    # =====================================
+    # KPI
+    # =====================================
+
     total_orders = orders.count()
 
     total_sales = (
@@ -4280,6 +4306,7 @@ def store_orders_pdf(request):
     commission_percent = 0
 
     if selected_store:
+
         commission_percent = (
             selected_store.commission_percent
         )
@@ -4290,77 +4317,117 @@ def store_orders_pdf(request):
 
     store_income = total_sales - platform_fee
 
+    # =====================================
+    # PDF SETUP
+    # =====================================
+
     buffer = BytesIO()
 
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=letter
+        pagesize=A4,
+        rightMargin=20,
+        leftMargin=20,
+        topMargin=20,
+        bottomMargin=20
     )
 
     styles = getSampleStyleSheet()
 
+    # Marathi Font
+    styles["Normal"].fontName = "Noto"
+    styles["Heading1"].fontName = "Noto"
+
     elements = []
 
+    # =====================================
+    # TITLE
+    # =====================================
+
     elements.append(
+
         Paragraph(
             "Store Orders Report",
             styles["Heading1"]
         )
+
     )
 
     elements.append(
-        Spacer(1, 12)
+        Spacer(1, 15)
     )
+
+    # =====================================
+    # STORE + DATE
+    # =====================================
+
+    store_name = (
+        selected_store.name
+        if selected_store
+        else "All Stores"
+    )
+
+    date_range = (
+        f"{start_date or '-'} to {end_date or '-'}"
+    )
+
+    elements.append(
+
+        Paragraph(
+            f"<b>Store:</b> {store_name}",
+            styles["Normal"]
+        )
+
+    )
+
+    elements.append(
+
+        Paragraph(
+            f"<b>Date Range:</b> {date_range}",
+            styles["Normal"]
+        )
+
+    )
+
+    elements.append(
+        Spacer(1, 15)
+    )
+
+    # =====================================
+    # KPI SECTION
+    # =====================================
 
     elements.append(
         Paragraph(
-            f"Store: {selected_store.name if selected_store else 'All Stores'}",
+            f"<b>Total Orders:</b> {total_orders}",
             styles["Normal"]
         )
     )
 
     elements.append(
         Paragraph(
-            f"Date Range: {start_date} to {end_date}",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(
-        Spacer(1, 12)
-    )
-
-    elements.append(
-        Paragraph(
-            f"Total Orders: {total_orders}",
+            f"<b>Total Sales:</b> ₹{round(total_sales, 2)}",
             styles["Normal"]
         )
     )
 
     elements.append(
         Paragraph(
-            f"Total Sales: ₹{total_sales}",
+            f"<b>Commission:</b> {commission_percent}%",
             styles["Normal"]
         )
     )
 
     elements.append(
         Paragraph(
-            f"Commission: {commission_percent}%",
+            f"<b>Platform Fee:</b> ₹{round(platform_fee, 2)}",
             styles["Normal"]
         )
     )
 
     elements.append(
         Paragraph(
-            f"Platform Fee: ₹{platform_fee}",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(
-        Paragraph(
-            f"Store Income: ₹{store_income}",
+            f"<b>Store Income:</b> ₹{round(store_income, 2)}",
             styles["Normal"]
         )
     )
@@ -4369,54 +4436,151 @@ def store_orders_pdf(request):
         Spacer(1, 20)
     )
 
+    # =====================================
+    # TABLE
+    # =====================================
+
     data = [[
-        "S.No",
-        "Accepted Time",
-        "Items",
-        "Subtotal"
+
+        Paragraph("<b>S.No</b>", styles["Normal"]),
+
+        Paragraph("<b>Accepted Time</b>", styles["Normal"]),
+
+        Paragraph("<b>Items</b>", styles["Normal"]),
+
+        Paragraph("<b>Subtotal</b>", styles["Normal"])
+
     ]]
 
     serial = 1
-
     subtotal_total = 0
 
-    for order in orders.order_by("accepted_at"):
+    for order in orders:
 
-        items = []
+        items_text = []
 
         for item in order.items.all():
 
-            items.append(
-                f"{item.display_name} x {item.quantity}"
+            item_name = item.display_name
+
+            items_text.append(
+                f"{item_name} x {item.quantity}"
+            )
+
+        items_joined = ", ".join(items_text)
+
+        accepted_time = "-"
+
+        if order.accepted_at:
+
+            accepted_time = localtime(
+                order.accepted_at
+            ).strftime(
+                "%d-%m-%Y %I:%M %p"
             )
 
         data.append([
-            serial,
-            str(order.accepted_at),
-            ", ".join(items),
-            f"₹{order.subtotal}"
+
+            Paragraph(
+                str(serial),
+                styles["Normal"]
+            ),
+
+            Paragraph(
+                accepted_time,
+                styles["Normal"]
+            ),
+
+            Paragraph(
+                items_joined,
+                styles["Normal"]
+            ),
+
+            Paragraph(
+                f"₹{order.subtotal}",
+                styles["Normal"]
+            )
+
         ])
 
         subtotal_total += order.subtotal
 
         serial += 1
 
+    # =====================================
+    # TOTAL ROW
+    # =====================================
+
     data.append([
+
         "",
         "",
-        "TOTAL",
-        f"₹{subtotal_total}"
+        Paragraph(
+            "<b>TOTAL</b>",
+            styles["Normal"]
+        ),
+
+        Paragraph(
+            f"<b>₹{round(subtotal_total, 2)}</b>",
+            styles["Normal"]
+        )
+
     ])
 
-    table = Table(data)
+    # =====================================
+    # TABLE WIDTHS
+    # =====================================
+
+    table = Table(
+
+        data,
+
+        colWidths=[
+            45,
+            120,
+            280,
+            80
+        ],
+
+        repeatRows=1
+
+    )
 
     table.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
-        ("GRID", (0,0), (-1,-1), 1, colors.black),
-        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+
+        # FONT
+        ('FONTNAME', (0,0), (-1,-1), 'Noto'),
+
+        # HEADER
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+
+        # GRID
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+
+        # ALIGN
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+
+        ('ALIGN', (0,0), (0,-1), 'CENTER'),
+
+        ('ALIGN', (3,0), (3,-1), 'CENTER'),
+
+        # FONT SIZE
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+
+        # PADDING
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+
     ]))
 
-    elements.append(table)
+    elements.append(
+        KeepTogether(table)
+    )
+
+    # =====================================
+    # BUILD PDF
+    # =====================================
 
     doc.build(elements)
 
@@ -4431,6 +4595,9 @@ def store_orders_pdf(request):
 
     response[
         "Content-Disposition"
-    ] = 'attachment; filename="store_orders_report.pdf"'
+    ] = (
+        'attachment; '
+        'filename="store_orders_report.pdf"'
+    )
 
     return response
