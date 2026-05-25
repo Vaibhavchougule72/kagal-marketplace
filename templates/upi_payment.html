@@ -29,6 +29,7 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
+sessionStorage.removeItem("last_payment_id");
 document.addEventListener("DOMContentLoaded", function () {
 
 
@@ -135,9 +136,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const isAndroidApp = /wv|Android/i.test(navigator.userAgent);
 
             if (isAndroidApp) {
-                window.open(nextUrl, "_blank");
+                window.location.href =
+                    nextUrl + "&t=" + Date.now();
             } else {
-                window.location.replace(nextUrl);
+                window.location.href = nextUrl + "&t=" + Date.now();
             }
 
             // Auto reset if user returns

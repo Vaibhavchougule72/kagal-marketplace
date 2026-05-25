@@ -1151,7 +1151,9 @@ def checkout(request):
             discount = Decimal(0)
 
             if subtotal < 149 and payment == "COD":
+
                 context["error"] = "COD not allowed below ₹149"
+
                 return render(request, "checkout.html", context)
 
             coupon = None
@@ -1160,53 +1162,48 @@ def checkout(request):
 
                 try:
 
-                    with transaction.atomic():
+                    coupon = Coupon.objects.get(
+                        code=coupon_code.strip(),
+                        is_active=True
+                    )
 
-                        coupon = Coupon.objects.select_for_update().get(
-                            code=coupon_code,
-                            is_active=True
-                        )
+                    if coupon.used_count >= coupon.usage_limit:
 
-                        if coupon.used_count >= coupon.usage_limit:
+                        context["error"] = "Coupon fully used"
 
-                            context["error"] = "Coupon fully used"
+                        return render(request, "checkout.html", context)
 
-                            return render(request, "checkout.html", context)
+                    already_used = CouponUsage.objects.filter(
+                        coupon=coupon,
+                        phone=phone
+                    ).exists()
 
-                        already_used = CouponUsage.objects.filter(
-                            coupon=coupon,
-                            phone=phone
-                        ).exists()
+                    if already_used:
 
-                        if already_used:
+                        context["error"] = "Coupon already used"
 
-                            context["error"] = "Coupon already used"
+                        return render(request, "checkout.html", context)
 
-                            return render(request, "checkout.html", context)
+                    # ✅ APPLY DISCOUNT HERE ITSELF
+                    if coupon.discount_type == "PERCENTAGE":
+
+                        discount = (
+                            subtotal * coupon.discount_value
+                        ) / 100
+
+                    elif coupon.discount_type == "FIXED":
+
+                        discount = coupon.discount_value
 
                 except Coupon.DoesNotExist:
 
                     context["error"] = "Invalid coupon"
 
                     return render(request, "checkout.html", context)
-            # -----------------------------------
-            # APPLY COUPON DISCOUNT
-            # -----------------------------------
 
-            if coupon:
-
-                if coupon.discount_type == "PERCENTAGE":
-
-                    discount = (
-                        subtotal * coupon.discount_value
-                    ) / 100
-
-                elif coupon.discount_type == "FIXED":
-
-                    discount = coupon.discount_value
-
-            # Prevent negative discount
+            # Prevent over discount
             if discount > subtotal:
+
                 discount = subtotal
 
             # FINAL TOTAL

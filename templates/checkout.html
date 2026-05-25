@@ -113,8 +113,12 @@
             <label>{% trans "Coupon Code" %}</label>
             
 
-            <input type="text" id="coupon_code" class="form-control">
-            <input type="hidden" name="coupon_code" id="applied_coupon">
+            <input
+                type="text"
+                id="coupon_code"
+                name="coupon_code"
+                class="form-control">
+        
             <input type="hidden"
                 name="discount_amount"
                 id="hidden_discount"
@@ -578,8 +582,6 @@ updateDelivery(
 document.getElementById("coupon_message").innerText =
 "Coupon applied successfully"
 
-document.getElementById("applied_coupon").value = code
-
 }else{
 
     appliedDiscount = 0   // 🔥 ADD THIS
@@ -906,21 +908,21 @@ function autoSaveLead(){
     if(leadSaved) return;
 
     const name =
-        document.getElementById("name").value;
+        document.getElementById("nameInput").value;
 
     const phone =
         document.getElementById("phoneInput").value;
 
     const address =
-        document.getElementById("address").value;
+        document.getElementById("addressInput").value;
 
     const payment =
         document.querySelector(
-            'input[name="payment_method"]:checked'
+            'input[name="payment"]:checked'
         )?.value || "";
 
     const total =
-        document.getElementById("finalTotal")
+        document.getElementById("orderTotal")
         ?.innerText || 0;
 
     // VALIDATION
@@ -971,7 +973,11 @@ function autoSaveLead(){
 
 let typingTimer;
 
-["name", "phoneInput", "address"].forEach(id => {
+[
+    "nameInput",
+    "phoneInput",
+    "addressInput"
+].forEach(id => {
 
     const el = document.getElementById(id);
 
