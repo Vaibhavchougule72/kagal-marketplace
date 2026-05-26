@@ -702,3 +702,230 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     box-shadow:
     0 -4px 15px rgba(0,0,0,0.08);
 }
+
+
+/* =========================
+   APP STYLE NAVBAR
+========================= */
+
+.premium-navbar{
+    background:
+    linear-gradient(
+        135deg,
+        #ff4d6d,
+        #ff758f
+    ) !important;
+
+    border:none !important;
+
+    padding:
+    calc(10px + env(safe-area-inset-top))
+    16px
+    12px;
+}
+
+.loka-logo{
+    font-size:30px;
+    font-weight:800;
+    color:white !important;
+    letter-spacing:1px;
+}
+
+.premium-cart-btn{
+    width:44px;
+    height:44px;
+    border:none;
+    border-radius:50%;
+    background:white;
+    position:relative;
+}
+
+/* =========================
+   APP HERO
+========================= */
+
+.app-hero{
+    background:
+    linear-gradient(
+        135deg,
+        #ff4d6d,
+        #ff758f
+    );
+
+    padding:14px 14px 24px;
+}
+
+/* SEARCH */
+
+.sticky-search-area{
+    position:sticky;
+    top:72px;
+    z-index:999;
+}
+
+.premium-search-box{
+    background:white;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    padding:14px 16px;
+    box-shadow:
+    0 10px 25px rgba(0,0,0,0.12);
+}
+
+.search-icon{
+    font-size:20px;
+    margin-right:10px;
+}
+
+.premium-search-box input{
+    border:none;
+    width:100%;
+    outline:none;
+    font-size:16px;
+}
+
+/* =========================
+   OFFER SLIDER
+========================= */
+
+.offer-slide-card{
+    position:relative;
+    height:240px;
+    border-radius:24px;
+    overflow:hidden;
+}
+
+.offer-slide-card img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.offer-overlay{
+    position:absolute;
+    inset:0;
+
+    background:
+    linear-gradient(
+        to top,
+        rgba(0,0,0,0.55),
+        rgba(0,0,0,0.1)
+    );
+}
+
+.offer-content{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    color:white;
+    z-index:2;
+}
+
+.offer-content h2{
+    font-size:28px;
+    font-weight:800;
+}
+
+.offer-badge{
+    display:inline-block;
+    background:#ffeb3b;
+    color:black;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:999px;
+    margin-bottom:10px;
+}
+
+.offer-order-btn{
+    border:none;
+    background:white;
+    color:black;
+    border-radius:999px;
+    padding:10px 18px;
+    font-weight:700;
+}
+
+/* =========================
+   COMPACT CATEGORY GRID
+========================= */
+
+.compact-category-section{
+    background:white;
+    padding:18px 12px;
+}
+
+.section-title-row h5{
+    font-weight:800;
+    margin-bottom:16px;
+}
+
+.compact-category-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.compact-category-card{
+    text-decoration:none;
+    text-align:center;
+}
+
+.compact-category-image{
+    width:72px;
+    height:72px;
+    margin:auto;
+    border-radius:18px;
+    overflow:hidden;
+    background:#f5f5f5;
+}
+
+.compact-category-image img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.compact-category-name{
+    margin-top:6px;
+    font-size:12px;
+    font-weight:600;
+    color:#111;
+}
+
+/* =========================
+   RECOMMENDED CARDS
+========================= */
+
+.combo-card{
+    border-radius:18px !important;
+    overflow:hidden;
+}
+
+.loka-product-image{
+    aspect-ratio:1/1;
+}
+
+.loka-product-image img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    padding:0;
+}
+
+.loka-product-name{
+    font-size:13px;
+}
+
+.loka-add-btn{
+    border-radius:999px;
+    font-size:12px;
+}
+
+/* =========================
+   BOTTOM SPACING
+========================= */
+
+body{
+    padding-bottom:90px;
+}

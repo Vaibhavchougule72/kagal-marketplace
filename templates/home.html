@@ -3,6 +3,82 @@
 {% load static %}
 {% block content %}
 
+<!-- APP HERO -->
+
+<section class="app-hero">
+
+    <!-- SEARCH -->
+
+    <div class="sticky-search-area">
+
+        <form method="GET"
+            action="{% url 'search_products' %}">
+
+            <div class="premium-search-box">
+
+                <span class="search-icon">
+                    🔍
+                </span>
+
+                <input type="search"
+                    name="q"
+                    placeholder="Search meals, combos...">
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- OFFER SLIDER -->
+
+    <div id="offerCarousel"
+        class="carousel slide"
+        data-bs-ride="carousel">
+
+        <div class="carousel-inner">
+
+            {% for combo in combos|slice:":3" %}
+
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+
+                <div class="offer-slide-card">
+
+                    {% if combo.image %}
+                    <img src="{{ combo.image.url }}">
+                    {% endif %}
+
+                    <div class="offer-overlay"></div>
+
+                    <div class="offer-content">
+
+                        <div class="offer-badge">
+                            50% OFF
+                        </div>
+
+                        <h2>
+                            {{ combo.name }}
+                        </h2>
+
+                        <button class="offer-order-btn add-bundle-btn"
+                                data-id="{{ combo.id }}">
+                            Order Now
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
 {% if main_banner %}
 <div class="container mb-4">
     <div class="card shadow border-0" style="border-radius:12px; overflow:hidden;">
@@ -73,175 +149,38 @@
     </div>
 </section>
 
-<!-- HERO SECTION -->
-<!-- HERO SECTION -->
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-
-            <div class="col-md-6">
-
-                <h1 class="fw-bold text-black display-5">
-                    गरमागरम जेवण, थेट तुमच्या घरी 🍔🔥
-                </h1>
-
-                <p class="mt-3 text-dark">
-                    कागलमधील तुमच्या आवडत्या हॉटेल्स आणि फूड स्टॉल्समधून 
-                    स्वादिष्ट पदार्थ आता घरबसल्या ऑर्डर करा. जलद डिलिव्हरी आणि खात्रीशीर चव!
-                </p>
-
-                <!-- HIGHLIGHTS -->
-                <!-- HIGHLIGHTS -->
-                <div class="d-flex gap-3 flex-wrap mt-3">
-
-                    <span class="badge bg-success-subtle text-success fw-bold">
-                        🚚 Delivery from ₹15
-                    </span>
-
-                    <span class="badge bg-danger-subtle text-danger">
-                        🍽️ हॉटेल & स्ट्रीट फूड
-                    </span>
-
-                    <span class="badge bg-success-subtle text-success">
-                        ⚡ 30 - 50 मिनिटांत डिलिव्हरी
-                    </span>
-
-                    <span class="badge bg-light text-dark border">
-                        💵 COD उपलब्ध
-                    </span>
-
-                </div>
-
-            </div>
-
-            <!-- IMAGE -->
-            <div class="col-md-6 text-center d-none d-md-block">
-                <img src="{% static 'images/hero-delivery.png' %}"
-                     class="img-fluid"
-                     style="max-height: 380px;">
-            </div>
-
-        </div>
-    </div>
-</section>
-
-
-<!-- WHY CHOOSE LOKA -->
-<section class="py-4 bg-light">
-    <div class="container text-center">
-
-        <h3 class="fw-bold mb-4 text-black">
-            {% trans "Why Choose LOKA?" %}
-        </h3>
-
-        <div class="row g-3">
-
-            <div class="col-6 col-md-4">
-                <div class="p-3 border rounded bg-white h-100">
-                    <div class="fs-4 text-success">🚚</div>
-                    <div class="fw-bold mt-2">{% trans "Fast Delivery" %}</div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4">
-                <div class="p-3 border rounded bg-white h-100">
-                    <div class="fs-4 text-success">🏪</div>
-                    <div class="fw-bold mt-2">{% trans "Local Stores" %}</div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-                <div class="p-3 border rounded bg-white h-100">
-                    <div class="fs-4 text-success">💵</div>
-                    <div class="fw-bold mt-2">{% trans "Cash & UPI" %}</div>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-</section>
-
-<div class="container text-center mb-3">
-    <small class="text-success fw-bold">
-        🚚 Delivery from ₹15 | ⚡ 30–50 mins | ⭐ Trusted local stores
-    </small>
-</div>
-
-
-<!-- DOWNLOAD APP SECTION -->
-
-<section class="py-4">
-
-<div class="container">
-
-<div class="loka-download-card text-center">
-
-    <div class="download-icon mb-3">
-        📲
-    </div>
-
-    <h3 class="fw-bold mb-2">
-        Download LOKA App
-    </h3>
-
-    <p class="text-muted mb-4">
-        Faster ordering • Live tracking • Better offers
-    </p>
-
-    <a href="{% url 'download_app' %}"
-       class="download-btn-premium">
-
-        Download App
-
-    </a>
-
-</div>
-
-</div>
-
-</section>
-
 <!-- CATEGORIES -->
-<section class="py-5 bg-white" id="categories">
-    <div class="container">
+<section class="compact-category-section">
 
-        <h3 class="text-center fw-bold mb-5 text-black">
-            {% trans "Shop by Category" %}
-        </h3>
+    <div class="section-title-row">
+        <h5>Categories</h5>
+    </div>
 
-        <div class="row g-4">
+    <div class="compact-category-grid">
 
-            {% for category in categories %}
-            <div class="col-6 col-md-4 col-lg-3">
+        {% for category in categories %}
 
-                <a href="{% url 'category_stores' category.id %}" 
-                   class="category-link">
+        <a href="{% url 'category_stores' category.id %}"
+           class="compact-category-card">
 
-                    <div class="blinkit-category-card">
+            <div class="compact-category-image">
 
-                        <div class="category-image-wrapper">
-                            {% if category.image.url %}
-                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
-
-                            {% endif %}
-
-                        </div>
-
-                        <div class="category-title">
-                            {{ category.name }}
-                        </div>
-
-                    </div>
-
-                </a>
+                {% if category.image %}
+                <img src="{{ category.image.url }}">
+                {% endif %}
 
             </div>
-            {% endfor %}
 
-        </div>
+            <div class="compact-category-name">
+                {{ category.name }}
+            </div>
+
+        </a>
+
+        {% endfor %}
 
     </div>
+
 </section>
 
 <!-- COMBOS -->
@@ -257,7 +196,7 @@
 
 {% for combo in combos %}
 
-<div class="col-6 col-md-4 col-lg-3">
+<div class="col-4">
 
 <div class="loka-product-card combo-card"
      data-id="{{ combo.id }}"
@@ -351,7 +290,7 @@
 
         <div class="row g-4">
             {% for product in featured_products %}
-            <div class="col-6 col-md-4 col-lg-3">
+            <div class="col-4">
                 <div class="loka-product-card product-card {% if product.is_hero %}border border-danger shadow{% endif %}"
                     data-id="{{ product.id }}"
                     data-name="{{ product.name }}"
