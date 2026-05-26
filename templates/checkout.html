@@ -568,11 +568,15 @@ if(data.success){
 
 appliedDiscount = data.discount
 
+window.currentDiscount = appliedDiscount;
+
 document.getElementById("discount_amount").innerText =
 "₹" + appliedDiscount
 
 document.getElementById("hidden_discount").value =
     appliedDiscount;
+
+document.getElementById("coupon_code").value = code;
 
 updateDelivery(
     document.getElementById("latitude").value,
@@ -862,6 +866,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
     // 🔥 FORM SUBMIT
     form.addEventListener("submit", function(e){
+        document.getElementById("hidden_discount").value =
+            window.currentDiscount || 0;
 
         if(!validateForm()){
             e.preventDefault();

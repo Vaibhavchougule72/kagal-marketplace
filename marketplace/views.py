@@ -1148,7 +1148,18 @@ def checkout(request):
             # -------------------------
             # COUPON
             # -------------------------
-            discount = Decimal(0)
+
+            discount_from_frontend = request.POST.get(
+                "discount_amount",
+                "0"
+            )
+
+            try:
+                discount = Decimal(
+                    str(discount_from_frontend)
+                )
+            except:
+                discount = Decimal(0)
 
             if subtotal < 149 and payment == "COD":
 
@@ -1178,22 +1189,34 @@ def checkout(request):
                         phone=phone
                     ).exists()
 
+                    # APPLY DISCOUNT IMMEDIATELY
+
+                    if coupon.discount_type == "PERCENTAGE":
+
+                        discount = (
+                            subtotal *
+                            Decimal(str(coupon.discount_value))
+                        ) / Decimal("100")
+
+                    elif coupon.discount_type == "FIXED":
+
+                        discount = Decimal(
+                            str(coupon.discount_value)
+                        )
+
+                    # SAFETY
+                    if discount > subtotal:
+                        discount = subtotal
+
+                    print("COUPON TYPE:", coupon.discount_type)
+                    print("COUPON VALUE:", coupon.discount_value)
+                    print("DISCOUNT APPLIED:", discount)
+
                     if already_used:
 
                         context["error"] = "Coupon already used"
 
                         return render(request, "checkout.html", context)
-
-                    # ✅ APPLY DISCOUNT HERE ITSELF
-                    if coupon.discount_type == "PERCENTAGE":
-
-                        discount = (
-                            subtotal * coupon.discount_value
-                        ) / 100
-
-                    elif coupon.discount_type == "FIXED":
-
-                        discount = coupon.discount_value
 
                 except Coupon.DoesNotExist:
 
