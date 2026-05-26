@@ -123,16 +123,17 @@
         }
 
         .main-content {
-            margin-top: calc(var(--navbar-height, 70px) + env(safe-area-inset-top));
+            margin-top: calc(var(--navbar-height, 58px));
         }
 
         /* Adjust navbar height */
         .premium-navbar {
             backdrop-filter: blur(14px);
-            background: rgba(12, 104, 63, 0.9);
-            border-bottom: 1px solid rgba(248, 244, 244, 0.05);
-            padding-top: calc(10px + env(safe-area-inset-top));
-            padding-bottom: 10px;
+            background: #167245;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-top: calc(6px + env(safe-area-inset-top));
+            padding-bottom: 6px;
+            min-height: 58px;
             z-index: 9999;
         }
 
@@ -283,29 +284,6 @@
 
         <!-- Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarContent">
-
-            {% if not simple_navbar %}
-            <!-- 🔍 Search (HIDE in simple mode) -->
-            <form class="d-none d-lg-flex mx-lg-auto my-2 my-lg-0 position-relative"
-                method="GET"
-                action="{% url 'search_products' %}"
-                style="max-width: 400px; width: 100%;">
-
-                <input class="form-control rounded-pill"
-                    type="search"
-                    id="searchInput"
-                    name="q"
-                    value="{{ request.GET.q }}"
-                    placeholder="Search products..."
-                    autocomplete="off">
-
-                <div id="suggestionBox"
-                    class="list-group position-absolute w-100"
-                    style="top: 45px; z-index: 9999; display: none;">
-                </div>
-
-            </form>
-            {% endif %}
 
             <!-- 🌐 Language (ALWAYS SHOW) -->
             <form action="{% url 'set_language' %}" method="post">
