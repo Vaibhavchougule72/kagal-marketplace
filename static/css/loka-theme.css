@@ -938,3 +938,113 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     }
 
 }
+
+/* =========================
+   ZOMATO COMBO CARDS
+========================= */
+
+.combo-grid-mobile{
+    row-gap: 12px;
+}
+
+/* CARD */
+.zomato-combo-card{
+
+    text-align:center;
+
+    transition:0.2s ease;
+}
+
+/* HOVER */
+.zomato-combo-card:hover{
+    transform:translateY(-3px);
+}
+
+/* IMAGE */
+.zomato-combo-image{
+
+    width:100%;
+
+    aspect-ratio:1/1;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    border:2px solid #111;
+
+    box-shadow:
+    0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* IMG */
+.zomato-combo-image img{
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+}
+
+/* TITLE */
+.zomato-combo-title{
+
+    margin-top:8px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    line-height:1.2;
+
+    color:#111;
+}
+
+/* MOBILE */
+@media(max-width:576px){
+
+    .combo-grid-mobile{
+        row-gap:10px;
+    }
+
+    .zomato-combo-image{
+        border-radius:14px;
+    }
+
+    .zomato-combo-title{
+        font-size:13px;
+    }
+
+}
+
+/* COMBO SECTION COMPACT */
+.combo-grid-mobile .col-4{
+    padding-left:6px;
+    padding-right:6px;
+}
+
+/* REMOVE LARGE HEIGHT */
+.zomato-combo-card{
+    height:auto;
+}
+
+/* COMPACT BUTTON */
+.zomato-combo-card .loka-add-btn{
+    min-height:auto;
+    line-height:1;
+}
+
+/* MOBILE */
+@media(max-width:576px){
+
+    .combo-grid-mobile{
+        margin-top:0;
+    }
+
+    .zomato-combo-title{
+        min-height:32px;
+    }
+
+}

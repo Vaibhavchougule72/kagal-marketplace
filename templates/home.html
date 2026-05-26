@@ -72,7 +72,7 @@
 <section class="pt-2 pb-4 bg-white" id="categories">
     <div class="container">
 
-        <h3 class="text-center fw-bold mb-4 text-black">
+        <h3 class="text-center fw-bold my-4 text-black">
             {% trans "Category" %}
         </h3>
 
@@ -113,21 +113,21 @@
 </section>
 
 <!-- COMBOS -->
-<section class="py-5 bg-white">
+<section class="pt-2 pb-4">
 
 <div class="container">
 
-<h3 class="text-center fw-bold mb-4 text-black">
+<h3 class="text-center fw-bold my-4">
 🔥 Combos & Offers
 </h3>
 
-<div class="row g-4">
+<div class="row g-3 combo-grid-mobile">
 
 {% for combo in combos %}
 
-<div class="col-6 col-md-4 col-lg-3">
+<div class="col-4 col-md-3 col-lg-2">
 
-<div class="loka-product-card combo-card"
+<div class="zomato-combo-card combo-card"
      data-id="{{ combo.id }}"
      data-name="{{ combo.name }}"
      data-price="{{ combo.price }}"
@@ -141,7 +141,7 @@
         {% endfor %}
         ]'>
 
-<div class="loka-product-image position-relative">
+<div class="zomato-combo-image position-relative">
     <div style="
     position:absolute;
     top:8px;
@@ -163,29 +163,29 @@
 
 </div>
 
-<div class="loka-product-body">
+<div class="pt-2">
 
-    <div class="loka-product-name">
+    <div class="zomato-combo-title">
         {{ combo.name }}
     </div>
 
-    <div class="loka-product-bottom">
+    <div class="d-flex justify-content-between align-items-center mt-2">
 
-        <div class="loka-product-price">
-
-            <span style="color:#000;font-weight:700;font-size:18px;">
-                ₹{{ combo.price|floatformat:0 }}
-            </span>
-
-            <br>
-            <small style="color:red;font-size:12px;">
-                ⏰ Limited time offer
-            </small>
-
+        <div style="
+            font-weight:700;
+            font-size:14px;
+            color:#111;
+        ">
+            ₹{{ combo.price|floatformat:0 }}
         </div>
 
         <button class="loka-add-btn add-bundle-btn"
-            data-id="{{ combo.id }}">
+            data-id="{{ combo.id }}"
+            style="
+            padding:4px 10px;
+            font-size:12px;
+            border-radius:8px;
+            ">
             ADD
         </button>
 
