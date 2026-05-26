@@ -1422,8 +1422,17 @@ def checkout(request):
                     ))
 
                 amount_paise = to_paise(total)
+                print("====== PAYMENT DEBUG ======")
+                print("SUBTOTAL:", subtotal)
+                print("DELIVERY:", delivery_fee)
+                print("HANDLING:", handling_fee)
+                print("DISCOUNT:", discount)
+                print("FINAL TOTAL:", total)
+                print("AMOUNT PAISE:", amount_paise)
+                print("===========================")
 
                 # 🔥 ALWAYS CREATE NEW ORDER (DO NOT REUSE)
+                print("RAZORPAY AMOUNT:", amount_paise)
 
                 razorpay_order = client.order.create({
                     "amount": amount_paise,
@@ -1452,20 +1461,13 @@ def checkout(request):
                 logger.info(f"RAZORPAY_ORDER_ID: {razorpay_order_id}")
                 logger.info(f"PENDING_ID: {pending.id}")
                 logger.info("=====================================")
-                request.session["payment_data"] = {
-                    "razorpay_key": settings.RAZORPAY_KEY_ID,
-                    "amount": amount_paise,
-                    "razorpay_order_id": razorpay_order_id,
-                    "customer_name": name,
-                    "phone": phone,
-                    "display_amount": f"{total:.2f}",
-                    "show_floating_cart": False,
-                    "simple_navbar": True,
-                }
+                
                 request.session["customer_phone"] = phone
                 from django.urls import reverse
 
                 upi_url = reverse("upi_payment")
+
+                import time
 
                 return redirect(
                     f"{upi_url}"
@@ -1475,6 +1477,7 @@ def checkout(request):
                     f"&name={name}"
                     f"&phone={phone}"
                     f"&pending_id={pending.id}"
+                    f"&t={int(time.time())}"
                 )
 
             request.session["cart"] = {"store_id": None, "items": {}}

@@ -217,10 +217,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                 "1"
                             );
 
+                            sessionStorage.removeItem("last_payment_id");
+
                             clearInterval(poll);
 
-                            window.location.href =
-                                data.redirect_url;
+                            window.location.replace(
+                                data.redirect_url
+                            );
                         }
 
                         // timeout after 60 sec
@@ -259,15 +262,6 @@ document.addEventListener("DOMContentLoaded", function () {
         rzp.open();
 
     }, 1200);
-});
-
-
-window.addEventListener("pageshow", function(event) {
-
-    if (event.persisted) {
-        window.location.reload();
-    }
-
 });
 
 </script>
