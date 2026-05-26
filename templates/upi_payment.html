@@ -244,9 +244,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
             modal: {
                 ondismiss: function () {
+
                     loader.style.display = "none";
+
                     title.innerText = "Payment Cancelled";
+
                     cancelBox.style.display = "block";
+
+                    // 🔥 MAKE BACK BUTTON GO HOME
+                    backBtn.onclick = function () {
+
+                        // Android app
+                        const isAndroidApp =
+                            /wv|Android/i.test(navigator.userAgent);
+
+                        if(isAndroidApp){
+
+                            window.location.href =
+                                "https://www.loka-store.online/";
+
+                        } else {
+
+                            window.location.href =
+                                "https://www.loka-store.online/";
+
+                        }
+                    };
                 }
             }
         };
