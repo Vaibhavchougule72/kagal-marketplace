@@ -210,25 +210,27 @@
             {% trans "Shop by Category" %}
         </h3>
 
-        <div class="row g-4">
+        <div class="row g-3 category-grid-mobile">
 
             {% for category in categories %}
-            <div class="col-6 col-md-4 col-lg-3">
+            <div class="col-4 col-md-3 col-lg-2">
 
                 <a href="{% url 'category_stores' category.id %}" 
                    class="category-link">
 
-                    <div class="blinkit-category-card">
+                    <div class="zomato-category-card">
 
-                        <div class="category-image-wrapper">
-                            {% if category.image.url %}
-                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+                        <div class="zomato-category-image">
 
+                            {% if category.image %}
+                            <img src="{{ category.image.url }}"
+                                alt="{{ category.name }}"
+                                loading="lazy">
                             {% endif %}
 
                         </div>
 
-                        <div class="category-title">
+                        <div class="zomato-category-title">
                             {{ category.name }}
                         </div>
 
