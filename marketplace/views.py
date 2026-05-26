@@ -805,7 +805,7 @@ def view_cart(request):
     # =========================
     remaining_to_149 = Decimal(149) - subtotal if subtotal < 149 else Decimal(0)
     cod_not_allowed = subtotal < 149
-    remaining_to_free_delivery = Decimal(499) - subtotal if subtotal < 499 else Decimal(0)
+    remaining_to_free_delivery = Decimal(999) - subtotal if subtotal < 999 else Decimal(0)
 
     # =========================
     # CLEAN EMPTY CART
@@ -818,7 +818,7 @@ def view_cart(request):
         request.session.modified = True
 
     # 🔥 FREE DELIVERY PROGRESS
-    FREE_DELIVERY_THRESHOLD = Decimal(499)
+    FREE_DELIVERY_THRESHOLD = Decimal(999)
 
     if subtotal < FREE_DELIVERY_THRESHOLD:
         remaining_amount = FREE_DELIVERY_THRESHOLD - subtotal
@@ -1118,7 +1118,7 @@ def checkout(request):
 
                 delivery_fee = Decimal(0)
 
-            elif subtotal >= 499:
+            elif subtotal >= 999:
 
                 delivery_fee = Decimal(0)
 
@@ -2481,7 +2481,7 @@ def calculate_delivery(request):
     if free_delivery:
         delivery_fee = Decimal(0)
 
-    elif subtotal >= 499:
+    elif subtotal >= 999:
         delivery_fee = Decimal(0)
 
     else:
