@@ -776,3 +776,136 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     }
 
 }
+
+/* =========================
+   ZOMATO HERO SECTION
+========================= */
+
+.zomato-hero-section {
+
+    background: linear-gradient(
+        135deg,
+        #e23744,
+        #ff4f5a
+    );
+
+    padding: 16px;
+    padding-top: 24px;
+
+    border-bottom-left-radius: 26px;
+    border-bottom-right-radius: 26px;
+}
+
+/* SEARCH */
+
+.zomato-search-wrapper {
+
+    position: sticky;
+
+    top: 10px;
+
+    z-index: 999;
+}
+
+.zomato-search-input {
+
+    width: 100%;
+
+    height: 56px;
+
+    border: none;
+
+    border-radius: 18px;
+
+    padding: 0 20px;
+
+    font-size: 16px;
+
+    outline: none;
+
+    box-shadow:
+        0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* SLIDER */
+
+.offer-slider-container {
+
+    margin-top: 18px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 24px;
+}
+
+.offer-slider-track {
+
+    display: flex;
+
+    transition: transform 0.5s ease;
+}
+
+.offer-slide {
+
+    min-width: 100%;
+    display: block;
+}
+
+.offer-slide img {
+
+    width: 100%;
+
+    height: 220px;
+
+    object-fit: cover;
+
+    border-radius: 24px;
+}
+
+/* DOTS */
+
+.offer-slider-dots {
+
+    position: absolute;
+
+    bottom: 12px;
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 8px;
+}
+
+.offer-dot {
+
+    width: 8px;
+    height: 8px;
+
+    background: rgba(255,255,255,0.5);
+
+    border-radius: 50%;
+}
+
+.offer-dot.active {
+
+    width: 22px;
+
+    border-radius: 20px;
+
+    background: white;
+}
+
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .offer-slide img{
+        height: 180px;
+    }
+
+}

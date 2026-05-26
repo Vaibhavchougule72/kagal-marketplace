@@ -856,3 +856,41 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.reason} - ₹{self.amount}"
+    
+
+class OfferSlider(models.Model):
+
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    image = CloudinaryField(
+        'image'
+    )
+
+    link = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Example: /store/1/ OR /category/2/"
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    priority = models.IntegerField(
+        default=0
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["priority"]
+
+    def __str__(self):
+        return self.title or f"Offer {self.id}"

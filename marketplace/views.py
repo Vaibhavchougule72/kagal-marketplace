@@ -44,6 +44,7 @@ from .models import DeviceToken
 from django.db.models import Sum
 from datetime import datetime
 import traceback
+from .models import OfferSlider
 
 MAX_CART_QTY = 50
 
@@ -287,6 +288,9 @@ def home(request):
     paginator = Paginator(products_ordered, 12)
     featured_products = paginator.get_page(page)
 
+    offer_sliders = OfferSlider.objects.filter(
+        is_active=True
+    ).order_by("priority")
     # =====================================================
     # FINAL RESPONSE
     # =====================================================
@@ -297,6 +301,7 @@ def home(request):
         "combos": combos,
         "main_banner": main_banner,
         "popup_banner": popup_banner,
+        "offer_sliders": offer_sliders,
         "show_floating_cart": True,
     })
 # =====================================================

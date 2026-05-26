@@ -10,6 +10,24 @@ from .models import StoreRating
 admin.site.register(StoreRating)
 from .models import CheckoutLead
 admin.site.register(CheckoutLead)
+from .models import OfferSlider
+
+@admin.register(OfferSlider)
+class OfferSliderAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "title",
+        "priority",
+        "is_active",
+    )
+
+    list_filter = (
+        "is_active",
+    )
+
+    search_fields = (
+        "title",
+    )
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
