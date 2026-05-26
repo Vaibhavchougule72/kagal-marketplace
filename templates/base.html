@@ -269,8 +269,8 @@
     <div class="container-fluid">
 
         <!-- Brand -->
-        <a class="navbar-brand fw-bold loka-logo" href="/">
-            LOKA
+        <a class="navbar-brand fw-bold" href="/">
+            LOKA - Online Store
         </a>
 
         <!-- Mobile Toggle Button -->
@@ -323,33 +323,36 @@
             </form>
 
             <!-- Right Links -->
-            <ul class="navbar-nav ms-auto align-items-center flex-row gap-3">
+            <ul class="navbar-nav ms-lg-auto align-items-lg-center">
 
+                <!-- ✅ HOME ALWAYS -->
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="/">
-                        Home
+                        ⬅ {% trans "Home" %}
                     </a>
                 </li>
 
+                {% if not simple_navbar %}
+                <!-- ❌ Hide below in checkout/otp -->
+
                 <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'my_orders' %}">
-                        Orders
+                    <a class="nav-link" href="{% url 'my_orders' %}">
+                        {% trans "Orders" %}
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <button class="premium-cart-btn"
+                <li class="nav-item ms-lg-3">
+                    <button class="btn btn-dark position-relative"
                             id="cartToggle">
-
-                        🛒
-
+                        {% trans "🛒 Cart" %}
                         <span class="badge bg-danger cart-badge"
-                            id="cartBadge">
+                              id="cartBadge">
                             {{ cart_item_count }}
                         </span>
-
                     </button>
                 </li>
+
+                {% endif %}
 
             </ul>
 
@@ -1117,23 +1120,5 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </script>
 
-<script>
-
-const offerCarousel =
-document.querySelector('#offerCarousel');
-
-if(offerCarousel){
-
-    new bootstrap.Carousel(
-        offerCarousel,
-        {
-            interval: 2000,
-            ride: 'carousel'
-        }
-    );
-
-}
-
-</script>
 </body>
 </html>
