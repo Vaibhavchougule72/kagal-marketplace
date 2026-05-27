@@ -947,3 +947,65 @@ body,
     }
 
 }
+
+/* ===========================
+   OFFER SLIDER
+=========================== */
+
+.offer-slider-section{
+
+    padding-top:12px;
+
+    padding-bottom:8px;
+}
+
+.offer-card-wrapper{
+
+    width:100%;
+
+    max-width:420px;
+
+    margin:0 auto;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 8px 24px rgba(0,0,0,0.10);
+
+    background:#fff;
+}
+
+/* 2:3 PROPORTION */
+
+.offer-slider-image{
+
+    width:100%;
+
+    aspect-ratio:2 / 3;
+
+    object-fit:cover;
+
+    display:block;
+}
+
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .offer-slider-section{
+
+        padding-top:10px;
+
+        padding-bottom:6px;
+    }
+
+    .offer-card-wrapper{
+
+        max-width:100%;
+
+        border-radius:18px;
+    }
+
+}
