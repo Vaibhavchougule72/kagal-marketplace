@@ -716,105 +716,79 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
     text-align: center;
 
-    transition: all 0.25s ease;
+    transition: transform 0.2s ease;
 
     background: #ffffff;
 
     border-radius: 18px;
 
-    padding: 4px 4px 10px;
+    padding: 10px;
 
     box-shadow:
-        0 6px 18px rgba(0,0,0,0.10);
-
-    overflow: hidden;
-
-    height: 100%;
+        0 8px 22px rgba(0,0,0,0.10);
 }
 
 /* HOVER */
 .zomato-category-card:hover {
 
-    transform: translateY(-6px);
+    transform: translateY(-4px);
 
     box-shadow:
-        0 16px 34px rgba(0,0,0,0.18);
+        0 14px 30px rgba(0,0,0,0.16);
 }
 
 /* IMAGE CONTAINER */
 .zomato-category-image {
 
-    width: calc(100% + 8px);
-
-    margin-left: -4px;
-
-    margin-top: -4px;
-
+    width: 100%;
     aspect-ratio: 1 / 1;
+
+    background: #ffffff;
+
+    border-radius: 18px;
 
     overflow: hidden;
 
-    border-radius: 18px 18px 14px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    display: block;
+    border:none;
 
-    background: transparent;
+    box-shadow:none;
 }
 
 /* IMAGE */
 .zomato-category-image img {
 
     width: 100%;
-
     height: 100%;
 
     object-fit: cover;
-
-    display: block;
 }
 
 /* TITLE */
 .zomato-category-title {
 
-    font-size: 13px;
+    margin-top: 8px;
 
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
 
-    color: #111;
+    color: #222;
 
-    line-height: 1.1;
-
-    padding: 6px 4px 0;
-
-    margin: 0;
+    line-height: 1.2;
 }
 
 /* MOBILE */
-@media(max-width:576px){
+@media (max-width: 576px) {
 
-    .zomato-category-card{
-
-        padding: 3px 3px 8px;
-
-        border-radius: 16px;
+    .zomato-category-title {
+        font-size: 13px;
     }
 
-    .zomato-category-image{
-
-        width: calc(100% + 6px);
-
-        margin-left: -3px;
-
-        margin-top: -3px;
-
-        border-radius: 16px 16px 12px 12px;
-    }
-
-    .zomato-category-title{
-
-        font-size: 12px;
-
-        padding-top: 5px;
+    .zomato-category-image {
+        border-radius: 14px;
     }
 
 }
