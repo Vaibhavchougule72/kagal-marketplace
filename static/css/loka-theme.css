@@ -811,3 +811,97 @@ body,
 .page-wrapper{
     background-color:#f7f5f2;
 }
+
+/* ===========================
+   MINI DOWNLOAD BAR
+=========================== */
+
+.loka-download-mini{
+
+    background: linear-gradient(
+        135deg,
+        #eef6ef,
+        #f7f5f2
+    );
+
+    border:1px solid rgba(30,132,73,0.10);
+
+    border-radius:16px;
+
+    padding:14px 16px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:12px;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,0.05);
+}
+
+.download-mini-text{
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#1f2937;
+}
+
+.download-mini-btn{
+
+    background:#198754;
+
+    color:#fff;
+
+    text-decoration:none;
+
+    padding:10px 18px;
+
+    border-radius:12px;
+
+    font-weight:700;
+
+    font-size:14px;
+
+    white-space:nowrap;
+
+    transition:0.2s ease;
+}
+
+.download-mini-btn:hover{
+
+    background:#166534;
+
+    color:#fff;
+
+    transform:translateY(-1px);
+}
+
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .loka-download-mini{
+
+        padding:12px;
+
+        border-radius:14px;
+    }
+
+    .download-mini-text{
+
+        font-size:15px;
+    }
+
+    .download-mini-btn{
+
+        padding:9px 14px;
+
+        font-size:13px;
+    }
+
+}
