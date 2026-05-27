@@ -151,7 +151,7 @@ body {
 ========================= */
 
 body {
-    background: #f7e6cd;
+    background: #f7f5f2;
 }
 
 /* Section spacing consistency */
@@ -713,13 +713,28 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
 /* CARD */
 .zomato-category-card {
+
     text-align: center;
+
     transition: transform 0.2s ease;
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    padding: 10px;
+
+    box-shadow:
+        0 8px 22px rgba(0,0,0,0.10);
 }
 
 /* HOVER */
 .zomato-category-card:hover {
-    transform: translateY(-3px);
+
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 14px 30px rgba(0,0,0,0.16);
 }
 
 /* IMAGE CONTAINER */
@@ -738,10 +753,9 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     align-items: center;
     justify-content: center;
 
-    border:1px solid rgba(0,0,0,0.04);
+    border:none;
 
-    box-shadow:
-        0 10px 24px rgba(0,0,0,0.10);
+    box-shadow:none;
 }
 
 /* IMAGE */
