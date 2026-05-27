@@ -122,7 +122,8 @@
         }
 
         .main-content {
-            padding-top: calc(var(--navbar-height, 58px));
+            padding-top: 58px; /* fallback */
+            padding-top: var(--navbar-height, 58px);
         }
 
         /* Adjust navbar height */
@@ -130,9 +131,10 @@
             backdrop-filter: blur(14px);
             background: #167245;
             border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-top: calc(6px + env(safe-area-inset-top));
+            padding-top: 6px;
             padding-bottom: 6px;
             min-height: 58px;
+            height: auto;
             z-index: 9999;
         }
 
@@ -149,7 +151,7 @@
         @media (max-width: 991px) {
         
         .premium-navbar {
-            padding-top: calc(6px + env(safe-area-inset-top));
+            padding-top: 6px;
         }
 
         
@@ -1024,33 +1026,30 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 
 </div>
-
 <script>
-window.addEventListener("load", function(){
-
+function updateNavbarHeight() {
     const navbar = document.querySelector(".premium-navbar");
-
-    if(navbar){
-        const height = navbar.offsetHeight;
+    if (navbar) {
+        // Use getBoundingClientRect for accuracy across all browsers
+        const height = Math.ceil(navbar.getBoundingClientRect().height);
         document.documentElement.style.setProperty("--navbar-height", height + "px");
+        
+        // Also update sticky search top position
+        const searchWrapper = document.querySelector(".zomato-search-wrapper");
+        if (searchWrapper) {
+            searchWrapper.style.top = height + "px";
+        }
     }
+}
 
+// Run on load, resize, and orientation change
+window.addEventListener("load", updateNavbarHeight);
+window.addEventListener("resize", updateNavbarHeight);
+window.addEventListener("orientationchange", function() {
+    setTimeout(updateNavbarHeight, 300);
 });
-</script>
-
-<script>
-window.addEventListener("resize", function(){
-
-    const navbar = document.querySelector(".premium-navbar");
-
-    if(navbar){
-        document.documentElement.style.setProperty(
-            "--navbar-height",
-            navbar.offsetHeight + "px"
-        );
-    }
-
-});
+// Also run immediately on DOMContentLoaded as a fallback
+document.addEventListener("DOMContentLoaded", updateNavbarHeight);
 </script>
 
 <script>

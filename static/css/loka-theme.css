@@ -828,7 +828,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
     position: sticky;
 
-    top: 58px;
+    top: var(--navbar-height, 58px);
 
     z-index: 999;
 
@@ -959,7 +959,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     }
 
     .zomato-search-wrapper{
-        top: 50px;
+        top: var(--navbar-height, 50px);
         margin-top: 6px;
         margin-bottom: 6px;
     }
