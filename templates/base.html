@@ -24,7 +24,8 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f7f5f2;
+            background-color: #f8f9fa;
+            opacity: 1;
             transition: opacity 0.4s ease-in;
             padding-top: 0;
         }
@@ -122,28 +123,17 @@
         }
 
         .main-content {
-            padding-top: 58px; /* fallback */
-            padding-top: var(--navbar-height, 58px);
+            margin-top: calc(var(--navbar-height, 70px) + env(safe-area-inset-top));
         }
 
         /* Adjust navbar height */
         .premium-navbar {
             backdrop-filter: blur(14px);
-            background: #167245;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-top: 6px;
-            padding-bottom: 6px;
-            min-height: 58px;
-            height: auto;
+            background: rgba(12, 104, 63, 0.9);
+            border-bottom: 1px solid rgba(248, 244, 244, 0.05);
+            padding-top: calc(10px + env(safe-area-inset-top));
+            padding-bottom: 10px;
             z-index: 9999;
-        }
-
-        @supports (padding-top: env(safe-area-inset-top)) {
-            @media (display-mode: standalone) {
-                .premium-navbar {
-                    padding-top: calc(6px + env(safe-area-inset-top));
-                }
-            }
         }
 
         .navbar-brand,
@@ -159,7 +149,7 @@
         @media (max-width: 991px) {
         
         .premium-navbar {
-            padding-top: 6px;
+            padding-top: calc(6px + env(safe-area-inset-top));
         }
 
         
@@ -294,6 +284,29 @@
         <!-- Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarContent">
 
+            {% if not simple_navbar %}
+            <!-- 🔍 Search (HIDE in simple mode) -->
+            <form class="d-none d-lg-flex mx-lg-auto my-2 my-lg-0 position-relative"
+                method="GET"
+                action="{% url 'search_products' %}"
+                style="max-width: 400px; width: 100%;">
+
+                <input class="form-control rounded-pill"
+                    type="search"
+                    id="searchInput"
+                    name="q"
+                    value="{{ request.GET.q }}"
+                    placeholder="Search products..."
+                    autocomplete="off">
+
+                <div id="suggestionBox"
+                    class="list-group position-absolute w-100"
+                    style="top: 45px; z-index: 9999; display: none;">
+                </div>
+
+            </form>
+            {% endif %}
+
             <!-- 🌐 Language (ALWAYS SHOW) -->
             <form action="{% url 'set_language' %}" method="post">
                 {% csrf_token %}
@@ -370,7 +383,27 @@
 <div class="main-content">
     {% if not simple_navbar %}
     <!-- MOBILE SEARCH BAR -->
-    
+    <div class="mobile-search-wrapper d-lg-none px-3 pt-3">
+
+        <form method="GET"
+            action="{% url 'search_products' %}"
+            class="position-relative">
+
+            <input class="form-control rounded-pill"
+                type="search"
+                id="mobileSearchInput"
+                name="q"
+                placeholder="Search for grocery, snacks..."
+                autocomplete="off">
+
+            <div id="mobileSuggestionBox"
+                class="list-group position-absolute w-100"
+                style="top: 45px; z-index: 9999; display: none;">
+            </div>
+
+        </form>
+
+    </div>
     {% endif %}
 
     {% block content %}{% endblock %}
@@ -1034,26 +1067,33 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
 
 </div>
-<script>
-function updateNavbarHeight() {
-    const navbar = document.querySelector(".premium-navbar");
-    if (navbar) {
-        // Use getBoundingClientRect for accuracy across all browsers
-        const height = Math.ceil(navbar.getBoundingClientRect().height);
-        document.documentElement.style.setProperty("--navbar-height", height + "px");
-        
-    
-    }
-}
 
-// Run on load, resize, and orientation change
-window.addEventListener("load", updateNavbarHeight);
-window.addEventListener("resize", updateNavbarHeight);
-window.addEventListener("orientationchange", function() {
-    setTimeout(updateNavbarHeight, 300);
+<script>
+window.addEventListener("load", function(){
+
+    const navbar = document.querySelector(".premium-navbar");
+
+    if(navbar){
+        const height = navbar.offsetHeight;
+        document.documentElement.style.setProperty("--navbar-height", height + "px");
+    }
+
 });
-// Also run immediately on DOMContentLoaded as a fallback
-document.addEventListener("DOMContentLoaded", updateNavbarHeight);
+</script>
+
+<script>
+window.addEventListener("resize", function(){
+
+    const navbar = document.querySelector(".premium-navbar");
+
+    if(navbar){
+        document.documentElement.style.setProperty(
+            "--navbar-height",
+            navbar.offsetHeight + "px"
+        );
+    }
+
+});
 </script>
 
 <script>

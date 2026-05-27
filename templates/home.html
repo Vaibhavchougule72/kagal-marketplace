@@ -3,100 +3,232 @@
 {% load static %}
 {% block content %}
 
-<!-- ZOMATO HERO -->
+{% if main_banner %}
+<div class="container mb-4">
+    <div class="card shadow border-0" style="border-radius:12px; overflow:hidden;">
+        <p style="color:red; font-size:12px;">
+        ⏰ Limited time offer
+        </p>
+        {% if main_banner.image %}
+        <img src="{{ main_banner.image.url }}" style="width:100%; height:180px; object-fit:cover;">
+        {% endif %}
 
-<section class="zomato-hero-section">
+        <div class="p-4 text-center">
 
-    <!-- SEARCH -->
-    <div class="zomato-search-wrapper">
+            <h5 class="fw-bold text-danger">
+                {{ main_banner.title }}
+            </h5>
 
-        <form method="GET"
-              action="{% url 'search_products' %}"
-              class="position-relative">
+            <p class="text-muted">
+                {{ main_banner.subtitle }}
+            </p>
 
-            <input
-                type="search"
-                name="q"
-                id="heroSearchInput"
-                class="zomato-search-input"
-                placeholder="Search for food, pizza, biryani..."
-                autocomplete="off">
+            {% if main_banner.product or main_banner.bundle %}
+            <button class="banner-order-btn"
 
-            <div id="heroSuggestionBox"
-                class="list-group position-absolute w-100"
-                style="
-                top:60px;
-                z-index:9999;
-                display:none;
-                ">
+                {% if main_banner.product %}
+                data-id="{{ main_banner.product.id }}"
+                data-type="product"
+
+                {% elif main_banner.bundle %}
+                data-id="{{ main_banner.bundle.id }}"
+                data-type="bundle"
+                {% endif %}
+
+            >
+                {{ main_banner.button_text }}
+            </button>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+<!-- PARTNER STORE STRIP -->
+<section class="partner-strip">
+    <div class="partner-track">
+
+        {% for store in stores %}
+        <a href="{% url 'store_detail' store.id %}"
+        class="partner-card text-decoration-none">
+
+            {{ store.name }}
+
+        </a>
+        {% endfor %}
+
+        <!-- Duplicate for infinite scroll -->
+        {% for store in stores %}
+        <a href="{% url 'store_detail' store.id %}"
+        class="partner-card text-decoration-none">
+
+            {{ store.name }}
+
+        </a>
+        {% endfor %}
+
+    </div>
+</section>
+
+<!-- HERO SECTION -->
+<!-- HERO SECTION -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+
+            <div class="col-md-6">
+
+                <h1 class="fw-bold text-black display-5">
+                    गरमागरम जेवण, थेट तुमच्या घरी 🍔🔥
+                </h1>
+
+                <p class="mt-3 text-dark">
+                    कागलमधील तुमच्या आवडत्या हॉटेल्स आणि फूड स्टॉल्समधून 
+                    स्वादिष्ट पदार्थ आता घरबसल्या ऑर्डर करा. जलद डिलिव्हरी आणि खात्रीशीर चव!
+                </p>
+
+                <!-- HIGHLIGHTS -->
+                <!-- HIGHLIGHTS -->
+                <div class="d-flex gap-3 flex-wrap mt-3">
+
+                    <span class="badge bg-success-subtle text-success fw-bold">
+                        🚚 Delivery from ₹15
+                    </span>
+
+                    <span class="badge bg-danger-subtle text-danger">
+                        🍽️ हॉटेल & स्ट्रीट फूड
+                    </span>
+
+                    <span class="badge bg-success-subtle text-success">
+                        ⚡ 30 - 50 मिनिटांत डिलिव्हरी
+                    </span>
+
+                    <span class="badge bg-light text-dark border">
+                        💵 COD उपलब्ध
+                    </span>
+
+                </div>
+
             </div>
 
-        </form>
+            <!-- IMAGE -->
+            <div class="col-md-6 text-center d-none d-md-block">
+                <img src="{% static 'images/hero-delivery.png' %}"
+                     class="img-fluid"
+                     style="max-height: 380px;">
+            </div>
 
+        </div>
     </div>
+</section>
 
-    <!-- SLIDER -->
-    <div class="offer-slider-container">
 
-        <div class="offer-slider-track">
+<!-- WHY CHOOSE LOKA -->
+<section class="py-4 bg-light">
+    <div class="container text-center">
 
-            {% for offer in offer_sliders %}
+        <h3 class="fw-bold mb-4 text-black">
+            {% trans "Why Choose LOKA?" %}
+        </h3>
 
-            <a href="{{ offer.link|default:'#' }}"
-               class="offer-slide">
+        <div class="row g-3">
 
-                <img src="{{ offer.image.url }}"
-                     loading="lazy">
+            <div class="col-6 col-md-4">
+                <div class="p-3 border rounded bg-white h-100">
+                    <div class="fs-4 text-success">🚚</div>
+                    <div class="fw-bold mt-2">{% trans "Fast Delivery" %}</div>
+                </div>
+            </div>
 
-            </a>
+            <div class="col-6 col-md-4">
+                <div class="p-3 border rounded bg-white h-100">
+                    <div class="fs-4 text-success">🏪</div>
+                    <div class="fw-bold mt-2">{% trans "Local Stores" %}</div>
+                </div>
+            </div>
 
-            {% endfor %}
+            <div class="col-12 col-md-4">
+                <div class="p-3 border rounded bg-white h-100">
+                    <div class="fs-4 text-success">💵</div>
+                    <div class="fw-bold mt-2">{% trans "Cash & UPI" %}</div>
+                </div>
+            </div>
 
         </div>
 
-        <!-- DOTS -->
-        <div class="offer-slider-dots">
-
-            {% for offer in offer_sliders %}
-            <span class="offer-dot {% if forloop.first %}active{% endif %}">
-            </span>
-            {% endfor %}
-
-        </div>
-
     </div>
+</section>
+
+<div class="container text-center mb-3">
+    <small class="text-success fw-bold">
+        🚚 Delivery from ₹15 | ⚡ 30–50 mins | ⭐ Trusted local stores
+    </small>
+</div>
+
+
+<!-- DOWNLOAD APP SECTION -->
+
+<section class="py-4">
+
+<div class="container">
+
+<div class="loka-download-card text-center">
+
+    <div class="download-icon mb-3">
+        📲
+    </div>
+
+    <h3 class="fw-bold mb-2">
+        Download LOKA App
+    </h3>
+
+    <p class="text-muted mb-4">
+        Faster ordering • Live tracking • Better offers
+    </p>
+
+    <a href="{% url 'download_app' %}"
+       class="download-btn-premium">
+
+        Download App
+
+    </a>
+
+</div>
+
+</div>
 
 </section>
 
 <!-- CATEGORIES -->
-<section class="pt-1 pb-2" id="categories">
+<section class="py-5 bg-white" id="categories">
     <div class="container">
 
-        <h3 class="text-center fw-bold text-black category-heading">
-            {% trans "Category" %}
+        <h3 class="text-center fw-bold mb-5 text-black">
+            {% trans "Shop by Category" %}
         </h3>
 
-        <div class="row row-cols-3 g-2 category-grid-mobile">
+        <div class="row g-4">
 
             {% for category in categories %}
-            <div class="col-4 col-md-3 col-lg-2">
+            <div class="col-6 col-md-4 col-lg-3">
 
                 <a href="{% url 'category_stores' category.id %}" 
                    class="category-link">
 
-                    <div class="zomato-category-card">
+                    <div class="blinkit-category-card">
 
-                        <div class="zomato-category-image">
+                        <div class="category-image-wrapper">
+                            {% if category.image.url %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
 
-                            {% if category.image %}
-                            <img src="{{ category.image.url }}"
-                                alt="{{ category.name }}"
-                                loading="lazy">
                             {% endif %}
 
                         </div>
 
-                        <div class="zomato-category-title">
+                        <div class="category-title">
                             {{ category.name }}
                         </div>
 
@@ -113,21 +245,21 @@
 </section>
 
 <!-- COMBOS -->
-<section class="pt-2 pb-4">
+<section class="py-5 bg-white">
 
 <div class="container">
 
-<h3 class="text-center fw-bold my-4">
+<h3 class="text-center fw-bold mb-4 text-black">
 🔥 Combos & Offers
 </h3>
 
-<div class="row row-cols-3 g-2 combo-grid-mobile">
+<div class="row g-4">
 
 {% for combo in combos %}
 
-<div class="col-4 col-md-3 col-lg-2">
+<div class="col-6 col-md-4 col-lg-3">
 
-<div class="zomato-combo-card combo-card"
+<div class="loka-product-card combo-card"
      data-id="{{ combo.id }}"
      data-name="{{ combo.name }}"
      data-price="{{ combo.price }}"
@@ -141,7 +273,7 @@
         {% endfor %}
         ]'>
 
-<div class="zomato-combo-image position-relative">
+<div class="loka-product-image position-relative">
     <div style="
     position:absolute;
     top:8px;
@@ -154,7 +286,7 @@
     border-radius:6px;
     z-index:10;
 ">
-    For You
+    Special For You
 </div>
 
 {% if combo.image.url %}
@@ -163,29 +295,29 @@
 
 </div>
 
-<div class="pt-2">
+<div class="loka-product-body">
 
-    <div class="zomato-combo-title">
+    <div class="loka-product-name">
         {{ combo.name }}
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mt-2">
+    <div class="loka-product-bottom">
 
-        <div style="
-            font-weight:700;
-            font-size:14px;
-            color:#111;
-        ">
-            ₹{{ combo.price|floatformat:0 }}
+        <div class="loka-product-price">
+
+            <span style="color:#000;font-weight:700;font-size:18px;">
+                ₹{{ combo.price|floatformat:0 }}
+            </span>
+
+            <br>
+            <small style="color:red;font-size:12px;">
+                ⏰ Limited time offer
+            </small>
+
         </div>
 
         <button class="loka-add-btn add-bundle-btn"
-            data-id="{{ combo.id }}"
-            style="
-            padding:4px 10px;
-            font-size:12px;
-            border-radius:8px;
-            ">
+            data-id="{{ combo.id }}">
             ADD
         </button>
 
@@ -205,6 +337,110 @@
 
 </section>
 
+{% load cache %}
+
+{% cache 30 homepage featured_products.number %}
+<!-- Featured products section -->
+
+<section class="py-5 bg-light">
+    <div class="container">
+
+        <h3 class="text-center fw-bold mb-4 text-black">
+            {% trans "Featured Products" %}
+        </h3>
+
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="loka-product-card product-card {% if product.is_hero %}border border-danger shadow{% endif %}"
+                    data-id="{{ product.id }}"
+                    data-name="{{ product.name }}"
+                    data-price="{{ product.price }}"
+                    data-discount="{{ product.discount_price|default:'' }}"
+                    data-desc="{{ product.description }}"
+                    data-image="{{ product.image.url}}">
+
+                    <!-- PRODUCT IMAGE -->
+                    <div class="loka-product-image position-relative">
+                        {% if product.is_hero %}
+                        <div style="
+                            position:absolute;
+                            top:8px;
+                            left:8px;
+                            background:#ff0000;
+                            color:white;
+                            padding:4px 8px;
+                            font-size:12px;
+                            border-radius:6px;
+                            z-index:10;">
+                            {{ product.offer_text|default:"🔥 Special Offer" }}
+                        </div>
+                        {% endif %}
+                        {% if product.image.url %}
+                            <img src="{{ product.image.url }}"
+                                class="img-fluid product-img"
+                                alt="{{ product.name }}" loading="lazy">
+                        {% endif %}
+                    </div>
+
+                    <!-- PRODUCT INFO -->
+                    <div class="loka-product-body">
+
+                        <div class="loka-product-name">
+                            {{ product.name }}
+                        </div>
+
+                        <div class="loka-product-desc">
+                            {{ product.store.name }}
+                        </div>
+
+                        <div class="loka-product-bottom">
+
+                            {% if product.discount_price %}
+                            <div>
+                                <span style="text-decoration:line-through; color:gray;">
+                                    ₹{{ product.price }}
+                                </span>
+                                <span class="text-danger fw-bold ms-1">
+                                    ₹{{ product.discount_price }}
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="loka-product-price">
+                                ₹{{ product.price }}
+                            </div>
+                            {% endif %}
+
+                            <button class="loka-add-btn add-to-cart-btn fw-bold"
+                                    data-id="{{ product.id }}"
+                                    data-source="home"
+                                    style="background:#ff5722; color:white;">
+                                Order Now
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    <div class="text-center mt-4">
+
+        {% if featured_products.has_previous %}
+            <a href="?page={{ featured_products.previous_page_number }}" class="btn btn-outline-success">Previous</a>
+        {% endif %}
+
+        {% if featured_products.has_next %}
+            <a href="?page={{ featured_products.next_page_number }}" class="btn btn-success">Next</a>
+        {% endif %}
+
+    </div>
+</section>
+{% endcache %}
 
 <!-- FOOTER -->
 <footer class="loka-footer">
@@ -650,46 +886,6 @@ document.querySelector(".banner-order-btn")?.addEventListener("click", function(
         });
 
     });
-
-});
-
-</script>
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function(){
-
-    const track =
-        document.querySelector(".offer-slider-track");
-
-    const dots =
-        document.querySelectorAll(".offer-dot");
-
-    if(!track) return;
-
-    let index = 0;
-
-    const total =
-        document.querySelectorAll(".offer-slide").length;
-
-    setInterval(() => {
-
-        index++;
-
-        if(index >= total){
-            index = 0;
-        }
-
-        track.style.transform =
-            `translateX(-${index * 100}%)`;
-
-        dots.forEach(dot =>
-            dot.classList.remove("active")
-        );
-
-        dots[index].classList.add("active");
-
-    }, 2000);
 
 });
 
