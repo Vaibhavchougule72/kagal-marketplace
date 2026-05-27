@@ -1042,11 +1042,7 @@ function updateNavbarHeight() {
         const height = Math.ceil(navbar.getBoundingClientRect().height);
         document.documentElement.style.setProperty("--navbar-height", height + "px");
         
-        // Also update sticky search top position
-        const searchWrapper = document.querySelector(".zomato-search-wrapper");
-        if (searchWrapper) {
-            searchWrapper.style.top = height + "px";
-        }
+    
     }
 }
 
