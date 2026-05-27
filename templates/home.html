@@ -47,32 +47,6 @@
 </div>
 {% endif %}
 
-<!-- PARTNER STORE STRIP -->
-<section class="partner-strip">
-    <div class="partner-track">
-
-        {% for store in stores %}
-        <a href="{% url 'store_detail' store.id %}"
-        class="partner-card text-decoration-none">
-
-            {{ store.name }}
-
-        </a>
-        {% endfor %}
-
-        <!-- Duplicate for infinite scroll -->
-        {% for store in stores %}
-        <a href="{% url 'store_detail' store.id %}"
-        class="partner-card text-decoration-none">
-
-            {{ store.name }}
-
-        </a>
-        {% endfor %}
-
-    </div>
-</section>
-
 <!-- HERO SECTION -->
 <!-- HERO SECTION -->
 <section class="hero-section">
