@@ -123,27 +123,16 @@
         }
 
         .main-content {
-
-            width:100%;
-
-            overflow-x:hidden;
+            margin-top: calc(var(--navbar-height, 70px) + env(safe-area-inset-top));
         }
 
         /* Adjust navbar height */
         .premium-navbar {
-
             backdrop-filter: blur(14px);
-
-            background: rgba(12, 104, 63, 0.96);
-
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-
-            height: 64px;
-
-            min-height: 64px;
-
-            padding: 0 14px;
-
+            background: rgba(12, 104, 63, 0.9);
+            border-bottom: 1px solid rgba(248, 244, 244, 0.05);
+            padding-top: calc(10px + env(safe-area-inset-top));
+            padding-bottom: 10px;
             z-index: 9999;
         }
 
@@ -158,20 +147,9 @@
 
         /* Smaller navbar on mobile */
         @media (max-width: 991px) {
-
+        
         .premium-navbar {
-
-            height: 64px;
-
-            min-height: 64px;
-
-            padding-top: 0;
-
-            padding-bottom: 0;
-
-            display:flex;
-
-            align-items:center;
+            padding-top: calc(6px + env(safe-area-inset-top));
         }
 
         
@@ -308,6 +286,25 @@
 
             {% if not simple_navbar %}
             <!-- 🔍 Search (HIDE in simple mode) -->
+            <form class="d-none d-lg-flex mx-lg-auto my-2 my-lg-0 position-relative"
+                method="GET"
+                action="{% url 'search_products' %}"
+                style="max-width: 400px; width: 100%;">
+
+                <input class="form-control rounded-pill"
+                    type="search"
+                    id="searchInput"
+                    name="q"
+                    value="{{ request.GET.q }}"
+                    placeholder="Search products..."
+                    autocomplete="off">
+
+                <div id="suggestionBox"
+                    class="list-group position-absolute w-100"
+                    style="top: 45px; z-index: 9999; display: none;">
+                </div>
+
+            </form>
             {% endif %}
 
             <!-- 🌐 Language (ALWAYS SHOW) -->
@@ -384,44 +381,30 @@
 </div>
 
 <div class="main-content">
-    {% if request.path == "/" and not simple_navbar %}
+    {% if not simple_navbar %}
+    <!-- MOBILE SEARCH BAR -->
+    <div class="mobile-search-wrapper d-lg-none px-3 pt-3">
 
-    <div class="sticky-search-wrapper">
+        <form method="GET"
+            action="{% url 'search_products' %}"
+            class="position-relative">
 
-        <div class="container">
+            <input class="form-control rounded-pill"
+                type="search"
+                id="mobileSearchInput"
+                name="q"
+                placeholder="Search for grocery, snacks..."
+                autocomplete="off">
 
-            <form method="GET"
-                action="{% url 'search_products' %}"
-                class="sticky-search-form position-relative">
+            <div id="mobileSuggestionBox"
+                class="list-group position-absolute w-100"
+                style="top: 45px; z-index: 9999; display: none;">
+            </div>
 
-                <input
-                    class="form-control sticky-search-input"
-                    type="search"
-                    id="stickySearchInput"
-                    name="q"
-                    value="{{ request.GET.q }}"
-                    placeholder="Search for food, pizza, biryani..."
-                    autocomplete="off">
-
-                <div id="stickySuggestionBox"
-                    class="list-group position-absolute w-100"
-                    style="
-                    top:58px;
-                    z-index:10001;
-                    display:none;
-                    border-radius:14px;
-                    overflow:hidden;
-                    ">
-                </div>
-
-            </form>
-
-        </div>
+        </form>
 
     </div>
-
     {% endif %}
-    
 
     {% block content %}{% endblock %}
 </div>
@@ -664,17 +647,11 @@ document.addEventListener("DOMContentLoaded", function(){
     SEARCH AUTOCOMPLETE
     ========================== */
 
-    const searchInput =
-        document.getElementById("stickySearchInput");
+    const searchInput = document.getElementById("searchInput");
+    const mobileSearchInput = document.getElementById("mobileSearchInput");
 
-    const mobileSearchInput =
-        document.getElementById("stickySearchInput");
-
-    const suggestionBox =
-        document.getElementById("stickySuggestionBox");
-
-    const mobileSuggestionBox =
-        document.getElementById("stickySuggestionBox");
+    const suggestionBox = document.getElementById("suggestionBox");
+    const mobileSuggestionBox = document.getElementById("mobileSuggestionBox");
 
     if(searchInput){
 
@@ -1091,6 +1068,33 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 
+<script>
+window.addEventListener("load", function(){
+
+    const navbar = document.querySelector(".premium-navbar");
+
+    if(navbar){
+        const height = navbar.offsetHeight;
+        document.documentElement.style.setProperty("--navbar-height", height + "px");
+    }
+
+});
+</script>
+
+<script>
+window.addEventListener("resize", function(){
+
+    const navbar = document.querySelector(".premium-navbar");
+
+    if(navbar){
+        document.documentElement.style.setProperty(
+            "--navbar-height",
+            navbar.offsetHeight + "px"
+        );
+    }
+
+});
+</script>
 
 <script>
 
