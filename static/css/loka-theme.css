@@ -726,6 +726,8 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
     box-shadow:
         0 8px 22px rgba(0,0,0,0.10);
+
+    height: 100%;
 }
 
 /* HOVER */
@@ -741,6 +743,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 .zomato-category-image {
 
     width: 100%;
+
     aspect-ratio: 1 / 1;
 
     background: #ffffff;
@@ -750,18 +753,21 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     overflow: hidden;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
-    border:none;
+    border: none;
 
-    box-shadow:none;
+    box-shadow: none;
 }
 
 /* IMAGE */
 .zomato-category-image img {
 
     width: 100%;
+
     height: 100%;
 
     object-fit: cover;
@@ -773,6 +779,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     margin-top: 8px;
 
     font-size: 14px;
+
     font-weight: 600;
 
     color: #222;
