@@ -138,6 +138,14 @@
             z-index: 9999;
         }
 
+        @supports (padding-top: env(safe-area-inset-top)) {
+            @media (display-mode: standalone) {
+                .premium-navbar {
+                    padding-top: calc(6px + env(safe-area-inset-top));
+                }
+            }
+        }
+
         .navbar-brand,
         .nav-link {
             color: white !important;
