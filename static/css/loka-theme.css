@@ -1157,11 +1157,6 @@ img{
         padding-top:62px;
     }
 
-    .container{
-        padding-left:10px;
-        padding-right:10px;
-    }
-
     .offer-slider-container{
         overflow:hidden;
     }
@@ -1193,4 +1188,103 @@ img{
 .zomato-combo-image{
 
     flex-shrink:0;
+}
+
+/* =================================
+   FINAL MOBILE FIX
+================================= */
+
+/* FIX BOOTSTRAP ROW OVERFLOW */
+.row{
+    --bs-gutter-x: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* FIX COLUMN PADDING */
+.row > *{
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+/* FIX CONTAINER */
+.container,
+.container-fluid{
+
+    width:100%;
+
+    max-width:100%;
+
+    overflow-x:hidden;
+}
+
+/* FIX SECTION OVERFLOW */
+section{
+
+    overflow:hidden;
+}
+
+/* FIX SLIDER */
+.offer-slider-container{
+
+    width:100%;
+
+    overflow:hidden;
+}
+
+/* FIX TRACK */
+.offer-slider-track{
+
+    width:100%;
+}
+
+/* FIX OFFER SLIDES */
+.offer-slide{
+
+    width:100%;
+
+    flex:0 0 100%;
+}
+
+/* FIX IMAGE WIDTH */
+.offer-slide img{
+
+    width:100%;
+
+    display:block;
+}
+
+/* FIX MOBILE CHROME RENDER BUG */
+.zomato-category-card,
+.zomato-combo-card,
+.offer-slider-container{
+
+    transform:translateZ(0);
+
+    will-change:transform;
+}
+
+/* MOBILE */
+@media(max-width:576px){
+
+    html,
+    body{
+
+        width:100%;
+
+        overflow-x:hidden;
+    }
+
+    body{
+
+        position:relative;
+    }
+
+    .main-content{
+
+        width:100%;
+
+        overflow:hidden;
+    }
+
 }
