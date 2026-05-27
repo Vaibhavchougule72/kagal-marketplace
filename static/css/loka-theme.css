@@ -367,7 +367,7 @@ section h3 {
 }
 
 .page-wrapper {
-    padding-top: 65px; /* navbar height */
+    padding-top: 0; /* navbar height */
 }
 
 .hero-spacing {
@@ -782,11 +782,8 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 ========================= */
 
 .zomato-hero-section {
-
     background: transparent;
-
-    padding: 8px 12px 0px;
-
+    padding: 2px 12px 0;
     margin-top: 0;
 }
 
@@ -906,7 +903,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 @media(max-width:576px){
 
     .zomato-hero-section{
-        padding: 4px 10px 0px;
+        padding: 0px 10px 0px;
     }
 
     .zomato-search-wrapper{
