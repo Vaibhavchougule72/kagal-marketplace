@@ -860,18 +860,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 }
 
 /* IMPORTANT */
-.category-grid-mobile .col-4{
 
-    width:33.3333%;
-
-    flex:0 0 33.3333%;
-
-    padding-left:6px;
-
-    padding-right:6px;
-
-    margin-bottom:12px;
-}
 
 /* CARD */
 
@@ -937,18 +926,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     row-gap:12px;
 }
 
-.combo-grid-mobile .col-4{
 
-    width:33.3333%;
-
-    flex:0 0 33.3333%;
-
-    padding-left:6px;
-
-    padding-right:6px;
-
-    margin-bottom:12px;
-}
 
 /* COMBO CARD */
 
@@ -1028,10 +1006,6 @@ img{
 
 /* FIX BOOTSTRAP */
 
-.row{
-
-    --bs-gutter-x:0;
-}
 
 .container,
 .container-fluid{
