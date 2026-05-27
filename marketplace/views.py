@@ -296,7 +296,6 @@ def home(request):
     # =====================================================
     return render(request, "home.html", {
         "categories": categories,
-        "featured_products": featured_products,
         "stores": stores,
         "combos": combos,
         "main_banner": main_banner,
