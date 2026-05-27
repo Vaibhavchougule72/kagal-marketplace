@@ -1048,3 +1048,18 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     }
 
 }
+
+/* CATEGORY TITLE SPACING */
+.category-heading{
+    margin-top: 14px;
+    margin-bottom: 14px;
+}
+
+@media(max-width:576px){
+
+    .category-heading{
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+}
