@@ -703,542 +703,78 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     0 -4px 15px rgba(0,0,0,0.08);
 }
 
-/* =========================
-   ZOMATO STYLE CATEGORYS
-========================= */
+/* =====================================
+   MOBILE SAFE HOME PAGE
+===================================== */
 
-/* =========================
-   NEW CATEGORY CARD STYLE
-========================= */
+/* HERO */
 
-.category-grid-mobile {
-    row-gap: 14px;
-}
+.zomato-hero-section{
 
-/* CARD */
-.zomato-category-card {
+    padding:0 10px;
 
-    background: #ffffff;
-
-    border-radius: 22px;
-
-    overflow: hidden;
-
-    padding: 0;
-
-    height: 100%;
-
-    transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-
-    box-shadow:
-        0 6px 20px rgba(0,0,0,0.08);
-}
-
-/* HOVER */
-.zomato-category-card:hover {
-
-    transform: translateY(-4px);
-
-    box-shadow:
-        0 14px 32px rgba(0,0,0,0.14);
-}
-
-/* IMAGE SECTION */
-.zomato-category-image {
-
-    width: 100%;
-
-    aspect-ratio: 1 / 1;
-
-    overflow: hidden;
-
-    border-radius: 22px 22px 0 0;
-
-    background: #f5f5f5;
-}
-
-/* IMAGE */
-.zomato-category-image img {
-
-    width: 100%;
-
-    height: 100%;
-
-    object-fit: cover;
-
-    display: block;
-}
-
-/* TITLE */
-.zomato-category-title {
-
-    padding:10px 6px;
-
-    font-size:14px;
-
-    font-weight:700;
-
-    color:#111;
-
-    line-height:1.25;
-
-    text-align:center;
-
-    height:48px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
+    margin-top:0;
 
     overflow:hidden;
-}
-
-/* MOBILE */
-@media(max-width:576px){
-
-    .zomato-category-card{
-        border-radius: 18px;
-    }
-
-    .zomato-category-image{
-        border-radius: 18px 18px 0 0;
-    }
-
-    .zomato-category-title{
-        font-size: 13px;
-        padding: 8px 6px 10px;
-        min-height: 44px;
-    }
-
-}
-
-/* =========================
-   ZOMATO HERO SECTION
-========================= */
-
-.zomato-hero-section {
-    background: transparent;
-    padding: 2px 12px 0;
-    margin-top: 0;
 }
 
 /* SEARCH */
 
-.zomato-search-wrapper {
+.zomato-search-wrapper{
 
-    position: relative;
+    position:relative;
 
-    top: 0;
+    margin-top:8px;
 
-    z-index: 5;
+    margin-bottom:8px;
 
-    margin-top: 8px;
-
-    margin-bottom: 8px;
+    z-index:2;
 }
 
-.zomato-search-input {
+.zomato-search-input{
 
-    width: 100%;
+    width:100%;
 
-    height: 54px;
+    height:52px;
 
-    border: 2px solid #1b5e20;
+    border:none;
 
-    background: #fff;
+    border-radius:16px;
 
-    border-radius: 18px;
+    padding:0 18px;
 
-    padding: 0 20px;
+    font-size:15px;
 
-    font-size: 16px;
-
-    color: #1b5e20;
-
-    outline: none;
+    background:#fff;
 
     box-shadow:
-        0 6px 18px rgba(27,94,32,0.08);
-}
+    0 4px 14px rgba(0,0,0,0.08);
 
-.zomato-search-input::placeholder{
-    color:#2e7d32;
-    opacity:0.75;
+    outline:none;
 }
 
 /* SLIDER */
 
-.offer-slider-container {
-
-    margin-top: 10px;
-
-    position: relative;
-
-    overflow: hidden;
-
-    border: none;
-
-    border-radius: 24px;
-
-    background: #fff;
-
-    box-shadow:
-        0 10px 28px rgba(0,0,0,0.12);
-
-    
-}
-
-.offer-slider-track {
-
-    display: flex;
-
-    transition: transform 0.5s ease;
-}
-
-.offer-slide {
-
-    min-width: 100%;
-    display: block;
-}
-
-.offer-slide img {
-
-    width:100%;
-
-    display:block;
-
-    aspect-ratio:16/7;
-
-    object-fit:cover;
-
-    border-radius:24px;
-
-    height:auto;
-}
-
-/* DOTS */
-
-.offer-slider-dots {
-
-    position: absolute;
-
-    bottom: 12px;
-
-    width: 100%;
-
-    display: flex;
-
-    justify-content: center;
-
-    gap: 8px;
-}
-
-.offer-dot {
-
-    width: 8px;
-    height: 8px;
-
-    background: rgba(255,255,255,0.5);
-
-    border-radius: 50%;
-}
-
-.offer-dot.active {
-
-    width: 22px;
-
-    border-radius: 20px;
-
-    background: white;
-}
-
-/* MOBILE */
-
-@media(max-width:576px){
-
-    .zomato-hero-section{
-        padding: 0px 10px 0px;
-    }
-
-    .zomato-search-wrapper{
-
-        margin-top:6px;
-
-        margin-bottom:6px;
-    }
-
-    .zomato-search-input{
-        height: 52px;
-        border-radius: 16px;
-    }
-
-    .offer-slider-container{
-        margin-top: 6px;
-        border-radius: 20px;
-
-        box-shadow:
-            0 8px 22px rgba(0,0,0,0.14);
-    }
-
-    .offer-slide img{
-
-        aspect-ratio:16/8;
-
-        height:auto;
-
-        border-radius:18px;
-    }
-
-    #categories{
-        padding-top: 10px !important;
-    }
-
-    .category-grid-mobile{
-        row-gap: 10px;
-    }
-
-}
-
-/* =========================
-   ZOMATO COMBO CARDS
-========================= */
-
-.combo-grid-mobile{
-    row-gap: 12px;
-}
-
-/* CARD */
-.zomato-combo-card{
-
-    text-align:center;
-
-    transition:0.2s ease;
-}
-
-/* HOVER */
-.zomato-combo-card:hover{
-    transform:translateY(-3px);
-}
-
-/* IMAGE */
-.zomato-combo-image{
-
-    width:100%;
-
-    aspect-ratio:1/1;
-
-    background:#fff;
-
-    border-radius:18px;
-
-    overflow:hidden;
-
-    border:2px solid #111;
-
-    box-shadow:
-    0 4px 12px rgba(0,0,0,0.06);
-}
-
-/* IMG */
-.zomato-combo-image img{
-
-    width:100%;
-    height:100%;
-
-    object-fit:cover;
-}
-
-/* TITLE */
-.zomato-combo-title{
-
-    margin-top:8px;
-
-    font-size:14px;
-
-    font-weight:600;
-
-    line-height:1.2;
-
-    color:#111;
-}
-
-/* MOBILE */
-@media(max-width:576px){
-
-    .combo-grid-mobile{
-        row-gap:10px;
-    }
-
-    .zomato-combo-image{
-        border-radius:14px;
-    }
-
-    .zomato-combo-title{
-        font-size:13px;
-    }
-
-}
-
-/* COMBO SECTION COMPACT */
-.combo-grid-mobile .col-4{
-    padding-left:6px;
-    padding-right:6px;
-}
-
-/* REMOVE LARGE HEIGHT */
-.zomato-combo-card{
-    height:auto;
-}
-
-/* COMPACT BUTTON */
-.zomato-combo-card .loka-add-btn{
-    min-height:auto;
-    line-height:1;
-}
-
-/* MOBILE */
-@media(max-width:576px){
-
-    .combo-grid-mobile{
-        margin-top:0;
-    }
-
-    .zomato-combo-title{
-        min-height:32px;
-    }
-
-}
-
-/* CATEGORY TITLE SPACING */
-.category-heading{
-    margin-top: 14px;
-    margin-bottom: 14px;
-}
-
-@media(max-width:576px){
-
-    .category-heading{
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-}
-
-/* ====================================
-   MOBILE BROWSER STABILITY FIX
-==================================== */
-
-html,
-body{
-    overflow-x:hidden;
-    width:100%;
-}
-
-img{
-    max-width:100%;
-}
-
-.offer-slider-container,
-.zomato-category-card,
-.zomato-combo-card{
-
-    backface-visibility:hidden;
-
-    -webkit-backface-visibility:hidden;
-}
-
-@media(max-width:576px){
-
-    .main-content{
-        padding-top:62px;
-    }
-
-    .offer-slider-container{
-        overflow:hidden;
-    }
-
-}
-
-.zomato-combo-card{
-
-    display:flex;
-
-    flex-direction:column;
-
-    height:100%;
-}
-
-.zomato-combo-title{
-
-    height:34px;
-
-    overflow:hidden;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-}
-
-.zomato-combo-image{
-
-    flex-shrink:0;
-}
-
-/* =================================
-   FINAL MOBILE FIX
-================================= */
-
-/* FIX BOOTSTRAP ROW OVERFLOW */
-.row{
-    --bs-gutter-x: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-/* FIX COLUMN PADDING */
-.row > *{
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-}
-
-/* FIX CONTAINER */
-.container,
-.container-fluid{
-
-    width:100%;
-
-    max-width:100%;
-
-    overflow-x:hidden;
-}
-
-/* FIX SECTION OVERFLOW */
-section{
-
-    overflow:hidden;
-}
-
-/* FIX SLIDER */
 .offer-slider-container{
 
     width:100%;
 
     overflow:hidden;
+
+    border-radius:20px;
+
+    background:#fff;
+
+    margin-top:6px;
 }
 
-/* FIX TRACK */
 .offer-slider-track{
+
+    display:flex;
 
     width:100%;
 }
 
-/* FIX OFFER SLIDES */
 .offer-slide{
 
     width:100%;
@@ -1246,45 +782,279 @@ section{
     flex:0 0 100%;
 }
 
-/* FIX IMAGE WIDTH */
 .offer-slide img{
 
     width:100%;
 
     display:block;
+
+    aspect-ratio:16/8;
+
+    object-fit:cover;
+
+    border-radius:20px;
 }
 
-/* FIX MOBILE CHROME RENDER BUG */
-.zomato-category-card,
-.zomato-combo-card,
-.offer-slider-container{
+/* DOTS */
 
-    transform:translateZ(0);
+.offer-slider-dots{
 
-    will-change:transform;
+    position:absolute;
+
+    bottom:10px;
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:6px;
+}
+
+.offer-dot{
+
+    width:8px;
+
+    height:8px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,0.5);
+}
+
+.offer-dot.active{
+
+    width:22px;
+
+    border-radius:20px;
+
+    background:#fff;
+}
+
+/* CATEGORY */
+
+#categories{
+
+    padding-top:12px !important;
+
+    padding-bottom:8px !important;
+}
+
+.category-heading{
+
+    margin-top:10px;
+
+    margin-bottom:14px;
+
+    font-size:24px;
+
+    font-weight:800;
+
+    text-align:center;
+}
+
+.category-grid-mobile{
+
+    row-gap:12px;
+}
+
+/* IMPORTANT */
+.category-grid-mobile .col-4{
+
+    width:33.3333%;
+
+    flex:0 0 33.3333%;
+
+    padding-left:6px;
+
+    padding-right:6px;
+
+    margin-bottom:12px;
+}
+
+/* CARD */
+
+.zomato-category-card{
+
+    background:#fff;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    width:100%;
+
+    box-shadow:
+    0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* IMAGE */
+
+.zomato-category-image{
+
+    width:100%;
+
+    overflow:hidden;
+
+    background:#f5f5f5;
+}
+
+.zomato-category-image img{
+
+    width:100%;
+
+    aspect-ratio:1/1;
+
+    object-fit:cover;
+
+    display:block;
+}
+
+/* TITLE */
+
+.zomato-category-title{
+
+    font-size:12px;
+
+    font-weight:700;
+
+    line-height:1.3;
+
+    text-align:center;
+
+    padding:8px 4px;
+
+    color:#111;
+
+    background:#fff;
+}
+
+/* COMBO */
+
+.combo-grid-mobile{
+
+    row-gap:12px;
+}
+
+.combo-grid-mobile .col-4{
+
+    width:33.3333%;
+
+    flex:0 0 33.3333%;
+
+    padding-left:6px;
+
+    padding-right:6px;
+
+    margin-bottom:12px;
+}
+
+/* COMBO CARD */
+
+.zomato-combo-card{
+
+    width:100%;
+
+    background:#fff;
+}
+
+/* IMAGE */
+
+.zomato-combo-image{
+
+    width:100%;
+
+    overflow:hidden;
+
+    border-radius:14px;
+
+    background:#fff;
+}
+
+.zomato-combo-image img{
+
+    width:100%;
+
+    aspect-ratio:1/1;
+
+    object-fit:cover;
+
+    display:block;
+}
+
+/* TITLE */
+
+.zomato-combo-title{
+
+    font-size:12px;
+
+    font-weight:600;
+
+    line-height:1.3;
+
+    text-align:center;
+
+    margin-top:6px;
+
+    color:#111;
+}
+
+/* BUTTON */
+
+.zomato-combo-card .loka-add-btn{
+
+    padding:4px 10px;
+
+    font-size:11px;
+
+    border-radius:8px;
+}
+
+/* GLOBAL FIX */
+
+html,
+body{
+
+    overflow-x:hidden;
+
+    width:100%;
+}
+
+img{
+
+    max-width:100%;
+}
+
+/* FIX BOOTSTRAP */
+
+.row{
+
+    --bs-gutter-x:0;
+}
+
+.container,
+.container-fluid{
+
+    overflow:hidden;
 }
 
 /* MOBILE */
+
 @media(max-width:576px){
-
-    html,
-    body{
-
-        width:100%;
-
-        overflow-x:hidden;
-    }
-
-    body{
-
-        position:relative;
-    }
 
     .main-content{
 
-        width:100%;
+        padding-top:62px;
 
         overflow:hidden;
+    }
+
+    .container{
+
+        padding-left:10px;
+
+    padding-right:10px;
     }
 
 }
