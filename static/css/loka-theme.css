@@ -804,11 +804,10 @@ section h3 {
    GLOBAL OFF WHITE BACKGROUND
 =================================== */
 
+/* GLOBAL BACKGROUND */
+
 body,
-section,
 .main-content,
-.page-wrapper,
-.container,
-.bg-white{
-    background-color:#f7f5f2 !important;
+.page-wrapper{
+    background-color:#f7f5f2;
 }
