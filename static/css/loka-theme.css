@@ -905,3 +905,45 @@ body,
     }
 
 }
+
+/* ===========================
+   CATEGORY SECTION SPACING
+=========================== */
+
+.category-section{
+
+    padding-top:28px;
+
+    padding-bottom:28px;
+}
+
+.category-heading{
+
+    margin-top:0;
+
+    margin-bottom:28px;
+
+    font-size:42px;
+
+    line-height:1.1;
+}
+
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .category-section{
+
+        padding-top:18px;
+
+        padding-bottom:18px;
+    }
+
+    .category-heading{
+
+        margin-bottom:20px;
+
+        font-size:24px;
+    }
+
+}
