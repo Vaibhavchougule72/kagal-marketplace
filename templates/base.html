@@ -122,17 +122,29 @@
         }
 
         .main-content {
-            padding-top: calc(var(--navbar-height, 58px));
+
+            padding-top: 58px;
+
+            width: 100%;
+
+            overflow-x: hidden;
         }
 
         /* Adjust navbar height */
         .premium-navbar {
+
             backdrop-filter: blur(14px);
+
             background: #167245;
+
             border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-top: calc(6px + env(safe-area-inset-top));
-            padding-bottom: 6px;
+
+            height: 58px;
+
             min-height: 58px;
+
+            padding: 0 12px;
+
             z-index: 9999;
         }
 
@@ -1025,33 +1037,9 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 
-<script>
-window.addEventListener("load", function(){
 
-    const navbar = document.querySelector(".premium-navbar");
 
-    if(navbar){
-        const height = navbar.offsetHeight;
-        document.documentElement.style.setProperty("--navbar-height", height + "px");
-    }
 
-});
-</script>
-
-<script>
-window.addEventListener("resize", function(){
-
-    const navbar = document.querySelector(".premium-navbar");
-
-    if(navbar){
-        document.documentElement.style.setProperty(
-            "--navbar-height",
-            navbar.offsetHeight + "px"
-        );
-    }
-
-});
-</script>
 
 <script>
 
