@@ -151,7 +151,7 @@ body {
 ========================= */
 
 body {
-    background: #fdfdfd;
+    background: #f9e8cf;
 }
 
 /* Section spacing consistency */
@@ -738,8 +738,10 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     align-items: center;
     justify-content: center;
 
+    border:1px solid rgba(0,0,0,0.04);
+
     box-shadow:
-        0 4px 12px rgba(0,0,0,0.06);
+        0 10px 24px rgba(0,0,0,0.10);
 }
 
 /* IMAGE */
@@ -808,7 +810,7 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
     height: 54px;
 
-    border: 2px solid #111;
+    border: 2px solid #1b5e20;
 
     background: #fff;
 
@@ -818,9 +820,17 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
     font-size: 16px;
 
+    color: #1b5e20;
+
     outline: none;
 
-    box-shadow: none;
+    box-shadow:
+        0 6px 18px rgba(27,94,32,0.08);
+}
+
+.zomato-search-input::placeholder{
+    color:#2e7d32;
+    opacity:0.75;
 }
 
 /* SLIDER */
