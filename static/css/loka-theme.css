@@ -963,7 +963,7 @@ body,
 
     width:100%;
 
-    max-width:420px;
+    max-width:900px;
 
     margin:0 auto;
 
@@ -983,7 +983,7 @@ body,
 
     width:100%;
 
-    aspect-ratio:2 / 3;
+    aspect-ratio:3 / 2;
 
     object-fit:cover;
 
