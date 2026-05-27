@@ -64,7 +64,7 @@ body {
 }
 
 /* ===============================
-   ZOMATO STYLE CATEGORY CARDS
+   COMPACT CATEGORY CARDS
 ================================ */
 
 .category-link{
@@ -72,48 +72,44 @@ body {
 }
 
 .blinkit-category-card{
-    background:transparent;
+    background:#f7f7f7;
+    border-radius:14px;
+    overflow:hidden;
     text-align:center;
-    transition:0.25s ease;
-    padding:8px 4px;
+    transition:0.2s ease;
+    height:100%;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
 .blinkit-category-card:hover{
-    transform:translateY(-3px);
+    transform:translateY(-2px);
 }
 
 .category-image-wrapper{
     width:100%;
     aspect-ratio:1/1;
-    background:#fff5f5;
-    border-radius:18px;
     overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 4px 12px rgba(0,0,0,0.06);
-    padding:0;
+    background:#eee;
 }
 
 .category-image-wrapper img{
     width:100%;
     height:100%;
     object-fit:cover;
-    transition:0.3s ease;
+    display:block;
 }
 
-.blinkit-category-card:hover img{
-    transform:scale(1.08);
-}
-
+/* TITLE */
 .category-title{
-    margin-top:8px;
-    font-size:13px;
+    padding:8px 4px 10px;
+    font-size:12px;
     font-weight:600;
     color:#222;
     line-height:1.2;
+    margin:0;
 }
 
+/* REMOVE SUBTITLE */
 .category-sub{
     display:none;
 }
@@ -122,21 +118,22 @@ body {
 @media (max-width:576px){
 
     #categories .container{
-        padding-left:10px;
-        padding-right:10px;
+        padding-left:8px;
+        padding-right:8px;
     }
 
     #categories .row{
-        --bs-gutter-x:10px;
-        --bs-gutter-y:14px;
+        --bs-gutter-x:8px;
+        --bs-gutter-y:12px;
     }
 
     .category-title{
-        font-size:12px;
+        font-size:11px;
+        padding:7px 3px 9px;
     }
 
-    .category-image-wrapper{
-        border-radius:16px;
+    .blinkit-category-card{
+        border-radius:12px;
     }
 }
 
