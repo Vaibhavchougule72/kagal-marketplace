@@ -959,11 +959,14 @@ body,
     padding-bottom:8px;
 }
 
+.offer-slider-section .container{
+
+    max-width:1320px;
+}
+
 .offer-card-wrapper{
 
     width:100%;
-
-    max-width:900px;
 
     margin:0 auto;
 
@@ -976,8 +979,6 @@ body,
 
     background:#fff;
 }
-
-/* 2:3 PROPORTION */
 
 .offer-slider-image{
 
@@ -1002,8 +1003,6 @@ body,
     }
 
     .offer-card-wrapper{
-
-        max-width:100%;
 
         border-radius:18px;
     }
