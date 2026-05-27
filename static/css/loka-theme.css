@@ -7,14 +7,24 @@
 }
 
 /* ===== Global ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
-    background-color: var(--loka-bg);
+    background-color: #fdfdfd;
     color: var(--loka-dark);
+    margin: 0;
+    padding: 0;
+    -webkit-text-size-adjust: 100%;
 }
 
 /* ===== Sticky Glass Navbar ===== */
 .premium-navbar {
+    -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
     background: rgba(255,255,255,0.85);
     border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -23,7 +33,24 @@ body {
 /* ===== Hero Section ===== */
 .hero-section {
     padding: 80px 0;
-    background: #ffffff;
+    background: -webkit-linear-gradient(135deg, #e8f5e9, #ffffff);
+    background: linear-gradient(135deg, #e8f5e9, #ffffff);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::after {
+    content: "";
+    position: absolute;
+    right: -100px;
+    top: -100px;
+    width: 300px;
+    height: 300px;
+    background: rgba(30,132,73,0.15);
+    border-radius: 50%;
+    -webkit-filter: blur(60px);
+    filter: blur(60px);
+    pointer-events: none;
 }
 
 .hero-title {
@@ -44,6 +71,8 @@ body {
     border-radius: 12px;
     padding: 12px 24px;
     font-weight: 600;
+    border: none;
+    cursor: pointer;
 }
 
 .btn-loka-primary:hover {
@@ -56,6 +85,8 @@ body {
     border-radius: 12px;
     padding: 12px 24px;
     font-weight: 600;
+    background: transparent;
+    cursor: pointer;
 }
 
 .btn-loka-outline:hover {
@@ -63,302 +94,282 @@ body {
     color: #fff;
 }
 
+/* ===========================
+   SECTION SPACING
+=========================== */
+section {
+    padding: 70px 0;
+}
+
+section h3 {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
 /* ===============================
-   COMPACT CATEGORY CARDS
+   CATEGORY SECTION
 ================================ */
 
-.category-link{
-    text-decoration:none;
+.category-link {
+    text-decoration: none;
+    display: block;
 }
 
-.blinkit-category-card{
-    background:#ffffff;
-    border-radius:16px;
-    overflow:hidden;
-    text-align:center;
-    transition:all 0.25s ease;
-    height:100%;
-
-    /* FLOATING CARD EFFECT */
+/* ---- CARD ---- */
+.blinkit-category-card {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: center;
+    -webkit-transition: -webkit-transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    height: 100%;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
     box-shadow:
-        0 4px 10px rgba(0,0,0,0.06),
-        0 10px 24px rgba(0,0,0,0.08);
-
-    border:1px solid rgba(0,0,0,0.04);
-
-    position:relative;
+        0 3px 8px rgba(0,0,0,0.07),
+        0 8px 20px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    position: relative;
 }
 
-.blinkit-category-card:hover{
-    transform:translateY(-2px);
+.blinkit-category-card:hover {
+    -webkit-transform: translateY(-3px);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.13);
 }
 
-.category-image-wrapper{
-    width:100%;
-    height:180px;
-    overflow:hidden;
-    background:#eee;
-    border-radius:14px;
+/* ---- IMAGE WRAPPER ----
+   Uses padding-top trick instead of aspect-ratio
+   for maximum WebView compatibility
+---- */
+.category-image-wrapper {
+    position: relative;
+    width: 100%;
+    /* padding-top 100% = square = same as aspect-ratio:1/1 */
+    padding-top: 100%;
+    overflow: hidden;
+    background: #f0f0f0;
+    border-radius: 14px 14px 0 0;
+    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
 }
 
-.category-image-wrapper img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
+.category-image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -o-object-fit: cover;
+    display: block;
 }
 
-/* TITLE */
-.category-title{
-    padding:8px 4px 10px;
-    font-size:12px;
-    font-weight:600;
-    color:#222;
-    line-height:1.2;
-    margin:0;
+/* ---- TITLE ---- */
+.category-title {
+    padding: 7px 5px 9px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.2;
+    margin: 0;
+    min-height: 34px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    text-align: center;
+    -webkit-flex: 1;
+    flex: 1;
 }
 
 /* REMOVE SUBTITLE */
-.category-sub{
-    display:none;
+.category-sub {
+    display: none;
 }
 
-/* MOBILE */
-@media (max-width:576px){
-
-    #categories .container{
-        padding-left:10px;
-        padding-right:10px;
-    }
-
-    #categories .row{
-        --bs-gutter-x:10px;
-        --bs-gutter-y:14px;
-    }
-
-    #categories .col-4{
-        padding-left:2px;
-        padding-right:2px;
-    }
-
-    .blinkit-category-card{
-        border-radius:12px;
-        overflow:hidden;
-        background:#fff;
-
-        box-shadow:
-            0 3px 10px rgba(0,0,0,0.08);
-
-        border:1px solid rgba(0,0,0,0.04);
-    }
-
-    /* IMPORTANT FIX */
-    .category-image-wrapper{
-
-        width:100%;
-
-        aspect-ratio:1/1;
-
-        height:auto;
-
-        overflow:hidden;
-
-        border-radius:12px 12px 0 0;
-
-        background:#f5f5f5;
-    }
-
-    .category-image-wrapper img{
-
-        width:100%;
-
-        height:100%;
-
-        object-fit:cover;
-
-        display:block;
-    }
-
-    .category-title{
-
-        min-height:38px;
-
-        display:flex;
-
-        align-items:center;
-
-        justify-content:center;
-
-        text-align:center;
-
-        padding:6px 3px;
-
-        font-size:12px;
-
-        font-weight:700;
-
-        line-height:1.15;
-
-        color:#111;
-    }
-
+/* ---- CATEGORY GRID ---- */
+#categories .container {
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
-/* ===== Trust Badges ===== */
+/* ===========================
+   MOBILE OVERRIDES ≤576px
+   Single block — no duplication
+=========================== */
+@media screen and (max-width: 576px) {
+
+    #categories .container {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    /* Force 3-column grid */
+    #categories .row {
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-wrap: wrap;
+        flex-wrap: wrap;
+        margin-left: -4px;
+        margin-right: -4px;
+    }
+
+    #categories .row > div {
+        width: 33.3333%;
+        max-width: 33.3333%;
+        -webkit-flex: 0 0 33.3333%;
+        flex: 0 0 33.3333%;
+        padding-left: 4px;
+        padding-right: 4px;
+        margin-bottom: 10px;
+    }
+
+    .blinkit-category-card {
+        width: 100%;
+        border-radius: 12px;
+    }
+
+    .category-title {
+        font-size: 11px;
+        padding: 5px 3px 7px;
+    }
+}
+
+/* ===========================
+   TRUST BADGES
+=========================== */
 .trust-badges {
+    display: -webkit-flex;
     display: flex;
     gap: 20px;
     margin-top: 20px;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
 }
 
 .trust-badges span {
     font-weight: 500;
 }
 
-/* =========================
-   HYPERLOCAL ENERGY STYLE
-========================= */
-
-body {
-    background: #fdfdfd;
-}
-
-/* Section spacing consistency */
-section {
-    padding: 70px 0;
-}
-
-/* Section titles */
-section h3 {
-    font-weight: 800;
-    letter-spacing: 0.5px;
-}
-
-/* Soft animated background glow */
-.hero-section {
-    background: linear-gradient(135deg, #e8f5e9, #ffffff);
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-section::after {
-    content: "";
-    position: absolute;
-    right: -100px;
-    top: -100px;
-    width: 300px;
-    height: 300px;
-    background: rgba(30,132,73,0.15);
-    border-radius: 50%;
-    filter: blur(60px);
-}
-
-/* Category hover animation */
 /* ================================
-   CARD BASE STYLE
+   CARD BASE (category-card class)
 ================================ */
-
-.category-card{
+.category-card {
     background: #ffffff;
     border-radius: 16px;
+    -webkit-transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
     transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 
-/* Soft shadow default */
-.category-card{
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
-
-
-/* ================================
-   POP-UP HOVER EFFECT
-================================ */
-
-.category-card:hover{
+.category-card:hover {
+    -webkit-transform: translateY(-12px) scale(1.04);
     transform: translateY(-12px) scale(1.04);
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 25px 45px rgba(0,0,0,0.18);
     z-index: 5;
 }
 
-
-/* Glow effect for startup energy */
-.category-card::before{
+.category-card::before {
     content: "";
     position: absolute;
-    inset: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     border-radius: 16px;
-    background: linear-gradient(
-        135deg,
-        rgba(30,132,73,0.15),
-        rgba(243,156,18,0.15)
-    );
+    background: -webkit-linear-gradient(135deg, rgba(30,132,73,0.15), rgba(243,156,18,0.15));
+    background: linear-gradient(135deg, rgba(30,132,73,0.15), rgba(243,156,18,0.15));
     opacity: 0;
+    -webkit-transition: opacity 0.3s ease;
     transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
-.category-card:hover::before{
+.category-card:hover::before {
     opacity: 1;
 }
 
-/* Add button animation */
+/* ===============================
+   ADD TO CART BUTTON
+================================ */
 .add-to-cart-btn {
+    -webkit-transition: all 0.3s ease;
     transition: all 0.3s ease;
 }
 
 .add-to-cart-btn:hover {
     background: #F39C12 !important;
+    -webkit-transform: scale(1.05);
     transform: scale(1.05);
 }
 
 /* ===============================
-   LOKA PRODUCT CARD - BLINKIT STYLE
+   LOKA PRODUCT CARD
 ================================ */
-
 .loka-product-card {
     background: #ffffff;
     border-radius: 18px;
     padding: 10px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    -webkit-transition: all 0.3s ease;
     transition: all 0.3s ease;
     height: 100%;
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
 }
 
 .loka-product-card:hover {
+    -webkit-transform: translateY(-6px);
     transform: translateY(-6px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
-/* IMAGE */
-/* IMAGE - SMALLER */
 .loka-product-image {
+    position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;   /* THIS makes it square */
+    padding-top: 100%; /* square via padding trick */
     background: #f8f8f8;
     border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
+    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
 }
 
-.loka-product-image img {
-    width: 90%;
-    height: 90%;
+.loka-product-image > img,
+.loka-product-image > .position-absolute img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -o-object-fit: cover;
+    display: block;
 }
 
-/* BODY */
+/* For the "Special For You" badge inside product image */
+.loka-product-image > div[style*="position:absolute"],
+.loka-product-image > div[style*="position: absolute"] {
+    z-index: 10;
+}
+
 .loka-product-body {
     margin-top: 8px;
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
+    -webkit-flex-grow: 1;
     flex-grow: 1;
 }
 
-/* NAME */
 .loka-product-name {
     font-weight: 700;
     font-size: 15px;
@@ -366,7 +377,6 @@ section h3 {
     text-align: left;
 }
 
-/* DESCRIPTION */
 .loka-product-desc {
     font-size: 13px;
     color: #555;
@@ -374,23 +384,23 @@ section h3 {
     text-align: left;
 }
 
-/* BOTTOM SECTION */
 .loka-product-bottom {
     margin-top: auto;
+    display: -webkit-flex;
     display: flex;
+    -webkit-justify-content: space-between;
     justify-content: space-between;
+    -webkit-align-items: center;
     align-items: center;
-    margin-top: 12px;
+    padding-top: 12px;
 }
 
-/* PRICE */
 .loka-product-price {
     font-weight: 700;
     font-size: 16px;
     color: #000;
 }
 
-/* ADD BUTTON */
 .loka-add-btn {
     border: 2px solid #198754;
     background: #e9f7ef;
@@ -399,7 +409,10 @@ section h3 {
     border-radius: 10px;
     padding: 6px 16px;
     font-size: 14px;
+    -webkit-transition: all 0.2s ease;
     transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .loka-add-btn:hover {
@@ -409,23 +422,26 @@ section h3 {
 
 @media (max-width: 576px) {
     .loka-product-card {
-        padding: 12px;
+        padding: 10px;
     }
 
     .loka-product-name {
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .loka-product-price {
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .loka-add-btn {
-        padding: 5px 12px;
-        font-size: 13px;
+        padding: 5px 10px;
+        font-size: 12px;
     }
 }
 
+/* ===========================
+   SEARCH BAR
+=========================== */
 .mobile-search-wrapper {
     background: #ffffff;
 }
@@ -435,8 +451,11 @@ section h3 {
     font-size: 15px;
 }
 
+/* ===========================
+   PAGE WRAPPER
+=========================== */
 .page-wrapper {
-    padding-top: 65px; /* navbar height */
+    padding-top: 65px;
 }
 
 .hero-spacing {
@@ -451,97 +470,74 @@ section h3 {
     }
 }
 
-
 /* ===============================
-   LOKA STORE CARD (Same Style as Product)
+   LOKA STORE CARD
 ================================ */
-
 .loka-store-card {
     background: #ffffff;
     border-radius: 18px;
     padding: 15px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    -webkit-transition: all 0.3s ease;
     transition: all 0.3s ease;
     height: 100%;
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
 }
 
 .loka-store-card:hover {
+    -webkit-transform: translateY(-6px);
     transform: translateY(-6px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
-/* IMAGE - Square */
-/* IMAGE - Square */
 .loka-store-image {
-
     position: relative;
-
     width: 100%;
-
-    aspect-ratio: 1 / 1;
-
+    padding-top: 100%; /* square via padding trick — replaces aspect-ratio */
     background: #f8f8f8;
-
     border-radius: 14px;
-
     overflow: hidden;
+    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
 }
 
-/* STORE IMAGE */
 .loka-store-image img {
-
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-
     height: 100%;
-
     object-fit: contain;
-
+    -o-object-fit: contain;
     padding: 8px;
-
     background: white;
-
     display: block;
 }
 
-/* STORE RATING BADGE */
-.rating-badge{
-
-    position:absolute;
-
-    top:12px;
-
-    left:12px;
-
-    z-index:30;
-
-    background:rgba(255,255,255,0.96);
-
-    padding:5px 10px;
-
-    border-radius:20px;
-
-    font-size:13px;
-
-    font-weight:700;
-
-    color:#111;
-
-    box-shadow:0 4px 10px rgba(0,0,0,0.12);
-
-    display:flex;
-
-    align-items:center;
-
-    gap:4px;
-
-    line-height:1;
-
-    white-space:nowrap;
+.rating-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 30;
+    background: rgba(255,255,255,0.96);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
+    white-space: nowrap;
 }
 
-/* BODY */
 .loka-store-body {
     margin-top: 12px;
     text-align: left;
@@ -562,15 +558,14 @@ section h3 {
 /* ===========================
    LOKA FOOTER
 =========================== */
-
 .loka-footer {
-    background: #111827; /* premium dark */
+    background: #111827;
     color: #e5e7eb;
     padding: 60px 0 30px;
 }
 
 .footer-title {
-    color: #facc15; /* orange accent */
+    color: #facc15;
     font-weight: 700;
     margin-bottom: 15px;
 }
@@ -592,7 +587,7 @@ section h3 {
 }
 
 .footer-contact-item a:hover {
-    color: #22c55e; /* green hover */
+    color: #22c55e;
 }
 
 .footer-links {
@@ -628,14 +623,15 @@ section h3 {
 }
 
 .page-content {
-    padding-top: 0px;
+    padding-top: 0;
     padding-bottom: 60px;
 }
+
 /* ===========================
    AUTO SCROLL PARTNER STRIP
 =========================== */
-
 .partner-strip {
+    position: relative;
     overflow: hidden;
     background: #ffffff;
     padding: 10px 0;
@@ -643,9 +639,12 @@ section h3 {
 }
 
 .partner-track {
+    display: -webkit-flex;
     display: flex;
     gap: 16px;
+    width: -webkit-max-content;
     width: max-content;
+    -webkit-animation: scrollStores 25s linear infinite;
     animation: scrollStores 25s linear infinite;
 }
 
@@ -655,8 +654,9 @@ section h3 {
     border-radius: 30px;
     font-size: 14px;
     font-weight: 600;
-    color: #166534; /* green tone */
+    color: #166534;
     white-space: nowrap;
+    -webkit-transition: all 0.3s ease;
     transition: all 0.3s ease;
 }
 
@@ -665,18 +665,13 @@ section h3 {
     color: white;
 }
 
-/* Smooth infinite movement */
-@keyframes scrollStores {
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(-50%);
-    }
+@-webkit-keyframes scrollStores {
+    from { -webkit-transform: translateX(0); transform: translateX(0); }
+    to   { -webkit-transform: translateX(-50%); transform: translateX(-50%); }
 }
-
-.partner-strip {
-    position: relative;
+@keyframes scrollStores {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
 }
 
 .partner-strip::before,
@@ -687,164 +682,120 @@ section h3 {
     width: 40px;
     height: 100%;
     z-index: 2;
+    pointer-events: none;
 }
 
 .partner-strip::before {
     left: 0;
+    background: -webkit-linear-gradient(left, white, transparent);
     background: linear-gradient(to right, white, transparent);
 }
 
 .partner-strip::after {
     right: 0;
+    background: -webkit-linear-gradient(right, white, transparent);
     background: linear-gradient(to left, white, transparent);
 }
 
-#productQuickView .modal-content{
-border-radius:18px;
-padding:10px;
+/* ===========================
+   MODALS
+=========================== */
+#productQuickView .modal-content {
+    border-radius: 18px;
+    padding: 10px;
 }
 
-#productQuickView img{
-max-height:220px;
-object-fit:cover;
-width:100%;
+#productQuickView img {
+    max-height: 220px;
+    object-fit: cover;
+    -o-object-fit: cover;
+    width: 100%;
 }
 
-
-.flying-img{
-position:fixed;
-z-index:99999;
-width:80px;
-height:80px;
-border-radius:10px;
-pointer-events:none;
-transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
+/* ===========================
+   FLYING CART ANIMATION
+=========================== */
+.flying-img {
+    position: fixed;
+    z-index: 99999;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    pointer-events: none;
+    -webkit-transition: all 0.8s cubic-bezier(.17,.67,.83,.67);
+    transition: all 0.8s cubic-bezier(.17,.67,.83,.67);
 }
 
-/* =================================
+/* ===========================
    CART SCROLL FIX
-================================= */
-
+=========================== */
 .cart-wrapper {
-
+    display: -webkit-flex;
     display: flex;
-
+    -webkit-flex-direction: column;
     flex-direction: column;
-
+    -webkit-flex: 1;
     flex: 1;
-
     min-height: 0;
-
     overflow: hidden;
 }
 
 .cart-items {
-
+    -webkit-flex: 1;
     flex: 1;
-
     min-height: 0;
-
     overflow-y: auto;
-
     padding-bottom: 20px;
-
     -webkit-overflow-scrolling: touch;
-
     overscroll-behavior: contain;
-
+    -ms-touch-action: pan-y;
     touch-action: pan-y;
 }
 
 .cart-summary-sticky {
-
+    -webkit-flex-shrink: 0;
     flex-shrink: 0;
-
     background: white;
-
     border-top: 1px solid #eee;
-
     padding-top: 12px;
-
-    padding-bottom:
-    max(12px, env(safe-area-inset-bottom));
-
-    box-shadow:
-    0 -4px 15px rgba(0,0,0,0.08);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
 }
 
-/* ===================================
-   MOBILE CATEGORY FIX - FINAL
-=================================== */
+/* ===========================
+   DOWNLOAD APP CARD
+=========================== */
+.loka-download-card {
+    background: -webkit-linear-gradient(135deg, #e8f5e9, #ffffff);
+    background: linear-gradient(135deg, #e8f5e9, #ffffff);
+    border-radius: 20px;
+    padding: 40px 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    border: 1px solid rgba(30,132,73,0.12);
+}
 
-@media screen and (max-width:576px){
+.download-icon {
+    font-size: 48px;
+}
 
-    /* FORCE CORRECT GRID */
-    #categories .row{
-        display:flex;
-        flex-wrap:wrap;
+.download-btn-premium {
+    display: inline-block;
+    background: var(--loka-green);
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 36px;
+    border-radius: 14px;
+    text-decoration: none;
+    -webkit-transition: background 0.2s ease, -webkit-transform 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
 
-        margin-left:-4px !important;
-        margin-right:-4px !important;
-    }
-
-    #categories .row > div{
-
-        width:33.333333% !important;
-        max-width:33.333333% !important;
-        flex:0 0 33.333333% !important;
-
-        padding-left:4px !important;
-        padding-right:4px !important;
-
-        margin-bottom:10px;
-    }
-
-    /* CARD */
-    .blinkit-category-card{
-
-        width:100% !important;
-
-        display:flex;
-        flex-direction:column;
-
-        border-radius:12px;
-
-        overflow:hidden;
-
-        background:#fff;
-    }
-
-    /* IMAGE */
-    .category-image-wrapper{
-
-        width:100%;
-
-        aspect-ratio:1/1;
-
-        height:auto !important;
-
-        min-height:auto !important;
-    }
-
-    .category-image-wrapper img{
-
-        width:100%;
-        height:100%;
-
-        object-fit:cover;
-        display:block;
-    }
-
-    /* TITLE */
-    .category-title{
-
-        font-size:12px;
-
-        padding:6px 2px;
-
-        line-height:1.2;
-
-        min-height:34px;
-    }
-
+.download-btn-premium:hover {
+    background: #186a3b;
+    color: #fff;
+    -webkit-transform: translateY(-2px);
+    transform: translateY(-2px);
 }
