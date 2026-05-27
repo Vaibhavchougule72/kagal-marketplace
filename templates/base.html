@@ -124,9 +124,9 @@
 
         .main-content {
 
-            width: 100%;
+            width:100%;
 
-            overflow-x: hidden;
+            overflow-x:hidden;
         }
 
         /* Adjust navbar height */
@@ -158,7 +158,7 @@
 
         /* Smaller navbar on mobile */
         @media (max-width: 991px) {
-        
+
         .premium-navbar {
 
             height: 64px;
@@ -166,6 +166,12 @@
             min-height: 64px;
 
             padding-top: 0;
+
+            padding-bottom: 0;
+
+            display:flex;
+
+            align-items:center;
         }
 
         
@@ -301,7 +307,7 @@
         <div class="collapse navbar-collapse" id="navbarContent">
 
             {% if not simple_navbar %}
-            
+            <!-- 🔍 Search (HIDE in simple mode) -->
             {% endif %}
 
             <!-- 🌐 Language (ALWAYS SHOW) -->
@@ -378,26 +384,26 @@
 </div>
 
 <div class="main-content">
-    {% if not simple_navbar %}
+    {% if request.path == "/" and not simple_navbar %}
 
-    <div class="universal-search-wrapper">
+    <div class="sticky-search-wrapper">
 
         <div class="container">
 
             <form method="GET"
                 action="{% url 'search_products' %}"
-                class="universal-search-form position-relative">
+                class="sticky-search-form position-relative">
 
                 <input
-                    class="form-control universal-search-input"
+                    class="form-control sticky-search-input"
                     type="search"
-                    id="universalSearchInput"
+                    id="stickySearchInput"
                     name="q"
                     value="{{ request.GET.q }}"
                     placeholder="Search for food, pizza, biryani..."
                     autocomplete="off">
 
-                <div id="universalSuggestionBox"
+                <div id="stickySuggestionBox"
                     class="list-group position-absolute w-100"
                     style="
                     top:58px;
@@ -416,6 +422,7 @@
 
     {% endif %}
     
+
     {% block content %}{% endblock %}
 </div>
 
@@ -658,16 +665,17 @@ document.addEventListener("DOMContentLoaded", function(){
     ========================== */
 
     const searchInput =
-        document.getElementById("universalSearchInput");
+        document.getElementById("stickySearchInput");
 
     const mobileSearchInput =
-        document.getElementById("universalSearchInput");
+        document.getElementById("stickySearchInput");
 
     const suggestionBox =
-        document.getElementById("universalSuggestionBox");
+        document.getElementById("stickySuggestionBox");
 
     const mobileSuggestionBox =
-        document.getElementById("universalSuggestionBox");
+        document.getElementById("stickySuggestionBox");
+
     if(searchInput){
 
         let debounceTimer;

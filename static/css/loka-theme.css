@@ -22,7 +22,7 @@ body {
 
 /* ===== Hero Section ===== */
 .hero-section {
-    padding: 80px 0;
+    padding: 20px 0 30px;
     background: #ffffff;
 }
 
@@ -703,36 +703,40 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     0 -4px 15px rgba(0,0,0,0.08);
 }
 
-/* =================================
-   UNIVERSAL STICKY SEARCH
-================================= */
+/* =========================
+   STICKY SEARCH BAR
+========================= */
 
-.universal-search-wrapper{
+.sticky-search-wrapper{
 
     position: sticky;
 
     top: 64px;
 
-    z-index: 900;
+    margin-top: 0;
 
-    padding: 10px 0;
+    z-index: 998;
 
     background: #fdfdfd;
+
+    padding-top: 10px;
+
+    padding-bottom: 10px;
 
     border-bottom: 1px solid rgba(0,0,0,0.04);
 
     box-shadow:
-        0 2px 10px rgba(0,0,0,0.04);
+    0 2px 10px rgba(0,0,0,0.04);
 }
 
-/* SEARCH FORM */
-.universal-search-form{
+.sticky-search-form{
 
     width:100%;
 }
 
-/* INPUT */
-.universal-search-input{
+.sticky-search-input{
+
+    width:100%;
 
     height:56px;
 
@@ -744,33 +748,36 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
 
     font-size:16px;
 
-    box-shadow:
-    0 4px 14px rgba(0,0,0,0.06);
-
     background:#fff;
+
+    box-shadow:
+    0 4px 12px rgba(0,0,0,0.05);
 }
 
-.universal-search-input:focus{
+.sticky-search-input:focus{
 
     border-color:#198754;
 
+    outline:none;
+
     box-shadow:
     0 4px 16px rgba(25,135,84,0.15);
-
-    outline:none;
 }
 
 /* MOBILE */
+
 @media(max-width:768px){
 
-    .universal-search-wrapper{
+    .sticky-search-wrapper{
 
-        top: 64px;
+        top:64px;
 
-        padding: 8px 0;
+        padding-top:6px;
+
+        padding-bottom:8px;
     }
 
-    .universal-search-input{
+    .sticky-search-input{
 
         height:52px;
 
@@ -780,32 +787,9 @@ transition:all 0.8s cubic-bezier(.17,.67,.83,.67);
     }
 }
 
-/* =========================
-   STABLE MOBILE LAYOUT
-========================= */
+.sticky-search-wrapper + section{
 
-html,
-body{
+    margin-top: 0 !important;
 
-    overflow-x:hidden;
-
-    width:100%;
-}
-
-.container,
-.container-fluid{
-
-    max-width:100%;
-}
-
-section{
-
-    overflow:hidden;
-}
-
-img{
-
-    max-width:100%;
-
-    display:block;
+    padding-top: 18px !important;
 }
