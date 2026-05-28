@@ -172,7 +172,7 @@
 
 <div class="col-4 col-sm-4 col-md-3 col-lg-2">
 
-<div class="loka-product-card combo-card"
+<div class="combo-card"
      data-id="{{ combo.id }}"
      data-name="{{ combo.name }}"
      data-price="{{ combo.price }}"
@@ -186,7 +186,7 @@
         {% endfor %}
         ]'>
 
-<div class="loka-product-image position-relative">
+<div class="combo-image position-relative">
     <div style="
     position:absolute;
     top:8px;
@@ -199,7 +199,7 @@
     border-radius:6px;
     z-index:10;
 ">
-    Special For You
+    For You
 </div>
 
 {% if combo.image.url %}
@@ -208,17 +208,17 @@
 
 </div>
 
-<div class="loka-product-body">
+<div class="combo-body">
 
-    <div class="loka-product-name">
+    <div class="combo-name">
         {{ combo.name }}
     </div>
 
-    <div class="loka-product-bottom">
+    <div class="combo-bottom">
 
-        <div class="loka-product-price">
+        <div class="combo-price">
 
-            <span style="color:#000;font-weight:700;font-size:18px;">
+            <small style="color:red;font-size:12px;">
                 ₹{{ combo.price|floatformat:0 }}
             </span>
 
@@ -229,7 +229,7 @@
 
         </div>
 
-        <button class="loka-add-btn add-bundle-btn"
+        <button class="combo-add-btn add-bundle-btn"
             data-id="{{ combo.id }}">
             ADD
         </button>

@@ -1015,9 +1015,9 @@ body,
 
 .combo-section{
 
-    padding-top:10px;
+    padding-top:8px;
 
-    padding-bottom:10px;
+    padding-bottom:8px;
 
     background:#f7f5f2;
 }
@@ -1026,11 +1026,13 @@ body,
 
     margin-top:0;
 
-    margin-bottom:14px;
+    margin-bottom:12px;
 
-    font-size:42px;
+    font-size:24px;
 
     line-height:1.1;
+
+    text-align:center;
 }
 
 /* GRID */
@@ -1048,6 +1050,12 @@ body,
 
 .combo-row > div{
 
+    width:33.3333%;
+
+    max-width:33.3333%;
+
+    flex:0 0 33.3333%;
+
     padding-left:4px;
 
     padding-right:4px;
@@ -1061,53 +1069,80 @@ body,
 
     background:#fffdfb;
 
-    border-radius:14px;
+    border-radius:12px;
 
     overflow:hidden;
 
     height:100%;
 
-    display:flex;
-
-    flex-direction:column;
-
     box-shadow:
-        0 3px 8px rgba(0,0,0,0.07),
-        0 8px 20px rgba(0,0,0,0.06);
+        0 3px 10px rgba(0,0,0,0.08);
 
     border:1px solid rgba(0,0,0,0.04);
 
-    transition:0.25s ease;
+    transition:0.2s ease;
 }
 
 .combo-card:hover{
 
-    transform:translateY(-3px);
-
-    box-shadow:0 10px 28px rgba(0,0,0,0.13);
+    transform:translateY(-2px);
 }
 
 /* IMAGE */
 
-.combo-card .loka-product-image{
+.combo-image{
 
-    border-radius:14px 14px 0 0;
+    position:relative;
+
+    width:100%;
 
     padding-top:100%;
+
+    overflow:hidden;
+}
+
+.combo-image img{
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+    display:block;
+}
+
+/* BADGE */
+
+.combo-image div{
+
+    top:6px !important;
+
+    right:6px !important;
+
+    padding:2px 6px !important;
+
+    font-size:10px !important;
+
+    border-radius:8px !important;
 }
 
 /* BODY */
 
-.combo-card .loka-product-body{
+.combo-body{
 
-    padding:8px;
+    padding:6px;
 }
 
 /* NAME */
 
-.combo-card .loka-product-name{
+.combo-name{
 
-    font-size:12px;
+    font-size:11px;
 
     font-weight:700;
 
@@ -1115,66 +1150,90 @@ body,
 
     text-align:center;
 
-    min-height:34px;
+    min-height:32px;
 
     display:flex;
 
     align-items:center;
 
     justify-content:center;
-}
 
-/* PRICE */
-
-.combo-card .loka-product-price{
-
-    font-size:14px;
-
-    text-align:center;
-}
-
-/* BUTTON */
-
-.combo-card .loka-add-btn{
-
-    width:100%;
-
-    margin-top:8px;
-
-    border-radius:10px;
-
-    padding:7px 0;
-
-    font-size:12px;
+    margin-bottom:6px;
 }
 
 /* BOTTOM */
 
-.combo-card .loka-product-bottom{
+.combo-bottom{
 
-    flex-direction:column;
+    display:flex;
 
-    gap:6px;
+    align-items:center;
 
-    padding-top:8px;
+    justify-content:space-between;
+
+    gap:4px;
 }
 
-/* MOBILE */
+/* PRICE */
 
-@media(max-width:576px){
+.combo-price{
 
-    .combo-section{
+    font-size:12px;
 
-        padding-top:8px;
+    font-weight:700;
 
-        padding-bottom:8px;
-    }
+    line-height:1.1;
+}
+
+/* BUTTON */
+
+.combo-add-btn{
+
+    border:2px solid #198754;
+
+    background:#e9f7ef;
+
+    color:#198754;
+
+    border-radius:8px;
+
+    padding:4px 10px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    cursor:pointer;
+}
+
+/* DESKTOP */
+
+@media(min-width:768px){
 
     .combo-heading{
 
-        font-size:24px;
+        font-size:42px;
 
-        margin-bottom:10px;
+        margin-bottom:16px;
+    }
+
+    .combo-row > div{
+
+        width:16.666%;
+
+        max-width:16.666%;
+
+        flex:0 0 16.666%;
+    }
+
+    .combo-name{
+
+        font-size:13px;
+    }
+
+    .combo-price{
+
+        font-size:14px;
     }
 
 }
