@@ -470,90 +470,327 @@ section h3 {
     }
 }
 
-/* ===============================
-   LOKA STORE CARD
-================================ */
-.loka-store-card {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 15px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    -webkit-transition: all 0.3s ease;
-    transition: all 0.3s ease;
-    height: 100%;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: column;
-    flex-direction: column;
+/* ===========================
+   MODERN STORE PAGE
+=========================== */
+
+.store-page-section{
+
+    padding-top:12px;
+
+    padding-bottom:24px;
 }
 
-.loka-store-card:hover {
-    -webkit-transform: translateY(-6px);
-    transform: translateY(-6px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+/* HEADER */
+
+.store-page-header{
+
+    margin-bottom:16px;
 }
 
-.loka-store-image {
-    position: relative;
-    width: 100%;
-    padding-top: 100%; /* square via padding trick — replaces aspect-ratio */
-    background: #f8f8f8;
-    border-radius: 14px;
-    overflow: hidden;
-    -webkit-flex-shrink: 0;
-    flex-shrink: 0;
+.store-page-title{
+
+    font-size:28px;
+
+    font-weight:800;
+
+    margin:0;
+
+    color:#111827;
 }
 
-.loka-store-image img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    -o-object-fit: contain;
-    padding: 8px;
-    background: white;
-    display: block;
+.store-page-subtitle{
+
+    margin-top:4px;
+
+    margin-bottom:0;
+
+    font-size:14px;
+
+    color:#6b7280;
 }
 
-.rating-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 30;
-    background: rgba(255,255,255,0.96);
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #111;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-    display: -webkit-flex;
-    display: flex;
-    -webkit-align-items: center;
-    align-items: center;
-    gap: 4px;
-    line-height: 1;
-    white-space: nowrap;
+/* GRID */
+
+.store-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:12px;
 }
 
-.loka-store-body {
-    margin-top: 12px;
-    text-align: left;
+/* DESKTOP */
+
+@media(min-width:768px){
+
+    .store-grid{
+
+        grid-template-columns:repeat(4,1fr);
+
+        gap:18px;
+    }
+
+    .store-page-title{
+
+        font-size:40px;
+    }
+
 }
 
-.loka-store-name {
-    font-weight: 700;
-    font-size: 16px;
-    color: #000;
+/* LINK */
+
+.store-link{
+
+    text-decoration:none;
+
+    color:inherit;
 }
 
-.loka-store-desc {
-    font-size: 13px;
-    color: #555;
-    margin-top: 4px;
+/* CARD */
+
+.modern-store-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    border:1px solid rgba(0,0,0,0.05);
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,0.06);
+
+    transition:0.22s ease;
+
+    height:100%;
 }
+
+.modern-store-card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 10px 24px rgba(0,0,0,0.10);
+}
+
+/* CLOSED CARD */
+
+.store-closed-card{
+
+    opacity:0.82;
+}
+
+/* IMAGE */
+
+.modern-store-image{
+
+    position:relative;
+
+    width:100%;
+
+    padding-top:78%;
+
+    background:#f8f8f8;
+
+    overflow:hidden;
+}
+
+.modern-store-image img{
+
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+    display:block;
+}
+
+/* STATUS */
+
+.store-status{
+
+    position:absolute;
+
+    top:10px;
+
+    right:10px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    padding:4px 8px;
+
+    border-radius:999px;
+
+    color:#fff;
+
+    z-index:5;
+}
+
+.open-status{
+
+    background:#16a34a;
+}
+
+.closed-status{
+
+    background:#dc2626;
+}
+
+/* RATING */
+
+.modern-rating-badge{
+
+    position:absolute;
+
+    left:10px;
+
+    bottom:10px;
+
+    background:rgba(255,255,255,0.96);
+
+    border-radius:999px;
+
+    padding:5px 9px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    color:#111827;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.12);
+}
+
+.modern-rating-badge span{
+
+    font-weight:600;
+
+    color:#6b7280;
+}
+
+/* BODY */
+
+.modern-store-body{
+
+    padding:12px;
+}
+
+/* NAME */
+
+.modern-store-name{
+
+    font-size:15px;
+
+    font-weight:700;
+
+    line-height:1.3;
+
+    color:#111827;
+}
+
+/* DESCRIPTION */
+
+.modern-store-desc{
+
+    margin-top:4px;
+
+    font-size:12px;
+
+    line-height:1.45;
+
+    color:#6b7280;
+
+    min-height:34px;
+}
+
+/* FOOTER */
+
+.modern-store-footer{
+
+    margin-top:10px;
+}
+
+/* OPEN TEXT */
+
+.store-open-text{
+
+    font-size:12px;
+
+    font-weight:700;
+
+    color:#15803d;
+}
+
+/* CLOSED TEXT */
+
+.store-closed-text{
+
+    font-size:12px;
+
+    font-weight:700;
+
+    color:#dc2626;
+}
+
+/* EMPTY */
+
+.no-store-box{
+
+    grid-column:1/-1;
+
+    text-align:center;
+
+    padding:40px 20px;
+
+    background:#fff;
+
+    border-radius:18px;
+}
+
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .store-page-section{
+
+        padding-top:8px;
+    }
+
+    .store-grid{
+
+        gap:10px;
+    }
+
+    .modern-store-body{
+
+        padding:10px;
+    }
+
+    .modern-store-name{
+
+        font-size:13px;
+    }
+
+    .modern-store-desc{
+
+        font-size:11px;
+
+        min-height:30px;
+    }
+
+}
+
 
 /* ===========================
    LOKA FOOTER
