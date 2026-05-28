@@ -1241,3 +1241,16 @@ body,
     }
 
 }
+
+.combo-row{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    align-items:flex-start;
+
+    margin-left:-4px;
+
+    margin-right:-4px;
+}
