@@ -14,7 +14,7 @@
     </script>
     
     <meta charset="UTF-8">
-    <title>LOKA-Online Store</title>
+    <title>LOKA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -123,7 +123,7 @@
         }
 
         .main-content {
-            margin-top: calc(var(--navbar-height, 70px) + env(safe-area-inset-top));
+            padding-top: 0;
         }
 
         /* Adjust navbar height */
@@ -286,25 +286,6 @@
 
             {% if not simple_navbar %}
             <!-- 🔍 Search (HIDE in simple mode) -->
-            <form class="d-none d-lg-flex mx-lg-auto my-2 my-lg-0 position-relative"
-                method="GET"
-                action="{% url 'search_products' %}"
-                style="max-width: 400px; width: 100%;">
-
-                <input class="form-control rounded-pill"
-                    type="search"
-                    id="searchInput"
-                    name="q"
-                    value="{{ request.GET.q }}"
-                    placeholder="Search products..."
-                    autocomplete="off">
-
-                <div id="suggestionBox"
-                    class="list-group position-absolute w-100"
-                    style="top: 45px; z-index: 9999; display: none;">
-                </div>
-
-            </form>
             {% endif %}
 
             <!-- 🌐 Language (ALWAYS SHOW) -->
@@ -383,27 +364,6 @@
 <div class="main-content">
     {% if not simple_navbar %}
     <!-- MOBILE SEARCH BAR -->
-    <div class="mobile-search-wrapper d-lg-none px-3 pt-3">
-
-        <form method="GET"
-            action="{% url 'search_products' %}"
-            class="position-relative">
-
-            <input class="form-control rounded-pill"
-                type="search"
-                id="mobileSearchInput"
-                name="q"
-                placeholder="Search for grocery, snacks..."
-                autocomplete="off">
-
-            <div id="mobileSuggestionBox"
-                class="list-group position-absolute w-100"
-                style="top: 45px; z-index: 9999; display: none;">
-            </div>
-
-        </form>
-
-    </div>
     {% endif %}
 
     {% block content %}{% endblock %}
@@ -647,12 +607,11 @@ document.addEventListener("DOMContentLoaded", function(){
     SEARCH AUTOCOMPLETE
     ========================== */
 
-    const searchInput = document.getElementById("searchInput");
-    const mobileSearchInput = document.getElementById("mobileSearchInput");
+    const searchInput =
+        document.getElementById("homeSearchInput");
 
-    const suggestionBox = document.getElementById("suggestionBox");
-    const mobileSuggestionBox = document.getElementById("mobileSuggestionBox");
-
+    const suggestionBox =
+        document.getElementById("homeSuggestionBox");
     if(searchInput){
 
         let debounceTimer;
@@ -728,92 +687,6 @@ document.addEventListener("DOMContentLoaded", function(){
         });
 
     }
-
-    if(mobileSearchInput){
-
-        mobileSearchInput.addEventListener("keyup", function(){
-
-            const query = this.value.trim();
-
-            if(query.length < 2){
-                mobileSuggestionBox.style.display = "none";
-                mobileSuggestionBox.innerHTML = "";
-                return;
-            }
-
-            mobileSuggestionBox.innerHTML = `<div class="list-group-item">Searching...</div>`;
-            mobileSuggestionBox.style.display = "block";
-
-            fetch(`/search-suggestions/?q=${query}`)
-            .then(res => res.json())
-            .then(data => {
-
-                mobileSuggestionBox.innerHTML = "";
-
-                if(data.results.length === 0){
-                    mobileSuggestionBox.innerHTML = `<div class="list-group-item">No results found</div>`;
-                    mobileSuggestionBox.style.display = "block";
-                    return;
-                }
-
-                data.results.forEach(item => {
-
-                const option = document.createElement("div");
-
-                option.classList.add(
-                    "list-group-item",
-                    "list-group-item-action"
-                );
-
-                option.style.cursor = "pointer";
-
-                option.innerHTML = `
-                    <div>
-                        <strong>${item.name}</strong><br>
-                        <small style="color:gray">
-                        ${item.type === "store"
-                            ? "Store"
-                            : item.store_name}
-                        </small>
-                    </div>
-                `;
-
-                option.addEventListener("click", function(e){
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if(item.type === "store"){
-
-                        window.location.href =
-                            `/store/${item.id}/`;
-
-                    }else{
-
-                        window.location.href =
-                            `/search/?q=${encodeURIComponent(item.name)}&highlight=${item.id}`;
-
-                    }
-
-                });
-
-                mobileSuggestionBox.appendChild(option);
-
-            });
-
-                mobileSuggestionBox.style.display = "block";
-            });
-
-            document.addEventListener("click", function(e){
-                if(!mobileSearchInput.contains(e.target) && !mobileSuggestionBox.contains(e.target)){
-                    mobileSuggestionBox.style.display = "none";
-                }
-            });
-
-        });
-
-    }
-
 
     // 🔥 CART PANEL HANDLER (+ / - / REMOVE)
     document.addEventListener("click", function(e){

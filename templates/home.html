@@ -3,51 +3,34 @@
 {% load static %}
 {% block content %}
 
-{% if main_banner %}
-<div class="container mb-4">
-    <div class="card shadow border-0" style="border-radius:12px; overflow:hidden;">
-        <p style="color:red; font-size:12px;">
-        ⏰ Limited time offer
-        </p>
-        {% if main_banner.image %}
-        <img src="{{ main_banner.image.url }}" style="width:100%; height:180px; object-fit:cover;">
-        {% endif %}
+<!-- STICKY HOME SEARCH -->
 
-        <div class="p-4 text-center">
+<section class="home-search-sticky">
 
-            <h5 class="fw-bold text-danger">
-                {{ main_banner.title }}
-            </h5>
+<div class="container">
 
-            <p class="text-muted">
-                {{ main_banner.subtitle }}
-            </p>
+<form method="GET"
+      action="{% url 'search_products' %}"
+      class="position-relative">
 
-            {% if main_banner.product or main_banner.bundle %}
-            <button class="banner-order-btn"
+    <input
+        class="home-search-input"
+        type="search"
+        id="homeSearchInput"
+        name="q"
+        placeholder="Search for grocery, snacks..."
+        autocomplete="off">
 
-                {% if main_banner.product %}
-                data-id="{{ main_banner.product.id }}"
-                data-type="product"
-
-                {% elif main_banner.bundle %}
-                data-id="{{ main_banner.bundle.id }}"
-                data-type="bundle"
-                {% endif %}
-
-            >
-                {{ main_banner.button_text }}
-            </button>
-
-            {% endif %}
-
-        </div>
-
+    <div id="homeSuggestionBox"
+         class="home-suggestion-box">
     </div>
-</div>
-{% endif %}
 
-<!-- HERO SECTION -->
+</form>
+
+</div>
+
+</section>
+
  <!-- OFFER SLIDER -->
 
 {% if offer_sliders %}
