@@ -1289,7 +1289,7 @@ body,
 
     height:52px;
 
-    border:none;
+    border:2px solid #166534;
 
     outline:none;
 
@@ -1299,19 +1299,33 @@ body,
 
     font-size:15px;
 
+    font-weight:500;
+
+    color:#166534;
+
     background:#ffffff;
 
     box-shadow:
         0 4px 14px rgba(0,0,0,0.06);
 
-    border:1px solid rgba(0,0,0,0.05);
+    transition:0.2s ease;
+}
+
+.home-search-input:focus{
+
+    border-color:#198754;
+
+    box-shadow:
+        0 0 0 4px rgba(25,135,84,0.12);
 }
 
 /* PLACEHOLDER */
 
 .home-search-input::placeholder{
 
-    color:#777;
+    color:#166534;
+
+    opacity:0.75;
 }
 
 /* SUGGESTIONS */
