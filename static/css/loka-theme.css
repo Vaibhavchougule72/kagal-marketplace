@@ -1048,21 +1048,6 @@ body,
     margin-right:-4px;
 }
 
-.combo-row > div{
-
-    width:33.3333%;
-
-    max-width:33.3333%;
-
-    flex:0 0 33.3333%;
-
-    padding-left:4px;
-
-    padding-right:4px;
-
-    margin-bottom:10px;
-}
-
 /* CARD */
 
 .combo-card{
@@ -1217,15 +1202,6 @@ body,
         margin-bottom:16px;
     }
 
-    .combo-row > div{
-
-        width:16.666%;
-
-        max-width:16.666%;
-
-        flex:0 0 16.666%;
-    }
-
     .combo-name{
 
         font-size:13px;
@@ -1234,6 +1210,34 @@ body,
     .combo-price{
 
         font-size:14px;
+    }
+
+}
+
+.combo-col{
+
+    width:33.3333%;
+
+    max-width:33.3333%;
+
+    flex:0 0 33.3333%;
+
+    padding-left:4px;
+
+    padding-right:4px;
+
+    margin-bottom:10px;
+}
+
+@media(min-width:768px){
+
+    .combo-col{
+
+        width:16.666%;
+
+        max-width:16.666%;
+
+        flex:0 0 16.666%;
     }
 
 }
