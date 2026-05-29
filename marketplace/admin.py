@@ -122,9 +122,14 @@ import os
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'store', 'price', 'is_hero', 'discount_price', 'is_active', 'upi_only')
+    list_display = ('name', 'store', 'price', 'is_hero', 'discount_price', 'is_active', 'upi_only', 'hide_morning', 'hide_afternoon', 'hide_evening',)
     list_filter = ('store', 'is_active', 'is_hero','is_featured')
     search_fields = ('name',)
+    list_editable = (
+        'hide_morning',
+        'hide_afternoon',
+        'hide_evening'
+    )
 
     def get_urls(self):
         urls = super().get_urls()

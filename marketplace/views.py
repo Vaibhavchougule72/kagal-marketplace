@@ -254,8 +254,13 @@ def home(request):
 
                 store_status_map[sid] = status
 
-        open_products = [p for p in all_products if store_status_map.get(p.store.id)]
-
+        open_products = [
+            p for p in all_products
+            if (
+                store_status_map.get(p.store.id)
+                and p.is_available_now()
+            )
+        ]
         # 🔥 HERO PRIORITY SORT
         hero_products = sorted(
             [p for p in open_products if p.is_hero],
@@ -363,6 +368,12 @@ def store_detail(request, store_id):
         "category",
         "store"
     )
+    
+    for product in products:
+        product.available_now = product.is_available_now()
+
+    
+
     # =========================
     # SEARCH
     # =========================
@@ -403,6 +414,11 @@ def store_detail(request, store_id):
         id__in=data["bundle_ids"],
         is_active=True
     )
+
+    products = [
+        p for p in products
+        if p.available_now
+    ]
 
     return render(request, "store_detail.html", {
         "store": store,
@@ -542,7 +558,11 @@ def category_products(request, category_id):
 def add_to_cart(request, product_id):
 
     product = get_object_or_404(Product, id=product_id, is_active=True)
-
+    if not product.is_available_now():
+        return JsonResponse({
+            "success": False,
+            "error": "Product currently unavailable"
+        })
     if not is_store_open_cached(product.store):
         return JsonResponse({
             "success": False,
@@ -748,6 +768,9 @@ def view_cart(request):
             if product.store.id not in store_status_map:
                 store_status_map[product.store.id] = is_store_open_cached(product.store)
 
+            if not store_status_map[product.store.id]:
+                continue
+            
             if not store_status_map[product.store.id]:
                 continue
 
@@ -2302,16 +2325,30 @@ def search_products(request):
         for p in products:
 
             try:
-                p.open_status = store_status_map.get(
+
+                store_open = store_status_map.get(
                     p.store.id,
                     False
                 )
 
+                product_available = p.is_available_now()
+
+                p.open_status = (
+                    store_open and product_available
+                )
+
             except Exception as e:
 
-                logger.warning(f"Open status attach error: {e}")
+                logger.warning(
+                    f"Open status attach error: {e}"
+                )
 
                 p.open_status = False
+
+        products = [
+            p for p in products
+            if p.is_available_now()
+        ]
 
         stores = Store.objects.all()
 
