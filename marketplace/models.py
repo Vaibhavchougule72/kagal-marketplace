@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 from decimal import Decimal
 from .firebase import send_push_notification
-from datetime import datetime
 
 
 class Category(models.Model):
@@ -120,54 +119,6 @@ class Product(models.Model):
         default=False,
         help_text="If enabled, this product allows only UPI payment"
     )
-    # Product unavailable timings
-
-    hide_morning = models.BooleanField(
-        default=False,
-        verbose_name="Hide in Morning (10AM-1PM)"
-    )
-
-    hide_afternoon = models.BooleanField(
-        default=False,
-        verbose_name="Hide in Afternoon (1PM-5PM)"
-    )
-
-    hide_evening = models.BooleanField(
-        default=False,
-        verbose_name="Hide in Evening (5PM-9PM)"
-    )
-
-    from django.utils import timezone
-
-    def is_available_now(self):
-
-        now = timezone.localtime().time()
-
-        # Morning
-        if (
-            self.hide_morning and
-            now >= datetime.strptime("10:00", "%H:%M").time() and
-            now < datetime.strptime("13:00", "%H:%M").time()
-        ):
-            return False
-
-        # Afternoon
-        if (
-            self.hide_afternoon and
-            now >= datetime.strptime("13:00", "%H:%M").time() and
-            now < datetime.strptime("17:00", "%H:%M").time()
-        ):
-            return False
-
-        # Evening
-        if (
-            self.hide_evening and
-            now >= datetime.strptime("17:00", "%H:%M").time() and
-            now < datetime.strptime("21:00", "%H:%M").time()
-        ):
-            return False
-
-        return True
 
     def __str__(self):
         return self.name
