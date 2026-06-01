@@ -11,6 +11,59 @@ admin.site.register(StoreRating)
 from .models import CheckoutLead
 admin.site.register(CheckoutLead)
 from .models import OfferSlider
+import csv
+
+from django.http import HttpResponse
+from .models import Order
+
+def download_customer_csv(modeladmin, request, queryset):
+
+    response = HttpResponse(
+        content_type='text/csv; charset=utf-8'
+    )
+
+    response.write('\ufeff')
+
+    response[
+        'Content-Disposition'
+    ] = 'attachment; filename="customers.csv"'
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        'Customer Name',
+        'Phone Number'
+    ])
+
+    customers = (
+        Order.objects
+        .exclude(customer_name="")
+        .exclude(customer_name__isnull=True)
+        .exclude(phone="")
+        .exclude(phone__isnull=True)
+        .values(
+            'customer_name',
+            'phone'
+        )
+        .distinct()
+        .order_by('customer_name')
+    )
+    
+    for customer in customers:
+
+        writer.writerow([
+            customer['customer_name'],
+            customer['phone']
+        ])
+
+    return response
+
+
+download_customer_csv.short_description = (
+    "Download Customer CSV"
+)
+
+
 
 @admin.register(OfferSlider)
 class OfferSliderAdmin(admin.ModelAdmin):
@@ -265,6 +318,10 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+
+    actions = [
+        download_customer_csv
+    ]
 
     inlines = [OrderItemInline]
 
