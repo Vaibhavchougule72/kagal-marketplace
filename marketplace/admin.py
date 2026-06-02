@@ -41,12 +41,7 @@ def download_customer_csv(modeladmin, request, queryset):
         .exclude(customer_name__isnull=True)
         .exclude(phone="")
         .exclude(phone__isnull=True)
-        .values(
-            'customer_name',
-            'phone'
-        )
-        .distinct()
-        .order_by('customer_name')
+        .order_by('phone', '-created_at')
     )
     
     for customer in customers:
@@ -175,9 +170,16 @@ import os
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'store', 'price', 'is_hero', 'discount_price', 'is_active', 'upi_only')
+    list_display = ('name', 'store', 'price', 'is_hero', 'discount_price', 'is_active', 'upi_only',  'unavailable_morning',
+        'unavailable_afternoon',
+        'unavailable_evening')
     list_filter = ('store', 'is_active', 'is_hero','is_featured')
     search_fields = ('name',)
+    list_editable = (
+        'unavailable_morning',
+        'unavailable_afternoon',
+        'unavailable_evening'
+    )
 
     def get_urls(self):
         urls = super().get_urls()

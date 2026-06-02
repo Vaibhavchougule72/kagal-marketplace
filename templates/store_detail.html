@@ -121,11 +121,20 @@
                             ₹{{ product.price }}
                         </div>
 
+                        {% if product.available_now %}
+
                         <button class="loka-add-btn add-to-cart-btn"
                                 data-id="{{ product.id }}">
                             ADD
                         </button>
 
+                        {% else %}
+
+                        <button class="btn btn-secondary" disabled>
+                            Unavailable
+                        </button>
+
+                        {% endif %}
                     </div>
 
                 </div>

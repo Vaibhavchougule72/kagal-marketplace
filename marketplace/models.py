@@ -120,6 +120,43 @@ class Product(models.Model):
         help_text="If enabled, this product allows only UPI payment"
     )
 
+    unavailable_morning = models.BooleanField(
+        default=False,
+        help_text="Hide product from 10 AM - 1 PM"
+    )
+
+    unavailable_afternoon = models.BooleanField(
+        default=False,
+        help_text="Hide product from 1 PM - 5 PM"
+    )
+
+    unavailable_evening = models.BooleanField(
+        default=False,
+        help_text="Hide product from 5 PM - 9 PM"
+    )
+
+    from django.utils import timezone
+
+    def is_available_now(self):
+
+        now = timezone.localtime()
+
+        hour = now.hour
+
+        # Morning
+        if 10 <= hour < 13:
+            return not self.unavailable_morning
+
+        # Afternoon
+        if 13 <= hour < 17:
+            return not self.unavailable_afternoon
+
+        # Evening
+        if 17 <= hour < 21:
+            return not self.unavailable_evening
+
+        return True
+
     def __str__(self):
         return self.name
 

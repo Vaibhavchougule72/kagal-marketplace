@@ -191,7 +191,7 @@
                             ₹{{ product.price }}
                         </span>
 
-                        {% if product.open_status %}
+                        {% if product.open_status and product.available_now %}
                             <button class="loka-add-btn add-to-cart-btn fw-bold"
                                     data-id="{{ product.id }}"
                                     style="background:#ff5722; color:white;">
@@ -199,7 +199,7 @@
                             </button>
                         {% else %}
                             <button class="loka-add-btn btn-secondary" disabled>
-                                Closed
+                                Unavailable
                             </button>
                         {% endif %}
 

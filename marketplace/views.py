@@ -254,7 +254,11 @@ def home(request):
 
                 store_status_map[sid] = status
 
-        open_products = [p for p in all_products if store_status_map.get(p.store.id)]
+        open_products = [
+            p for p in all_products
+            if store_status_map.get(p.store.id)
+            and p.is_available_now()
+        ]
 
         # 🔥 HERO PRIORITY SORT
         hero_products = sorted(
@@ -363,6 +367,10 @@ def store_detail(request, store_id):
         "category",
         "store"
     )
+    for product in products:
+
+        product.available_now = product.is_available_now()
+    
     # =========================
     # SEARCH
     # =========================
@@ -542,6 +550,13 @@ def category_products(request, category_id):
 def add_to_cart(request, product_id):
 
     product = get_object_or_404(Product, id=product_id, is_active=True)
+
+    if not product.is_available_now():
+
+        return JsonResponse({
+            "success": False,
+            "error": "Product unavailable at this time"
+        })
 
     if not is_store_open_cached(product.store):
         return JsonResponse({
@@ -2314,6 +2329,9 @@ def search_products(request):
                 p.open_status = False
 
         stores = Store.objects.all()
+
+        for product in products:
+            product.available_now = product.is_available_now()
 
         return render(request, 'search_results.html', {
             'query': query,
