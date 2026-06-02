@@ -1398,47 +1398,71 @@ CATEGORY COVER
 
     display:flex;
 
+    align-items:center;
+
     background:#fff;
 
-    border-radius:20px;
+    border-radius:18px;
 
-    overflow:hidden;
+    padding:8px;
 
-    margin-bottom:18px;
+    margin-bottom:12px;
+
+    min-height:110px;
 
     text-decoration:none;
 
     color:inherit;
 
-    min-height:140px;
-
-    box-shadow:0 4px 15px rgba(0,0,0,.08);
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
 }
 
 /* IMAGE */
 
 .store-image{
-    width:50%;
+
+    width:95px;
+
+    height:95px;
+
+    flex-shrink:0;
+
+    margin-right:12px;
 }
 
 .store-image img{
+
     width:100%;
+
     height:100%;
+
     object-fit:cover;
-    aspect-ratio:1/1;
+
+    border-radius:14px;
+
+    display:block;
 }
 
 /* INFO */
 
 .store-info{
+
     flex:1;
-    padding:14px;
+
+    padding:2px 0;
+
+    min-width:0;
 }
 
 .store-info h3{
-    font-size:1.3rem;
+
+    font-size:18px;
+
     font-weight:800;
-    margin-bottom:10px;
+
+    margin-bottom:6px;
+
+    line-height:1.2;
 }
 
 /* RATING */
@@ -1540,4 +1564,27 @@ CATEGORY COVER
     pointer-events:none;
 
     opacity:0.75;
+}
+
+@media(min-width:992px){
+
+    .store-list{
+
+        max-width:900px;
+
+        margin:auto;
+    }
+
+    .store-row{
+
+        min-height:105px;
+    }
+
+    .store-image{
+
+        width:90px;
+
+        height:90px;
+    }
+
 }
