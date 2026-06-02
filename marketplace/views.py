@@ -478,15 +478,34 @@ def category_detail(request, category_id):
     return redirect('category_stores', category_id=category_id)
 
 
-def category_stores(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    stores = Store.objects.filter(category=category)
+from django.db.models import Min, Count
 
-    return render(request, 'category_stores.html', {
-        'category': category,
-        'stores': stores,
-        "show_floating_cart": False
-    })
+def category_stores(request, category_id):
+
+    category = get_object_or_404(
+        Category,
+        id=category_id
+    )
+
+    stores = (
+        Store.objects
+        .filter(category=category)
+        .annotate(
+            min_price=Min("product__price"),
+            total_products=Count("product")
+        )
+    )
+
+    return render(
+        request,
+        "category_stores.html",
+        {
+            "category": category,
+            "stores": stores,
+            "show_navbar": False,
+            "show_floating_cart": False,
+        }
+    )
 
 
 def category_products(request, category_id):

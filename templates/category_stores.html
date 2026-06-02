@@ -1,115 +1,118 @@
-
 {% extends 'base.html' %}
 {% load i18n %}
 
 {% block content %}
 
-<section class="store-page-section">
+<div class="category-page">
 
-<div class="container">
+    <!-- COVER IMAGE -->
 
-    <!-- PAGE TITLE -->
+    <div class="category-cover">
 
-    <div class="store-page-header">
+        {% if category.image %}
+            <img src="{{ category.image.url }}"
+                 alt="{{ category.name }}">
+        {% endif %}
 
-        <h2 class="store-page-title">
-            {{ category.name }}
-        </h2>
+        <!-- BACK BUTTON -->
 
-        <p class="store-page-subtitle">
-            {% trans "Choose your favorite store" %}
-        </p>
+        <a href="/"
+           class="back-btn">
+
+            ←
+
+        </a>
 
     </div>
 
-    <!-- STORE GRID -->
+    <!-- WHITE FLOATING HEADER -->
 
-    <div class="store-grid">
+    <div class="category-floating-box">
+
+        <h1>
+            {{ category.name }}
+        </h1>
+
+    </div>
+
+    <!-- STORES -->
+
+    <div class="store-list">
 
         {% for store in stores %}
 
         <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
-           class="store-link {% if not store.is_open %}disabled-link{% endif %}">
+            class="store-row {% if not store.is_open %}store-disabled{% endif %}">
 
-            <div class="modern-store-card {% if not store.is_open %}store-closed-card{% endif %}">
+            <!-- IMAGE -->
 
-                <!-- IMAGE -->
+            <div class="store-image">
 
-                <div class="modern-store-image">
+                {% if store.image %}
+                    <img src="{{ store.image.url }}">
+                {% endif %}
 
-                    {% if store.image %}
-                        <img src="{{ store.image.url }}"
-                             alt="{{ store.name }}"
-                             loading="lazy">
-                    {% endif %}
+            </div>
 
-                    <!-- OPEN/CLOSED -->
+            <!-- INFO -->
 
-                    {% if store.is_open %}
+            <div class="store-info">
 
-                    <div class="store-status open-status">
-                        Open
-                    </div>
+                <h3>
+                    {{ store.name }}
+                </h3>
 
-                    {% else %}
+                {% if store.total_ratings > 0 %}
 
-                    <div class="store-status closed-status">
-                        Closed
-                    </div>
+                <div class="rating-pill">
 
-                    {% endif %}
-
-                    <!-- RATING -->
-
-                    {% if store.total_ratings > 0 %}
-
-                    <div class="modern-rating-badge">
-
-                        ⭐ {{ store.average_rating }}
-
-                        <span>
-                            ({{ store.total_ratings }})
-                        </span>
-
-                    </div>
-
-                    {% endif %}
+                    ⭐ {{ store.average_rating }}
 
                 </div>
 
-                <!-- BODY -->
+                {% endif %}
 
-                <div class="modern-store-body">
+                <div class="store-meta">
 
-                    <div class="modern-store-name">
-                        {{ store.name }}
+                {% if store.is_open %}
+
+                    <div class="store-open-badge">
+                        🟢 Open Now
                     </div>
 
-                    {% if store.description %}
-                    <div class="modern-store-desc">
-                        {{ store.description|truncatechars:45 }}
+                {% else %}
+
+                    <div class="store-closed-badge">
+                        🔴 Closed
                     </div>
+
+                    <div class="next-open-time">
+                        Opens at {{ store.next_open_time }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+                <div class="starting-price">
+
+                    Starting from
+
+                    <strong>
+
+                        ₹{{ store.min_price|default:"0" }}
+
+                    </strong>
+
+                </div>
+
+                <div class="items-pill">
+
+                    {% if store.total_products > 20 %}
+                    20+ Items
+                    {% else %}
+                    {{ store.total_products }} Items
                     {% endif %}
-
-                    <!-- FOOTER -->
-
-                    <div class="modern-store-footer">
-
-                        {% if store.is_open %}
-
-                        <div class="store-open-text">
-                            🟢 Open Now
-                        </div>
-
-                        {% else %}
-
-                        <div class="store-closed-text">
-                            ⏰ Opens at {{ store.next_open_time }}
-                        </div>
-
-                        {% endif %}
-
-                    </div>
 
                 </div>
 
@@ -117,24 +120,10 @@
 
         </a>
 
-        {% empty %}
-
-        <div class="no-store-box">
-
-            <h5>No stores available</h5>
-
-            <p>
-                Please check again later.
-            </p>
-
-        </div>
-
         {% endfor %}
 
     </div>
 
 </div>
-
-</section>
 
 {% endblock %}
