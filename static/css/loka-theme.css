@@ -1388,15 +1388,15 @@ CATEGORY COVER
 
     position:fixed;
 
-    top:18px;
+    top:10px;
 
-    left:18px;
+    left:10px;
 
     z-index:99999;
 
-    width:52px;
+    width:42px;
 
-    height:52px;
+    height:42px;
 
     border-radius:50%;
 
@@ -1412,16 +1412,32 @@ CATEGORY COVER
 
     text-decoration:none;
 
-    font-size:28px;
+    font-size:22px;
 
     font-weight:800;
 
     box-shadow:
-        0 6px 20px rgba(0,0,0,.18);
+        0 4px 12px rgba(0,0,0,.15);
 
-    border:2px solid rgba(22,101,52,.15);
+    border:1.5px solid rgba(22,101,52,.15);
 }
 
+@media(max-width:576px){
+
+    .back-btn{
+
+        top:8px;
+
+        left:8px;
+
+        width:38px;
+
+        height:38px;
+
+        font-size:20px;
+    }
+
+}
 /* FLOATING TITLE */
 
 .category-floating-box{
