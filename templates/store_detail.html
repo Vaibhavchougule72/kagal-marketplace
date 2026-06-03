@@ -93,7 +93,9 @@
                 data-name="{{ product.name }}"
                 data-price="{{ product.price }}"
                 data-desc="{{ product.description }}"
+                data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+                
 
                 <!-- PRODUCT IMAGE -->
                 <div class="loka-product-image">
@@ -121,7 +123,7 @@
                             ₹{{ product.price }}
                         </div>
 
-                        {% if product.available_now %}
+                        {% if product.is_available_now %}
 
                         <button class="loka-add-btn add-to-cart-btn"
                                 data-id="{{ product.id }}">

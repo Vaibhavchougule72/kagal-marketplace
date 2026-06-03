@@ -822,6 +822,8 @@ const image = card.dataset.image;
 const id = card.dataset.id;
 
 currentProductId = id;
+const available =
+    card.dataset.available === "true";
 
 document.getElementById("quickName").innerText = name;
 document.getElementById("quickPrice").innerText = "₹" + price;
@@ -830,6 +832,38 @@ document.getElementById("quickImage").src = image;
 
 quickQty = 1;
 document.getElementById("quickQty").innerText = quickQty;
+const quickBtn =
+    document.getElementById("quickAddBtn");
+
+if(available){
+
+    quickBtn.disabled = false;
+
+    quickBtn.innerText = "Add to Cart";
+
+    quickBtn.classList.remove(
+        "btn-secondary"
+    );
+
+    quickBtn.classList.add(
+        "btn-success"
+    );
+
+}else{
+
+    quickBtn.disabled = true;
+
+    quickBtn.innerText =
+        "Not Available Now";
+
+    quickBtn.classList.remove(
+        "btn-success"
+    );
+
+    quickBtn.classList.add(
+        "btn-secondary"
+    );
+}
 
 new bootstrap.Modal(document.getElementById("productQuickView")).show();
 

@@ -108,14 +108,16 @@
                 highlight-product
                 {% endif %}
 
-                {% if not product.open_status %}
+                {% if not product.open_status or not product.available_now %}
                 opacity-50
                 {% endif %}
                 "
+
                 data-id="{{ product.id }}"
                 data-name="{{ product.name }}"
                 data-price="{{ product.price }}"
                 data-desc="{{ product.description }}"
+                data-available="{% if product.available_now %}true{% else %}false{% endif %}"
                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
 
                 <!-- IMAGE -->
@@ -134,16 +136,29 @@
                     {% endif %}
 
                     <!-- 🔥 STATUS BADGE -->
-                    {% if product.open_status %}
-                        <span class="badge bg-success shadow-sm px-2 position-absolute top-0 end-0 m-2">
-                            🟢 Open
-                        </span>
+                    {% if not product.open_status %}
+
+                    <span class="badge bg-danger shadow-sm px-2 position-absolute top-0 end-0 m-2">
+                        🔴 Closed
+                    </span>
+
+                    {% elif not product.available_now %}
+
+                    <span class="badge bg-warning text-dark shadow-sm px-2 position-absolute top-0 end-0 m-2">
+                        ⏰ Unavailable
+                    </span>
+
                     {% else %}
-                        <span class="badge bg-danger shadow-sm px-2 position-absolute top-0 end-0 m-2">
-                            🔴 Closed
-                        </span>
+
+                    <span class="badge bg-success shadow-sm px-2 position-absolute top-0 end-0 m-2">
+                        🟢 Available
+                    </span>
+
+                    {% endif %}
 
                         <!-- 🔥 OVERLAY -->
+                        {% if not product.open_status %}
+
                         <div style="
                             position:absolute;
                             top:0;
@@ -158,7 +173,8 @@
                         ">
                             Closed
                         </div>
-                    {% endif %}
+
+                        {% endif %}
 
                 </div>
 
@@ -191,16 +207,26 @@
                             ₹{{ product.price }}
                         </span>
 
-                        {% if product.open_status and product.available_now %}
-                            <button class="loka-add-btn add-to-cart-btn fw-bold"
-                                    data-id="{{ product.id }}"
-                                    style="background:#ff5722; color:white;">
-                                Add
-                            </button>
+                        {% if not product.open_status %}
+
+                        <button class="loka-add-btn btn-secondary" disabled>
+                            Closed
+                        </button>
+
+                        {% elif not product.available_now %}
+
+                        <button class="loka-add-btn btn-warning" disabled>
+                            Not Available Now
+                        </button>
+
                         {% else %}
-                            <button class="loka-add-btn btn-secondary" disabled>
-                                Unavailable
-                            </button>
+
+                        <button class="loka-add-btn add-to-cart-btn fw-bold"
+                                data-id="{{ product.id }}"
+                                style="background:#ff5722; color:white;">
+                            Add
+                        </button>
+
                         {% endif %}
 
                     </div>
