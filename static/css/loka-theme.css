@@ -1722,64 +1722,65 @@ CATEGORY COVER
 
     overflow-x:auto;
 
-    gap:12px;
+    gap:8px;
 
-    padding:12px 12px 24px;
-
-    scroll-snap-type:x mandatory;
+    padding:0;
 
     scrollbar-width:none;
 
-    align-items:center;
+    scroll-behavior:smooth;
 }
 
 .featured-slider::-webkit-scrollbar{
     display:none;
 }
 
+/* SAME SIZE AS COMBO CARD */
+
 .featured-card{
 
-    flex:0 0 26%;
+    flex:0 0 33.3333%;
 
-    scroll-snap-align:center;
+    max-width:33.3333%;
 
-    background:#fff;
+    background:#fffdfb;
 
-    border-radius:18px;
+    border-radius:12px;
 
     overflow:hidden;
 
     box-shadow:
-        0 4px 14px rgba(0,0,0,.10);
+        0 3px 10px rgba(0,0,0,0.08);
 
-    transform:scale(.88);
+    border:1px solid rgba(0,0,0,0.04);
 
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease;
-
-    position:relative;
+    transition:.2s ease;
 }
 
-.featured-card.active{
+.featured-card:hover{
 
-    transform:scale(1.08);
-
-    box-shadow:
-        0 10px 28px rgba(0,0,0,.18);
-
-    z-index:10;
+    transform:translateY(-2px);
 }
 
 .featured-image{
 
-    height:170px;
+    position:relative;
+
+    width:100%;
+
+    padding-top:100%;
+
+    overflow:hidden;
 }
 
 .featured-image img{
 
-    width:100%;
+    position:absolute;
 
+    top:0;
+    left:0;
+
+    width:100%;
     height:100%;
 
     object-fit:cover;
@@ -1787,54 +1788,58 @@ CATEGORY COVER
 
 .featured-body{
 
-    padding:10px;
+    padding:6px;
 }
 
 .featured-name{
 
-    font-size:14px;
+    font-size:11px;
 
     font-weight:700;
 
     line-height:1.2;
+
+    text-align:center;
+
+    min-height:32px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
 }
 
 .featured-price{
 
     color:#ff5722;
 
+    font-size:12px;
+
     font-weight:700;
 
-    margin-top:6px;
+    text-align:center;
+
+    margin-top:4px;
 }
 
-@media(max-width:576px){
-
-    .featured-slider{
-
-        gap:10px;
-
-        padding:10px 8px 22px;
-    }
+@media(min-width:768px){
 
     .featured-card{
 
-        flex:0 0 42%;
-    }
+        flex:0 0 16.666%;
 
-    .featured-card.active{
-
-        transform:scale(1.10);
-    }
-
-    .featured-image{
-
-        height:135px;
+        max-width:16.666%;
     }
 
     .featured-name{
 
         font-size:13px;
+    }
+
+    .featured-price{
+
+        font-size:14px;
     }
 
 }

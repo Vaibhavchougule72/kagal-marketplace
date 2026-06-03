@@ -18,7 +18,7 @@
         type="search"
         id="homeSearchInput"
         name="q"
-        placeholder="Search for grocery, snacks..."
+        placeholder="Search for food, snacks..."
         autocomplete="off">
 
     <div id="homeSuggestionBox"
@@ -102,9 +102,10 @@
 <section class="category-section" id="categories">
     <div class="container">
 
-        <h3 class="category-heading fw-bold text-black">
-            {% trans "Category" %}
+        <h3 class="fw-bold mb-3">
+            Category
         </h3>
+
 
         <div class="row g-4">
 
@@ -739,5 +740,36 @@ document.querySelector(".banner-order-btn")?.addEventListener("click", function(
 
 </script>
 
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const slider = document.querySelector(".featured-slider");
+
+    if(!slider) return;
+
+    slider.innerHTML += slider.innerHTML;
+
+    let speed = 1;
+
+    function autoSlide(){
+
+        slider.scrollLeft += speed;
+
+        if(
+            slider.scrollLeft >=
+            slider.scrollWidth / 2
+        ){
+            slider.scrollLeft = 0;
+        }
+
+        requestAnimationFrame(autoSlide);
+    }
+
+    autoSlide();
+
+});
+
+</script>
 {% endblock %}
 
