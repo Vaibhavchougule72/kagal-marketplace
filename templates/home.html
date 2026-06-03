@@ -140,6 +140,8 @@
     </div>
 </section>
 
+{% if combos %}
+
 <!-- COMBOS -->
 <section class="combo-section">
 
@@ -227,6 +229,66 @@ Combos & Offers
 </div>
 
 </section>
+
+{% endif %}
+
+{% if featured_products %}
+
+<section class="featured-products-section py-4">
+
+<div class="container">
+
+<h3 class="fw-bold mb-3">
+    ⭐ Featured Products
+</h3>
+
+<div class="featured-slider">
+
+{% for product in featured_products %}
+
+<div class="featured-card product-card"
+     data-id="{{ product.id }}"
+     data-name="{{ product.name }}"
+     data-price="{{ product.price }}"
+     data-desc="{{ product.description }}"
+     data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
+     data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+
+    <div class="featured-image">
+
+        {% if product.image %}
+        <img src="{{ product.image.url }}">
+        {% endif %}
+
+    </div>
+
+    <div class="featured-body">
+
+        <div class="featured-name">
+            {{ product.name }}
+        </div>
+
+        <div class="small text-muted">
+            {{ product.store.name }}
+        </div>
+
+        <div class="featured-price">
+            ₹{{ product.price }}
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
 
 <!-- FOOTER -->
 <footer class="loka-footer">

@@ -1027,5 +1027,67 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </script>
 
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const slider =
+        document.querySelector(".featured-slider");
+
+    if(!slider) return;
+
+    const cards =
+        slider.querySelectorAll(".featured-card");
+
+    function updateCenterCard(){
+
+        const sliderCenter =
+            slider.scrollLeft +
+            slider.offsetWidth / 2;
+
+        let closestCard = null;
+        let smallestDistance = Infinity;
+
+        cards.forEach(card => {
+
+            const cardCenter =
+                card.offsetLeft +
+                card.offsetWidth / 2;
+
+            const distance =
+                Math.abs(
+                    sliderCenter - cardCenter
+                );
+
+            if(distance < smallestDistance){
+
+                smallestDistance = distance;
+
+                closestCard = card;
+            }
+
+        });
+
+        cards.forEach(card =>
+            card.classList.remove("active")
+        );
+
+        if(closestCard){
+            closestCard.classList.add("active");
+        }
+
+    }
+
+    updateCenterCard();
+
+    slider.addEventListener(
+        "scroll",
+        updateCenterCard
+    );
+
+});
+
+</script>
+
 </body>
 </html>

@@ -302,6 +302,7 @@ def home(request):
         "categories": categories,
         "stores": stores,
         "combos": combos,
+        "featured_products": products_ordered[:10],
         "main_banner": main_banner,
         "popup_banner": popup_banner,
         "offer_sliders": offer_sliders,
