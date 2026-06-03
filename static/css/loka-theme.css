@@ -1722,13 +1722,15 @@ CATEGORY COVER
 
     overflow-x:auto;
 
-    gap:8px;
+    gap:10px;
 
-    padding:0;
+    padding:0 16px 16px;
+
+    scroll-snap-type:x mandatory;
 
     scrollbar-width:none;
 
-    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
 }
 
 .featured-slider::-webkit-scrollbar{
@@ -1739,9 +1741,15 @@ CATEGORY COVER
 
 .featured-card{
 
-    flex:0 0 33.3333%;
+    flex:0 0 28%;
 
-    max-width:33.3333%;
+    max-width:25%;
+
+    transform:scale(.88);
+
+    transition:.25s ease;
+
+    scroll-snap-align:center;
 
     background:#fffdfb;
 
@@ -1757,9 +1765,17 @@ CATEGORY COVER
     transition:.2s ease;
 }
 
-.featured-card:hover{
 
-    transform:translateY(-2px);
+.featured-card:hover{
+    transform:scale(.92) translateY(-2px);
+}
+
+.featured-card.active{
+    transform:scale(1.12);
+}
+
+.featured-card.active:hover{
+    transform:scale(1.12) translateY(-2px);
 }
 
 .featured-image{
@@ -1842,4 +1858,40 @@ CATEGORY COVER
         font-size:14px;
     }
 
+}
+
+.featured-controls{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:12px;
+
+    margin-top:14px;
+}
+
+.featured-prev,
+.featured-next{
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#166534;
+
+    color:#fff;
+
+    font-size:18px;
+
+    font-weight:800;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.15);
 }

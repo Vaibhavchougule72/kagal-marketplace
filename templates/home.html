@@ -283,6 +283,55 @@
 
 {% endfor %}
 
+{% for product in featured_products %}
+
+<div class="featured-card product-card"
+     data-id="{{ product.id }}"
+     data-name="{{ product.name }}"
+     data-price="{{ product.price }}"
+     data-desc="{{ product.description }}"
+     data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
+     data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+
+    <div class="featured-image">
+
+        {% if product.image %}
+        <img src="{{ product.image.url }}">
+        {% endif %}
+
+    </div>
+
+    <div class="featured-body">
+
+        <div class="featured-name">
+            {{ product.name }}
+        </div>
+
+        <div class="small text-muted">
+            {{ product.store.name }}
+        </div>
+
+        <div class="featured-price">
+            ₹{{ product.price }}
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+<div class="featured-controls">
+
+    <button class="featured-prev">
+        ←
+    </button>
+
+    <button class="featured-next">
+        →
+    </button>
+
+</div>
 </div>
 
 </div>
@@ -739,37 +788,94 @@ document.querySelector(".banner-order-btn")?.addEventListener("click", function(
 });
 
 </script>
-
 <script>
-
 document.addEventListener("DOMContentLoaded", function(){
 
-    const slider = document.querySelector(".featured-slider");
+    const slider =
+        document.querySelector(".featured-slider");
 
     if(!slider) return;
 
-    slider.innerHTML += slider.innerHTML;
+    const cards =
+        slider.querySelectorAll(".featured-card");
 
-    let speed = 1;
+    const prevBtn =
+        document.querySelector(".featured-prev");
 
-    function autoSlide(){
+    const nextBtn =
+        document.querySelector(".featured-next");
 
-        slider.scrollLeft += speed;
+    function updateCenterCard(){
 
-        if(
-            slider.scrollLeft >=
-            slider.scrollWidth / 2
-        ){
-            slider.scrollLeft = 0;
-        }
+        let activeCard = null;
 
-        requestAnimationFrame(autoSlide);
+        let minDistance = Infinity;
+
+        const center =
+            slider.scrollLeft +
+            slider.clientWidth / 2;
+
+        cards.forEach(card => {
+
+            const cardCenter =
+                card.offsetLeft +
+                card.offsetWidth / 2;
+
+            const distance =
+                Math.abs(center - cardCenter);
+
+            if(distance < minDistance){
+
+                minDistance = distance;
+
+                activeCard = card;
+            }
+
+        });
+
+        cards.forEach(card =>
+            card.classList.remove("active")
+        );
+
+        activeCard?.classList.add("active");
     }
 
-    autoSlide();
+    nextBtn?.addEventListener("click", () => {
+
+        slider.scrollBy({
+            left: cards[0].offsetWidth,
+            behavior:"smooth"
+        });
+
+    });
+
+    prevBtn?.addEventListener("click", () => {
+
+        slider.scrollBy({
+            left: -cards[0].offsetWidth,
+            behavior:"smooth"
+        });
+
+    });
+
+    slider.addEventListener("scroll", function(){
+
+        updateCenterCard();
+
+        const half =
+            slider.scrollWidth / 2;
+
+        if(slider.scrollLeft >= half){
+
+            slider.scrollLeft =
+                slider.scrollLeft - half;
+        }
+
+    });
+
+    updateCenterCard();
 
 });
-
 </script>
 {% endblock %}
 
