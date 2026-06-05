@@ -1720,7 +1720,7 @@ CATEGORY COVER
 
     display:flex;
 
-    gap:8px;
+    gap:10px;
 
     overflow-x:auto;
 
@@ -1728,7 +1728,9 @@ CATEGORY COVER
 
     scroll-snap-type:x mandatory;
 
-    padding:20px 12px;
+    padding:20px 18%;
+
+    scroll-behavior:smooth;
 }
 
 .featured-slider::-webkit-scrollbar{
@@ -1739,9 +1741,9 @@ CATEGORY COVER
 
 .featured-card{
 
-    flex:0 0 28%;
+    flex:0 0 24%;
 
-    max-width:28%;
+    max-width:24%;
 
     transition:.25s ease;
 
@@ -1906,9 +1908,9 @@ CATEGORY COVER
 
     .featured-card{
 
-        flex:0 0 28%;
+        flex:0 0 24%;
 
-        max-width:28%;
+        max-width:24%;
     }
 
     .featured-card.active{
@@ -1916,4 +1918,9 @@ CATEGORY COVER
         transform:scale(1.18);
     }
 
+}
+
+.featured-spacer{
+
+    flex:0 0 12%;
 }

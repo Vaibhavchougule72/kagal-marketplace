@@ -244,82 +244,84 @@
 </h3>
 
 <div class="featured-slider">
+    <div class="featured-spacer"></div>
 
-{% for product in featured_products %}
+    {% for product in featured_products %}
 
-<div class="featured-card product-card"
-     data-id="{{ product.id }}"
-     data-name="{{ product.name }}"
-     data-price="{{ product.price }}"
-     data-desc="{{ product.description }}"
-     data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
-     data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+    <div class="featured-card product-card"
+        data-id="{{ product.id }}"
+        data-name="{{ product.name }}"
+        data-price="{{ product.price }}"
+        data-desc="{{ product.description }}"
+        data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
+        data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
 
-    <div class="featured-image">
+        <div class="featured-image">
 
-        {% if product.image %}
-        <img src="{{ product.image.url }}">
-        {% endif %}
+            {% if product.image %}
+            <img src="{{ product.image.url }}">
+            {% endif %}
 
-    </div>
-
-    <div class="featured-body">
-
-        <div class="featured-name">
-            {{ product.name }}
         </div>
 
-        <div class="small text-muted">
-            {{ product.store.name }}
-        </div>
+        <div class="featured-body">
 
-        <div class="featured-price">
-            ₹{{ product.price }}
-        </div>
+            <div class="featured-name">
+                {{ product.name }}
+            </div>
 
-    </div>
+            <div class="small text-muted">
+                {{ product.store.name }}
+            </div>
 
-</div>
+            <div class="featured-price">
+                ₹{{ product.price }}
+            </div>
 
-{% endfor %}
-
-{% for product in featured_products %}
-
-<div class="featured-card product-card"
-     data-id="{{ product.id }}"
-     data-name="{{ product.name }}"
-     data-price="{{ product.price }}"
-     data-desc="{{ product.description }}"
-     data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
-     data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
-
-    <div class="featured-image">
-
-        {% if product.image %}
-        <img src="{{ product.image.url }}">
-        {% endif %}
-
-    </div>
-
-    <div class="featured-body">
-
-        <div class="featured-name">
-            {{ product.name }}
-        </div>
-
-        <div class="small text-muted">
-            {{ product.store.name }}
-        </div>
-
-        <div class="featured-price">
-            ₹{{ product.price }}
         </div>
 
     </div>
 
-</div>
+    {% endfor %}
 
-{% endfor %}
+    {% for product in featured_products %}
+
+    <div class="featured-card product-card"
+        data-id="{{ product.id }}"
+        data-name="{{ product.name }}"
+        data-price="{{ product.price }}"
+        data-desc="{{ product.description }}"
+        data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
+        data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
+
+        <div class="featured-image">
+
+            {% if product.image %}
+            <img src="{{ product.image.url }}">
+            {% endif %}
+
+        </div>
+
+        <div class="featured-body">
+
+            <div class="featured-name">
+                {{ product.name }}
+            </div>
+
+            <div class="small text-muted">
+                {{ product.store.name }}
+            </div>
+
+            <div class="featured-price">
+                ₹{{ product.price }}
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+    <div class="featured-spacer"></div>
 
 </div>
 
