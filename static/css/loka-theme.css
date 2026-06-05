@@ -1757,3 +1757,176 @@ CATEGORY COVER
     }
 
 }
+
+/* ===========================
+   PREMIUM COMBOS
+=========================== */
+
+.premium-combo-row{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:24px;
+}
+
+.premium-combo-card{
+
+    background:#fff;
+
+    border-radius:28px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.08);
+
+    transition:.25s ease;
+}
+
+.premium-combo-card:hover{
+
+    transform:translateY(-4px);
+}
+
+.premium-combo-image{
+
+    position:relative;
+
+    height:340px;
+
+    overflow:hidden;
+}
+
+.premium-combo-image img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+}
+
+.premium-combo-body{
+
+    padding:18px 20px;
+}
+
+.premium-combo-body .combo-name{
+
+    font-size:32px;
+
+    font-weight:800;
+
+    margin-bottom:8px;
+
+    text-align:left;
+}
+
+.premium-combo-desc{
+
+    color:#6b7280;
+
+    font-size:20px;
+
+    margin-bottom:16px;
+}
+
+.premium-combo-footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+.premium-combo-footer .combo-price{
+
+    color:#ff5a00;
+
+    font-size:28px;
+
+    font-weight:800;
+}
+
+.premium-combo-footer .combo-add-btn{
+
+    background:#16a34a;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:16px;
+
+    padding:12px 32px;
+
+    font-size:22px;
+
+    font-weight:700;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+    .premium-combo-row{
+
+        display:flex;
+
+        flex-wrap:nowrap;
+
+        overflow-x:auto;
+
+        gap:12px;
+
+        padding-bottom:10px;
+
+        scroll-snap-type:x mandatory;
+
+        -webkit-overflow-scrolling:touch;
+    }
+
+    .premium-combo-row::-webkit-scrollbar{
+        display:none;
+    }
+
+    .premium-combo-card{
+
+        flex:0 0 42%;
+
+        min-width:42%;
+
+        scroll-snap-align:start;
+    }
+
+    .premium-combo-image{
+
+        height:160px;
+    }
+
+    .premium-combo-body .combo-name{
+
+        font-size:18px;
+    }
+
+    .premium-combo-desc{
+
+        font-size:12px;
+    }
+
+    .premium-combo-footer .combo-price{
+
+        font-size:20px;
+    }
+
+    .premium-combo-footer .combo-add-btn{
+
+        padding:8px 16px;
+
+        font-size:14px;
+    }
+
+}

@@ -152,13 +152,13 @@
     Combos
 </h3>
 
-<div class="combo-row">
+<div class="premium-combo-row">
 
 {% for combo in combos %}
 
 <div class="combo-col">
 
-<div class="combo-card"
+<div class="premium-combo-card"
      data-id="{{ combo.id }}"
      data-name="{{ combo.name }}"
      data-price="{{ combo.price }}"
@@ -194,13 +194,19 @@
 
 </div>
 
-<div class="combo-body">
+<div class="premium-combo-body">
 
     <div class="combo-name">
         {{ combo.name }}
     </div>
+    <div class="premium-combo-desc">
+        {% for item in combo.items.all %}
+            {{ item.quantity }} {{ item.product.name }}
+            {% if not forloop.last %} + {% endif %}
+        {% endfor %}
+    </div>
 
-    <div class="combo-bottom">
+    <div class="premium-combo-footer">
 
         <div class="combo-price">
 
