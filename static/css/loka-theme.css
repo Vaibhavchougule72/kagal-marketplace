@@ -1317,9 +1317,6 @@ body,
 
 }
 
-/* ==========================
-CATEGORY COVER
-========================== */
 
 /* ==========================
 CATEGORY COVER
@@ -1720,7 +1717,7 @@ CATEGORY COVER
 
     font-weight:800;
 
-    color:#1f2937;
+    color:#166534;
 
     margin:0 0 10px 0;
 
@@ -1778,6 +1775,15 @@ CATEGORY COVER
 
     box-shadow:
         0 6px 18px rgba(22,101,52,0.08);
+}
+
+.combo-container .section-title{
+
+    color:#166534;
+
+    font-weight:800;
+
+    letter-spacing:0.3px;
 }
 
 /* Mobile */
