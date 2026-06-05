@@ -1711,3 +1711,49 @@ CATEGORY COVER
     }
 
 }
+
+/* COMMON SECTION TITLES */
+
+.section-title{
+
+    font-size:24px;
+
+    font-weight:800;
+
+    color:#1f2937;
+
+    margin:0 0 10px 0;
+
+    line-height:1.1;
+}
+
+/* CATEGORY */
+
+.category-section{
+
+    padding-top:2px;
+
+    padding-bottom:6px;
+}
+
+/* COMBOS */
+
+.combo-section{
+
+    padding-top:2px;
+
+    padding-bottom:6px;
+}
+
+/* MOBILE */
+
+@media(max-width:576px){
+
+    .section-title{
+
+        font-size:22px;
+
+        margin-bottom:8px;
+    }
+
+}
