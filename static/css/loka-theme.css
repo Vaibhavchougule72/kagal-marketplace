@@ -1720,17 +1720,15 @@ CATEGORY COVER
 
     display:flex;
 
+    gap:8px;
+
     overflow-x:auto;
 
-    gap:10px;
-
-    padding:0 16px 16px;
+    align-items:center;
 
     scroll-snap-type:x mandatory;
 
-    scrollbar-width:none;
-
-    -webkit-overflow-scrolling:touch;
+    padding:20px 12px;
 }
 
 .featured-slider::-webkit-scrollbar{
@@ -1743,9 +1741,7 @@ CATEGORY COVER
 
     flex:0 0 28%;
 
-    max-width:25%;
-
-    transform:scale(.88);
+    max-width:28%;
 
     transition:.25s ease;
 
@@ -1767,11 +1763,14 @@ CATEGORY COVER
 
 
 .featured-card:hover{
-    transform:scale(.92) translateY(-2px);
+    transform:none;
 }
 
 .featured-card.active{
-    transform:scale(1.12);
+
+    transform:scale(1.18);
+
+    z-index:5;
 }
 
 .featured-card.active:hover{
@@ -1894,4 +1893,27 @@ CATEGORY COVER
 
     box-shadow:
         0 4px 12px rgba(0,0,0,.15);
+}
+
+@media(max-width:576px){
+
+    .featured-slider{
+
+        gap:6px;
+
+        padding:20px 6px;
+    }
+
+    .featured-card{
+
+        flex:0 0 28%;
+
+        max-width:28%;
+    }
+
+    .featured-card.active{
+
+        transform:scale(1.18);
+    }
+
 }
