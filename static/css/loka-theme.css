@@ -1759,174 +1759,36 @@ CATEGORY COVER
 }
 
 /* ===========================
-   PREMIUM COMBOS
+   COMBO CONTAINER
 =========================== */
 
-.premium-combo-row{
+.combo-container{
 
-    display:grid;
+    background:linear-gradient(
+        135deg,
+        #eef8ef,
+        #dff1df
+    );
 
-    grid-template-columns:repeat(2,1fr);
+    border:1px solid rgba(22,101,52,0.15);
 
-    gap:24px;
-}
+    border-radius:18px;
 
-.premium-combo-card{
-
-    background:#fff;
-
-    border-radius:28px;
-
-    overflow:hidden;
+    padding:16px;
 
     box-shadow:
-        0 12px 30px rgba(0,0,0,.08);
-
-    transition:.25s ease;
+        0 6px 18px rgba(22,101,52,0.08);
 }
 
-.premium-combo-card:hover{
+/* Mobile */
 
-    transform:translateY(-4px);
-}
+@media(max-width:576px){
 
-.premium-combo-image{
+    .combo-container{
 
-    position:relative;
+        padding:12px;
 
-    height:340px;
-
-    overflow:hidden;
-}
-
-.premium-combo-image img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-}
-
-.premium-combo-body{
-
-    padding:18px 20px;
-}
-
-.premium-combo-body .combo-name{
-
-    font-size:32px;
-
-    font-weight:800;
-
-    margin-bottom:8px;
-
-    text-align:left;
-}
-
-.premium-combo-desc{
-
-    color:#6b7280;
-
-    font-size:20px;
-
-    margin-bottom:16px;
-}
-
-.premium-combo-footer{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-}
-
-.premium-combo-footer .combo-price{
-
-    color:#ff5a00;
-
-    font-size:28px;
-
-    font-weight:800;
-}
-
-.premium-combo-footer .combo-add-btn{
-
-    background:#16a34a;
-
-    color:#fff;
-
-    border:none;
-
-    border-radius:16px;
-
-    padding:12px 32px;
-
-    font-size:22px;
-
-    font-weight:700;
-}
-
-/* MOBILE */
-
-@media(max-width:768px){
-
-    .premium-combo-row{
-
-        display:flex;
-
-        flex-wrap:nowrap;
-
-        overflow-x:auto;
-
-        gap:12px;
-
-        padding-bottom:10px;
-
-        scroll-snap-type:x mandatory;
-
-        -webkit-overflow-scrolling:touch;
-    }
-
-    .premium-combo-row::-webkit-scrollbar{
-        display:none;
-    }
-
-    .premium-combo-card{
-
-        flex:0 0 42%;
-
-        min-width:42%;
-
-        scroll-snap-align:start;
-    }
-
-    .premium-combo-image{
-
-        height:160px;
-    }
-
-    .premium-combo-body .combo-name{
-
-        font-size:18px;
-    }
-
-    .premium-combo-desc{
-
-        font-size:12px;
-    }
-
-    .premium-combo-footer .combo-price{
-
-        font-size:20px;
-    }
-
-    .premium-combo-footer .combo-add-btn{
-
-        padding:8px 16px;
-
-        font-size:14px;
+        border-radius:16px;
     }
 
 }
