@@ -233,6 +233,23 @@
             height: 100%;
         }
 
+        #maintenance-overlay{
+            position:fixed;
+            top:0;
+            left:0;
+            width:100vw;
+            height:100vh;
+            background:#000;
+            z-index:999999999;
+        }
+
+        #maintenance-overlay img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:block;
+        }
+
     </style>
 
     <meta http-equiv="Cache-Control"
@@ -263,7 +280,7 @@
     <div id="maintenance-overlay">
 
         <img
-            src="/media/maintenance/poster.png"
+            src="{% static 'images/poster.png' %}"
             alt="Maintenance Poster">
 
     </div>
