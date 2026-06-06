@@ -19,7 +19,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/loka-theme.css' %}?v=15">
+    <link rel="stylesheet" href="{% static 'css/loka-theme.css' %}?v=16">
 
     <style>
         body {
@@ -258,6 +258,17 @@
 
 
 <body>
+    {% if maintenance_mode %}
+
+    <div id="maintenance-overlay">
+
+        <img
+            src="/media/maintenance/poster.png"
+            alt="Maintenance Poster">
+
+    </div>
+
+    {% endif %}
 
 <!-- Global Loader -->
 <div id="globalLoader" class="loader-overlay">
@@ -1031,63 +1042,36 @@ document.addEventListener("DOMContentLoaded", function(){
 
 document.addEventListener("DOMContentLoaded", function(){
 
-    const slider =
-        document.querySelector(".featured-slider");
+    document
+    .querySelectorAll(".featured-store-image")
+    .forEach(slider => {
 
-    if(!slider) return;
+        const images =
+            slider.querySelectorAll("img");
 
-    const cards =
-        slider.querySelectorAll(".featured-card");
+        if(images.length <= 1) return;
 
-    function updateCenterCard(){
+        let current = 0;
 
-        const sliderCenter =
-            slider.scrollLeft +
-            slider.offsetWidth / 2;
+        setInterval(() => {
 
-        let closestCard = null;
-        let smallestDistance = Infinity;
+            images[current]
+                .classList.remove("active-slide");
 
-        cards.forEach(card => {
+            current =
+                (current + 1) % images.length;
 
-            const cardCenter =
-                card.offsetLeft +
-                card.offsetWidth / 2;
+            images[current]
+                .classList.add("active-slide");
 
-            const distance =
-                Math.abs(
-                    sliderCenter - cardCenter
-                );
+        }, 2500);
 
-            if(distance < smallestDistance){
-
-                smallestDistance = distance;
-
-                closestCard = card;
-            }
-
-        });
-
-        cards.forEach(card =>
-            card.classList.remove("active")
-        );
-
-        if(closestCard){
-            closestCard.classList.add("active");
-        }
-
-    }
-
-    updateCenterCard();
-
-    slider.addEventListener(
-        "scroll",
-        updateCenterCard
-    );
+    });
 
 });
 
 </script>
+
 
 </body>
 </html>

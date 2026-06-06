@@ -237,6 +237,95 @@
 
 {% endif %}
 
+{% if featured_stores %}
+
+<section class="featured-store-section">
+
+<div class="container">
+
+<h3 class="section-title">
+    Featured
+</h3>
+
+<div class="featured-store-slider">
+
+{% for store in featured_stores %}
+
+<a href="{% url 'store_detail' store.id %}"
+   class="featured-store-card">
+
+    <div class="featured-store-image">
+        <div class="featured-badge">
+            Featured
+        </div>
+
+        {% for product in store.featured_products %}
+
+            {% if forloop.first %}
+
+            <img src="{{ product.image.url }}"
+                 class="active-slide">
+
+            {% else %}
+
+            {% if product.image %}
+            <img src="{{ product.image.url }}">
+            {% endif %}
+
+            <div class="featured-dots">
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+            </div>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+    <div class="featured-store-info">
+
+        <div class="featured-store-name">
+            {{ store.name }}
+        </div>
+
+        <div class="featured-meta">
+
+            <span>
+                ⏱ 35-40 min
+            </span>
+
+            <span>
+                ⭐ {{ store.average_rating|floatformat:1 }}
+            </span>
+
+        </div>
+
+        <div class="featured-offer">
+
+            🎉 Special Offers Available
+        </div>
+
+    </div>
+
+</a>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
 
 <!-- FOOTER -->
 <footer class="loka-footer">
@@ -774,6 +863,29 @@ document.addEventListener("DOMContentLoaded", function(){
     updateCenterCard();
 
 });
+
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+    const slider =
+    document.querySelector(
+        ".featured-store-slider"
+    );
+
+    if(!slider) return;
+
+    setInterval(() => {
+
+        slider.scrollBy({
+            left:320,
+            behavior:"smooth"
+        });
+
+    }, 4000);
+
+});
 </script>
+
 {% endblock %}
 

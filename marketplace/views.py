@@ -190,6 +190,24 @@ def home(request):
 
     popup_banner = banners.filter(is_popup=True).first()
     main_banner = banners.filter(is_popup=False).first()
+    featured_stores = [
+        s for s in Store.objects.filter(
+            is_featured=True
+        ).prefetch_related(
+            "product_set",
+            "timings"
+        ).order_by(
+            "featured_priority"
+        )
+        if is_store_open_cached(s)
+    ]
+
+    for store in featured_stores:
+
+        store.featured_products = Product.objects.filter(
+            store=store,
+            is_featured=True
+        )[:4]
 
     # =====================================================
     # 🔥 COMBOS (CACHE)
@@ -306,6 +324,7 @@ def home(request):
         "main_banner": main_banner,
         "popup_banner": popup_banner,
         "offer_sliders": offer_sliders,
+        "featured_stores": featured_stores,
         "show_floating_cart": True,
     })
 # =====================================================

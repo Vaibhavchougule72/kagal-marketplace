@@ -35,12 +35,20 @@ class Store(models.Model):
         default=0
     )
 
+    is_featured = models.BooleanField(
+        default=False,
+        verbose_name="Featured Store"
+    )
+
+    featured_priority = models.IntegerField(default=0)
+
 
     def is_open(self):
         now = timezone.localtime()
         today = now.date()
         current_time = now.time()
         weekday = now.weekday()
+        
 
         # 🔴 Holiday check
         if self.storeholiday_set.filter(date=today).exists():
