@@ -2015,3 +2015,23 @@ CATEGORY COVER
 
     padding-right:8px;
 }
+
+@media (max-width:576px){
+
+    .featured-store-section .container{
+
+        padding-left:8px !important;
+
+        padding-right:8px !important;
+    }
+
+    .featured-store-card{
+
+        width:100%;
+
+        margin:0;
+
+        display:block;
+    }
+
+}
