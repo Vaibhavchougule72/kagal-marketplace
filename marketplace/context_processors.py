@@ -13,5 +13,5 @@ def maintenance(request):
         }
 
     return {
-        "maintenance_mode": True
+        "maintenance_mode": False
     }
