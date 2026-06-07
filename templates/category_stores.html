@@ -1,126 +1,129 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
 {% block content %}
+
 <div class="category-page">
 
-    <!-- COVER BANNER -->
-    <div class="cs-cover">
-        <a href="/" class="cs-back">‹</a>
-        <div class="cs-cover-text">
-            <div class="cs-cover-title">{{ category.name }}</div>
-            <div class="cs-cover-sub">{{ stores|length }} store{{ stores|length|pluralize }} near you</div>
-        </div>
+    <!-- COVER IMAGE -->
+
+    <div class="category-cover">
+
+        {% if category.image %}
+            <img src="{{ category.image.url }}"
+                 alt="{{ category.name }}">
+        {% endif %}
+
+        <!-- BACK BUTTON -->
+
+        <a href="/"
+        class="back-btn">
+
+            <i class="bi bi-arrow-left"></i>
+
+        </a>
+
     </div>
 
-    <!-- STATS ROW -->
-    <div class="cs-stats">
-        <div class="cs-stat">
-            <div class="cs-stat-num">{{ stores|length }}</div>
-            <div class="cs-stat-label">Stores</div>
-        </div>
-        <div class="cs-stat">
-            <div class="cs-stat-num">{{ open_count|default:"–" }}</div>
-            <div class="cs-stat-label">Open Now</div>
-        </div>
-        <div class="cs-stat">
-            <div class="cs-stat-num">30min</div>
-            <div class="cs-stat-label">Avg Delivery</div>
-        </div>
-        <div class="cs-stat">
-            <div class="cs-stat-num">{{ avg_rating|default:"4.2" }}★</div>
-            <div class="cs-stat-label">Avg Rating</div>
-        </div>
+    <!-- WHITE FLOATING HEADER -->
+
+    <div class="category-floating-box">
+
+        <h1>
+            {{ category.name }}
+        </h1>
+
     </div>
 
-    <!-- FILTER CHIPS -->
-    <div class="cs-filters">
-        <button class="cs-chip active" data-filter="all">All</button>
-        <button class="cs-chip" data-filter="open">Open Now</button>
-        <button class="cs-chip" data-filter="rated">Top Rated</button>
-    </div>
+    <!-- STORES -->
 
-    <!-- STORE LIST -->
-    <div class="cs-list" id="storeList">
+    <div class="store-list">
 
         {% for store in stores %}
+
         <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
-           class="cs-card {% if not store.is_open %}cs-card-closed{% endif %}"
-           data-open="{{ store.is_open|yesno:'true,false' }}"
-           data-rating="{{ store.average_rating }}">
+            class="store-row {% if not store.is_open %}store-disabled{% endif %}">
 
             <!-- IMAGE -->
-            <div class="cs-img">
+
+            <div class="store-image">
+
                 {% if store.image %}
-                    <img src="{{ store.image.url }}" alt="{{ store.name }}">
-                {% else %}
-                    <span class="cs-img-placeholder">🏪</span>
+                    <img src="{{ store.image.url }}">
                 {% endif %}
+
             </div>
 
             <!-- INFO -->
-            <div class="cs-info">
-                <div class="cs-name">{{ store.name }}</div>
 
-                <div class="cs-meta">
-                    {% if store.is_open %}
-                        <span class="cs-badge cs-open">🟢 Open</span>
-                    {% else %}
-                        <span class="cs-badge cs-closed">🔴 Closed</span>
-                    {% endif %}
+            <div class="store-info">
 
-                    {% if store.total_ratings > 0 %}
-                        <span class="cs-rating">⭐ {{ store.average_rating|floatformat:1 }}</span>
-                    {% endif %}
+                <h3>
+                    {{ store.name }}
+                </h3>
+
+                {% if store.total_ratings > 0 %}
+
+                <div class="rating-pill">
+
+                    ⭐ {{ store.average_rating }}
+
                 </div>
 
-                {% if not store.is_open and store.next_open_time %}
-                    <div class="cs-next-open">Opens at {{ store.next_open_time }}</div>
                 {% endif %}
 
-                <div class="cs-price">
-                    From <strong>₹{{ store.min_price|default:"0" }}</strong>
-                </div>
+                <div class="store-meta">
 
-                <div class="cs-items-pill">
-                    {% if store.total_products > 20 %}20+{% else %}{{ store.total_products }}{% endif %} Items
-                </div>
+                {% if store.is_open %}
+
+                    <div class="store-open-badge">
+                        🟢 Open Now
+                    </div>
+
+                {% else %}
+
+                    <div class="store-closed-badge">
+                        🔴 Closed
+                    </div>
+
+                    <div class="next-open-time">
+                        Opens at {{ store.next_open_time }}
+                    </div>
+
+                {% endif %}
+
             </div>
 
-            <!-- ARROW -->
-            {% if store.is_open %}
-            <div class="cs-arrow">›</div>
-            {% endif %}
+                <div class="starting-price">
+
+                    Starting from
+
+                    <strong>
+
+                        ₹{{ store.min_price|default:"0" }}
+
+                    </strong>
+
+                </div>
+
+                <div class="items-pill">
+
+                    {% if store.total_products > 20 %}
+                    20+ Items
+                    {% else %}
+                    {{ store.total_products }} Items
+                    {% endif %}
+
+                </div>
+
+            </div>
 
         </a>
-        {% empty %}
-        <div class="cs-empty">
-            <div class="cs-empty-icon">🏪</div>
-            <div class="cs-empty-text">No stores available in this category yet.</div>
-        </div>
+
         {% endfor %}
 
     </div>
 
 </div>
 
-<script>
-document.querySelectorAll(".cs-chip").forEach(chip => {
-    chip.addEventListener("click", function() {
-        document.querySelectorAll(".cs-chip").forEach(c => c.classList.remove("active"));
-        this.classList.add("active");
-
-        const filter = this.dataset.filter;
-        document.querySelectorAll(".cs-card").forEach(card => {
-            const isOpen = card.dataset.open === "true";
-            const rating = parseFloat(card.dataset.rating) || 0;
-
-            if (filter === "all") {
-                card.style.display = "flex";
-            } else if (filter === "open") {
-                card.style.display = isOpen ? "flex" : "none";
-            } else if (filter === "rated") {
-                card.style.display = rating >= 4.0 ? "flex" : "none";
-            }
-        });
-    });
-});
-</script>
 {% endblock %}
