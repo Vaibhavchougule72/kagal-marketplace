@@ -329,52 +329,59 @@
 
 <!-- FOOTER -->
 <footer class="loka-footer">
-    <div class="container">
+    <div class="loka-footer-inner">
 
-        <div class="row gy-4">
+        <!-- TOP ROW: Logo + Download -->
+        <div class="loka-footer-top">
+            <div>
+                <div class="loka-footer-logo">🌿 LOKA</div>
+                <div class="loka-footer-tagline">Your neighbourhood store, online.</div>
+            </div>
+            <a href="{% url 'download_app' %}" class="loka-footer-download-btn">
+                <span>📲</span> Download App
+            </a>
+        </div>
 
-            <!-- About -->
-            <div class="col-md-4">
-                <h5 class="footer-title">{% trans "About LOKA" %}</h5>
-                <p class="footer-text">
-                    LOKA connects Kagal customers with trusted local stores 
-                    for fast, reliable and hyperlocal delivery.
-                </p>
+        <!-- CARD GRID -->
+        <div class="loka-footer-cards">
+
+            <!-- Help Card -->
+            <div class="loka-footer-card">
+                <div class="loka-footer-card-icon">🙋</div>
+                <div class="loka-footer-card-title">Help</div>
+                <a href="{% url 'faqs' %}" class="loka-footer-card-link">FAQs</a>
+                <a href="{% url 'return_policy' %}" class="loka-footer-card-link">Return Policy</a>
+                <a href="{% url 'delivery_info' %}" class="loka-footer-card-link">Delivery Info</a>
             </div>
 
-            <!-- Contact -->
-            <div class="col-md-4">
-                <h5 class="footer-title">{% trans "Contact" %}</h5>
-
-                <div class="footer-contact-item">
-                    📞 <a href="tel:+917038984687">+91 7038984687</a>
-                </div>
-
-                <div class="footer-contact-item">
-                    ✉ <a href="mailto:support@lokastore.com">
-                        support@lokastore.com
-                    </a>
-                </div>
+            <!-- Legal Card -->
+            <div class="loka-footer-card">
+                <div class="loka-footer-card-icon">🔒</div>
+                <div class="loka-footer-card-title">Legal</div>
+                <a href="{% url 'privacy_policy' %}" class="loka-footer-card-link">Privacy Policy</a>
+                <a href="#" class="loka-footer-card-link">Terms of Service</a>
+                <a href="#" class="loka-footer-card-link">Refund Policy</a>
             </div>
 
-            <!-- Help -->
-            <div class="col-md-4">
-                <h5 class="footer-title">Help</h5>
-
-                <ul class="footer-links">
-                    <li><a href="{% url 'faqs' %}">FAQs</a></li>
-                    <li><a href="{% url 'return_policy' %}">Return Policy</a></li>
-                    <li><a href="{% url 'delivery_info' %}">Delivery Information</a></li>
-                    <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
-                </ul>
+            <!-- Contact Card -->
+            <div class="loka-footer-card">
+                <div class="loka-footer-card-icon">📞</div>
+                <div class="loka-footer-card-title">Contact</div>
+                <a href="tel:+917038984687" class="loka-footer-card-link">+91 7038984687</a>
+                <a href="mailto:support@lokastore.com" class="loka-footer-card-link">support@lokastore.com</a>
+                <a href="https://wa.me/917038984687" class="loka-footer-card-link">WhatsApp Us</a>
             </div>
 
         </div>
 
-        <div class="footer-divider"></div>
-
-        <div class="footer-bottom">
-            © 2026 LOKA – Online Store. All rights reserved.
+        <!-- BOTTOM: Copyright + Trust Badges -->
+        <div class="loka-footer-bottom">
+            <div class="loka-footer-copy">© 2026 LOKA – Online Store. All rights reserved.</div>
+            <div class="loka-footer-trust">
+                <span class="loka-trust-pill">🔒 Secure</span>
+                <span class="loka-trust-pill">🚚 Fast</span>
+                <span class="loka-trust-pill">⭐ Trusted</span>
+            </div>
         </div>
 
     </div>
