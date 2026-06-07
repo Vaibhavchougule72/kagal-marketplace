@@ -1812,13 +1812,11 @@ CATEGORY COVER
 
     display:flex;
 
-    gap:16px;
+    flex-direction:column;
 
-    overflow-x:auto;
+    gap:14px;
 
-    scroll-snap-type:x mandatory;
-
-    scrollbar-width:none;
+    width:100%;
 }
 
 .featured-store-slider::-webkit-scrollbar{
@@ -1830,11 +1828,9 @@ CATEGORY COVER
 
 .featured-store-card{
 
-    min-width:320px;
+    width:100%;
 
-    width:320px;
-
-    height:336px; /* 1 : 1.20 */
+    height:336px;
 
     background:#fff;
 
@@ -1848,10 +1844,6 @@ CATEGORY COVER
 
     box-shadow:
         0 8px 24px rgba(0,0,0,.10);
-
-    scroll-snap-align:start;
-
-    flex-shrink:0;
 }
 
 /* IMAGE AREA */
@@ -2015,4 +2007,11 @@ CATEGORY COVER
     height:100%;
 
     object-fit:contain;
+}
+
+.featured-store-section .container{
+
+    padding-left:8px;
+
+    padding-right:8px;
 }

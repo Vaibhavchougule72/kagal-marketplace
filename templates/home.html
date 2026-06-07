@@ -863,28 +863,6 @@ document.addEventListener("DOMContentLoaded", function(){
     updateCenterCard();
 
 });
-
-document.addEventListener(
-"DOMContentLoaded",
-function(){
-
-    const slider =
-    document.querySelector(
-        ".featured-store-slider"
-    );
-
-    if(!slider) return;
-
-    setInterval(() => {
-
-        slider.scrollBy({
-            left:320,
-            behavior:"smooth"
-        });
-
-    }, 4000);
-
-});
 </script>
 
 {% endblock %}
