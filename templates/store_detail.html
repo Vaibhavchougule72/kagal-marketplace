@@ -2,234 +2,997 @@
 {% load i18n %}
 {% block content %}
 
-<div class="container page-content">
+<style>
+/* =============================================
+   STORE DETAIL — MODERN FOOD DELIVERY DESIGN
+============================================= */
 
-    <div class="store-hero">
+/* Reset page padding added by base.html */
+.page-content { padding: 0 !important; }
 
+/* ── HERO ─────────────────────────────────── */
+.sd-hero {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #2d5a3d 0%, #1a3d2b 100%);
+}
+
+.sd-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.sd-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, rgba(0,0,0,.45) 100%);
+}
+
+/* Back button */
+.sd-back-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255,255,255,.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 800;
+    text-decoration: none;
+    line-height: 1;
+    transition: background .2s;
+}
+.sd-back-btn:hover { background: rgba(255,255,255,.38); color: #fff; }
+
+/* ── STORE INFO CARD ─────────────────────── */
+.sd-info-card {
+    position: relative;
+    z-index: 5;
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid rgba(0,0,0,.07);
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+    margin: -44px 20px 0;
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.sd-store-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    object-fit: cover;
+    border: 3px solid #e8f5e9;
+    margin-top: -36px;
+    background: #e8f5e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.sd-store-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.sd-store-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #111;
+    margin: 10px 0 0;
+    letter-spacing: .3px;
+}
+
+.sd-store-desc {
+    font-size: 13px;
+    color: #777;
+    margin: 4px 0 10px;
+    line-height: 1.4;
+}
+
+.sd-store-meta {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.sd-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #555;
+    padding: 0 12px;
+}
+
+.sd-meta-divider {
+    width: 1px;
+    height: 14px;
+    background: #ddd;
+}
+
+.sd-meta-item strong { color: #111; font-weight: 700; }
+
+/* Open / Closed badge */
+.sd-open-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #e8f5e9;
+    color: #166534;
+    border: 1px solid #bbdfc8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+.sd-closed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+.sd-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ── FEATURED SECTION ────────────────────── */
+.sd-featured-section {
+    margin: 16px 12px 0;
+    background: #eef8ef;
+    border-radius: 20px;
+    padding: 16px 14px 18px;
+}
+
+.sd-section-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
+.sd-section-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2d7a3a;
+    flex-shrink: 0;
+}
+
+.sd-section-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1a4a22;
+}
+
+/* Horizontal scroll */
+.sd-featured-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.sd-featured-scroll::-webkit-scrollbar { display: none; }
+
+/* Featured card */
+.sd-feat-card {
+    flex-shrink: 0;
+    width: 148px;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,.06);
+    box-shadow: 0 3px 10px rgba(0,0,0,.07);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.sd-feat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
+}
+
+.sd-feat-img {
+    width: 100%;
+    height: 112px;
+    object-fit: cover;
+    display: block;
+    background: #f3f4f6;
+}
+
+.sd-feat-placeholder {
+    width: 100%;
+    height: 112px;
+    background: linear-gradient(135deg,#f0fdf4,#dcfce7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+}
+
+.sd-feat-info {
+    padding: 8px 10px 10px;
+}
+
+.sd-feat-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+.sd-feat-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.sd-feat-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+}
+
+.sd-feat-price s {
+    font-size: 11px;
+    color: #999;
+    font-weight: 400;
+    margin-left: 2px;
+}
+
+.sd-feat-add {
+    background: #2d7a3a;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 5px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+}
+.sd-feat-add:hover { background: #1f5c29; }
+.sd-feat-add:disabled { background: #9ca3af; cursor: not-allowed; }
+
+/* ── BUNDLES SECTION ─────────────────────── */
+.sd-bundles-section {
+    margin: 14px 12px 0;
+    background: linear-gradient(135deg,#fffbeb,#fef3c7);
+    border-radius: 20px;
+    padding: 16px 14px 18px;
+    border: 1px solid rgba(234,179,8,.2);
+}
+
+.sd-section-dot-amber { background: #d97706; }
+.sd-section-title-amber { color: #92400e; }
+
+/* ── ALL ITEMS SECTION ───────────────────── */
+.sd-all-section {
+    margin: 14px 12px 0;
+    background: #fff;
+    border-radius: 20px;
+    padding: 16px 14px;
+    border: 1px solid rgba(0,0,0,.06);
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+
+.sd-all-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 12px;
+}
+
+/* Search + Filter row */
+.sd-search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.sd-search-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0 12px;
+    height: 42px;
+    transition: border-color .2s;
+}
+.sd-search-box:focus-within {
+    border-color: #2d7a3a;
+    background: #fff;
+}
+
+.sd-search-icon {
+    font-size: 17px;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.sd-search-box input {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #111;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+}
+.sd-search-box input::placeholder { color: #9ca3af; }
+
+/* Filter toggle button */
+.sd-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0 14px;
+    height: 42px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color .2s, background .2s;
+    font-family: inherit;
+}
+.sd-filter-toggle.active,
+.sd-filter-toggle:hover {
+    border-color: #2d7a3a;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+/* Filter panel (collapsible) */
+.sd-filter-panel {
+    display: none;
+    background: #f9fafb;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid #e5e7eb;
+    gap: 10px;
+    flex-direction: column;
+}
+.sd-filter-panel.open { display: flex; }
+
+.sd-filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.sd-filter-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.sd-filter-input {
+    flex: 1;
+    min-width: 80px;
+    height: 38px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    outline: none;
+}
+.sd-filter-input:focus { border-color: #2d7a3a; }
+
+.sd-sort-select {
+    width: 100%;
+    height: 38px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%236b7280' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+}
+
+.sd-filter-btns { display: flex; gap: 8px; }
+
+.sd-btn-apply {
+    flex: 1;
+    height: 38px;
+    background: #2d7a3a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s;
+}
+.sd-btn-apply:hover { background: #1f5c29; }
+
+.sd-btn-clear {
+    flex: 1;
+    height: 38px;
+    background: #fff;
+    color: #555;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color .15s;
+}
+.sd-btn-clear:hover { border-color: #9ca3af; }
+
+/* Active filter chips */
+.sd-active-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.sd-filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f5e9;
+    color: #166534;
+    border: 1px solid #bbdfc8;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px 3px 8px;
+    border-radius: 20px;
+}
+
+/* ── PRODUCT LIST ────────────────────────── */
+.sd-product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sd-product-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 10px;
+    border: 1px solid rgba(0,0,0,.07);
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    transition: box-shadow .2s, transform .2s;
+}
+.sd-product-card:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,.10);
+    transform: translateY(-1px);
+}
+
+.sd-prod-img-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+
+.sd-prod-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.sd-prod-details { flex: 1; min-width: 0; }
+
+.sd-prod-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.sd-prod-store {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.sd-prod-price-row { display: flex; align-items: center; gap: 6px; }
+
+.sd-prod-price {
+    font-size: 15px;
+    font-weight: 800;
+    color: #111;
+}
+
+.sd-prod-original {
+    font-size: 12px;
+    color: #9ca3af;
+    text-decoration: line-through;
+}
+
+.sd-prod-discount {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 1px 6px;
+    border-radius: 6px;
+}
+
+.sd-prod-unavailable {
+    font-size: 11px;
+    color: #ef4444;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Add / quantity controls */
+.sd-add-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #2d7a3a;
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s, transform .1s;
+}
+.sd-add-btn:hover { background: #1f5c29; }
+.sd-add-btn:active { transform: scale(.92); }
+.sd-add-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+
+/* Qty stepper (replaces + when qty > 0) */
+.sd-qty-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #f0fdf4;
+    border: 2px solid #2d7a3a;
+    border-radius: 22px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.sd-qty-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: #166534;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .1s;
+}
+.sd-qty-btn:hover { background: #dcfce7; }
+
+.sd-qty-count {
+    min-width: 24px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: #166534;
+}
+
+/* ── EMPTY STATE ─────────────────────────── */
+.sd-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+}
+.sd-empty-icon { font-size: 48px; margin-bottom: 12px; }
+.sd-empty-text { font-size: 15px; font-weight: 600; }
+.sd-empty-sub { font-size: 13px; margin-top: 4px; }
+
+/* ── BOTTOM PAD ──────────────────────────── */
+.sd-bottom-pad { height: 32px; }
+
+/* ── MOBILE ──────────────────────────────── */
+@media (max-width: 576px) {
+    .sd-hero { height: 220px; }
+    .sd-info-card { margin: -36px 12px 0; }
+    .sd-featured-section,
+    .sd-bundles-section,
+    .sd-all-section { margin-left: 10px; margin-right: 10px; }
+    .sd-feat-card { width: 136px; }
+    .sd-prod-name { font-size: 13px; }
+    .sd-prod-price { font-size: 14px; }
+}
+</style>
+
+<!-- ══════════════════════════════════════════
+     HERO COVER IMAGE
+══════════════════════════════════════════ -->
+<div class="sd-hero">
+    {% if store.image %}
+        <img src="{{ store.image.url }}" alt="{{ store.name }}" class="sd-hero-img">
+    {% endif %}
+    <div class="sd-hero-overlay"></div>
+    <a href="javascript:history.back()" class="sd-back-btn" aria-label="Go back">&#8592;</a>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STORE INFO CARD
+══════════════════════════════════════════ -->
+<div class="sd-info-card">
+
+    <div class="sd-store-logo">
         {% if store.image %}
-            <img src="{{ store.image.url }}"
-                class="store-cover">
+            <img src="{{ store.image.url }}" alt="{{ store.name }}">
+        {% else %}
+            🏪
+        {% endif %}
+    </div>
+
+    <div class="sd-store-name">{{ store.name }}</div>
+
+    {% if store.description %}
+        <div class="sd-store-desc">{{ store.description }}</div>
+    {% endif %}
+
+    <div class="sd-store-meta">
+        {% with products|dictsort:"price"|first as cheapest %}
+        {% if cheapest %}
+        <div class="sd-meta-item">Starting <strong>&nbsp;₹{{ cheapest.price|floatformat:0 }}</strong></div>
+        <div class="sd-meta-divider"></div>
+        {% endif %}
+        {% endwith %}
+
+        {% if store.average_rating %}
+        <div class="sd-meta-item">⭐ <strong>{{ store.average_rating }}</strong></div>
+        <div class="sd-meta-divider"></div>
         {% endif %}
 
-        <a href="/"
-        class="store-back-btn">
-        ❮
-        </a>
-
+        <div class="sd-meta-item">🛵 <strong>30-40 min</strong></div>
     </div>
 
-    <div class="store-info-card">
+    {% if store.is_open %}
+        <span class="sd-open-badge"><span class="sd-dot"></span> Open Now</span>
+    {% else %}
+        <span class="sd-closed-badge"><span class="sd-dot"></span> Closed · Opens {{ store.next_open_time }}</span>
+    {% endif %}
 
-        <div class="store-logo-wrap">
+</div>
 
-            {% if store.image %}
-                <img src="{{ store.image.url }}"
-                    class="store-logo">
+<!-- ══════════════════════════════════════════
+     FEATURED PRODUCTS — Horizontal Scroll
+══════════════════════════════════════════ -->
+{% if featured_products %}
+<div class="sd-featured-section">
+
+    <div class="sd-section-header">
+        <div class="sd-section-dot"></div>
+        <div class="sd-section-title">Featured Products</div>
+    </div>
+
+    <div class="sd-featured-scroll">
+        {% for product in featured_products %}
+        <div class="sd-feat-card">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="sd-feat-img" loading="lazy">
+            {% else %}
+                <div class="sd-feat-placeholder">🍽️</div>
             {% endif %}
 
-        </div>
-
-        <div class="store-info-content">
-
-            <h2>{{ store.name }}</h2>
-
-            <div class="store-meta-row">
-
-                <span>
-                    Starting ₹{{ products.first.price }}
-                </span>
-
-                <span>
-                    ⭐ {{ store.average_rating }}
-                </span>
-
-                <span>
-                    🕒 30-40 min
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <section class="featured-products-section">
-
-        <h4 class="section-title">
-
-            🟢 Featured Products
-
-        </h4>
-
-        <div class="featured-product-scroll">
-
-            {% for product in featured_products %}
-
-            <div class="featured-product-card">
-
-                <div class="featured-product-image">
-
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}">
-                    {% endif %}
-
-                </div>
-
-                <div class="featured-product-body">
-
-                    <div class="featured-product-name">
-                        {{ product.name }}
-                    </div>
-
-                    <div class="featured-product-bottom">
-
-                        <span>
-                            ₹{{ product.price }}
-                        </span>
-
-                        <button
-                            class="loka-add-btn add-to-cart-btn"
-                            data-id="{{ product.id }}">
-                            ADD
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {% endfor %}
-
-        </div>
-
-    </section>
-
-    <div class="all-food-header">
-
-        <h4>
-            All Food Items
-        </h4>
-
-        <div class="menu-toolbar">
-
-            <input
-                type="text"
-                name="q"
-                value="{{ query }}"
-                placeholder="Search Products">
-
-            <button>
-                Filter
-            </button>
-
-        </div>
-
-    </div>
-
-    <div class="food-list">
-        {% for product in products %}
-        <div class="food-list-card">
-            <div class="loka-product-card product-card"
-                data-id="{{ product.id }}"
-                data-name="{{ product.name }}"
-                data-price="{{ product.price }}"
-                data-desc="{{ product.description }}"
-                data-available="{% if product.is_available_now %}true{% else %}false{% endif %}"
-                data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
-                
-
-                <!-- PRODUCT IMAGE -->
-                <div class="loka-product-image">
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}"
-                            class="img-fluid product-img"
-                            alt="{{ product.name }}" loading="lazy">
-                    {% endif %}
-                </div>
-
-                <!-- PRODUCT INFO -->
-                <div class="loka-product-body">
-
-                    <div class="loka-product-name">
-                        {{ product.name }}
-                    </div>
-
-                    <div class="loka-product-desc">
-                        {{ product.store.name }}
-                    </div>
-
-                    <div class="loka-product-bottom">
-
-                        <div class="loka-product-price">
-                            ₹{{ product.price }}
-                        </div>
-
-                        {% if product.is_available_now %}
-
-                        <button class="loka-add-btn add-to-cart-btn"
-                                data-id="{{ product.id }}">
-                            ADD
-                        </button>
-
-                        {% else %}
-
-                        <button class="btn btn-secondary" disabled>
-                            Unavailable
-                        </button>
-
+            <div class="sd-feat-info">
+                <div class="sd-feat-name">{{ product.name }}</div>
+                <div class="sd-feat-bottom">
+                    <div class="sd-feat-price">
+                        ₹{{ product.discount_price|default:product.price|floatformat:0 }}
+                        {% if product.discount_price %}
+                            <s>₹{{ product.price|floatformat:0 }}</s>
                         {% endif %}
                     </div>
-
+                    {% if product.is_available_now %}
+                        <button class="sd-feat-add add-to-cart-btn" data-id="{{ product.id }}">ADD</button>
+                    {% else %}
+                        <button class="sd-feat-add" disabled>Soon</button>
+                    {% endif %}
                 </div>
-
             </div>
         </div>
-        {% empty %}
-        <p>No products available.</p>
         {% endfor %}
     </div>
 
 </div>
+{% endif %}
+
+<!-- ══════════════════════════════════════════
+     BUNDLES / COMBOS — Horizontal Scroll
+══════════════════════════════════════════ -->
+{% if bundles %}
+<div class="sd-bundles-section">
+
+    <div class="sd-section-header">
+        <div class="sd-section-dot sd-section-dot-amber"></div>
+        <div class="sd-section-title sd-section-title-amber">🎁 Combos &amp; Bundles</div>
+    </div>
+
+    <div class="sd-featured-scroll">
+        {% for bundle in bundles %}
+        <div class="sd-feat-card">
+            {% if bundle.image %}
+                <img src="{{ bundle.image.url }}" alt="{{ bundle.name }}" class="sd-feat-img" loading="lazy">
+            {% else %}
+                <div class="sd-feat-placeholder">🎁</div>
+            {% endif %}
+
+            <div class="sd-feat-info">
+                <div class="sd-feat-name">{{ bundle.name }}</div>
+                <div class="sd-feat-bottom">
+                    <div class="sd-feat-price">₹{{ bundle.price|floatformat:0 }}</div>
+                    <button class="sd-feat-add add-bundle-btn" data-id="{{ bundle.id }}">ADD</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endif %}
+
+<!-- ══════════════════════════════════════════
+     ALL FOOD ITEMS — Search + Filter + List
+══════════════════════════════════════════ -->
+<div class="sd-all-section">
+
+    <div class="sd-all-title">All Food Items</div>
+
+    <!-- Search + Filter toggle -->
+    <form method="GET" id="sd-filter-form">
+        <div class="sd-search-row">
+            <div class="sd-search-box">
+                <span class="sd-search-icon">🔍</span>
+                <input
+                    type="text"
+                    name="q"
+                    id="sd-search-input"
+                    value="{{ query }}"
+                    placeholder="Search products..."
+                    autocomplete="off">
+            </div>
+            <button type="button" class="sd-filter-toggle" id="sd-filter-toggle-btn" aria-expanded="false">
+                ⚙ Filter
+            </button>
+        </div>
+
+        <!-- Collapsible filter panel -->
+        <div class="sd-filter-panel {% if min_price or max_price or selected_sort %}open{% endif %}" id="sd-filter-panel">
+
+            <div>
+                <div class="sd-filter-label">Price Range</div>
+                <div class="sd-filter-row">
+                    <input type="number" name="min_price" class="sd-filter-input" placeholder="Min ₹" value="{{ min_price }}">
+                    <input type="number" name="max_price" class="sd-filter-input" placeholder="Max ₹" value="{{ max_price }}">
+                </div>
+            </div>
+
+            <div>
+                <div class="sd-filter-label">Sort By</div>
+                <select name="sort" class="sd-sort-select">
+                    <option value="">Default</option>
+                    <option value="price_low" {% if selected_sort == "price_low" %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if selected_sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
+                    <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest First</option>
+                </select>
+            </div>
+
+            <div class="sd-filter-btns">
+                <button type="submit" class="sd-btn-apply">Apply Filters</button>
+                <a href="{% url 'store_detail' store.id %}" class="sd-btn-clear">Clear</a>
+            </div>
+
+        </div>
+
+        <!-- Active filter chips -->
+        {% if query or min_price or max_price or selected_sort %}
+        <div class="sd-active-filters">
+            {% if query %}<span class="sd-filter-chip">🔍 "{{ query }}"</span>{% endif %}
+            {% if min_price %}<span class="sd-filter-chip">Min ₹{{ min_price }}</span>{% endif %}
+            {% if max_price %}<span class="sd-filter-chip">Max ₹{{ max_price }}</span>{% endif %}
+            {% if selected_sort == "price_low" %}<span class="sd-filter-chip">↑ Price</span>{% endif %}
+            {% if selected_sort == "price_high" %}<span class="sd-filter-chip">↓ Price</span>{% endif %}
+            {% if selected_sort == "newest" %}<span class="sd-filter-chip">🆕 Newest</span>{% endif %}
+        </div>
+        {% endif %}
+
+    </form>
+
+    <!-- ── Product List ── -->
+    <div class="sd-product-list" id="sd-product-list">
+
+        {% for product in products %}
+        <div class="sd-product-card"
+             data-id="{{ product.id }}"
+             data-name="{{ product.name|lower }}"
+             data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+
+            <!-- Image -->
+            <div class="sd-prod-img-wrap">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                {% else %}
+                    🍽️
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div class="sd-prod-details">
+                <div class="sd-prod-name">{{ product.name }}</div>
+
+                <div class="sd-prod-price-row">
+                    <span class="sd-prod-price">₹{{ product.discount_price|default:product.price|floatformat:0 }}</span>
+                    {% if product.discount_price %}
+                        <span class="sd-prod-original">₹{{ product.price|floatformat:0 }}</span>
+                        {% with product.price|add:"0" as orig %}
+                        <span class="sd-prod-discount">
+                            {{ product.price|add:"-0"|floatformat:0 }}
+                        </span>
+                        {% endwith %}
+                    {% endif %}
+                </div>
+
+                {% if not product.available_now %}
+                    <div class="sd-prod-unavailable">Unavailable now</div>
+                {% endif %}
+            </div>
+
+            <!-- Add button / stepper -->
+            {% if product.available_now %}
+                <button class="sd-add-btn add-to-cart-btn"
+                        data-id="{{ product.id }}"
+                        aria-label="Add {{ product.name }}">+</button>
+            {% else %}
+                <button class="sd-add-btn" disabled aria-label="Unavailable" style="background:#d1d5db">–</button>
+            {% endif %}
+
+        </div>
+        {% empty %}
+        <div class="sd-empty">
+            <div class="sd-empty-icon">🔍</div>
+            <div class="sd-empty-text">No products found</div>
+            <div class="sd-empty-sub">Try a different search or clear filters</div>
+        </div>
+        {% endfor %}
+
+    </div><!-- /product-list -->
+
+</div><!-- /all-section -->
+
+<div class="sd-bottom-pad"></div>
+
+<!-- ══════════════════════════════════════════
+     JS — Filter toggle + highlight scroll
+══════════════════════════════════════════ -->
 <script>
-window.addEventListener("load", function(){
+(function(){
 
-    const params = new URLSearchParams(window.location.search);
+    /* ── Filter panel toggle ── */
+    var toggleBtn  = document.getElementById('sd-filter-toggle-btn');
+    var filterPanel = document.getElementById('sd-filter-panel');
 
-    const highlight = params.get("highlight");
+    if(toggleBtn && filterPanel){
+        toggleBtn.addEventListener('click', function(){
+            var open = filterPanel.classList.toggle('open');
+            toggleBtn.classList.toggle('active', open);
+            toggleBtn.setAttribute('aria-expanded', open);
+        });
+    }
 
-    if(!highlight) return;
+    /* ── Highlight product after redirect ── */
+    window.addEventListener('load', function(){
+        var params = new URLSearchParams(window.location.search);
+        var highlight = params.get('highlight');
+        if(!highlight) return;
+        setTimeout(function(){
+            var card = document.querySelector('.sd-product-card[data-id="'+highlight+'"]');
+            if(card){
+                card.scrollIntoView({ behavior:'smooth', block:'center' });
+                card.style.transition = '0.3s';
+                card.style.boxShadow  = '0 0 0 3px #2d7a3a';
+                setTimeout(function(){ card.style.boxShadow = ''; }, 2800);
+            }
+        }, 700);
+    });
 
-    setTimeout(function(){
+    /* ── Bundle add ── */
+    document.querySelectorAll('.add-bundle-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            var id = btn.getAttribute('data-id');
+            fetch('/add-bundle/' + id + '/', { credentials:'same-origin' })
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                    if(data.success){
+                        btn.textContent = '✓';
+                        btn.style.background = '#166534';
+                        setTimeout(function(){ btn.textContent = 'ADD'; btn.style.background = ''; }, 1200);
+                        var badge = document.getElementById('cart-count-badge');
+                        if(badge) badge.textContent = data.cart_count;
+                    }
+                });
+        });
+    });
 
-        const card = document.querySelector(
-            `.product-card[data-id="${highlight}"]`
-        );
-
-        if(card){
-
-            card.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
-            card.style.transition = "0.4s";
-
-            card.style.boxShadow =
-                "0 0 0 4px #ff5722";
-
-            card.style.transform = "scale(1.02)";
-
-            setTimeout(() => {
-                card.style.boxShadow = "";
-                card.style.transform = "";
-            }, 3000);
-
-        }
-
-    }, 700);
-
-});
+})();
 </script>
+
 {% endblock %}
