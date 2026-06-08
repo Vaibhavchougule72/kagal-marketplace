@@ -145,32 +145,23 @@ class Product(models.Model):
 
     from django.utils import timezone
 
-    from django.utils import timezone
-
     def is_available_now(self):
 
-        current_hour = timezone.localtime().hour
+        now = timezone.localtime()
 
-        # Morning slot
-        if (
-            self.unavailable_morning and
-            10 <= current_hour < 13
-        ):
-            return False
+        hour = now.hour
 
-        # Afternoon slot
-        if (
-            self.unavailable_afternoon and
-            13 <= current_hour < 17
-        ):
-            return False
+        # Morning
+        if 10 <= hour < 13:
+            return not self.unavailable_morning
 
-        # Evening slot
-        if (
-            self.unavailable_evening and
-            17 <= current_hour < 21
-        ):
-            return False
+        # Afternoon
+        if 13 <= hour < 17:
+            return not self.unavailable_afternoon
+
+        # Evening
+        if 17 <= hour < 21:
+            return not self.unavailable_evening
 
         return True
 

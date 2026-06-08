@@ -762,7 +762,7 @@
                             <s>₹{{ product.price|floatformat:0 }}</s>
                         {% endif %}
                     </div>
-                    {% if product.available_now %}
+                    {% if product.is_available_now %}
                         <button class="sd-feat-add add-to-cart-btn" data-id="{{ product.id }}">ADD</button>
                     {% else %}
                         <button class="sd-feat-add" disabled>Soon</button>
@@ -884,7 +884,7 @@
         <div class="sd-product-card"
              data-id="{{ product.id }}"
              data-name="{{ product.name|lower }}"
-             data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+             data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
 
             <!-- Image -->
             <div class="sd-prod-img-wrap">
@@ -917,7 +917,7 @@
             </div>
 
             <!-- Add button / stepper -->
-            {% if product.available_now %}
+            {% if product.is_available_now %}
                 <button class="sd-add-btn add-to-cart-btn"
                         data-id="{{ product.id }}"
                         aria-label="Add {{ product.name }}">+</button>
