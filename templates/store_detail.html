@@ -75,6 +75,84 @@
     text-align: center;
 }
 
+.sd-sticky-header{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:60px;
+
+    background:rgba(255,255,255,0.96);
+
+    backdrop-filter:blur(12px);
+
+    -webkit-backdrop-filter:blur(12px);
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:0 14px;
+
+    box-shadow:0 2px 12px rgba(0,0,0,.08);
+
+    z-index:9999;
+
+    transform:translateY(-100%);
+
+    transition:.25s ease;
+
+}
+
+.sd-sticky-header.show{
+
+    transform:translateY(0);
+}
+
+.sd-sticky-logo{
+
+    width:38px;
+
+    height:38px;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    flex-shrink:0;
+}
+
+.sd-sticky-logo img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+}
+
+.sd-sticky-name{
+
+    font-size:16px;
+
+    font-weight:800;
+
+    color:#111;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+}
+
 .sd-store-logo {
     width: 72px;
     height: 72px;
@@ -733,6 +811,35 @@
 
 </div>
 
+<div class="sd-sticky-header" id="sdStickyHeader">
+
+    <a href="javascript:history.back()"
+       class="sd-back-btn"
+       style="
+       position:static;
+       width:36px;
+       height:36px;
+       font-size:18px;
+       flex-shrink:0;">
+       ←
+    </a>
+
+    <div class="sd-sticky-logo">
+
+        {% if store.image %}
+        <img src="{{ store.image.url }}">
+        {% endif %}
+
+    </div>
+
+    <div class="sd-sticky-name">
+
+        {{ store.name }}
+
+    </div>
+
+</div>
+
 <!-- ══════════════════════════════════════════
      FEATURED PRODUCTS — Horizontal Scroll
 ══════════════════════════════════════════ -->
@@ -911,7 +1018,7 @@
                     {% endif %}
                 </div>
 
-                {% if not product.available_now %}
+                {% if not product.is_available_now %}
                     <div class="sd-prod-unavailable">Unavailable now</div>
                 {% endif %}
             </div>
@@ -993,6 +1100,30 @@
     });
 
 })();
+
+const stickyHeader =
+    document.getElementById("sdStickyHeader");
+
+const infoCard =
+    document.querySelector(".sd-info-card");
+
+window.addEventListener("scroll", function(){
+
+    const trigger =
+        infoCard.offsetTop +
+        infoCard.offsetHeight;
+
+    if(window.scrollY > trigger){
+
+        stickyHeader.classList.add("show");
+
+    }else{
+
+        stickyHeader.classList.remove("show");
+
+    }
+
+});
 </script>
 
 {% endblock %}
