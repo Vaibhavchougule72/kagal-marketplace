@@ -1459,15 +1459,21 @@ CATEGORY COVER
 
     position:fixed;
 
-    top:95px;
+    top:12px;
 
-    left:14px;
+    left: 16px;
 
-    z-index:9999;
+    z-index:99999;
 
-    width:52px;
+    width:42px;
 
-    height:52px;
+    height:42px;
+
+    border-radius:50%;
+
+    background:#ffffff;
+
+    color:#166534;
 
     display:flex;
 
@@ -1477,58 +1483,29 @@ CATEGORY COVER
 
     text-decoration:none;
 
-    border-radius:16px;
-
-    background:rgba(255,255,255,.92);
-
-    backdrop-filter:blur(12px);
-
-    -webkit-backdrop-filter:blur(12px);
-
-    border:1px solid rgba(22,101,52,.12);
-
-    box-shadow:
-        0 10px 30px rgba(0,0,0,.15);
-
-    transition:all .25s ease;
-}
-
-.back-btn span{
-
-    font-size:24px;
+    font-size:22px;
 
     font-weight:800;
 
-    color:#166534;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.15);
 
-    line-height:1;
-}
-
-.back-btn:hover{
-
-    transform:translateY(-2px) scale(1.05);
-
-    background:#166534;
-}
-
-.back-btn:hover span{
-
-    color:#fff;
+    border:1.5px solid rgba(22,101,52,.15);
 }
 
 @media(max-width:576px){
 
     .back-btn{
 
-        top:92px;
+        top:12px;
 
-        left:12px;
+        left:14px;
 
-        width:48px;
+        width:38px;
 
-        height:48px;
+        height:38px;
 
-        border-radius:14px;
+        font-size:20px;
     }
 
 }
@@ -2132,4 +2109,3 @@ CATEGORY COVER
     }
 
 }
-
