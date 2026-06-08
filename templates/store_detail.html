@@ -762,7 +762,7 @@
                             <s>₹{{ product.price|floatformat:0 }}</s>
                         {% endif %}
                     </div>
-                    {% if product.is_available_now %}
+                    {% if product.available_now %}
                         <button class="sd-feat-add add-to-cart-btn" data-id="{{ product.id }}">ADD</button>
                     {% else %}
                         <button class="sd-feat-add" disabled>Soon</button>
