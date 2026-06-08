@@ -432,8 +432,14 @@ def store_detail(request, store_id):
         is_active=True
     )
 
+    featured_products = Product.objects.filter(
+        store=store,
+        is_featured=True
+    ).order_by("-id")[:10]
+
     return render(request, "store_detail.html", {
         "store": store,
+        "featured_products": featured_products,
         "products": products,
         "bundles": bundles,
         "show_floating_cart": True,
