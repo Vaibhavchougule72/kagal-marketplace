@@ -388,8 +388,7 @@ def store_detail(request, store_id):
         "store"
     )
     for product in products:
-
-        product.available_now = product.is_available_now()
+        product.is_available_now = product.is_available_now()
     
     # =========================
     # SEARCH
