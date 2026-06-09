@@ -4,34 +4,22 @@
 
 <style>
 
-/* STORE PAGE OVERRIDES */
+/* ── STORE PAGE: kill ALL padding from base/page-wrapper ── */
+.page-wrapper { padding-top: 0 !important; }
+.main-content  { padding-top: 0 !important; }
+.page-content  { padding:    0 !important; }
 
-.page-wrapper{
-    padding-top:0 !important;
-}
-
-.main-content{
-    padding-top:0 !important;
-}
-
-body{
-    padding-top:0 !important;
-}
-
-/* =============================================
-   STORE DETAIL — MODERN FOOD DELIVERY DESIGN
-============================================= */
-
-/* Reset page padding added by base.html */
-.page-content { padding: 0 !important; }
-
-/* ── HERO ─────────────────────────────────── */
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
 .sd-hero {
     position: relative;
     width: 100%;
     height: 260px;
     overflow: hidden;
     background: linear-gradient(160deg, #2d5a3d 0%, #1a3d2b 100%);
+    /* push down exactly the navbar height so hero sits flush below it */
+    margin-top: var(--navbar-height, 62px);
 }
 
 .sd-hero-img {
@@ -46,38 +34,41 @@ body{
 .sd-hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,.10) 0%, rgba(0,0,0,.45) 100%);
+    background: linear-gradient(to bottom,
+        rgba(0,0,0,.10) 0%,
+        rgba(0,0,0,.45) 100%);
 }
 
-/* ── PREMIUM BACK BUTTON ─────────────────── */
+/* ── PREMIUM BACK BUTTON ── */
 .sd-back-btn {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 14px;
+    left: 14px;
     z-index: 10;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
     background: rgba(255,255,255,.15);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255,255,255,.3);
+    border: 1px solid rgba(255,255,255,.30);
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     transition: background .2s, transform .15s, box-shadow .2s;
-    box-shadow: 0 4px 16px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.25);
+    box-shadow: 0 4px 16px rgba(0,0,0,.25),
+                inset 0 1px 0 rgba(255,255,255,.25);
 }
 .sd-back-btn:hover {
     background: rgba(255,255,255,.28);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.3);
+    box-shadow: 0 6px 20px rgba(0,0,0,.32),
+                inset 0 1px 0 rgba(255,255,255,.3);
 }
 .sd-back-btn:active { transform: scale(.94); }
 .sd-back-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 20px; height: 20px;
     stroke: #fff;
     stroke-width: 2.5;
     stroke-linecap: round;
@@ -86,99 +77,95 @@ body{
     filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
 }
 
-/* ── STICKY MINI HEADER ──────────────────── */
+/* ══════════════════════════════════════════
+   STICKY MINI HEADER
+   — overlays the navbar at the very top
+══════════════════════════════════════════ */
 .sd-sticky-header {
     position: fixed;
-    top: 65px;
+    top: 0;
     left: 0;
     right: 0;
-    z-index: 10001;
-
+    /* above the navbar (9999) so it covers it */
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    padding: 8px 60px;
-
-    background: rgba(255,255,255,.82);
-    backdrop-filter: blur(20px);
-
-    transform: translateY(-150%);
+    /* match the navbar height exactly */
+    height: var(--navbar-height, 62px);
+    padding: 0 20px;
+    /* match the green navbar colour */
+    background: rgba(12, 104, 63, 0.97);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 2px 16px rgba(0,0,0,.18);
+    /* start hidden — slide up out of view */
+    transform: translateY(-110%);
     opacity: 0;
-    visibility: hidden;
-
-    transition: all .3s ease;
+    pointer-events: none;
+    transition: transform .3s cubic-bezier(.4,0,.2,1),
+                opacity   .25s ease;
 }
-
 .sd-sticky-header.visible {
     transform: translateY(0);
     opacity: 1;
-    visibility: visible;
+    pointer-events: all;
 }
 
+/* back button inside sticky header */
 .sd-sticky-back {
     position: absolute;
     left: 14px;
-    width: 36px;
-    height: 36px;
+    width: 34px; height: 34px;
     border-radius: 10px;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
     text-decoration: none;
     transition: background .15s, transform .15s;
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
 }
-.sd-sticky-back:hover { background: #e5e7eb; transform: translateY(-1px); }
+.sd-sticky-back:hover { background: rgba(255,255,255,.28); transform: translateY(-1px); }
 .sd-sticky-back svg {
-    width: 16px;
-    height: 16px;
-    stroke: #374151;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    fill: none;
+    width: 16px; height: 16px;
+    stroke: #fff; stroke-width: 2.5;
+    stroke-linecap: round; stroke-linejoin: round; fill: none;
 }
 
+/* pill inside sticky header */
 .sd-sticky-pill {
     display: flex;
     align-items: center;
     gap: 9px;
-    background: #fff;
-    border: 1px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.22);
     border-radius: 40px;
-    padding: 5px 16px 5px 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    padding: 5px 14px 5px 5px;
     max-width: 260px;
 }
 
 .sd-sticky-logo {
-    width: 30px;
-    height: 30px;
+    width: 30px; height: 30px;
     border-radius: 8px;
-    background: #e8f5e9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 1.5px solid #d1fae5;
+    background: rgba(255,255,255,.20);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; overflow: hidden; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,.30);
 }
-.sd-sticky-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.sd-sticky-logo img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 6px;
+}
 
 .sd-sticky-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 14px; font-weight: 700;
+    color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 1px 3px rgba(0,0,0,.2);
 }
 
-/* ── STORE INFO CARD ─────────────────────── */
+/* ══════════════════════════════════════════
+   STORE INFO CARD
+══════════════════════════════════════════ */
 .sd-info-card {
     position: relative;
     z-index: 5;
@@ -195,10 +182,8 @@ body{
 }
 
 .sd-store-logo {
-    width: 72px;
-    height: 72px;
+    width: 72px; height: 72px;
     border-radius: 18px;
-    object-fit: cover;
     border: 3px solid #e8f5e9;
     margin-top: -36px;
     background: #e8f5e9;
@@ -209,91 +194,56 @@ body{
     overflow: hidden;
     flex-shrink: 0;
 }
-
 .sd-store-logo img {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     object-fit: cover;
     border-radius: 15px;
 }
 
 .sd-store-name {
-    font-size: 20px;
-    font-weight: 800;
-    color: #111;
-    margin: 10px 0 0;
-    letter-spacing: .3px;
+    font-size: 20px; font-weight: 800; color: #111;
+    margin: 10px 0 0; letter-spacing: .3px;
 }
 
 .sd-store-desc {
-    font-size: 13px;
-    color: #777;
-    margin: 4px 0 10px;
-    line-height: 1.4;
+    font-size: 13px; color: #777;
+    margin: 4px 0 10px; line-height: 1.4;
 }
 
 .sd-store-meta {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: flex; align-items: center;
+    flex-wrap: wrap; justify-content: center;
 }
 
 .sd-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    color: #555;
-    padding: 0 12px;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 13px; color: #555; padding: 0 12px;
 }
-
-.sd-meta-divider {
-    width: 1px;
-    height: 14px;
-    background: #ddd;
-}
-
+.sd-meta-divider { width: 1px; height: 14px; background: #ddd; }
 .sd-meta-item strong { color: #111; font-weight: 700; }
 
-/* Open / Closed badge */
 .sd-open-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #e8f5e9;
-    color: #166534;
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #e8f5e9; color: #166534;
     border: 1px solid #bbdfc8;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-top: 10px;
+    font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; margin-top: 10px;
 }
-
 .sd-closed-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #fee2e2;
-    color: #b91c1c;
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #fee2e2; color: #b91c1c;
     border: 1px solid #fca5a5;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-top: 10px;
+    font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; margin-top: 10px;
 }
-
 .sd-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
     background: currentColor;
 }
 
-/* ── FEATURED SECTION ────────────────────── */
+/* ══════════════════════════════════════════
+   FEATURED SECTION
+══════════════════════════════════════════ */
 .sd-featured-section {
     margin: 16px 12px 0;
     background: #eef8ef;
@@ -302,44 +252,26 @@ body{
 }
 
 .sd-section-header {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 14px;
+    display: flex; align-items: center;
+    gap: 7px; margin-bottom: 14px;
 }
-
 .sd-section-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #2d7a3a;
-    flex-shrink: 0;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #2d7a3a; flex-shrink: 0;
 }
+.sd-section-title { font-size: 17px; font-weight: 800; color: #1a4a22; }
 
-.sd-section-title {
-    font-size: 17px;
-    font-weight: 800;
-    color: #1a4a22;
-}
-
-/* Horizontal scroll */
 .sd-featured-scroll {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    display: flex; gap: 12px;
+    overflow-x: auto; padding-bottom: 4px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 }
 .sd-featured-scroll::-webkit-scrollbar { display: none; }
 
-/* Featured card */
 .sd-feat-card {
-    flex-shrink: 0;
-    width: 148px;
-    background: #fff;
-    border-radius: 16px;
-    overflow: hidden;
+    flex-shrink: 0; width: 148px;
+    background: #fff; border-radius: 16px; overflow: hidden;
     border: 1px solid rgba(0,0,0,.06);
     box-shadow: 0 3px 10px rgba(0,0,0,.07);
     transition: transform .2s ease, box-shadow .2s ease;
@@ -350,453 +282,219 @@ body{
 }
 
 .sd-feat-img {
-    width: 100%;
-    height: 112px;
-    object-fit: cover;
-    display: block;
-    background: #f3f4f6;
+    width: 100%; height: 112px;
+    object-fit: cover; display: block; background: #f3f4f6;
 }
-
 .sd-feat-placeholder {
-    width: 100%;
-    height: 112px;
+    width: 100%; height: 112px;
     background: linear-gradient(135deg,#f0fdf4,#dcfce7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-size: 36px;
 }
-
-.sd-feat-info {
-    padding: 8px 10px 10px;
-}
-
+.sd-feat-info { padding: 8px 10px 10px; }
 .sd-feat-name {
-    font-size: 12px;
-    font-weight: 700;
-    color: #111;
-    line-height: 1.3;
-    margin-bottom: 6px;
+    font-size: 12px; font-weight: 700; color: #111;
+    line-height: 1.3; margin-bottom: 6px;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    line-clamp: 2;
-    overflow: hidden;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    line-clamp: 2; overflow: hidden;
 }
-
 .sd-feat-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 4px;
 }
-
-.sd-feat-price {
-    font-size: 13px;
-    font-weight: 700;
-    color: #111;
-}
-
-.sd-feat-price s {
-    font-size: 11px;
-    color: #999;
-    font-weight: 400;
-    margin-left: 2px;
-}
-
+.sd-feat-price { font-size: 13px; font-weight: 700; color: #111; }
+.sd-feat-price s { font-size: 11px; color: #999; font-weight: 400; margin-left: 2px; }
 .sd-feat-add {
-    background: #2d7a3a;
-    color: #fff;
-    border: none;
-    border-radius: 9px;
-    padding: 5px 11px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background .15s;
-    white-space: nowrap;
+    background: #2d7a3a; color: #fff; border: none;
+    border-radius: 9px; padding: 5px 11px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: background .15s; white-space: nowrap;
 }
 .sd-feat-add:hover { background: #1f5c29; }
 .sd-feat-add:disabled { background: #9ca3af; cursor: not-allowed; }
 
-/* ── BUNDLES SECTION ─────────────────────── */
+/* ── BUNDLES ── */
 .sd-bundles-section {
     margin: 14px 12px 0;
     background: linear-gradient(135deg,#fffbeb,#fef3c7);
-    border-radius: 20px;
-    padding: 16px 14px 18px;
+    border-radius: 20px; padding: 16px 14px 18px;
     border: 1px solid rgba(234,179,8,.2);
 }
-
-.sd-section-dot-amber { background: #d97706; }
+.sd-section-dot-amber  { background: #d97706; }
 .sd-section-title-amber { color: #92400e; }
 
-/* ── ALL ITEMS SECTION ───────────────────── */
+/* ══════════════════════════════════════════
+   ALL ITEMS SECTION
+══════════════════════════════════════════ */
 .sd-all-section {
     margin: 14px 12px 0;
-    background: #fff;
-    border-radius: 20px;
-    padding: 16px 14px;
+    background: #fff; border-radius: 20px; padding: 16px 14px;
     border: 1px solid rgba(0,0,0,.06);
     box-shadow: 0 2px 10px rgba(0,0,0,.04);
 }
+.sd-all-title { font-size: 17px; font-weight: 800; color: #111; margin-bottom: 12px; }
 
-.sd-all-title {
-    font-size: 17px;
-    font-weight: 800;
-    color: #111;
-    margin-bottom: 12px;
-}
-
-/* Search + Filter row */
-.sd-search-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-}
-
+.sd-search-row { display: flex; gap: 8px; margin-bottom: 14px; }
 .sd-search-box {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f9fafb;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 0 12px;
-    height: 42px;
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    background: #f9fafb; border: 1.5px solid #e5e7eb;
+    border-radius: 12px; padding: 0 12px; height: 42px;
     transition: border-color .2s;
 }
-.sd-search-box:focus-within {
-    border-color: #2d7a3a;
-    background: #fff;
-}
-
-.sd-search-icon {
-    font-size: 17px;
-    color: #9ca3af;
-    flex-shrink: 0;
-}
-
+.sd-search-box:focus-within { border-color: #2d7a3a; background: #fff; }
+.sd-search-icon { font-size: 17px; color: #9ca3af; flex-shrink: 0; }
 .sd-search-box input {
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #111;
-    outline: none;
-    width: 100%;
-    font-family: inherit;
+    border: none; background: transparent; font-size: 14px; color: #111;
+    outline: none; width: 100%; font-family: inherit;
 }
 .sd-search-box input::placeholder { color: #9ca3af; }
 
-/* Filter toggle button */
 .sd-filter-toggle {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: #f9fafb;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 0 14px;
-    height: 42px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #444;
-    cursor: pointer;
-    white-space: nowrap;
+    display: flex; align-items: center; gap: 5px;
+    background: #f9fafb; border: 1.5px solid #e5e7eb;
+    border-radius: 12px; padding: 0 14px; height: 42px;
+    font-size: 13px; font-weight: 600; color: #444;
+    cursor: pointer; white-space: nowrap;
     transition: border-color .2s, background .2s;
     font-family: inherit;
 }
 .sd-filter-toggle.active,
-.sd-filter-toggle:hover {
-    border-color: #2d7a3a;
-    background: #f0fdf4;
-    color: #166534;
-}
+.sd-filter-toggle:hover { border-color: #2d7a3a; background: #f0fdf4; color: #166534; }
 
-/* Filter panel (collapsible) */
 .sd-filter-panel {
-    display: none;
-    background: #f9fafb;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 14px;
-    border: 1px solid #e5e7eb;
-    gap: 10px;
-    flex-direction: column;
+    display: none; background: #f9fafb; border-radius: 14px;
+    padding: 14px; margin-bottom: 14px;
+    border: 1px solid #e5e7eb; gap: 10px; flex-direction: column;
 }
 .sd-filter-panel.open { display: flex; }
 
 .sd-filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.sd-filter-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #555;
-    margin-bottom: 5px;
-}
-
+.sd-filter-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; }
 .sd-filter-input {
-    flex: 1;
-    min-width: 80px;
-    height: 38px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 0 10px;
-    font-size: 13px;
-    font-family: inherit;
-    background: #fff;
-    outline: none;
+    flex: 1; min-width: 80px; height: 38px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    padding: 0 10px; font-size: 13px; font-family: inherit;
+    background: #fff; outline: none;
 }
 .sd-filter-input:focus { border-color: #2d7a3a; }
 
 .sd-sort-select {
-    width: 100%;
-    height: 38px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 0 10px;
-    font-size: 13px;
-    font-family: inherit;
-    background: #fff;
-    outline: none;
-    appearance: none;
+    width: 100%; height: 38px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    padding: 0 10px; font-size: 13px; font-family: inherit;
+    background: #fff; outline: none; appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%236b7280' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
+    background-repeat: no-repeat; background-position: right 10px center;
     cursor: pointer;
 }
 
 .sd-filter-btns { display: flex; gap: 8px; }
-
 .sd-btn-apply {
-    flex: 1;
-    height: 38px;
-    background: #2d7a3a;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background .15s;
+    flex: 1; height: 38px; background: #2d7a3a; color: #fff;
+    border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: background .15s;
 }
 .sd-btn-apply:hover { background: #1f5c29; }
-
 .sd-btn-clear {
-    flex: 1;
-    height: 38px;
-    background: #fff;
-    color: #555;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex: 1; height: 38px; background: #fff; color: #555;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit; text-decoration: none;
+    display: flex; align-items: center; justify-content: center;
     transition: border-color .15s;
 }
 .sd-btn-clear:hover { border-color: #9ca3af; }
 
-/* Active filter chips */
-.sd-active-filters {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
+.sd-active-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .sd-filter-chip {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: #e8f5e9;
-    color: #166534;
-    border: 1px solid #bbdfc8;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 3px 10px 3px 8px;
+    display: flex; align-items: center; gap: 4px;
+    background: #e8f5e9; color: #166534; border: 1px solid #bbdfc8;
+    font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px;
     border-radius: 20px;
 }
 
-/* ── PRODUCT LIST ────────────────────────── */
-.sd-product-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/* ── PRODUCT LIST ── */
+.sd-product-list { display: flex; flex-direction: column; gap: 10px; }
 
 .sd-product-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    border-radius: 14px;
-    padding: 10px;
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; border-radius: 14px; padding: 10px;
     border: 1px solid rgba(0,0,0,.07);
     box-shadow: 0 2px 8px rgba(0,0,0,.05);
     transition: box-shadow .2s, transform .2s;
 }
-.sd-product-card:hover {
-    box-shadow: 0 6px 18px rgba(0,0,0,.10);
-    transform: translateY(-1px);
-}
+.sd-product-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.10); transform: translateY(-1px); }
 
 .sd-prod-img-wrap {
-    width: 72px;
-    height: 72px;
-    border-radius: 12px;
-    overflow: hidden;
-    flex-shrink: 0;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
+    width: 72px; height: 72px; border-radius: 12px;
+    overflow: hidden; flex-shrink: 0; background: #f3f4f6;
+    display: flex; align-items: center; justify-content: center; font-size: 30px;
 }
-
-.sd-prod-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
+.sd-prod-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .sd-prod-details { flex: 1; min-width: 0; }
-
 .sd-prod-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 2px;
+    font-size: 14px; font-weight: 700; color: #111;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
 }
-
-.sd-prod-store {
-    font-size: 11px;
-    color: #888;
-    margin-bottom: 4px;
-}
-
 .sd-prod-price-row { display: flex; align-items: center; gap: 6px; }
-
-.sd-prod-price {
-    font-size: 15px;
-    font-weight: 800;
-    color: #111;
-}
-
-.sd-prod-original {
-    font-size: 12px;
-    color: #9ca3af;
-    text-decoration: line-through;
-}
-
+.sd-prod-price { font-size: 15px; font-weight: 800; color: #111; }
+.sd-prod-original { font-size: 12px; color: #9ca3af; text-decoration: line-through; }
 .sd-prod-discount {
-    font-size: 11px;
-    font-weight: 700;
-    color: #16a34a;
-    background: #dcfce7;
-    padding: 1px 6px;
-    border-radius: 6px;
+    font-size: 11px; font-weight: 700; color: #16a34a;
+    background: #dcfce7; padding: 1px 6px; border-radius: 6px;
 }
+.sd-prod-unavailable { font-size: 11px; color: #ef4444; font-weight: 600; margin-top: 2px; }
 
-.sd-prod-unavailable {
-    font-size: 11px;
-    color: #ef4444;
-    font-weight: 600;
-    margin-top: 2px;
-}
-
-/* Add / quantity controls */
 .sd-add-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: #2d7a3a;
-    color: #fff;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: 400;
-    line-height: 1;
-    cursor: pointer;
-    flex-shrink: 0;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #2d7a3a; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 400; line-height: 1;
+    cursor: pointer; flex-shrink: 0;
     transition: background .15s, transform .1s;
 }
 .sd-add-btn:hover { background: #1f5c29; }
 .sd-add-btn:active { transform: scale(.92); }
 .sd-add-btn:disabled { background: #d1d5db; cursor: not-allowed; }
 
-/* Qty stepper (replaces + when qty > 0) */
-.sd-qty-stepper {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    background: #f0fdf4;
-    border: 2px solid #2d7a3a;
-    border-radius: 22px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.sd-qty-btn {
-    width: 30px;
-    height: 30px;
-    border: none;
-    background: transparent;
-    color: #166534;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background .1s;
-}
-.sd-qty-btn:hover { background: #dcfce7; }
-
-.sd-qty-count {
-    min-width: 24px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 800;
-    color: #166534;
-}
-
-/* ── EMPTY STATE ─────────────────────────── */
-.sd-empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: #9ca3af;
-}
+/* ── EMPTY STATE ── */
+.sd-empty { text-align: center; padding: 40px 20px; color: #9ca3af; }
 .sd-empty-icon { font-size: 48px; margin-bottom: 12px; }
 .sd-empty-text { font-size: 15px; font-weight: 600; }
-.sd-empty-sub { font-size: 13px; margin-top: 4px; }
+.sd-empty-sub  { font-size: 13px; margin-top: 4px; }
 
-/* ── BOTTOM PAD ──────────────────────────── */
 .sd-bottom-pad { height: 32px; }
 
-/* ── MOBILE ──────────────────────────────── */
+/* ── MOBILE ── */
 @media (max-width: 576px) {
-    .sd-hero { height: 220px; }
-    .sd-info-card { margin: -36px 12px 0; }
+    .sd-hero       { height: 220px; }
+    .sd-info-card  { margin: -36px 12px 0; }
     .sd-featured-section,
     .sd-bundles-section,
     .sd-all-section { margin-left: 10px; margin-right: 10px; }
-    .sd-feat-card { width: 136px; }
-    .sd-prod-name { font-size: 13px; }
+    .sd-feat-card  { width: 136px; }
+    .sd-prod-name  { font-size: 13px; }
     .sd-prod-price { font-size: 14px; }
 }
 </style>
+
+<!-- ══════════════════════════════════════════
+     STICKY MINI HEADER  (rendered in DOM first
+     so it's always in the fixed layer)
+══════════════════════════════════════════ -->
+<div class="sd-sticky-header" id="sd-sticky-header" aria-hidden="true">
+    <a href="javascript:history.back()" class="sd-sticky-back" aria-label="Go back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div class="sd-sticky-pill">
+        <div class="sd-sticky-logo" id="sd-sticky-logo">
+            <span id="sd-sticky-logo-emoji">🏪</span>
+        </div>
+        <div class="sd-sticky-name" id="sd-sticky-name">Store</div>
+    </div>
+</div>
 
 <!-- ══════════════════════════════════════════
      HERO COVER IMAGE
@@ -812,24 +510,9 @@ body{
 </div>
 
 <!-- ══════════════════════════════════════════
-     STICKY MINI HEADER (appears on scroll)
-══════════════════════════════════════════ -->
-<div class="sd-sticky-header" id="sd-sticky-header" aria-hidden="true">
-    <a href="javascript:history.back()" class="sd-sticky-back" aria-label="Go back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </a>
-    <div class="sd-sticky-pill">
-        <div class="sd-sticky-logo" id="sd-sticky-logo">
-            <span id="sd-sticky-logo-emoji">🏪</span>
-        </div>
-        <div class="sd-sticky-name" id="sd-sticky-name">Store</div>
-    </div>
-</div>
-
-<!-- ══════════════════════════════════════════
      STORE INFO CARD
 ══════════════════════════════════════════ -->
-<div class="sd-info-card">
+<div class="sd-info-card" id="sd-info-card">
 
     <div class="sd-store-logo">
         {% if store.image %}
@@ -858,7 +541,7 @@ body{
         <div class="sd-meta-divider"></div>
         {% endif %}
 
-        <div class="sd-meta-item">🛵 <strong>30-40 min</strong></div>
+        <div class="sd-meta-item">🛵 <strong>30–40 min</strong></div>
     </div>
 
     {% if store.is_open %}
@@ -874,12 +557,10 @@ body{
 ══════════════════════════════════════════ -->
 {% if featured_products %}
 <div class="sd-featured-section">
-
     <div class="sd-section-header">
         <div class="sd-section-dot"></div>
         <div class="sd-section-title">Featured Products</div>
     </div>
-
     <div class="sd-featured-scroll">
         {% for product in featured_products %}
         <div class="sd-feat-card">
@@ -888,15 +569,12 @@ body{
             {% else %}
                 <div class="sd-feat-placeholder">🍽️</div>
             {% endif %}
-
             <div class="sd-feat-info">
                 <div class="sd-feat-name">{{ product.name }}</div>
                 <div class="sd-feat-bottom">
                     <div class="sd-feat-price">
                         ₹{{ product.discount_price|default:product.price|floatformat:0 }}
-                        {% if product.discount_price %}
-                            <s>₹{{ product.price|floatformat:0 }}</s>
-                        {% endif %}
+                        {% if product.discount_price %}<s>₹{{ product.price|floatformat:0 }}</s>{% endif %}
                     </div>
                     {% if product.is_available_now %}
                         <button class="sd-feat-add add-to-cart-btn" data-id="{{ product.id }}">ADD</button>
@@ -908,7 +586,6 @@ body{
         </div>
         {% endfor %}
     </div>
-
 </div>
 {% endif %}
 
@@ -917,12 +594,10 @@ body{
 ══════════════════════════════════════════ -->
 {% if bundles %}
 <div class="sd-bundles-section">
-
     <div class="sd-section-header">
         <div class="sd-section-dot sd-section-dot-amber"></div>
         <div class="sd-section-title sd-section-title-amber">🎁 Combos &amp; Bundles</div>
     </div>
-
     <div class="sd-featured-scroll">
         {% for bundle in bundles %}
         <div class="sd-feat-card">
@@ -931,7 +606,6 @@ body{
             {% else %}
                 <div class="sd-feat-placeholder">🎁</div>
             {% endif %}
-
             <div class="sd-feat-info">
                 <div class="sd-feat-name">{{ bundle.name }}</div>
                 <div class="sd-feat-bottom">
@@ -942,7 +616,6 @@ body{
         </div>
         {% endfor %}
     </div>
-
 </div>
 {% endif %}
 
@@ -953,112 +626,91 @@ body{
 
     <div class="sd-all-title">All Food Items</div>
 
-    <!-- Search + Filter toggle -->
     <form method="GET" id="sd-filter-form">
         <div class="sd-search-row">
             <div class="sd-search-box">
                 <span class="sd-search-icon">🔍</span>
-                <input
-                    type="text"
-                    name="q"
-                    id="sd-search-input"
-                    value="{{ query }}"
-                    placeholder="Search products..."
-                    autocomplete="off">
+                <input type="text" name="q" id="sd-search-input"
+                       value="{{ query }}" placeholder="Search products..."
+                       autocomplete="off">
             </div>
-            <button type="button" class="sd-filter-toggle" id="sd-filter-toggle-btn" aria-expanded="false">
+            <button type="button" class="sd-filter-toggle"
+                    id="sd-filter-toggle-btn" aria-expanded="false">
                 ⚙ Filter
             </button>
         </div>
 
-        <!-- Collapsible filter panel -->
-        <div class="sd-filter-panel {% if min_price or max_price or selected_sort %}open{% endif %}" id="sd-filter-panel">
-
+        <div class="sd-filter-panel {% if min_price or max_price or selected_sort %}open{% endif %}"
+             id="sd-filter-panel">
             <div>
                 <div class="sd-filter-label">Price Range</div>
                 <div class="sd-filter-row">
-                    <input type="number" name="min_price" class="sd-filter-input" placeholder="Min ₹" value="{{ min_price }}">
-                    <input type="number" name="max_price" class="sd-filter-input" placeholder="Max ₹" value="{{ max_price }}">
+                    <input type="number" name="min_price" class="sd-filter-input"
+                           placeholder="Min ₹" value="{{ min_price }}">
+                    <input type="number" name="max_price" class="sd-filter-input"
+                           placeholder="Max ₹" value="{{ max_price }}">
                 </div>
             </div>
-
             <div>
                 <div class="sd-filter-label">Sort By</div>
                 <select name="sort" class="sd-sort-select">
                     <option value="">Default</option>
-                    <option value="price_low" {% if selected_sort == "price_low" %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_low"  {% if selected_sort == "price_low"  %}selected{% endif %}>Price: Low to High</option>
                     <option value="price_high" {% if selected_sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
-                    <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest First</option>
+                    <option value="newest"     {% if selected_sort == "newest"     %}selected{% endif %}>Newest First</option>
                 </select>
             </div>
-
             <div class="sd-filter-btns">
                 <button type="submit" class="sd-btn-apply">Apply Filters</button>
                 <a href="{% url 'store_detail' store.id %}" class="sd-btn-clear">Clear</a>
             </div>
-
         </div>
 
-        <!-- Active filter chips -->
         {% if query or min_price or max_price or selected_sort %}
         <div class="sd-active-filters">
             {% if query %}<span class="sd-filter-chip">🔍 "{{ query }}"</span>{% endif %}
             {% if min_price %}<span class="sd-filter-chip">Min ₹{{ min_price }}</span>{% endif %}
             {% if max_price %}<span class="sd-filter-chip">Max ₹{{ max_price }}</span>{% endif %}
-            {% if selected_sort == "price_low" %}<span class="sd-filter-chip">↑ Price</span>{% endif %}
+            {% if selected_sort == "price_low"  %}<span class="sd-filter-chip">↑ Price</span>{% endif %}
             {% if selected_sort == "price_high" %}<span class="sd-filter-chip">↓ Price</span>{% endif %}
-            {% if selected_sort == "newest" %}<span class="sd-filter-chip">🆕 Newest</span>{% endif %}
+            {% if selected_sort == "newest"     %}<span class="sd-filter-chip">🆕 Newest</span>{% endif %}
         </div>
         {% endif %}
-
     </form>
 
-    <!-- ── Product List ── -->
     <div class="sd-product-list" id="sd-product-list">
-
         {% for product in products %}
         <div class="sd-product-card"
              data-id="{{ product.id }}"
              data-name="{{ product.name|lower }}"
-             data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
+             data-available="{% if product.available_now %}true{% else %}false{% endif %}">
 
-            <!-- Image -->
             <div class="sd-prod-img-wrap">
                 {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-                {% else %}
-                    🍽️
-                {% endif %}
+                {% else %}🍽️{% endif %}
             </div>
 
-            <!-- Info -->
             <div class="sd-prod-details">
                 <div class="sd-prod-name">{{ product.name }}</div>
-
                 <div class="sd-prod-price-row">
                     <span class="sd-prod-price">₹{{ product.discount_price|default:product.price|floatformat:0 }}</span>
                     {% if product.discount_price %}
                         <span class="sd-prod-original">₹{{ product.price|floatformat:0 }}</span>
-                        {% with product.price|add:"0" as orig %}
-                        <span class="sd-prod-discount">
-                            {{ product.price|add:"-0"|floatformat:0 }}
-                        </span>
-                        {% endwith %}
                     {% endif %}
                 </div>
-
-                {% if not product.is_available_now %}
+                {% if not product.available_now %}
                     <div class="sd-prod-unavailable">Unavailable now</div>
                 {% endif %}
             </div>
 
-            <!-- Add button / stepper -->
-            {% if product.is_available_now %}
+            {% if product.available_now %}
                 <button class="sd-add-btn add-to-cart-btn"
                         data-id="{{ product.id }}"
                         aria-label="Add {{ product.name }}">+</button>
             {% else %}
-                <button class="sd-add-btn" disabled aria-label="Unavailable" style="background:#d1d5db">–</button>
+                <button class="sd-add-btn" disabled
+                        aria-label="Unavailable" style="background:#d1d5db">–</button>
             {% endif %}
 
         </div>
@@ -1069,77 +721,92 @@ body{
             <div class="sd-empty-sub">Try a different search or clear filters</div>
         </div>
         {% endfor %}
+    </div>
 
-    </div><!-- /product-list -->
-
-</div><!-- /all-section -->
+</div>
 
 <div class="sd-bottom-pad"></div>
 
 <!-- ══════════════════════════════════════════
-     JS — Sticky header + Filter toggle + scroll
+     JS
 ══════════════════════════════════════════ -->
 <script>
 (function(){
 
-    /* ── Sticky mini header on scroll ── */
-    var stickyHeader = document.getElementById('sd-sticky-header');
-    var infoCard     = document.querySelector('.sd-info-card');
-    var stickyName   = document.getElementById('sd-sticky-name');
+    /* ─────────────────────────────────────────
+       STICKY HEADER LOGIC
+       Trigger: info card bottom scrolls above
+       the bottom of the navbar
+    ───────────────────────────────────────── */
+    var sticky   = document.getElementById('sd-sticky-header');
+    var infoCard = document.getElementById('sd-info-card');
+
+    /* Populate store name */
+    var nameEl = document.querySelector('.sd-store-name');
+    var stickyNameEl = document.getElementById('sd-sticky-name');
+    if(nameEl && stickyNameEl){
+        stickyNameEl.textContent = nameEl.textContent.trim();
+    }
+
+    /* Populate logo image */
+    var logoImg = document.querySelector('.sd-store-logo img');
     var stickyLogoEl = document.getElementById('sd-sticky-logo');
-
-    /* Populate name */
-    var storeName = document.querySelector('.sd-store-name');
-    if(storeName && stickyName) stickyName.textContent = storeName.textContent.trim();
-
-    /* Populate logo image if exists */
-    var storeLogoImg = document.querySelector('.sd-store-logo img');
-    if(storeLogoImg && stickyLogoEl){
-        var img = document.createElement('img');
-        img.src = storeLogoImg.src;
-        img.alt = '';
+    if(logoImg && stickyLogoEl){
+        var clonedImg = document.createElement('img');
+        clonedImg.src = logoImg.src;
+        clonedImg.alt = '';
         stickyLogoEl.innerHTML = '';
-        stickyLogoEl.appendChild(img);
+        stickyLogoEl.appendChild(clonedImg);
+    }
+
+    function getNavbarHeight(){
+        /* --navbar-height is set by base.html JS on load/resize */
+        var val = getComputedStyle(document.documentElement)
+                      .getPropertyValue('--navbar-height');
+        return parseInt(val) || 62;
     }
 
     function onScroll(){
-
-        if(!infoCard || !stickyHeader) return;
-
-        const triggerPoint = infoCard.offsetTop + infoCard.offsetHeight - 50;
-
-        if(window.scrollY > triggerPoint){
-
-            stickyHeader.classList.add('visible');
-            stickyHeader.removeAttribute('aria-hidden');
-
-        }else{
-
-            stickyHeader.classList.remove('visible');
-            stickyHeader.setAttribute('aria-hidden','true');
+        if(!sticky || !infoCard) return;
+        var navH = getNavbarHeight();
+        var rect = infoCard.getBoundingClientRect();
+        /* Show when the BOTTOM of the info card is above the navbar bottom */
+        if(rect.bottom < navH){
+            sticky.classList.add('visible');
+            sticky.removeAttribute('aria-hidden');
+        } else {
+            sticky.classList.remove('visible');
+            sticky.setAttribute('aria-hidden','true');
         }
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
 
-    /* ── Filter panel toggle ── */
+    window.addEventListener('scroll', onScroll, { passive: true });
+    /* Run once immediately in case page loads already scrolled */
+    onScroll();
+
+    /* ─────────────────────────────────────────
+       FILTER PANEL TOGGLE
+    ───────────────────────────────────────── */
     var toggleBtn   = document.getElementById('sd-filter-toggle-btn');
     var filterPanel = document.getElementById('sd-filter-panel');
-
     if(toggleBtn && filterPanel){
         toggleBtn.addEventListener('click', function(){
             var open = filterPanel.classList.toggle('open');
             toggleBtn.classList.toggle('active', open);
-            toggleBtn.setAttribute('aria-expanded', open);
+            toggleBtn.setAttribute('aria-expanded', String(open));
         });
     }
 
-    /* ── Highlight product after redirect ── */
+    /* ─────────────────────────────────────────
+       HIGHLIGHT PRODUCT ON REDIRECT
+    ───────────────────────────────────────── */
     window.addEventListener('load', function(){
         var params    = new URLSearchParams(window.location.search);
         var highlight = params.get('highlight');
         if(!highlight) return;
         setTimeout(function(){
-            var card = document.querySelector('.sd-product-card[data-id="'+highlight+'"]');
+            var card = document.querySelector(
+                '.sd-product-card[data-id="'+highlight+'"]');
             if(card){
                 card.scrollIntoView({ behavior:'smooth', block:'center' });
                 card.style.transition = '0.3s';
@@ -1149,7 +816,9 @@ body{
         }, 700);
     });
 
-    /* ── Bundle add ── */
+    /* ─────────────────────────────────────────
+       BUNDLE ADD (fallback handler)
+    ───────────────────────────────────────── */
     document.querySelectorAll('.add-bundle-btn').forEach(function(btn){
         btn.addEventListener('click', function(){
             var id = btn.getAttribute('data-id');
@@ -1159,7 +828,10 @@ body{
                     if(data.success){
                         btn.textContent = '✓';
                         btn.style.background = '#166534';
-                        setTimeout(function(){ btn.textContent = 'ADD'; btn.style.background = ''; }, 1200);
+                        setTimeout(function(){
+                            btn.textContent = 'ADD';
+                            btn.style.background = '';
+                        }, 1200);
                         var badge = document.getElementById('cart-count-badge');
                         if(badge) badge.textContent = data.cart_count;
                     }
