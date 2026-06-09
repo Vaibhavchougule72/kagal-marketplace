@@ -448,7 +448,6 @@ def store_detail(request, store_id):
         "selected_sort": sort,
         "min_price": min_price,
         "max_price": max_price,
-        "show_navbar": False,
     })
 
 def add_bundle_to_cart(request, bundle_id):
