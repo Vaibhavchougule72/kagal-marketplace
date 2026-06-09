@@ -437,6 +437,15 @@ def store_detail(request, store_id):
         is_featured=True
     ).order_by("-id")[:10]
 
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(
+            request,
+            "partials/store_products.html",
+            {
+                "products": products
+            }
+        )
+
     return render(request, "store_detail.html", {
         "store": store,
         "featured_products": featured_products,

@@ -1,0 +1,53 @@
+{% for product in products %}
+        <div class="sd-product-card"
+             data-id="{{ product.id }}"
+             data-name="{{ product.name|lower }}"
+             data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
+
+            <!-- Image -->
+            <div class="sd-prod-img-wrap">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                {% else %}
+                    🍽️
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div class="sd-prod-details">
+                <div class="sd-prod-name">{{ product.name }}</div>
+
+                <div class="sd-prod-price-row">
+                    <span class="sd-prod-price">₹{{ product.discount_price|default:product.price|floatformat:0 }}</span>
+                    {% if product.discount_price %}
+                        <span class="sd-prod-original">₹{{ product.price|floatformat:0 }}</span>
+                        {% with product.price|add:"0" as orig %}
+                        <span class="sd-prod-discount">
+                            {{ product.price|add:"-0"|floatformat:0 }}
+                        </span>
+                        {% endwith %}
+                    {% endif %}
+                </div>
+
+                {% if not product.is_available_now %}
+                    <div class="sd-prod-unavailable">Unavailable now</div>
+                {% endif %}
+            </div>
+
+            <!-- Add button / stepper -->
+            {% if product.is_available_now %}
+                <button class="sd-add-btn add-to-cart-btn"
+                        data-id="{{ product.id }}"
+                        aria-label="Add {{ product.name }}">+</button>
+            {% else %}
+                <button class="sd-add-btn" disabled aria-label="Unavailable" style="background:#d1d5db">–</button>
+            {% endif %}
+
+        </div>
+        {% empty %}
+        <div class="sd-empty">
+            <div class="sd-empty-icon">🔍</div>
+            <div class="sd-empty-text">No products found</div>
+            <div class="sd-empty-sub">Try a different search or clear filters</div>
+        </div>
+        {% endfor %}
