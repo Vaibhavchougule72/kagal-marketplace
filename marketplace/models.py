@@ -348,7 +348,7 @@ class Order(models.Model):
             # -----------------------------------
             elif self.status == "PICKED_UP":
 
-                title = "Order Picked Up 🛵"
+                title = "Order In Progress 🛵"
 
                 body = (
                     f"Your order #{self.id} "

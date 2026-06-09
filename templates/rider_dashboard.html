@@ -69,7 +69,7 @@ Accept
 {% if order.status == "ACCEPTED" %}
 <a href="{% url 'rider_update_status' order.id 'PICKED_UP' %}"
 class="btn btn-info btn-sm">
-Picked Up
+In Progress
 </a>
 {% endif %}
 
