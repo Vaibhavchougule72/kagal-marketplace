@@ -1,10 +1,10 @@
 {% for product in products %}
-        <div class="sd-product-card"
-             data-id="{{ product.id }}"
-             data-name="{{ product.name|lower }}"
-             data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
+    <div class="sd-product-card"
+        data-id="{{ product.id }}"
+        data-name="{{ product.name|lower }}"
+        data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
 
-            <!-- Image -->
+        <!-- Image -->
             <div class="sd-prod-img-wrap">
                 {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">

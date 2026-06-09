@@ -1013,13 +1013,11 @@ body{
 
     </form>
 
-    <!-- ── Product List ── -->
     <div class="sd-product-list" id="sd-product-list">
 
         {% include "partials/store_products.html" %}
 
     </div>
-
 </div><!-- /all-section -->
 
 <div class="sd-bottom-pad"></div>
@@ -1117,70 +1115,100 @@ body{
 
 })();
 
+const filterForm =
+    document.getElementById("sd-filter-form");
 
-const filterForm = document.getElementById("sd-filter-form");
+const productList =
+    document.getElementById("sd-product-list");
 
 if(filterForm){
 
-    filterForm.addEventListener("submit", function(e){
+    filterForm.addEventListener(
+        "submit",
+        function(e){
 
-        e.preventDefault();
+            e.preventDefault();
 
-        const params = new URLSearchParams(
-            new FormData(filterForm)
-        );
+            const formData =
+                new FormData(filterForm);
 
-        fetch(
-            window.location.pathname + "?" + params.toString(),
-            {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            }
-        )
-        .then(response => response.text())
-        .then(html => {
+            const params =
+                new URLSearchParams(formData);
 
-            document.getElementById(
-                "sd-product-list"
-            ).innerHTML = html;
-
-            history.replaceState(
-                {},
-                "",
+            fetch(
                 window.location.pathname +
                 "?" +
-                params.toString()
-            );
+                params.toString(),
+                {
+                    headers:{
+                        "X-Requested-With":
+                        "XMLHttpRequest"
+                    }
+                }
+            )
+            .then(response =>
+                response.text()
+            )
+            .then(html => {
 
-        });
+                productList.innerHTML = html;
 
-    });
+                history.replaceState(
+                    {},
+                    "",
+                    window.location.pathname +
+                    "?" +
+                    params.toString()
+                );
+
+            });
+
+        }
+    );
 
 }
+
+const searchInput =
+    document.getElementById(
+        "sd-search-input"
+    );
 
 let searchTimer;
 
-const searchInput =
-    document.getElementById("sd-search-input");
-
-if(searchInput){
-
-    searchInput.addEventListener("input", function(){
+searchInput.addEventListener(
+    "input",
+    function(){
 
         clearTimeout(searchTimer);
 
-        searchTimer = setTimeout(function(){
+        searchTimer =
+            setTimeout(function(){
 
-            filterForm.dispatchEvent(
-                new Event("submit")
-            );
+                filterForm.requestSubmit();
 
-        }, 400);
+            },300);
 
-    });
+    }
+);
 
-}
+document
+.querySelectorAll(
+'input[name="min_price"], \
+ input[name="max_price"], \
+ select[name="sort"]'
+)
+.forEach(field => {
+
+    field.addEventListener(
+        "change",
+        function(){
+
+            filterForm.requestSubmit();
+
+        }
+    );
+
+});
 </script>
 
 {% endblock %}

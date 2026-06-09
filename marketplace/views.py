@@ -388,7 +388,8 @@ def store_detail(request, store_id):
         "store"
     )
     for product in products:
-        product.is_available_now = product.is_available_now()
+
+        product.available_now = product.is_available_now()
     
     # =========================
     # SEARCH
@@ -435,8 +436,8 @@ def store_detail(request, store_id):
         store=store,
         is_featured=True
     ).order_by("-id")[:10]
-
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+
         return render(
             request,
             "partials/store_products.html",
