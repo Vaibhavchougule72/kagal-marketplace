@@ -46,17 +46,31 @@
 
   /* ── STICKY BAR ── */
   .sticky-bar {
+
     position: sticky;
+
     top: 0;
-    margin-top:-1px;
+
+    margin-top: -1px;
+
     z-index: 100;
+
     background: #1C3D18;
-    padding: 10px 14px;
+
+    height: 56px;
+
+    padding: 0 14px;
+
     display: flex;
+
     align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
+
+    justify-content: center;
+
+    border-bottom: 1px solid rgba(255,255,255,.08);
+
+    position: sticky;
+}
 
   .back-btn {
     width: 32px;
@@ -72,24 +86,48 @@
     font-size: 17px;
     flex-shrink: 0;
     line-height: 1;
+    position: absolute;
+
+    left: 14px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
   }
 
   .sticky-bar .sticky-name {
-    font-size: 15px;
-    font-weight: 500;
+
+    font-size: 17px;
+
+    font-weight: 700;
+
     color: #fff;
-    flex: 1;
+
+    text-align: center;
+
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
-  }
 
-  .sticky-bar .sticky-count {
+    max-width: 70%;
+}
+
+ .sticky-bar .sticky-count {
+
+    position: absolute;
+
+    right: 14px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    flex-shrink: 0;
-  }
 
+    color: rgba(255,255,255,.55);
+}
   /* ── FLOATING HEADER BOX ── */
   .category-floating-box {
     background: #fff;
@@ -276,27 +314,52 @@
   }
 
   .store-info h3 {
-    font-size: 14px;
-    font-weight: 500;
-    color: #1A2E19;
-    line-height: 1.3;
-    margin: 0 0 3px;
-  }
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #1B5E20;
+
+    line-height: 1.25;
+
+    margin: 0 0 6px;
+
+    letter-spacing: 0.2px;
+}
 
   /* ── RATING PILL ── */
   .rating-pill {
+
     display: inline-flex;
+
     align-items: center;
-    gap: 3px;
-    font-size: 12px;
-    color: #7A8A78;
-    margin-bottom: 2px;
-  }
+
+    gap: 4px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: #ffffff;
+
+    margin-bottom: 4px;
+
+    background: #2E7D32;
+
+    padding: 3px 10px;
+
+    border-radius: 20px;
+
+    width: fit-content;
+}
 
   .rating-pill .star-icon {
-    color: #E8621A;
-    font-size: 11px;
-  }
+
+    color: #FFD54F;
+
+    font-size: 13px;
+}
 
   /* ── STORE META ── */
   .store-meta {
