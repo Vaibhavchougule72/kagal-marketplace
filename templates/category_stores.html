@@ -3,126 +3,425 @@
 
 {% block content %}
 
+<style>
+  * { box-sizing: border-box; }
+
+  /* ── PAGE ── */
+  .category-page {
+    background: #F5F5F0;
+    min-height: 100vh;
+    font-family: inherit;
+  }
+
+  /* ── COVER ── */
+  .category-cover {
+    height: 168px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #2D5A27 0%, #1A3A16 60%, #3A2010 100%);
+  }
+
+  .category-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.35;
+  }
+
+  .category-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, #1A3A16 100%);
+  }
+
+  /* ── STICKY BAR ── */
+  .sticky-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1C3D18;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .back-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 0.5px solid rgba(255, 255, 255, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 17px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .sticky-bar .sticky-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sticky-bar .sticky-count {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    flex-shrink: 0;
+  }
+
+  /* ── FLOATING HEADER BOX ── */
+  .category-floating-box {
+    background: #fff;
+    margin: -32px 14px 0;
+    border-radius: 14px;
+    padding: 14px 16px 12px;
+    border: 0.5px solid rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 2;
+  }
+
+  .category-floating-box .eyebrow {
+    font-size: 10px;
+    color: #E8621A;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .category-floating-box h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: #1A3A16;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .category-floating-box .store-count {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #6B7B69;
+  }
+
+  /* ── FILTER CHIPS ── */
+  .filter-row {
+    padding: 12px 14px 8px;
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 0.5px solid #C5D9C3;
+    color: #4A7045;
+    background: #fff;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .filter-chip.active {
+    background: #2D5A27;
+    color: #fff;
+    border-color: #2D5A27;
+  }
+
+  /* ── STORE LIST ── */
+  .store-list {
+    padding: 4px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── STORE ROW / CARD ── */
+  .store-row {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    text-decoration: none;
+    position: relative;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+
+  .store-row:hover:not(.store-disabled) {
+    border-color: #A8C9A5;
+    box-shadow: 0 2px 12px rgba(45, 90, 39, 0.1);
+  }
+
+  .store-row.store-disabled {
+    opacity: 0.62;
+    cursor: default;
+  }
+
+  /* TOP RATED RIBBON */
+  .store-row .top-rated-tag {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #E8621A;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-bottom-left-radius: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── STORE IMAGE ── */
+  .store-image {
+    width: 90px;
+    min-width: 90px;
+    height: 98px;
+    background: #EAF2E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    color: #4A7045;
+    font-size: 30px;
+  }
+
+  .store-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── STORE INFO ── */
+  .store-info {
+    flex: 1;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .store-info h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A2E19;
+    line-height: 1.3;
+    margin: 0 0 3px;
+  }
+
+  /* ── RATING PILL ── */
+  .rating-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    color: #7A8A78;
+    margin-bottom: 2px;
+  }
+
+  .rating-pill .star-icon {
+    color: #E8621A;
+    font-size: 11px;
+  }
+
+  /* ── STORE META ── */
+  .store-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+  }
+
+  .store-open-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: #EAF5E8;
+    color: #2D6B27;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .store-closed-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: #FDF1EB;
+    color: #C05018;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .next-open-time {
+    font-size: 11px;
+    color: #9AA899;
+  }
+
+  /* ── BOTTOM ROW ── */
+  .store-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 5px;
+  }
+
+  .starting-price {
+    font-size: 12px;
+    color: #7A8A78;
+  }
+
+  .starting-price strong {
+    color: #1A2E19;
+    font-weight: 500;
+  }
+
+  .items-pill {
+    font-size: 11px;
+    color: #9AA899;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #9AA899;
+  }
+
+  .empty-state i {
+    font-size: 48px;
+    color: #C5D9C3;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+  }
+</style>
+
 <div class="category-page">
 
-    <!-- COVER IMAGE -->
+  <!-- COVER IMAGE -->
+  <div class="category-cover">
+    {% if category.image %}
+      <img src="{{ category.image.url }}" alt="{{ category.name }}">
+    {% endif %}
+  </div>
 
-    <div class="category-cover">
+  <!-- STICKY BAR -->
+  <div class="sticky-bar">
+    <a href="/" class="back-btn" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="sticky-name">{{ category.name }}</span>
+    <span class="sticky-count">{{ stores|length }} {% trans "stores" %}</span>
+  </div>
 
-        {% if category.image %}
-            <img src="{{ category.image.url }}"
-                 alt="{{ category.name }}">
+  <!-- FLOATING HEADER BOX -->
+  <div class="category-floating-box">
+    <div class="eyebrow">{% trans "Category" %}</div>
+    <h1>{{ category.name }}</h1>
+    <div class="store-count">
+      {{ stores|length }} {% trans "stores nearby" %}
+    </div>
+  </div>
+
+  <!-- FILTER CHIPS -->
+  <div class="filter-row">
+    <div class="filter-chip active">{% trans "All" %}</div>
+    <div class="filter-chip">{% trans "Open now" %}</div>
+    <div class="filter-chip">{% trans "Top rated" %}</div>
+    <div class="filter-chip">{% trans "Lowest price" %}</div>
+  </div>
+
+  <!-- STORE LIST -->
+  <div class="store-list">
+
+    {% for store in stores %}
+
+    <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
+       class="store-row {% if not store.is_open %}store-disabled{% endif %}">
+
+      {% if store.total_ratings > 0 and store.average_rating >= 4.5 %}
+        <div class="top-rated-tag">TOP RATED</div>
+      {% endif %}
+
+      <!-- IMAGE -->
+      <div class="store-image">
+        {% if store.image %}
+          <img src="{{ store.image.url }}" alt="{{ store.name }}">
+        {% else %}
+          &#127859;
+        {% endif %}
+      </div>
+
+      <!-- INFO -->
+      <div class="store-info">
+
+        <h3>{{ store.name }}</h3>
+
+        {% if store.total_ratings > 0 %}
+        <div class="rating-pill">
+          <span class="star-icon">&#9733;</span>
+          {{ store.average_rating }}
+          <span>({{ store.total_ratings }})</span>
+        </div>
         {% endif %}
 
-        <!-- BACK BUTTON -->
+        <div class="store-meta">
+          {% if store.is_open %}
+            <div class="store-open-badge">{% trans "Open now" %}</div>
+          {% else %}
+            <div class="store-closed-badge">{% trans "Closed" %}</div>
+            <div class="next-open-time">{% trans "Opens at" %} {{ store.next_open_time }}</div>
+          {% endif %}
+        </div>
 
-        <a href="/"
-           class="back-btn">
+        <div class="store-bottom">
+          <div class="starting-price">
+            {% trans "From" %} <strong>&#8377;{{ store.min_price|default:"0" }}</strong>
+          </div>
+          <div class="items-pill">
+            {% if store.total_products > 20 %}
+              {% trans "20+ items" %}
+            {% else %}
+              {{ store.total_products }} {% trans "items" %}
+            {% endif %}
+          </div>
+        </div>
 
-            <span>❮</span>
+      </div>
 
-        </a>
+    </a>
 
+    {% empty %}
+    <div class="empty-state">
+      <i>&#127978;</i>
+      <p>{% trans "No stores in this category yet." %}</p>
     </div>
+    {% endfor %}
 
-    <!-- WHITE FLOATING HEADER -->
-
-    <div class="category-floating-box">
-
-        <h1>
-            {{ category.name }}
-        </h1>
-
-    </div>
-
-    <!-- STORES -->
-
-    <div class="store-list">
-
-        {% for store in stores %}
-
-        <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
-            class="store-row {% if not store.is_open %}store-disabled{% endif %}">
-
-            <!-- IMAGE -->
-
-            <div class="store-image">
-
-                {% if store.image %}
-                    <img src="{{ store.image.url }}">
-                {% endif %}
-
-            </div>
-
-            <!-- INFO -->
-
-            <div class="store-info">
-
-                <h3>
-                    {{ store.name }}
-                </h3>
-
-                {% if store.total_ratings > 0 %}
-
-                <div class="rating-pill">
-
-                    ⭐ {{ store.average_rating }}
-
-                </div>
-
-                {% endif %}
-
-                <div class="store-meta">
-
-                {% if store.is_open %}
-
-                    <div class="store-open-badge">
-                        🟢 Open Now
-                    </div>
-
-                {% else %}
-
-                    <div class="store-closed-badge">
-                        🔴 Closed
-                    </div>
-
-                    <div class="next-open-time">
-                        Opens at {{ store.next_open_time }}
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-                <div class="starting-price">
-
-                    Starting from
-
-                    <strong>
-
-                        ₹{{ store.min_price|default:"0" }}
-
-                    </strong>
-
-                </div>
-
-                <div class="items-pill">
-
-                    {% if store.total_products > 20 %}
-                    20+ Items
-                    {% else %}
-                    {{ store.total_products }} Items
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-        </a>
-
-        {% endfor %}
-
-    </div>
+  </div>
 
 </div>
 
