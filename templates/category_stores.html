@@ -13,9 +13,15 @@
     font-family: inherit;
   }
 
+  /* ── COVER WRAPPER (holds image + floating box together) ── */
+  .category-cover-wrapper {
+    position: relative;
+    margin-bottom: 52px;
+  }
+
   /* ── COVER ── */
   .category-cover {
-    height: 168px;
+    height: 200px;
     position: relative;
     overflow: hidden;
     background: linear-gradient(145deg, #2D5A27 0%, #1A3A16 60%, #3A2010 100%);
@@ -34,7 +40,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 40%, #1A3A16 100%);
+    background: linear-gradient(to bottom, transparent 30%, rgba(26,58,22,0.7) 100%);
   }
 
   /* ── STICKY BAR ── */
@@ -85,13 +91,17 @@
   /* ── FLOATING HEADER BOX ── */
   .category-floating-box {
     background: #fff;
+    position: absolute;
+    bottom: -40px;
     left: 50%;
-    margin: -32px 14px 0;
+    transform: translateX(-50%);
+    width: calc(100% - 80px);
+    max-width: 320px;
     border-radius: 14px;
     padding: 14px 16px 12px;
     border: 0.5px solid rgba(0, 0, 0, 0.08);
-    position: relative;
-    z-index: 2;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
+    z-index: 5;
   }
 
   .category-floating-box .eyebrow {
@@ -322,37 +332,55 @@
   }
 </style>
 
+
 <div class="category-page">
 
-  <!-- COVER IMAGE -->
-  <div class="category-cover">
-    {% if category.image %}
-      <img src="{{ category.image.url }}" alt="{{ category.name }}">
-    {% endif %}
-  </div>
+  <!-- COVER WRAPPER -->
+  <div class="category-cover-wrapper">
+
+    <!-- COVER IMAGE -->
+    <div class="category-cover">
+      {% if category.image %}
+        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+      {% endif %}
+    </div>
+
+    <!-- FLOATING HEADER BOX -->
+    <div class="category-floating-box">
+      <div class="eyebrow">{% trans "Category" %}</div>
+      <h1>{{ category.name }}</h1>
+      <div class="store-count">
+        <span id="visible-count">{{ stores|length }}</span> {% trans "stores nearby" %}
+      </div>
+    </div>
+
+  </div><!-- /cover-wrapper -->
 
   <!-- STICKY BAR -->
   <div class="sticky-bar">
     <a href="/" class="back-btn" aria-label="{% trans 'Go back' %}">&#8249;</a>
     <span class="sticky-name">{{ category.name }}</span>
-    <span class="sticky-count">{{ stores|length }} {% trans "stores" %}</span>
+    <span class="sticky-count" id="sticky-count">{{ stores|length }} {% trans "stores" %}</span>
   </div>
 
   <!-- FILTER CHIPS -->
   <div class="filter-row">
-    <div class="filter-chip active">{% trans "All" %}</div>
-    <div class="filter-chip">{% trans "Open now" %}</div>
-    <div class="filter-chip">{% trans "Top rated" %}</div>
-    <div class="filter-chip">{% trans "Lowest price" %}</div>
+    <div class="filter-chip active" data-filter="all">{% trans "All" %}</div>
+    <div class="filter-chip" data-filter="open">{% trans "Open now" %}</div>
+    <div class="filter-chip" data-filter="top_rated">{% trans "Top rated" %}</div>
+    <div class="filter-chip" data-filter="lowest_price">{% trans "Lowest price" %}</div>
   </div>
 
   <!-- STORE LIST -->
-  <div class="store-list">
+  <div class="store-list" id="store-list">
 
     {% for store in stores %}
 
     <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
-       class="store-row {% if not store.is_open %}store-disabled{% endif %}">
+       class="store-row {% if not store.is_open %}store-disabled{% endif %}"
+       data-open="{% if store.is_open %}1{% else %}0{% endif %}"
+       data-rating="{{ store.average_rating|default:'0' }}"
+       data-price="{{ store.min_price|default:'99999' }}">
 
       {% if store.total_ratings > 0 and store.average_rating >= 4.5 %}
         <div class="top-rated-tag">TOP RATED</div>
@@ -413,8 +441,66 @@
     </div>
     {% endfor %}
 
+    <!-- NO RESULTS (shown by JS) -->
+    <div class="empty-state" id="no-results" style="display:none;">
+      <i>&#128269;</i>
+      <p>{% trans "No stores match this filter." %}</p>
+    </div>
+
   </div>
 
 </div>
+
+<script>
+(function () {
+  var chips    = document.querySelectorAll('.filter-chip');
+  var cards    = document.querySelectorAll('#store-list .store-row');
+  var noResult = document.getElementById('no-results');
+  var countEl  = document.getElementById('visible-count');
+  var stickyCountEl = document.getElementById('sticky-count');
+
+  function applyFilter(filter) {
+    var sorted = Array.from(cards);
+
+    // --- sort a copy based on filter ---
+    if (filter === 'top_rated') {
+      sorted.sort(function (a, b) {
+        return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+      });
+    } else if (filter === 'lowest_price') {
+      sorted.sort(function (a, b) {
+        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+      });
+    }
+
+    // --- re-insert in new order ---
+    var list = document.getElementById('store-list');
+    sorted.forEach(function (card) { list.appendChild(card); });
+
+    // --- show / hide ---
+    var visible = 0;
+    sorted.forEach(function (card) {
+      var show = true;
+      if (filter === 'open' && card.dataset.open !== '1') show = false;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    noResult.style.display = visible === 0 ? '' : 'none';
+
+    var label = visible + ' store' + (visible !== 1 ? 's' : '');
+    if (countEl) countEl.textContent = visible;
+    if (stickyCountEl) stickyCountEl.textContent = label;
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chips.forEach(function (c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      applyFilter(chip.dataset.filter);
+    });
+  });
+})();
+</script>
 
 {% endblock %}
