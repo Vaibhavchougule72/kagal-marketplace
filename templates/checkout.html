@@ -499,6 +499,30 @@
     flex-shrink: 0;
   }
 
+  /* Universal button animation */
+.co-confirm-btn,
+.co-coupon-btn,
+.co-loc-btn,
+.checkout-nav .nav-back {
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Finger press effect */
+.co-confirm-btn:active,
+.co-coupon-btn:active,
+.co-loc-btn:active,
+.checkout-nav .nav-back:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+}
+
+/* Touch feedback class */
+.btn-clicked {
+    transform: scale(0.96);
+    opacity: 0.85;
+}
+
   @keyframes co-spin { to { transform: rotate(360deg); } }
 </style>
 
@@ -728,11 +752,31 @@ function setLocation(lat, lng) {
 
 
 function useCurrentLocation() {
+    const btn = document.querySelector('.co-loc-btn');
+
+    btn.innerHTML = '📍 Getting location...';
+    btn.disabled = true;
+
   if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
   document.getElementById('distanceInfo').innerText = 'Getting your location…';
   navigator.geolocation.getCurrentPosition(
-    function(pos) { setLocation(pos.coords.latitude, pos.coords.longitude); },
-    function()    { alert('Turn on GPS and allow location permission.'); },
+    function(pos) {
+
+        setLocation(
+            pos.coords.latitude,
+            pos.coords.longitude
+        );
+
+        btn.innerHTML = '✅ Location selected';
+        btn.disabled = false;
+    },
+    function() {
+
+        btn.innerHTML = '📍 Use my current location';
+        btn.disabled = false;
+
+        alert('Turn on GPS and allow location permission.');
+    },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
 }
@@ -780,6 +824,10 @@ function updateDelivery(lat, lng) {
 
 /* ── COUPON ── */
 function applyCoupon() {
+    const couponBtn = document.querySelector('.co-coupon-btn');
+
+    couponBtn.innerText = 'Applying...';
+    couponBtn.disabled = true;   
   var code  = document.getElementById('coupon_code').value.trim();
   var phone = document.getElementById('phoneInput').value;
   var msgEl = document.getElementById('coupon_message');
@@ -802,6 +850,8 @@ function applyCoupon() {
       var lat = document.getElementById('latitude').value;
       var lng = document.getElementById('longitude').value;
       if (lat && lng) updateDelivery(lat, lng);
+      couponBtn.innerText = 'Apply';
+        couponBtn.disabled = false;
     });
 }
 
@@ -934,6 +984,33 @@ document.addEventListener('DOMContentLoaded', function() {
       body: JSON.stringify({ name: name, phone: phone, address: address, payment: payment, total: total, store_id: '{{ store.id }}' })
     }).catch(function(){});
   }
+
+});
+
+
+/* Button click feedback */
+document.querySelectorAll(
+  '.co-confirm-btn, .co-coupon-btn, .co-loc-btn, .nav-back'
+).forEach(function(btn){
+
+    btn.addEventListener('touchstart', function(){
+        this.classList.add('btn-clicked');
+    });
+
+    btn.addEventListener('touchend', function(){
+        const el = this;
+        setTimeout(function(){
+            el.classList.remove('btn-clicked');
+        }, 120);
+    });
+
+    btn.addEventListener('mousedown', function(){
+        this.classList.add('btn-clicked');
+    });
+
+    btn.addEventListener('mouseup', function(){
+        this.classList.remove('btn-clicked');
+    });
 
 });
 </script>
