@@ -4,13 +4,24 @@
 
 <style>
 
+    .page-wrapper,
+    .main-content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .checkout-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
     html,
     body,
     .checkout-page {
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
-    
+
   * { box-sizing: border-box; }
 
   /* ── PAGE ── */
@@ -25,7 +36,8 @@
   .checkout-nav {
     position: sticky;
     top: 0;
-    z-index: 9999;
+    margin-top: 0;
+    z-index: 99999;
     background: #1A3A16;
     padding: 11px 14px;
     display: flex;
