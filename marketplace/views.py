@@ -1035,6 +1035,7 @@ def checkout(request):
         "store": store,
         "items": items,
         "show_floating_cart": False,
+        "show_navbar": False,
         "simple_navbar": False,
     }
 

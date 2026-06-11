@@ -674,7 +674,7 @@ var satelliteLayer = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   { maxZoom: 19, attribution: 'Tiles &copy; Esri' }
 );
-streetLayer.addTo(map);
+satelliteLayer.addTo(map);
 L.control.layers({ "Street": streetLayer, "Satellite": satelliteLayer }).addTo(map);
 L.circle([BUS_STAND_LAT, BUS_STAND_LON], {
   radius: DELIVERY_RADIUS_KM * 1000, color: '#2D5A27', fillOpacity: 0.06
@@ -693,25 +693,9 @@ function setLocation(lat, lng) {
     var pos = marker.getLatLng();
     updateDelivery(pos.lat, pos.lng);
   });
-  getAddress(lat, lng);
   updateDelivery(lat, lng);
 }
 
-function getAddress(lat, lng) {
-  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data && data.address) {
-        var parts = [
-          data.address.road,
-          data.address.suburb || data.address.village,
-          data.address.city || data.address.town || data.address.county,
-          data.address.postcode
-        ].filter(Boolean);
-        document.getElementById('addressInput').value = parts.join(', ');
-      }
-    }).catch(function(){});
-}
 
 function useCurrentLocation() {
   if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
