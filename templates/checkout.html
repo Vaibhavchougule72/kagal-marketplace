@@ -1,304 +1,653 @@
 {% extends "base.html" %}
 {% block content %}
 {% load i18n %}
-{% if error %}
-<div class="alert alert-danger text-center">
-    {{ error }}
-</div>
-{% endif %}
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-danger">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-<style>
-.map-invalid {
-    border: 2px solid #dc3545 !important;
-}
 
-.spinner-border-sm {
-    width: 1rem;
-    height: 1rem;
-}
+<style>
+  * { box-sizing: border-box; }
+
+  /* ── PAGE ── */
+  .checkout-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    padding-bottom: 24px;
+    font-family: inherit;
+  }
+
+  /* ── STICKY NAV ── */
+  .checkout-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1A3A16;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .checkout-nav .nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .checkout-nav .nav-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+  }
+
+  .checkout-nav .nav-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+
+  /* ── SCROLL BODY ── */
+  .checkout-body {
+    padding: 16px 14px 24px;
+  }
+
+  /* ── ALERT ── */
+  .co-alert {
+    background: #FDF1EB;
+    border: 0.5px solid #F0C8B0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #C05018;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── SECTION CARD ── */
+  .co-card {
+    background: #fff;
+    border-radius: 13px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 0.5px solid #E0E8DF;
+  }
+
+  .co-card-head {
+    background: #2D5A27;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .co-card-head span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .co-card-body {
+    padding: 14px;
+  }
+
+  /* ── FIELD LABEL ── */
+  .co-label {
+    font-size: 10px;
+    color: #A8C9A5;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  /* ── INPUTS ── */
+  .co-input,
+  .co-textarea {
+    width: 100%;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 9px;
+    padding: 10px 13px;
+    font-size: 13px;
+    color: #2E3D2D;
+    background: #FAFAF8;
+    outline: none;
+    margin-bottom: 10px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+
+  .co-input::placeholder,
+  .co-textarea::placeholder { color: #B0C0AE; }
+
+  .co-input:focus,
+  .co-textarea:focus {
+    border-color: #2D5A27;
+    background: #fff;
+  }
+
+  .co-input.is-invalid { border-color: #C05018; background: #FDF8F7; }
+  .co-input.is-valid   { border-color: #2D6B27; }
+
+  .co-textarea { resize: none; min-height: 72px; }
+
+  .co-invalid-msg {
+    font-size: 11px;
+    color: #C05018;
+    margin-top: -7px;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  .co-input.is-invalid ~ .co-invalid-msg { display: block; }
+
+  /* ── CHECKBOX ROWS ── */
+  .co-check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  .co-check-row input[type="checkbox"] {
+    margin-top: 3px;
+    accent-color: #2D5A27;
+    flex-shrink: 0;
+    width: 15px;
+    height: 15px;
+  }
+
+  .co-check-row label {
+    font-size: 12px;
+    color: #6B7B69;
+    line-height: 1.5;
+  }
+
+  /* ── DELIVERY INFO STRIP ── */
+  .co-delivery-info {
+    font-size: 12px;
+    color: #2D6B27;
+    background: #EAF5E8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .co-delivery-info.visible { display: block; }
+
+  /* ── LOCATION BUTTON ── */
+  .co-loc-btn {
+    width: 100%;
+    border: 0.5px solid #2D5A27;
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #2D5A27;
+    background: #EAF2E8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+
+  /* ── MAP ── */
+  #map {
+    width: 100%;
+    height: 220px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 0.5px solid #D0E4CE;
+  }
+
+  .co-map-error {
+    font-size: 12px;
+    color: #C05018;
+    background: #FDF1EB;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  /* ── COUPON ── */
+  .co-coupon-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .co-coupon-input {
+    flex: 1;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 9px;
+    padding: 10px 13px;
+    font-size: 13px;
+    color: #2E3D2D;
+    background: #FAFAF8;
+    outline: none;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .co-coupon-input:focus { border-color: #2D5A27; }
+
+  .co-coupon-btn {
+    background: #1A3A16;
+    color: #fff;
+    border-radius: 9px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .co-coupon-msg {
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: none;
+  }
+
+  .co-coupon-msg.success { background: #EAF5E8; color: #2D6B27; display: block; }
+  .co-coupon-msg.error   { background: #FDF1EB; color: #C05018; display: block; }
+
+  /* ── PAYMENT OPTIONS ── */
+  .co-pay-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .co-pay-opt {
+    flex: 1;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #6B7B69;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .co-pay-opt .pay-icon {
+    font-size: 22px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .co-pay-opt.active {
+    border-color: #2D5A27;
+    background: #EAF2E8;
+    color: #1A3A16;
+    font-weight: 500;
+  }
+
+  .co-pay-opt.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .co-pay-tag {
+    font-size: 9px;
+    background: #2D5A27;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  .co-pay-tag.warn { background: #C05018; }
+
+  /* ── UPI ONLY WARNING ── */
+  .co-upi-warn {
+    background: #FDF8EE;
+    border: 0.5px solid #F0DCC8;
+    border-radius: 9px;
+    padding: 10px 13px;
+    font-size: 12px;
+    color: #9A6020;
+    margin-bottom: 12px;
+  }
+
+  /* ── ORDER SUMMARY ── */
+  .co-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #9AA899;
+    padding: 3px 0;
+  }
+
+  .co-sum-divider {
+    border: none;
+    border-top: 0.5px solid #E8EDE7;
+    margin: 8px 0;
+  }
+
+  .co-sum-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #7A8A78;
+    padding: 4px 0;
+  }
+
+  .co-sum-row.discount { color: #2D6B27; }
+
+  .co-cod-warn {
+    background: #FDF1EB;
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: #C05018;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 6px 0;
+    text-align: center;
+  }
+
+  .co-sum-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1A3A16;
+    padding: 4px 0;
+  }
+
+  .co-distance-info {
+    font-size: 11px;
+    color: #A8C9A5;
+    margin-top: 6px;
+  }
+
+  /* ── TRUST BADGES ── */
+  .co-trust-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .co-trust-badge {
+    flex: 1;
+    background: #EAF2E8;
+    border-radius: 9px;
+    padding: 10px 6px;
+    text-align: center;
+    font-size: 10px;
+    color: #2D5A27;
+    line-height: 1.5;
+  }
+
+  .co-trust-badge .tb-icon {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── POLICY ── */
+  .co-policy-box {
+    background: #FDF8F3;
+    border: 0.5px solid #F0DCC8;
+    border-radius: 9px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .co-policy-li {
+    font-size: 12px;
+    color: #9AA899;
+    padding: 3px 0 3px 14px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .co-policy-li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: #C5AA90;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  /* ── CONFIRM BUTTON ── */
+  .co-confirm-btn {
+    width: 100%;
+    background: #E8621A;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 17px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s;
+    box-shadow: 0 4px 20px rgba(232, 98, 26, 0.38);
+  }
+
+  .co-confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+  .co-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: co-spin 0.7s linear infinite;
+    display: none;
+    flex-shrink: 0;
+  }
+
+  @keyframes co-spin { to { transform: rotate(360deg); } }
 </style>
 
-<div class="container page-content">
-
-    <h3 class="mb-4">{% trans "Checkout" %}</h3>
-
-    <form method="POST" id="checkoutForm">
-        {% csrf_token %}
-        <input type="hidden" name="free_delivery" id="freeDeliveryInput" value="false">
-
-        <!-- NAME -->
-        <div class="mb-3">
-            <label class="form-label">{% trans "Full Name" %}</label>
-            <input type="text" name="name" id="nameInput"
-                   class="form-control" required>
-            <div class="invalid-feedback">
-                {% trans "Please enter your full name." %}
-            </div>
-        </div>
-
-        <!-- PHONE -->
-        <div class="mb-3">
-            <label class="form-label">{% trans "Phone" %}</label>
-            <div class="position-relative">
-                <input type="text"
-                       name="phone"
-                       id="phoneInput"
-                       class="form-control pe-5"
-                       maxlength="10"
-                       placeholder="10-digit mobile number"
-                       required>
-                <span id="phoneCheck"
-                      style="position:absolute; right:12px; top:50%; transform:translateY(-50%); display:none;">
-                    ✅
-                </span>
-            </div>
-            <div class="invalid-feedback">
-                {% trans "Enter valid Indian mobile number (starts with 6-9)." %}
-            </div>
-        </div>
-
-        <div class="form-check mt-3">
-            <input class="form-check-input" type="checkbox" id="confirm_phone" name="confirm_phone" checked>
-
-            <label class="form-check-label" for="confirm_phone">
-            मी दिलेला मोबाईल नंबर योग्य आहे. चुकीचा नंबर दिल्यास ऑर्डर रद्द होऊ शकते.
-            </label>
-        </div>
-
-        <div id="deliveryInfo" class="text-success mt-2"></div>
-
-
-        <!-- ADDRESS -->
-        <div class="mb-3">
-            <label class="form-label">{% trans "Delivery Landmark / House Details" %}</label>
-            <textarea name="address" id="addressInput"
-                      class="form-control"
-                      placeholder="Flat No, Building, Landmark"
-                      ></textarea>
-            <div class="invalid-feedback">
-                {% trans "Please enter delivery landmark." %}
-            </div>
-        </div>
-
-        <!-- MAP -->
-        <div class="mb-4">
-            <label class="form-label fw-bold">{% trans "Select Delivery Location" %}</label>
-
-            <div class="mb-2 text-end">
-                <button type="button"
-                        class="btn btn-outline-primary btn-sm"
-                        onclick="useCurrentLocation()">
-                    {% trans "📍 Use My Current Location" %}
-                </button>
-            </div>
-
-            <div id="map" style="height:350px; border-radius:12px;"></div>
-
-            <div class="text-danger mt-2 d-none" id="mapError"></div>
-
-            <input type="hidden" name="latitude" id="latitude">
-            <input type="hidden" name="longitude" id="longitude">
-
-    
-        </div>
-
-        <div class="mb-3">
-
-            <label>{% trans "Coupon Code" %}</label>
-            
-
-            <input
-                type="text"
-                id="coupon_code"
-                name="coupon_code"
-                class="form-control">
-        
-            <input type="hidden"
-                name="discount_amount"
-                id="hidden_discount"
-                value="0">
-            <button type="button" class="btn btn-primary mt-2" onclick="applyCoupon()">Apply Coupon</button>
-
-            <p id="coupon_message"></p>
-
-        </div>
-
-        <!-- ORDER SUMMARY -->
-        <div class="card p-4 shadow-sm mb-4">
-
-            <h5 class="mb-3">{% trans "Order Summary" %}</h5>
-
-            <div class="d-flex justify-content-between">
-                <span>{% trans "Subtotal" %}</span>
-                <strong>₹{{ subtotal }}</strong>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                {% trans "Delivery:" %} <span id="deliveryFee">₹0</span>
-
-            </div>
-
-            {% if cod_not_allowed %}
-            <div class="alert alert-danger fw-bold text-center">
-                {% trans "Cash on Delivery is not available for orders below ₹149." %}
-            </div>
-            {% endif %}
-
-            <div class="d-flex justify-content-between">
-                <span>{% trans "handling Fee" %}</span>
-                <strong>₹{{ handling_fee }}</strong>
-            </div>
-
-            <hr>
-
-            <div class="d-flex justify-content-between text-success">
-                <span>{% trans "Coupon Discount" %}</span>
-                <strong id="discount_amount">₹0</strong>
-            </div>
-
-            <div class="d-flex justify-content-between fs-5">
-                <strong>{% trans "Total" %}</strong>
-                <strong id="orderTotal">
-                    ₹{{ subtotal|add:handling_fee}}
-                </strong>
-            </div>
-
-            <small class="text-muted" id="distanceInfo"></small>
-
-        </div>
-
-        {% for item in items %}
-        <div class="d-flex justify-content-between small mb-1">
-
-        <span>
-        {{ item.name }}
-        </span>
-
-        <span>
-        ₹{{ item.price|floatformat:2 }}
-        </span>
-
-        </div>
-        {% endfor %}
-
-        <hr>
-
-        {% if upi_only_required %}
-        <div class="alert alert-warning">
-            ⚠ Your cart contains non-returnable products. Only UPI payment is available.
-        </div>
-        {% endif %}
-
-        <!-- PAYMENT -->
-        <div class="mb-4">
-            <label class="form-label fw-bold">Payment Method</label>
-
-            <div class="card p-3">
-
-                <!-- UPI -->
-                <div class="form-check mb-2">
-                    <input class="form-check-input"
-                        type="radio"
-                        name="payment"
-                        value="UPI"
-                        id="upiOption"
-                        {% if upi_only_required %}checked{% endif %}>
-                    <label class="form-check-label">
-                        UPI (Recommended)
-                    </label>
-                </div>
-
-                <!-- COD -->
-                <div class="form-check">
-                    <input class="form-check-input"
-                        type="radio"
-                        name="payment"
-                        value="COD"
-                        id="codOption"
-                        {% if cod_not_allowed or upi_only_required %}disabled{% endif %}>
-
-                    <label class="form-check-label">
-                        Cash on Delivery
-
-                        {% if upi_only_required %}
-                            <small class="text-danger d-block">
-                                Only UPI allowed for selected items
-                            </small>
-                        {% elif cod_not_allowed %}
-                            <small class="text-danger d-block">
-                                COD not available below ₹149
-                            </small>
-                        {% endif %}
-                    </label>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- SUCCESS -->
-        <div id="formSuccess"
-             class="alert alert-success d-none">
-            {% trans "✅ All details look good. You can place your order." %}
-        </div>
-
-        <div class="card mt-4 border-warning">
-            <div class="card-body">
-
-                <h5 class="text-danger">{% trans "Cancellation & Refund Policy" %}</h5>
-
-                <ul class="small text-muted">
-                <li>{% trans "Order can be cancelled before it is shipped." %}</li>
-                <li>{% trans "Full refund for UPI payments if cancelled before dispatch." %}</li>
-                <li>{% trans "If cancelled after dispatch, delivery charges may be deducted." %}</li>
-                <li>{% trans "Refusal at delivery may result in COD restriction." %}</li>
-                <li>{% trans "Refunds for UPI may take 3-5 working days." %}</li>
-                </ul>
-
-                <div class="form-check mt-3">
-                <input class="form-check-input"
-                        type="checkbox"
-                        id="policyCheck"
-                        checked>
-                <label class="form-check-label" for="policyCheck">
-                    {% trans "I agree to the cancellation and refund policy." %}
-                </label>
-                </div>
-
-            </div>
-        </div>
-
-        <p class="text-success fw-bold text-center">
-        🚀 Delivery in 40–60 mins | Trusted local stores
-        </p>
-        <small style="color:#198754; font-weight:600;">
-        ✔ No hidden charges  
-        ✔ Trusted local delivery  
-        </small>
-
-        <!-- PLACE ORDER -->
-        <button type="submit"
-                id="placeOrderBtn"
-                class="btn btn-success w-100 py-3 fs-5">
-            🚀 Confirm Order
-        </button>
-
-        <small style="color:red;">
-        ⏰ High demand — order now!
-        </small>
-
-        <div style="height:70px;"></div>
-
-    </form>
-
+{% if error %}
+<div style="padding:12px 14px 0;">
+  <div class="co-alert">⚠ {{ error }}</div>
 </div>
+{% endif %}
 
+{% if messages %}
+  {% for message in messages %}
+  <div style="padding:12px 14px 0;">
+    <div class="co-alert">{{ message }}</div>
+  </div>
+  {% endfor %}
+{% endif %}
 
+<div class="checkout-page">
+
+  <!-- STICKY NAV -->
+  <div class="checkout-nav">
+    <a href="javascript:history.back()" class="nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="nav-title">{% trans "Checkout" %}</span>
+    <span class="nav-sub">{{ store.name }}</span>
+  </div>
+
+  <form method="POST" id="checkoutForm">
+    {% csrf_token %}
+    <input type="hidden" name="free_delivery"    id="freeDeliveryInput" value="false">
+    <input type="hidden" name="discount_amount"  id="hidden_discount"   value="0">
+
+    <div class="checkout-body">
+
+      <!-- 1. CONTACT -->
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Contact details" %}</span></div>
+        <div class="co-card-body">
+          <div class="co-label">{% trans "Full name" %}</div>
+          <input type="text" name="name" id="nameInput"
+                 class="co-input" placeholder="{% trans 'Your full name' %}" required>
+          <div class="co-invalid-msg">{% trans "Please enter your full name." %}</div>
+
+          <div class="co-label">{% trans "Mobile number" %}</div>
+          <input type="text" name="phone" id="phoneInput"
+                 class="co-input" maxlength="10"
+                 placeholder="{% trans '10-digit number starting with 6–9' %}" required>
+          <div class="co-invalid-msg">{% trans "Enter a valid Indian mobile number." %}</div>
+
+          <div class="co-check-row">
+            <input type="checkbox" id="confirm_phone" name="confirm_phone" checked>
+            <label for="confirm_phone">मी दिलेला मोबाईल नंबर योग्य आहे. चुकीचा नंबर दिल्यास ऑर्डर रद्द होऊ शकते.</label>
+          </div>
+
+          <div id="deliveryInfo" class="co-delivery-info"></div>
+        </div>
+      </div>
+
+      <!-- 2. LOCATION -->
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Delivery location" %}</span></div>
+        <div class="co-card-body">
+          <button type="button" class="co-loc-btn" onclick="useCurrentLocation()">
+            📍 {% trans "Use my current location" %}
+          </button>
+          <div id="map"></div>
+          <div class="co-map-error" id="mapError"></div>
+          <input type="hidden" name="latitude"  id="latitude">
+          <input type="hidden" name="longitude" id="longitude">
+          <div class="co-label">{% trans "Landmark / House details" %}</div>
+          <textarea name="address" id="addressInput" class="co-textarea"
+                    placeholder="{% trans 'Flat No, Building, Landmark' %}"></textarea>
+        </div>
+      </div>
+
+      <!-- 3. COUPON -->
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Coupon code" %}</span></div>
+        <div class="co-card-body">
+          <div class="co-coupon-row">
+            <input type="text" id="coupon_code" name="coupon_code"
+                   class="co-coupon-input" placeholder="{% trans 'Enter code' %}">
+            <button type="button" class="co-coupon-btn" onclick="applyCoupon()">{% trans "Apply" %}</button>
+          </div>
+          <div id="coupon_message" class="co-coupon-msg"></div>
+        </div>
+      </div>
+
+      <!-- 4. PAYMENT -->
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Payment method" %}</span></div>
+        <div class="co-card-body">
+          {% if upi_only_required %}
+          <div class="co-upi-warn">⚠ {% trans "Your cart contains items that require UPI payment only." %}</div>
+          {% endif %}
+          <div class="co-pay-row">
+            <div class="co-pay-opt active" id="upiLabel">
+              <input type="radio" name="payment" value="UPI" id="upiOption"
+                     {% if upi_only_required %}checked{% endif %} style="display:none;">
+              <span class="pay-icon">📱</span>
+              UPI
+              <div><span class="co-pay-tag">{% trans "Recommended" %}</span></div>
+            </div>
+            <div class="co-pay-opt {% if cod_not_allowed or upi_only_required %}disabled{% endif %}" id="codLabel">
+              <input type="radio" name="payment" value="COD" id="codOption"
+                     {% if cod_not_allowed or upi_only_required %}disabled{% endif %} style="display:none;">
+              <span class="pay-icon">💵</span>
+              {% trans "Cash on Delivery" %}
+              {% if upi_only_required %}
+                <div><span class="co-pay-tag warn">{% trans "UPI only" %}</span></div>
+              {% elif cod_not_allowed %}
+                <div><span class="co-pay-tag warn">{% trans "Min ₹149" %}</span></div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. ORDER SUMMARY -->
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Order summary" %}</span></div>
+        <div class="co-card-body">
+          {% for item in items %}
+          <div class="co-item-row">
+            <span>{{ item.name }}{% if item.quantity > 1 %} ×{{ item.quantity }}{% endif %}</span>
+            <span>₹{{ item.subtotal|floatformat:0 }}</span>
+          </div>
+          {% endfor %}
+          <hr class="co-sum-divider">
+          <div class="co-sum-row"><span>{% trans "Subtotal" %}</span><span>₹{{ subtotal }}</span></div>
+          <div class="co-sum-row"><span>{% trans "Delivery fee" %}</span><span id="deliveryFee">₹0</span></div>
+          <div class="co-sum-row"><span>{% trans "Handling fee" %}</span><span>₹{{ handling_fee }}</span></div>
+          <div class="co-sum-row discount"><span>{% trans "Coupon discount" %}</span><span>— <span id="discount_amount">₹0</span></span></div>
+          {% if cod_not_allowed %}
+          <div class="co-cod-warn">⚠ {% trans "Cash on Delivery is not available for orders below ₹149." %}</div>
+          {% endif %}
+          <hr class="co-sum-divider">
+          <div class="co-sum-total">
+            <span>{% trans "Total" %}</span>
+            <span id="orderTotal">₹{{ subtotal|add:handling_fee }}</span>
+          </div>
+          <div class="co-distance-info" id="distanceInfo"></div>
+        </div>
+      </div>
+
+      <!-- TRUST BADGES -->
+      <div class="co-trust-row">
+        <div class="co-trust-badge"><span class="tb-icon">🕐</span>40–60 min<br>delivery</div>
+        <div class="co-trust-badge"><span class="tb-icon">🛡</span>No hidden<br>charges</div>
+        <div class="co-trust-badge"><span class="tb-icon">🚚</span>Local trusted<br>stores</div>
+      </div>
+
+      <!-- 6. POLICY -->
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Cancellation policy" %}</span></div>
+        <div class="co-card-body">
+          <div class="co-policy-box">
+            <div class="co-policy-li">{% trans "Order can be cancelled before it is dispatched." %}</div>
+            <div class="co-policy-li">{% trans "Full refund for UPI payments if cancelled before dispatch." %}</div>
+            <div class="co-policy-li">{% trans "Delivery charges may apply if cancelled after dispatch." %}</div>
+            <div class="co-policy-li">{% trans "Refusal at delivery may restrict COD on future orders." %}</div>
+            <div class="co-policy-li">{% trans "UPI refunds may take 3–5 working days." %}</div>
+          </div>
+          <div class="co-check-row">
+            <input type="checkbox" id="policyCheck" checked>
+            <label for="policyCheck">{% trans "I agree to the cancellation and refund policy." %}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIRM ORDER BUTTON -->
+      <button type="submit" id="placeOrderBtn" class="co-confirm-btn">
+        <div class="co-spinner" id="btnSpinner"></div>
+        <span id="btnText">{% trans "Confirm order" %} &nbsp;·&nbsp; <span id="footerTotal">₹{{ subtotal|add:handling_fee }}</span></span>
+      </button>
+
+    </div><!-- /checkout-body -->
+
+  </form>
+</div>
 
 <!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
@@ -309,799 +658,270 @@ const BUS_STAND_LAT = 16.579620;
 const BUS_STAND_LON = 74.312661;
 const DELIVERY_RADIUS_KM = 10;
 
-const subtotal = parseFloat("{{ subtotal }}");
+const subtotal    = parseFloat("{{ subtotal }}");
 const handlingFee = parseFloat("{{ handling_fee }}");
+let appliedDiscount = 0;
+let freeDeliveryUnlocked = "{{ free_delivery_order|yesno:'true,false' }}" === "true";
 
-let freeDeliveryUnlocked =
-    "{{ free_delivery_order|yesno:'true,false' }}" === "true";
-
+/* ── MAP SETUP ── */
 var map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
 
-// 🌍 Street / Traffic-like Map (Default)
 var streetLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-    }
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }
 );
-
-// 🛰 Satellite Layer (Esri)
 var satelliteLayer = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {
-        maxZoom: 19,
-        attribution: 'Tiles &copy; Esri'
-    }
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { maxZoom: 19, attribution: 'Tiles &copy; Esri' }
 );
-
-// Add default layer
 streetLayer.addTo(map);
-
-// Layer control toggle
-L.control.layers(
-    {
-        "Traffic / Street": streetLayer,
-        "Satellite": satelliteLayer
-    }
-).addTo(map);
-
+L.control.layers({ "Street": streetLayer, "Satellite": satelliteLayer }).addTo(map);
 L.circle([BUS_STAND_LAT, BUS_STAND_LON], {
-    radius: DELIVERY_RADIUS_KM * 1000,
-    color: 'green',
-    fillOpacity: 0.08
+  radius: DELIVERY_RADIUS_KM * 1000, color: '#2D5A27', fillOpacity: 0.06
 }).addTo(map);
 
 var marker;
+map.on('click', function(e) { setLocation(e.latlng.lat, e.latlng.lng); });
 
-map.on('click', function(e){
-    setLocation(e.latlng.lat, e.latlng.lng);
-});
+function setLocation(lat, lng) {
+  if (marker) map.removeLayer(marker);
+  marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+  map.flyTo([lat, lng], 17, { duration: 0.6 });
+  document.getElementById('latitude').value  = lat;
+  document.getElementById('longitude').value = lng;
+  marker.on('dragend', function() {
+    var pos = marker.getLatLng();
+    updateDelivery(pos.lat, pos.lng);
+  });
+  getAddress(lat, lng);
+  updateDelivery(lat, lng);
+}
 
-// Ask location permission when page loads (important for mobile app)
-document.addEventListener("DOMContentLoaded", function(){
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                console.log("Location permission granted");
-            },
-            function(error) {
-                console.log("Location permission denied");
-            }
-        );
-    }
-});
+function getAddress(lat, lng) {
+  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data && data.address) {
+        var parts = [
+          data.address.road,
+          data.address.suburb || data.address.village,
+          data.address.city || data.address.town || data.address.county,
+          data.address.postcode
+        ].filter(Boolean);
+        document.getElementById('addressInput').value = parts.join(', ');
+      }
+    }).catch(function(){});
+}
 
-function getAddress(lat, lng){
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-    .then(response => response.json())
-    .then(data => {
-        if(data && data.address){
+function useCurrentLocation() {
+  if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+  document.getElementById('distanceInfo').innerText = 'Getting your location…';
+  navigator.geolocation.getCurrentPosition(
+    function(pos) { setLocation(pos.coords.latitude, pos.coords.longitude); },
+    function()    { alert('Turn on GPS and allow location permission.'); },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
 
-            let road = data.address.road || "";
-            let suburb = data.address.suburb || data.address.village || "";
-            let city = data.address.city || data.address.town || data.address.county || "";
-            let postcode = data.address.postcode || "";
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLon = (lon2 - lon1) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-            let parts = [road, suburb, city, postcode].filter(Boolean);
-            let finalAddress = parts.join(", ");
+function updateDelivery(lat, lng) {
+  if (!lat || !lng) return;
+  var raw  = calculateDistance(lat, lng, BUS_STAND_LAT, BUS_STAND_LON);
+  var dist = raw <= 1 ? raw : 1 + (raw - 1) * 1.55;
+  var mapError = document.getElementById('mapError');
+  var placeBtn = document.getElementById('placeOrderBtn');
 
-            document.getElementById("addressInput").value = finalAddress;
+  if (dist > DELIVERY_RADIUS_KM) {
+    mapError.innerText = 'Delivery not available outside 10 km.';
+    mapError.style.display = 'block';
+    placeBtn.disabled = true;
+    return;
+  }
+  mapError.style.display = 'none';
+  placeBtn.disabled = false;
 
+  var phone = document.getElementById('phoneInput').value;
+  fetch('/calculate-delivery/?latitude=' + lat + '&longitude=' + lng + '&phone=' + phone)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      freeDeliveryUnlocked = data.free_delivery;
+      document.getElementById('freeDeliveryInput').value = freeDeliveryUnlocked ? 'true' : 'false';
+      var fee   = data.delivery_fee;
+      var total = subtotal + handlingFee + fee - appliedDiscount;
+      document.getElementById('deliveryFee').innerText  = fee === 0 ? 'FREE 🎉' : '₹' + fee;
+      document.getElementById('orderTotal').innerText   = '₹' + Math.round(total);
+      document.getElementById('footerTotal').innerText  = '₹' + Math.round(total);
+      document.getElementById('distanceInfo').innerText = 'Distance: ' + data.distance + ' km · 40–60 min delivery';
+    });
+}
+
+/* ── COUPON ── */
+function applyCoupon() {
+  var code  = document.getElementById('coupon_code').value.trim();
+  var phone = document.getElementById('phoneInput').value;
+  var msgEl = document.getElementById('coupon_message');
+  fetch('/apply-coupon/?code=' + code + '&subtotal={{ subtotal }}&phone=' + phone)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        appliedDiscount = data.discount;
+        window.currentDiscount = appliedDiscount;
+        document.getElementById('discount_amount').innerText = '₹' + appliedDiscount;
+        document.getElementById('hidden_discount').value = appliedDiscount;
+        msgEl.className = 'co-coupon-msg success';
+        msgEl.innerText = '✅ Coupon applied — ₹' + appliedDiscount + ' off!';
+      } else {
+        appliedDiscount = 0;
+        document.getElementById('discount_amount').innerText = '₹0';
+        msgEl.className = 'co-coupon-msg error';
+        msgEl.innerText = data.message;
+      }
+      var lat = document.getElementById('latitude').value;
+      var lng = document.getElementById('longitude').value;
+      if (lat && lng) updateDelivery(lat, lng);
+    });
+}
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', function() {
+
+  /* Payment toggle */
+  var upiOpt   = document.getElementById('upiOption');
+  var codOpt   = document.getElementById('codOption');
+  var upiLabel = document.getElementById('upiLabel');
+  var codLabel = document.getElementById('codLabel');
+
+  upiOpt.checked = true;
+
+  function syncPaymentUI() {
+    upiLabel.classList.toggle('active', upiOpt.checked);
+    codLabel.classList.toggle('active', codOpt.checked && !codOpt.disabled);
+  }
+
+  upiLabel.addEventListener('click', function() {
+    if (!upiOpt.disabled) { upiOpt.checked = true; syncPaymentUI(); }
+  });
+  codLabel.addEventListener('click', function() {
+    if (!codOpt.disabled) { codOpt.checked = true; syncPaymentUI(); }
+  });
+  syncPaymentUI();
+
+  /* Load saved data */
+  var nameInput    = document.getElementById('nameInput');
+  var phoneInput   = document.getElementById('phoneInput');
+  var addressInput = document.getElementById('addressInput');
+
+  if (localStorage.getItem('user_name'))    nameInput.value    = localStorage.getItem('user_name');
+  if (localStorage.getItem('user_phone'))   phoneInput.value   = localStorage.getItem('user_phone');
+  if (localStorage.getItem('user_address')) addressInput.value = localStorage.getItem('user_address');
+
+  nameInput.addEventListener('input',    function() { localStorage.setItem('user_name',    nameInput.value); });
+  phoneInput.addEventListener('input',   function() { localStorage.setItem('user_phone',   phoneInput.value); });
+  addressInput.addEventListener('input', function() { localStorage.setItem('user_address', addressInput.value); });
+
+  /* Free delivery message */
+  function checkFreeDelivery(phone) {
+    if (phone.length !== 10) return;
+    fetch('/check-free-delivery/?phone=' + phone)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var infoEl = document.getElementById('deliveryInfo');
+        if (data.next_is_free) {
+          infoEl.innerText = '🎉 This order has FREE delivery!';
         } else {
-            document.getElementById("addressInput").value = "Please enter address manually";
+          var rem = 5 - (data.order_count % 5);
+          infoEl.innerText = rem + ' more order' + (rem > 1 ? 's' : '') + ' to unlock FREE delivery';
         }
-    })
-    .catch(error => {
-        console.log("Error getting address:", error);
-    });
-}
+        infoEl.classList.add('visible');
+      });
+  }
 
-function confirmLocation(){
-    const lat = document.getElementById("latitude").value;
-    const lng = document.getElementById("longitude").value;
+  phoneInput.addEventListener('input', function() {
+    checkFreeDelivery(this.value);
+    var lat = document.getElementById('latitude').value;
+    var lng = document.getElementById('longitude').value;
+    if (lat && lng && this.value.length === 10) updateDelivery(lat, lng);
+  });
 
-    if(!lat || !lng){
-        alert("Please select delivery location on map.");
-        return;
-    }
-
-    document.getElementById("addressInput").focus();
-    document.getElementById("addressInput").style.border = "2px solid green";
-
-    alert("Location confirmed. Please check your address.");
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2){
-    const R = 6371;
-    const dLat = (lat2-lat1) * Math.PI/180;
-    const dLon = (lon2-lon1) * Math.PI/180;
-
-    const a =
-        Math.sin(dLat/2)**2 +
-        Math.cos(lat1*Math.PI/180) *
-        Math.cos(lat2*Math.PI/180) *
-        Math.sin(dLon/2)**2;
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
-function setLocation(lat, lng){
-
-    if(marker) map.removeLayer(marker);
-
-    marker = L.marker([lat, lng], { draggable:true }).addTo(map);
-    map.flyTo([lat, lng], 18, { duration: 0.7 });
-
-    document.getElementById("latitude").value = lat;
-    document.getElementById("longitude").value = lng;
-
-    marker.on('dragend', function(){
-        const pos = marker.getLatLng();
-        updateDelivery(pos.lat, pos.lng);
-    });
-
-    updateDelivery(lat, lng);
-}
-let appliedDiscount = 0;
-
-function updateDelivery(lat, lng){
-
-    const distanceInfo = document.getElementById("distanceInfo");
-    distanceInfo.innerText = "Calculating delivery...";
-
-    let rawDistance = calculateDistance(
-        lat, lng, BUS_STAND_LAT, BUS_STAND_LON
-    );
-
-    let distance;
-
-    if(rawDistance <= 1){
-        distance = rawDistance;
-    } else {
-        distance = 1 + (rawDistance - 1) * 1.55;
-    }
-
-    const placeBtn = document.getElementById("placeOrderBtn");
-    const mapError = document.getElementById("mapError");
-
-    if(distance > DELIVERY_RADIUS_KM){
-        mapError.innerText =
-            "Delivery not available outside 10 KM.";
-        mapError.classList.remove("d-none");
-        placeBtn.disabled = true;
-        return;
-    } else {
-        mapError.classList.add("d-none");
-    }
-
-    const phone = document.getElementById("phoneInput").value;
-
-    fetch(`/calculate-delivery/?latitude=${lat}&longitude=${lng}&phone=${phone}`)
-    .then(res => res.json())
-    .then(data => {
-
-        freeDeliveryUnlocked = data.free_delivery;
-
-        document.getElementById("freeDeliveryInput").value =
-            freeDeliveryUnlocked ? "true" : "false";
-
-        const deliveryFee = data.delivery_fee;
-        const baseTotal =
-        subtotal +
-        handlingFee +
-        data.delivery_fee;
-
-        const total =
-        baseTotal - appliedDiscount;
-
-        document.getElementById("deliveryFee").innerText =
-            deliveryFee === 0 ? "FREE 🎉" : "₹" + deliveryFee;
-
-        document.getElementById("orderTotal").innerText =
-            "₹" + total.toFixed(0);
-
-        document.getElementById("distanceInfo").innerText =
-            "Distance: " + data.distance + " km | Delivery: 40–60 mins";
-
-    });
-
-    validateForm();
-}
-
-function useCurrentLocation(){
-
-    if (!navigator.geolocation) {
-        alert("Geolocation not supported.");
-        return;
-    }
-
-    // Show loading message
-    document.getElementById("distanceInfo").innerText = "Getting precise location...";
-
+  /* Auto locate on load */
+  if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-        function(position){
-
-            let lat = position.coords.latitude;
-            let lng = position.coords.longitude;
-            let accuracy = position.coords.accuracy;
-
-            console.log("Accuracy:", accuracy, "meters");
-
-            setLocation(lat, lng);
-
-            // Zoom more for precise selection
-            map.setView([lat, lng], 18);
-
-            // Show accuracy circle
-            L.circle([lat, lng], {
-                radius: accuracy,
-                color: 'blue',
-                fillOpacity: 0.1
-            }).addTo(map);
-
-        },
-        function(error){
-            alert("Turn on GPS and allow location permission.");
-            console.log(error);
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        }
+      function(pos) { setLocation(pos.coords.latitude, pos.coords.longitude); },
+      function() {},
+      { enableHighAccuracy: true, timeout: 8000 }
     );
-}
+  }
 
-function applyCoupon(){
+  /* Form submit */
+  var form      = document.getElementById('checkoutForm');
+  var placeBtn  = document.getElementById('placeOrderBtn');
+  var spinner   = document.getElementById('btnSpinner');
+  var btnText   = document.getElementById('btnText');
 
-const code = document.getElementById("coupon_code").value
+  form.addEventListener('submit', function(e) {
+    document.getElementById('hidden_discount').value = window.currentDiscount || 0;
 
-const phone = document.getElementById("phoneInput").value
+    var valid = true;
 
-fetch(`/apply-coupon/?code=${code}&subtotal={{ subtotal }}&phone=${phone}`)
-.then(res => res.json())
-.then(data => {
+    if (nameInput.value.trim().length < 3) {
+      nameInput.classList.add('is-invalid'); valid = false;
+    } else { nameInput.classList.remove('is-invalid'); }
 
-if(data.success){
+    if (!/^[6-9]\d{9}$/.test(phoneInput.value)) {
+      phoneInput.classList.add('is-invalid'); valid = false;
+    } else { phoneInput.classList.remove('is-invalid'); }
 
-appliedDiscount = data.discount
-
-window.currentDiscount = appliedDiscount;
-
-document.getElementById("discount_amount").innerText =
-"₹" + appliedDiscount
-
-document.getElementById("hidden_discount").value =
-    appliedDiscount;
-
-document.getElementById("coupon_code").value = code;
-
-updateDelivery(
-    document.getElementById("latitude").value,
-    document.getElementById("longitude").value
-)
-
-document.getElementById("coupon_message").innerText =
-"Coupon applied successfully"
-
-}else{
-
-    appliedDiscount = 0   // 🔥 ADD THIS
-
-    document.getElementById("discount_amount").innerText = "₹0"
-
-    document.getElementById("coupon_message").innerText = data.message
-
-    updateDelivery(
-        document.getElementById("latitude").value,
-        document.getElementById("longitude").value
-    )
-}
-
-})
-
-}
-
-// =====================================
-// AUTO RECALCULATE AFTER AUTOFILL
-// =====================================
-
-// =====================================
-// AUTO DETECT AUTOFILL + LOCATION
-// =====================================
-
-document.addEventListener("DOMContentLoaded", function(){
-
-    let attempts = 0;
-
-    const interval = setInterval(function(){
-
-        const lat =
-            document.getElementById("latitude").value;
-
-        const lng =
-            document.getElementById("longitude").value;
-
-        const phone =
-            document.getElementById("phoneInput").value;
-
-        // both ready
-        if(lat && lng && phone.length === 10){
-
-            updateDelivery(lat, lng);
-
-            // 🔥 UPDATE FREE DELIVERY MESSAGE
-            fetch(`/check-free-delivery/?phone=${phone}`)
-            .then(res => res.json())
-            .then(data => {
-
-                let infoBox =
-                    document.getElementById("deliveryInfo");
-
-                if(data.next_is_free){
-
-                    infoBox.innerHTML =
-                    "🎉 Congratulations! This order has FREE delivery";
-
-                } else {
-
-                    let remaining =
-                        5 - (data.order_count % 5);
-
-                    infoBox.innerHTML =
-                        `${remaining} more orders to unlock FREE delivery`;
-
-                }
-
-            });
-
-            clearInterval(interval);
-
-        }
-
-        attempts++;
-
-        // stop after 10 sec
-        if(attempts > 20){
-
-            clearInterval(interval);
-
-        }
-
-    }, 500);
-
-});
-
-// =====================================
-// LIVE PHONE CHANGE RECALCULATION
-// =====================================
-
-document.getElementById("phoneInput")
-.addEventListener("input", function(){
-
-    const lat =
-        document.getElementById("latitude").value;
-
-    const lng =
-        document.getElementById("longitude").value;
-
-    const phone = this.value;
-
-    if(lat && lng && phone.length === 10){
-
-        updateDelivery(lat, lng);
-
-        fetch(`/check-free-delivery/?phone=${phone}`)
-        .then(res => res.json())
-        .then(data => {
-
-            let infoBox =
-                document.getElementById("deliveryInfo");
-
-            if(data.next_is_free){
-
-                infoBox.innerHTML =
-                "🎉 Congratulations! This order has FREE delivery";
-
-            } else {
-
-                let remaining =
-                    5 - (data.order_count % 5);
-
-                infoBox.innerHTML =
-                    `${remaining} more orders to unlock FREE delivery`;
-
-            }
-
-        });
-
+    if (!valid) {
+      e.preventDefault();
+      var firstInvalid = document.querySelector('.is-invalid');
+      if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
+
+    placeBtn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.innerHTML = ' Processing…';
+  });
+
+  /* Auto-save lead */
+  var autoSaveTimer;
+  ['nameInput','phoneInput','addressInput'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(autoSaveLead, 1500);
+    });
+  });
+
+  function autoSaveLead() {
+    var name    = nameInput.value;
+    var phone   = phoneInput.value;
+    var address = addressInput.value;
+    var payment = (document.querySelector('input[name="payment"]:checked') || {}).value || '';
+    var total   = (document.getElementById('orderTotal') || {}).innerText || '0';
+    total = total.replace('₹','');
+    if (name.length < 2 || phone.length !== 10 || address.length < 5) return;
+    fetch('/save-checkout-lead/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ name: name, phone: phone, address: address, payment: payment, total: total, store_id: '{{ store.id }}' })
+    }).catch(function(){});
+  }
 
 });
 </script>
-
-
-
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-
-    const form = document.getElementById("checkoutForm");
-    const placeBtn = document.getElementById("placeOrderBtn");
-
-    const phoneInput = document.getElementById("phoneInput");
-    const nameInput = document.getElementById("nameInput");
-    const addressInput = document.getElementById("addressInput");
-
-    const phoneCheck = document.getElementById("phoneCheck");
-    const codOption = document.getElementById("codOption");
-    const upiOption = document.getElementById("upiOption");
-
-    const successBox = document.getElementById("formSuccess");
-
-    // 🔥 FORCE UPI DEFAULT
-    upiOption.checked = true;
-
-    const upiOnly = "{{ upi_only_required|yesno:'true,false' }}";
-    if(upiOnly === "true"){
-        codOption.disabled = true;
-    }
-
-    // 🔥 AUTO LOCATION
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position){
-                let lat = position.coords.latitude;
-                let lng = position.coords.longitude;
-
-                setLocation(lat, lng);
-                validateForm();
-
-                document.getElementById("deliveryInfo").innerHTML =
-                "📍 Location auto-detected";
-
-            },
-            function(error){
-                console.log("Location denied");
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 8000
-            }
-        );
-    }
-
-    // 🔥 LOAD SAVED DATA
-    if(localStorage.getItem("user_name")){
-        nameInput.value = localStorage.getItem("user_name");
-    }
-
-    if(localStorage.getItem("user_phone")){
-        phoneInput.value = localStorage.getItem("user_phone");
-    }
-
-    if(localStorage.getItem("user_address")){
-        addressInput.value = localStorage.getItem("user_address");
-    }
-
-    // 🔥 SAVE DATA
-    nameInput.addEventListener("input", () => {
-        localStorage.setItem("user_name", nameInput.value);
-    });
-
-    phoneInput.addEventListener("input", () => {
-        localStorage.setItem("user_phone", phoneInput.value);
-    });
-
-    addressInput.addEventListener("input", () => {
-        localStorage.setItem("user_address", addressInput.value);
-    });
-
-    function isValidIndianPhone(phone){
-        return /^[6-9]\d{9}$/.test(phone);
-    }
-
-    // 🔥 MAIN VALIDATION
-    window.validateForm = function(){
-
-        let valid = true;
-
-        // NAME
-        if(nameInput.value.trim().length < 3){
-            nameInput.classList.add("is-invalid");
-            valid = false;
-        } else {
-            nameInput.classList.remove("is-invalid");
-        }
-
-        // PHONE
-        if(isValidIndianPhone(phoneInput.value)){
-            phoneInput.classList.remove("is-invalid");
-            phoneInput.classList.add("is-valid");
-            phoneCheck.style.display = "block";
-        } else {
-            phoneInput.classList.add("is-invalid");
-            phoneInput.classList.remove("is-valid");
-            phoneCheck.style.display = "none";
-            valid = false;
-        }
-
-        // ADDRESS
-        if(addressInput.value.trim().length < 3){
-            addressInput.classList.add("is-invalid");
-            valid = false;
-        } else {
-            addressInput.classList.remove("is-invalid");
-        }
-
-        // MAP (NON-BLOCKING)
-        const lat = document.getElementById("latitude").value;
-        const lng = document.getElementById("longitude").value;
-
-        if(!lat || !lng){
-            document.getElementById("map").classList.add("map-invalid");
-        } else {
-            document.getElementById("map").classList.remove("map-invalid");
-        }
-
-        // PAYMENT RULE
-        if(subtotal < 149 || upiOnly === "true"){
-            codOption.disabled = true;
-            upiOption.checked = true;
-        }
-
-        // ALWAYS ENABLE BUTTON
-        placeBtn.disabled = false;
-
-        // SUCCESS MESSAGE
-        if(valid){
-            successBox.classList.remove("d-none");
-        } else {
-            successBox.classList.add("d-none");
-        }
-
-        return valid;
-    };
-
-    // 🔥 FORM SUBMIT
-    form.addEventListener("submit", function(e){
-        document.getElementById("hidden_discount").value =
-            window.currentDiscount || 0;
-
-        if(!validateForm()){
-            e.preventDefault();
-
-            document.querySelector(".is-invalid")?.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
-            return;
-        }
-
-        // 🔥 TRACK CHECKOUT
-        if(typeof gtag === "function"){
-            gtag('event', 'begin_checkout', {
-                value: parseFloat("{{ subtotal }}"),
-                currency: 'INR'
-            });
-        }
-
-        // 🔥 LOADING STATE
-        placeBtn.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
-        placeBtn.disabled = true;
-    });
-
-    // 🔁 REAL-TIME VALIDATION
-    nameInput.addEventListener("input", validateForm);
-    phoneInput.addEventListener("input", validateForm);
-    addressInput.addEventListener("input", validateForm);
-
-    validateForm();
-
-});
-
-// ====================================
-// AUTO SAVE CHECKOUT LEAD
-// ====================================
-
-let leadSaved = false;
-
-function autoSaveLead(){
-
-    if(leadSaved) return;
-
-    const name =
-        document.getElementById("nameInput").value;
-
-    const phone =
-        document.getElementById("phoneInput").value;
-
-    const address =
-        document.getElementById("addressInput").value;
-
-    const payment =
-        document.querySelector(
-            'input[name="payment"]:checked'
-        )?.value || "";
-
-    const total =
-        document.getElementById("orderTotal")
-        ?.innerText || 0;
-
-    // VALIDATION
-    if(
-        name.length < 2 ||
-        phone.length !== 10 ||
-        address.length < 5
-    ){
-        return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("name", name);
-    formData.append("phone", phone);
-    formData.append("address", address);
-    formData.append("payment", payment);
-    formData.append("total", total);
-    formData.append("store_id", "{{ store.id }}");
-
-    fetch("/save-checkout-lead/", {
-
-        method: "POST",
-
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-
-        body: formData
-
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        if(data.success){
-
-            leadSaved = true;
-
-            console.log("Lead saved");
-
-        }
-
-    });
-
-}
-
-// AUTO SAVE AFTER USER STOPS TYPING
-
-let typingTimer;
-
-[
-    "nameInput",
-    "phoneInput",
-    "addressInput"
-].forEach(id => {
-
-    const el = document.getElementById(id);
-
-    if(!el) return;
-
-    el.addEventListener("input", function(){
-
-        clearTimeout(typingTimer);
-
-        typingTimer = setTimeout(autoSaveLead, 1500);
-
-    });
-
-});
-
-// ======================================
-// AUTO SAVE CHECKOUT LEAD
-// ======================================
-
-let autoSaveTimer;
-
-function autoSaveCheckoutLead(){
-
-    const name =
-        document.getElementById("nameInput")?.value || "";
-
-    const phone =
-        document.getElementById("phoneInput")?.value || "";
-
-    const address =
-        document.getElementById("addressInput")?.value || "";
-
-    const payment =
-        document.querySelector(
-            'input[name="payment"]:checked'
-        )?.value || "";
-
-    const total =
-        document.getElementById("orderTotal")
-        ?.innerText.replace("₹","") || "0";
-
-    // VALIDATION
-    if(
-        name.length < 2 ||
-        phone.length !== 10 ||
-        address.length < 5
-    ){
-        return;
-    }
-
-    fetch("/save-checkout-lead/", {
-
-        method: "POST",
-
-        headers: {
-
-            "Content-Type": "application/json",
-
-            "X-CSRFToken":
-                document.querySelector(
-                    "[name=csrfmiddlewaretoken]"
-                ).value
-        },
-
-        body: JSON.stringify({
-
-            name: name,
-            phone: phone,
-            address: address,
-            payment: payment,
-            total: total,
-            store_id: "{{ store.id }}"
-
-        })
-
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        console.log("✅ Lead auto saved");
-
-    })
-    .catch(err => {
-
-        console.log("❌ Lead save failed");
-
-    });
-
-}
-
-
-// ======================================
-// AUTO SAVE AFTER USER TYPES
-// ======================================
-
-[
-    "nameInput",
-    "phoneInput",
-    "addressInput"
-].forEach(id => {
-
-    const el = document.getElementById(id);
-
-    if(!el) return;
-
-    el.addEventListener("input", function(){
-
-        clearTimeout(autoSaveTimer);
-
-        autoSaveTimer = setTimeout(
-            autoSaveCheckoutLead,
-            1500
-        );
-
-    });
-
-});
-</script>
-
 
 {% endblock %}
