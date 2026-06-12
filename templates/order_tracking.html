@@ -3,440 +3,844 @@
 {% block content %}
 
 <style>
-.step{
-  display:flex;
-  align-items:center;
-  margin-bottom:15px;
-}
+  * { box-sizing: border-box; }
 
-.step-circle{
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  margin-right:10px;
-}
+  .ot-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+  }
 
-.completed{background:#28a745;}
-.pending{background:#ccc;}
-.cancelled{background:#dc3545;}
-.failed{background:#ffc107;}
+  /* ── STICKY NAV ── */
+  .ot-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1A3A16;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
 
-.policy-box{
-  background:#fff8e8;
-  border-left:4px solid #ff9800;
-  padding:14px;
-  border-radius:8px;
-  margin-top:20px;
-  font-size:14px;
-}
+  .ot-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-.btn-block{
-  width:100%;
-}
+  .ot-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
 
-.refresh-note{
-  font-size:13px;
-  color:#666;
-  margin-top:10px;
-}
+  .ot-nav-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+  }
 
-.star{
-  font-size:32px;
-  color:#ddd;
-  cursor:pointer;
-  transition:0.2s;
-}
+  .ot-nav-id {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
 
-.star.active{
-  color:#ffc107;
-}
+  /* ── STORE + PILL HEADER ── */
+  .ot-header {
+    background: #1A3A16;
+    padding: 0 14px 20px;
+  }
+
+  .ot-store-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .ot-store-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ot-store-icon i { font-size: 16px; color: #fff; }
+
+  .ot-store-name {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+  }
+
+  .ot-order-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  /* ── PILL STEPPER ── */
+  .ot-pills {
+    display: flex;
+    gap: 5px;
+  }
+
+  .ot-pill {
+    flex: 1;
+    border-radius: 20px;
+    padding: 6px 3px;
+    text-align: center;
+    font-size: 9px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ot-pill i { font-size: 10px; }
+
+  .ot-pill.done {
+    background: #2D5A27;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .ot-pill.done i { color: #A8C9A5; }
+
+  .ot-pill.active {
+    background: #E8621A;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .ot-pill.pending {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+  }
+
+  .ot-pill.cancelled-pill {
+    background: rgba(192,80,24,0.25);
+    color: #FAB0A0;
+    font-weight: 500;
+  }
+
+  .ot-pill.failed-pill {
+    background: rgba(180,140,0,0.2);
+    color: #FAD080;
+    font-weight: 500;
+  }
+
+  /* ── BODY CONTENT ── */
+  .ot-body {
+    padding: 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── STATUS CARD ── */
+  .ot-status-card {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+  }
+
+  .ot-status-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ot-status-icon i { font-size: 22px; }
+
+  .ot-status-icon.orange { background: #FDF1EB; }
+  .ot-status-icon.orange i { color: #E8621A; }
+  .ot-status-icon.green  { background: #EAF2E8; }
+  .ot-status-icon.green i  { color: #2D6B27; }
+  .ot-status-icon.red    { background: #FDF1EB; }
+  .ot-status-icon.red i    { color: #C05018; }
+  .ot-status-icon.amber  { background: #FDF8EE; }
+  .ot-status-icon.amber i  { color: #B07810; }
+
+  .ot-status-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1A2E19;
+  }
+
+  .ot-status-sub {
+    font-size: 12px;
+    color: #A8C9A5;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  /* auto-refresh badge */
+  .ot-refresh-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #EAF2E8;
+    color: #2D6B27;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+  }
+
+  .ot-refresh-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2D6B27;
+    animation: ot-blink 1.2s ease infinite;
+  }
+
+  @keyframes ot-blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+  /* ── SECTION CARD ── */
+  .ot-card {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+  }
+
+  .ot-card-head {
+    background: #2D5A27;
+    padding: 9px 14px;
+  }
+
+  .ot-card-head span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .ot-card-body { padding: 12px 14px; }
+
+  .ot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding: 4px 0;
+  }
+
+  .ot-row span { color: #9AA899; }
+  .ot-row strong { color: #1A2E19; }
+
+  /* ── RATING ── */
+  .ot-stars {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+  }
+
+  .ot-star {
+    font-size: 30px;
+    color: #E0E8DF;
+    cursor: pointer;
+    transition: color 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1;
+  }
+
+  .ot-star.active { color: #E8621A; }
+  .ot-star:active { transform: scale(1.2); }
+
+  .ot-comment {
+    width: 100%;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 9px;
+    padding: 10px 13px;
+    font-size: 13px;
+    color: #2E3D2D;
+    background: #FAFAF8;
+    outline: none;
+    resize: none;
+    min-height: 72px;
+    font-family: inherit;
+    margin-bottom: 10px;
+  }
+
+  .ot-comment:focus { border-color: #2D5A27; }
+
+  .ot-rating-msg {
+    font-size: 12px;
+    text-align: center;
+    padding: 7px 10px;
+    border-radius: 8px;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .ot-rating-msg.success { background: #EAF5E8; color: #2D6B27; display: block; }
+  .ot-rating-msg.error   { background: #FDF1EB; color: #C05018; display: block; }
+
+  .ot-existing-stars { display: flex; gap: 4px; margin: 8px 0; }
+  .ot-existing-star  { font-size: 22px; }
+
+  /* ── POLICY BOX ── */
+  .ot-policy {
+    background: #FDF8F3;
+    border-left: 3px solid #E8621A;
+    border-radius: 0 9px 9px 0;
+    padding: 12px 14px;
+  }
+
+  .ot-policy-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #C05018;
+    margin-bottom: 7px;
+  }
+
+  .ot-policy-li {
+    font-size: 12px;
+    color: #9AA899;
+    padding: 2px 0 2px 12px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .ot-policy-li::before {
+    content: '·';
+    position: absolute;
+    left: 3px;
+    color: #C5AA90;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  /* ── RIDER CARD ── */
+  .ot-rider-card {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+  }
+
+  /* ── BUTTONS ── */
+  .ot-btn-row {
+    display: flex;
+    gap: 9px;
+  }
+
+  .ot-btn {
+    flex: 1;
+    border-radius: 11px;
+    padding: 13px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+    border: none;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ot-btn.green  { background: #2D5A27; color: #fff; }
+  .ot-btn.green:active  { transform: scale(0.97); background: #1A3A16; }
+
+  .ot-btn.white  { background: #fff; color: #6B7B69; border: 0.5px solid #E0E8DF; }
+  .ot-btn.white:active  { transform: scale(0.97); background: #F0F4EF; }
+
+  .ot-btn.red    { background: #FDF1EB; color: #C05018; border: 0.5px solid #F0C8B0; }
+  .ot-btn.red:active    { transform: scale(0.97); background: #FAE4D8; }
+
+  .ot-btn.dark-red { background: #C05018; color: #fff; }
+  .ot-btn.dark-red:active { transform: scale(0.97); background: #A03A10; }
+
+  /* ── CANCEL MODAL ── */
+  .ot-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .ot-modal-backdrop.open { display: flex; }
+
+  .ot-modal {
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px 32px;
+    width: 100%;
+    max-width: 480px;
+    animation: slide-up-modal 0.25s ease-out;
+  }
+
+  @keyframes slide-up-modal {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .ot-modal-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1A2E19;
+    margin-bottom: 6px;
+  }
+
+  .ot-modal-sub {
+    font-size: 13px;
+    color: #9AA899;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .ot-modal-handle {
+    width: 36px;
+    height: 4px;
+    background: #E0E8DF;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
 </style>
 
-<div class="container page-content">
+<div class="ot-page">
 
-    <h2>{% trans "Order Status" %}</h2>
+  <!-- STICKY NAV -->
+  <div class="ot-nav">
+    <a href="javascript:history.back()" class="ot-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="ot-nav-title">{% trans "Order Tracking" %}</span>
+    <span class="ot-nav-id">#{{ order.id }}</span>
+  </div>
 
-    <p>
-        {% trans "Store:" %} <strong>{{ order.store.name }}</strong><br>
-        {% trans "Ordered On:" %} {{ order.created_at|date:"d M Y, H:i" }}
-    </p>
-
-    <!-- REQUEST SUBMITTED -->
-    <div class="step">
-        <div class="step-circle completed"></div>
-        {% trans "Request Submitted" %}
+  <!-- STORE ROW + PILL STEPPER -->
+  <div class="ot-header">
+    <div class="ot-store-row">
+      <div class="ot-store-icon">
+        <i class="ti ti-building-store" aria-hidden="true"></i>
+      </div>
+      <div>
+        <div class="ot-store-name">{{ order.store.name }}</div>
+        <div class="ot-order-meta">
+          #{{ order.id }} · ₹{{ order.total }} · {{ order.created_at|date:"d M, H:i" }}
+        </div>
+      </div>
     </div>
 
-    <!-- ACCEPTED -->
-    <div class="step">
-        <div class="step-circle
+    <!-- PILLS -->
+    {% if order.status == "CANCELLED" %}
+    <div class="ot-pills">
+      <div class="ot-pill done"><i class="ti ti-check" aria-hidden="true"></i> Submitted</div>
+      <div class="ot-pill cancelled-pill"><i class="ti ti-x" aria-hidden="true"></i> Cancelled</div>
+    </div>
+
+    {% elif order.status == "FAILED" %}
+    <div class="ot-pills">
+      <div class="ot-pill done"><i class="ti ti-check" aria-hidden="true"></i> Submitted</div>
+      <div class="ot-pill failed-pill"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Failed</div>
+    </div>
+
+    {% else %}
+    <div class="ot-pills">
+
+      <div class="ot-pill done">
+        <i class="ti ti-check" aria-hidden="true"></i> Submitted
+      </div>
+
+      <div class="ot-pill
+        {% if order.status in 'ACCEPTED IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}done
+        {% else %}pending{% endif %}">
         {% if order.status in 'ACCEPTED IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
-            completed
-        {% else %}
-            pending
-        {% endif %}"></div>
-        {% trans "Accepted" %}
-    </div>
+          <i class="ti ti-check" aria-hidden="true"></i>
+        {% endif %}
+        Accepted
+      </div>
 
-    <!-- IN PROGRESS -->
-    <div class="step">
-        <div class="step-circle
+      <div class="ot-pill
+        {% if order.status in 'IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}done
+        {% elif order.status == 'ACCEPTED' %}active
+        {% else %}pending{% endif %}">
         {% if order.status in 'IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
-            completed
-        {% else %}
-            pending
-        {% endif %}"></div>
-        {% trans "In Progress" %}
-    </div>
+          <i class="ti ti-check" aria-hidden="true"></i>
+        {% elif order.status == 'ACCEPTED' %}
+          <i class="ti ti-chef-hat" aria-hidden="true"></i>
+        {% endif %}
+        Cooking
+      </div>
 
-    <!-- PICKED UP -->
-    <div class="step">
-        <div class="step-circle
-        {% if order.status in 'PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
-            completed
-        {% else %}
-            pending
-        {% endif %}"></div>
-        {% trans "In Progress" %}
-    </div>
-
-    <!-- OUT FOR DELIVERY -->
-    <div class="step">
-        <div class="step-circle
+      <div class="ot-pill
+        {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}done
+        {% elif order.status == 'PICKED_UP' %}active
+        {% else %}pending{% endif %}">
         {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}
-            completed
-        {% else %}
-            pending
-        {% endif %}"></div>
-        {% trans "Out For Delivery" %}
-    </div>
+          <i class="ti ti-check" aria-hidden="true"></i>
+        {% elif order.status == 'PICKED_UP' %}
+          <i class="ti ti-bike" aria-hidden="true"></i>
+        {% endif %}
+        Delivery
+      </div>
 
-    <!-- DELIVERED -->
-    <div class="step">
-        <div class="step-circle
+      <div class="ot-pill
+        {% if order.status == 'DELIVERED' %}done
+        {% elif order.status == 'OUT_FOR_DELIVERY' %}active
+        {% else %}pending{% endif %}">
         {% if order.status == 'DELIVERED' %}
-            completed
-        {% else %}
-            pending
-        {% endif %}"></div>
-        {% trans "Delivered" %}
+          <i class="ti ti-check" aria-hidden="true"></i>
+        {% elif order.status == 'OUT_FOR_DELIVERY' %}
+          <i class="ti ti-home" aria-hidden="true"></i>
+        {% endif %}
+        Done
+      </div>
+
     </div>
-    {% if order.status == "DELIVERED" %}
+    {% endif %}
+  </div>
 
-    <div class="card shadow-sm border-0 rounded-4 mb-4 mt-4">
+  <!-- BODY -->
+  <div class="ot-body">
 
-        <div class="card-body">
+    <!-- STATUS CARD -->
+    <div class="ot-status-card">
 
-            {% if existing_rating %}
-
-                <h5 class="mb-2">
-                    ⭐ धन्यवाद!
-                </h5>
-
-                <div class="mb-2">
-
-                    {% for i in "12345" %}
-
-                        {% if forloop.counter <= existing_rating.rating %}
-                            <span style="font-size:24px;color:#ffc107;">
-                                ★
-                            </span>
-                        {% else %}
-                            <span style="font-size:24px;color:#ddd;">
-                                ★
-                            </span>
-                        {% endif %}
-
-                    {% endfor %}
-
-                </div>
-
-                {% if existing_rating.comment %}
-
-                <p class="text-muted mb-0">
-                    {{ existing_rating.comment }}
-                </p>
-
-                {% endif %}
-
-            {% else %}
-
-            <h5 class="mb-3">
-                ⭐ Store ला रेटिंग द्या
-            </h5>
-
-            <div id="ratingStars" class="mb-3">
-
-                <span class="star" data-value="1">★</span>
-                <span class="star" data-value="2">★</span>
-                <span class="star" data-value="3">★</span>
-                <span class="star" data-value="4">★</span>
-                <span class="star" data-value="5">★</span>
-
-            </div>
-
-            <textarea
-                id="ratingComment"
-                class="form-control mb-3"
-                rows="3"
-                placeholder="Comment (optional)"
-            ></textarea>
-
-            <button
-                class="btn btn-dark w-100"
-                id="submitRatingBtn"
-            >
-                Submit Rating
-            </button>
-
-            <div
-                id="ratingMessage"
-                class="mt-3 text-center"
-            ></div>
-
-            {% endif %}
-
+      {% if order.status == "REQUEST_SUBMITTED" %}
+        <div class="ot-status-icon orange"><i class="ti ti-clock" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Request Submitted" %}</div>
+          <div class="ot-status-sub">{% trans "Waiting for store to accept" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
         </div>
 
+      {% elif order.status == "ACCEPTED" %}
+        <div class="ot-status-icon orange"><i class="ti ti-chef-hat" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Accepted" %}</div>
+          <div class="ot-status-sub">{% trans "Your order is being prepared" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+
+      {% elif order.status == "IN_PROGRESS" %}
+        <div class="ot-status-icon orange"><i class="ti ti-chef-hat" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "In Progress" %}</div>
+          <div class="ot-status-sub">{% trans "Your food is being prepared · 40–60 min" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+
+      {% elif order.status == "PICKED_UP" %}
+        <div class="ot-status-icon orange"><i class="ti ti-bike" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Picked Up" %}</div>
+          <div class="ot-status-sub">{% trans "Delivery partner has your order" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+
+      {% elif order.status == "OUT_FOR_DELIVERY" %}
+        <div class="ot-status-icon orange"><i class="ti ti-bike" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Out for Delivery" %}</div>
+          <div class="ot-status-sub">{% trans "Your order is on the way!" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+
+      {% elif order.status == "DELIVERED" %}
+        <div class="ot-status-icon green"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Delivered" %}</div>
+          <div class="ot-status-sub">{% trans "Enjoy your meal!" %}</div>
+        </div>
+
+      {% elif order.status == "CANCELLED" %}
+        <div class="ot-status-icon red"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Order Cancelled" %}</div>
+          <div class="ot-status-sub">{% trans "Your order was cancelled" %}</div>
+        </div>
+
+      {% elif order.status == "FAILED" %}
+        <div class="ot-status-icon amber"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Delivery Failed" %}</div>
+          <div class="ot-status-sub">{% trans "Please contact support" %}</div>
+        </div>
+
+      {% endif %}
     </div>
 
-    {% endif %}
-
-    <!-- FAILED -->
-    {% if order.status == "FAILED" %}
-    <div class="step mt-4">
-        <div class="step-circle failed"></div>
-        <strong class="text-warning">{% trans "Delivery Failed" %}</strong>
-    </div>
-    {% endif %}
-
-    <!-- CANCELLED -->
-    {% if order.status == "CANCELLED" %}
-    <div class="step mt-4">
-        <div class="step-circle cancelled"></div>
-        <strong class="text-danger">{% trans "Order Cancelled" %}</strong>
-    </div>
-    {% endif %}
-
-    <!-- RETURN POLICY -->
-    <div class="policy-box">
-        <strong>परतावा धोरण:</strong><br>
-        • चुकीचा / खराब माल मिळाल्यास त्वरित संपर्क करा.<br>
-        • वापरलेला माल परत घेतला जाणार नाही.<br>
-        • नाशवंत वस्तूंवर परतावा लागू नाही.<br>
-        • अंतिम निर्णय दुकानाचा राहील.
-    </div>
-
-    <p class="refresh-note">
-        माहिती 5 सेकंदांनी आपोआप अपडेट होईल.
-    </p>
-
-    <!-- VIEW -->
-    <a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"
-       class="btn btn-primary mt-3 btn-block"
-       target="_blank">
-       📄 बिल पहा
-    </a>
-
-    <!-- DOWNLOAD -->
-    <a href="{% url 'generate_invoice' order.id %}?download=1"
-       class="btn btn-outline-secondary mt-3 btn-block"
-       download>
-       ⬇ बिल डाउनलोड करा
-    </a>
-
-    <!-- HOME -->
-    <a href="/"
-       class="btn btn-success mt-3 btn-block">
-       🏠 मुख्यपृष्ठ
-    </a>
-
-</div>
-
-<!-- CANCEL BUTTON -->
-{% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" %}
-<div class="container mt-3">
-    <button class="btn btn-danger btn-block"
-            data-bs-toggle="modal"
-            data-bs-target="#cancelModal">
-        {% trans "Cancel Order" %}
-    </button>
-</div>
-{% endif %}
-
-<!-- Cancel Modal -->
-<div class="modal fade" id="cancelModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title text-danger">Cancel Order?</h5>
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <p class="fw-bold">
-          {% trans "Are you sure you want to cancel this order?" %}
-        </p>
-        <p class="text-muted">
-          {% trans "This action cannot be undone." %}
-        </p>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-            {% trans "No" %}
-        </button>
-
-        <a href="{% url 'cancel_order' order.id %}"
-           class="btn btn-danger">
-            {% trans "Yes, Cancel" %}
+    <!-- RIDER CARD (out for delivery + has location) -->
+    {% if order.status == "OUT_FOR_DELIVERY" and order.rider_latitude %}
+    <div class="ot-rider-card">
+      <div class="ot-card-head"><span>{% trans "Delivery partner" %}</span></div>
+      <div class="ot-card-body">
+        {% if order.assigned_delivery %}
+        <div class="ot-row">
+          <span>{% trans "Partner" %}</span>
+          <strong>{{ order.assigned_delivery.get_full_name|default:order.assigned_delivery.username }}</strong>
+        </div>
+        {% if order.assigned_delivery.deliverypartnerprofile.phone %}
+        <div style="margin-top:10px;">
+          <a href="tel:{{ order.assigned_delivery.deliverypartnerprofile.phone }}"
+             class="ot-btn green" style="margin-bottom:8px;">
+            <i class="ti ti-phone" aria-hidden="true"></i>
+            {% trans "Call rider" %} ({{ order.assigned_delivery.deliverypartnerprofile.phone }})
+          </a>
+        </div>
+        {% endif %}
+        {% endif %}
+        <a href="https://www.google.com/maps?q={{ order.rider_latitude }},{{ order.rider_longitude }}"
+           target="_blank" class="ot-btn white" style="margin-top:4px;">
+          <i class="ti ti-map-pin" aria-hidden="true"></i>
+          {% trans "Track rider live" %}
         </a>
       </div>
+    </div>
+    {% endif %}
 
+    <!-- ORDER INFO CARD -->
+    <div class="ot-card">
+      <div class="ot-card-head"><span>{% trans "Order info" %}</span></div>
+      <div class="ot-card-body">
+        <div class="ot-row">
+          <span>{% trans "Store" %}</span>
+          <strong>{{ order.store.name }}</strong>
+        </div>
+        <div class="ot-row">
+          <span>{% trans "Ordered on" %}</span>
+          <strong>{{ order.created_at|date:"d M Y, H:i" }}</strong>
+        </div>
+        <div class="ot-row">
+          <span>{% trans "Payment" %}</span>
+          <strong>{{ order.payment_method }}</strong>
+        </div>
+        <div class="ot-row">
+          <span>{% trans "Total" %}</span>
+          <strong>₹{{ order.total }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- RATING CARD (delivered only) -->
+    {% if order.status == "DELIVERED" %}
+    <div class="ot-card">
+      <div class="ot-card-head"><span>{% trans "Rate your experience" %}</span></div>
+      <div class="ot-card-body">
+
+        {% if existing_rating %}
+          <div style="font-size:14px;font-weight:500;color:#1A2E19;margin-bottom:8px;">{% trans "Thank you!" %}</div>
+          <div class="ot-existing-stars">
+            {% for i in "12345" %}
+              {% if forloop.counter <= existing_rating.rating %}
+                <span class="ot-existing-star" style="color:#E8621A;">★</span>
+              {% else %}
+                <span class="ot-existing-star" style="color:#E0E8DF;">★</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if existing_rating.comment %}
+          <p style="font-size:13px;color:#9AA899;margin:0;">{{ existing_rating.comment }}</p>
+          {% endif %}
+
+        {% else %}
+          <div style="font-size:13px;color:#9AA899;margin-bottom:4px;">
+            {% trans "Rate this store" %}
+          </div>
+          <div class="ot-stars" id="ratingStars">
+            <span class="ot-star" data-value="1">★</span>
+            <span class="ot-star" data-value="2">★</span>
+            <span class="ot-star" data-value="3">★</span>
+            <span class="ot-star" data-value="4">★</span>
+            <span class="ot-star" data-value="5">★</span>
+          </div>
+          <textarea id="ratingComment" class="ot-comment"
+                    placeholder="{% trans 'Comment (optional)' %}"></textarea>
+          <button class="ot-btn green" id="submitRatingBtn" style="width:100%;">
+            {% trans "Submit rating" %}
+          </button>
+          <div id="ratingMessage" class="ot-rating-msg"></div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- INVOICE BUTTONS -->
+    <div class="ot-btn-row">
+      <a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"
+         target="_blank" class="ot-btn green">
+        <i class="ti ti-file-text" aria-hidden="true"></i>
+        {% trans "View bill" %}
+      </a>
+      <a href="{% url 'generate_invoice' order.id %}?download=1"
+         download class="ot-btn white">
+        <i class="ti ti-download" aria-hidden="true"></i>
+        {% trans "Download" %}
+      </a>
+      <a href="/" class="ot-btn white">
+        <i class="ti ti-home" aria-hidden="true"></i>
+        {% trans "Home" %}
+      </a>
+    </div>
+
+    <!-- CANCEL BUTTON -->
+    {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" %}
+    <button class="ot-btn red" id="openCancelModal" style="width:100%;">
+      <i class="ti ti-x" aria-hidden="true"></i>
+      {% trans "Cancel order" %}
+    </button>
+    {% endif %}
+
+    <!-- POLICY -->
+    <div class="ot-policy">
+      <div class="ot-policy-title">{% trans "Return policy" %}</div>
+      <div class="ot-policy-li">{% trans "Contact us immediately if you receive incorrect or damaged items." %}</div>
+      <div class="ot-policy-li">{% trans "Used items cannot be returned." %}</div>
+      <div class="ot-policy-li">{% trans "Perishable goods are non-returnable." %}</div>
+      <div class="ot-policy-li">{% trans "Final decision rests with the store." %}</div>
+    </div>
+
+  </div><!-- /ot-body -->
+
+</div><!-- /ot-page -->
+
+<!-- CANCEL MODAL (bottom sheet) -->
+{% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" %}
+<div class="ot-modal-backdrop" id="cancelModalBackdrop">
+  <div class="ot-modal">
+    <div class="ot-modal-handle"></div>
+    <div class="ot-modal-title">{% trans "Cancel order?" %}</div>
+    <div class="ot-modal-sub">{% trans "Are you sure you want to cancel this order? This action cannot be undone." %}</div>
+    <div class="ot-btn-row" style="gap:9px;">
+      <button class="ot-btn white" id="closeCancelModal" style="flex:1;">
+        {% trans "No, keep it" %}
+      </button>
+      <a href="{% url 'cancel_order' order.id %}" class="ot-btn dark-red" style="flex:1;">
+        {% trans "Yes, cancel" %}
+      </a>
     </div>
   </div>
-</div>
-
-<!-- RIDER -->
-{% if order.status == "OUT_FOR_DELIVERY" and order.rider_latitude %}
-<div class="container mt-4">
-
-<div class="card shadow-sm border-0">
-<div class="card-body">
-
-<h5 class="mb-3">🚴 Delivery Partner</h5>
-
-{% if order.assigned_delivery %}
-<p class="mb-1">
-<strong>Name:</strong>
-{{ order.assigned_delivery.get_full_name|default:order.assigned_delivery.username }}
-</p>
-
-{% if order.assigned_delivery.deliverypartnerprofile.phone %}
-<a href="tel:{{ order.assigned_delivery.deliverypartnerprofile.phone }}"
-class="btn btn-primary w-100 mb-2">
-📞 Call Rider ({{ order.assigned_delivery.deliverypartnerprofile.phone }})
-</a>
-{% endif %}
-{% endif %}
-
-<a target="_blank"
-href="https://www.google.com/maps?q={{ order.rider_latitude }},{{ order.rider_longitude }}"
-class="btn btn-success w-100">
-📍 Track Rider Live
-</a>
-
-</div>
-</div>
-
 </div>
 {% endif %}
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function() {
 
-    const finalStatuses = [
-        "DELIVERED",
-        "FAILED",
-        "CANCELLED"
-    ];
+  /* ── AUTO REFRESH ── */
+  var finalStatuses = ["DELIVERED","FAILED","CANCELLED"];
+  var currentStatus = "{{ order.status }}";
+  if (!finalStatuses.includes(currentStatus)) {
+    setTimeout(function() { location.reload(); }, 5000);
+  }
 
-    const currentStatus = "{{ order.status }}";
+  /* ── CANCEL MODAL ── */
+  var openBtn    = document.getElementById("openCancelModal");
+  var backdrop   = document.getElementById("cancelModalBackdrop");
+  var closeBtn   = document.getElementById("closeCancelModal");
 
-    if (!finalStatuses.includes(currentStatus)) {
-        setTimeout(function(){
-            location.reload();
-        }, 5000);
-    }
-
-});
-
-let selectedRating = 0;
-
-const stars = document.querySelectorAll(".star");
-
-stars.forEach(star => {
-
-    star.addEventListener("click", function(){
-
-        selectedRating = this.dataset.value;
-
-        stars.forEach(s => {
-            s.classList.remove("active");
-        });
-
-        stars.forEach(s => {
-
-            if(s.dataset.value <= selectedRating){
-                s.classList.add("active");
-            }
-
-        });
-
+  if (openBtn) {
+    openBtn.addEventListener("click", function() {
+      backdrop.classList.add("open");
     });
+  }
 
-});
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function() {
+      backdrop.classList.remove("open");
+    });
+  }
 
-const submitBtn = document.getElementById("submitRatingBtn");
+  if (backdrop) {
+    backdrop.addEventListener("click", function(e) {
+      if (e.target === backdrop) backdrop.classList.remove("open");
+    });
+  }
 
-if(submitBtn){
+  /* ── STAR RATING ── */
+  var selectedRating = 0;
+  var stars = document.querySelectorAll(".ot-star");
 
-    submitBtn.addEventListener("click", function(){
+  stars.forEach(function(star) {
+    star.addEventListener("click", function() {
+      selectedRating = parseInt(this.dataset.value);
+      stars.forEach(function(s) {
+        s.classList.toggle("active", parseInt(s.dataset.value) <= selectedRating);
+      });
+    });
+  });
 
-        if(selectedRating == 0){
+  var submitBtn = document.getElementById("submitRatingBtn");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", function() {
+      if (selectedRating === 0) {
+        var msg = document.getElementById("ratingMessage");
+        msg.className = "ot-rating-msg error";
+        msg.innerText = "{% trans 'Please select a rating.' %}";
+        return;
+      }
+      submitBtn.disabled = true;
+      submitBtn.innerText = "{% trans 'Submitting...' %}";
 
-            alert("Please select rating");
-
-            return;
+      fetch("/submit-rating/{{ order.id }}/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "rating=" + selectedRating +
+              "&comment=" + encodeURIComponent(
+                document.getElementById("ratingComment").value
+              )
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var msg = document.getElementById("ratingMessage");
+        if (data.success) {
+          msg.className = "ot-rating-msg success";
+          msg.innerText = "{% trans 'Thank you for your feedback!' %}";
+          submitBtn.style.display = "none";
+        } else {
+          msg.className = "ot-rating-msg error";
+          msg.innerText = data.message;
+          submitBtn.disabled = false;
+          submitBtn.innerText = "{% trans 'Submit rating' %}";
         }
-
-        fetch("/submit-rating/{{ order.id }}/", {
-
-            method: "POST",
-
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-
-            body:
-                "rating=" + selectedRating +
-                "&comment=" +
-                encodeURIComponent(
-                    document.getElementById("ratingComment").value
-                )
-
-        })
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            if(data.success){
-
-                document.getElementById("ratingMessage").innerHTML =
-                    "<span class='text-success'>Thank you for your feedback ❤️</span>";
-
-                document.getElementById("submitRatingBtn").disabled = true;
-
-            } else {
-
-                document.getElementById("ratingMessage").innerHTML =
-                    "<span class='text-danger'>" +
-                    data.message +
-                    "</span>";
-            }
-
-        });
-
+      });
     });
+  }
 
-}
+});
 </script>
 
 {% endblock %}
