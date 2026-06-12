@@ -3,6 +3,25 @@
 {% block content %}
 
 <style>
+
+    .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.ot-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+html,
+body,
+.ot-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
   * { box-sizing: border-box; }
 
   .ot-page {
@@ -10,7 +29,10 @@
     min-height: 100vh;
     font-family: inherit;
     padding-bottom: 32px;
-  }
+
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
   /* ── STICKY NAV ── */
   .ot-nav {
@@ -482,49 +504,57 @@
       </div>
 
       <div class="ot-pill
-        {% if order.status in 'ACCEPTED IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}done
+        {% if order.status == 'ACCEPTED' %}active
+        {% elif order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done
         {% else %}pending{% endif %}">
-        {% if order.status in 'ACCEPTED IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
-          <i class="ti ti-check" aria-hidden="true"></i>
+
+        {% if order.status == 'ACCEPTED' %}
+            <i class="ti ti-check"></i>
+        {% elif order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
         {% endif %}
+
         Accepted
-      </div>
+        </div>
 
       <div class="ot-pill
-        {% if order.status in 'IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}done
-        {% elif order.status == 'ACCEPTED' %}active
+        {% if order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' %}active
+        {% elif order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done
         {% else %}pending{% endif %}">
-        {% if order.status in 'IN_PROGRESS PICKED_UP OUT_FOR_DELIVERY DELIVERED' %}
-          <i class="ti ti-check" aria-hidden="true"></i>
-        {% elif order.status == 'ACCEPTED' %}
-          <i class="ti ti-chef-hat" aria-hidden="true"></i>
+
+        {% if order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' %}
+            <i class="ti ti-chef-hat"></i>
+        {% elif order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
         {% endif %}
+
         Cooking
-      </div>
+        </div>
 
       <div class="ot-pill
-        {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}done
-        {% elif order.status == 'PICKED_UP' %}active
+        {% if order.status == 'OUT_FOR_DELIVERY' %}active
+        {% elif order.status == 'DELIVERED' %}done
         {% else %}pending{% endif %}">
-        {% if order.status in 'OUT_FOR_DELIVERY DELIVERED' %}
-          <i class="ti ti-check" aria-hidden="true"></i>
-        {% elif order.status == 'PICKED_UP' %}
-          <i class="ti ti-bike" aria-hidden="true"></i>
+
+        {% if order.status == 'OUT_FOR_DELIVERY' %}
+            <i class="ti ti-bike"></i>
+        {% elif order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
         {% endif %}
+
         Delivery
-      </div>
+        </div>
 
       <div class="ot-pill
         {% if order.status == 'DELIVERED' %}done
-        {% elif order.status == 'OUT_FOR_DELIVERY' %}active
         {% else %}pending{% endif %}">
+
         {% if order.status == 'DELIVERED' %}
-          <i class="ti ti-check" aria-hidden="true"></i>
-        {% elif order.status == 'OUT_FOR_DELIVERY' %}
-          <i class="ti ti-home" aria-hidden="true"></i>
+            <i class="ti ti-check"></i>
         {% endif %}
+
         Done
-      </div>
+        </div>
 
     </div>
     {% endif %}
@@ -552,19 +582,11 @@
           <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
         </div>
 
-      {% elif order.status == "IN_PROGRESS" %}
+      {% elif order.status == "PICKED_UP" %}
         <div class="ot-status-icon orange"><i class="ti ti-chef-hat" aria-hidden="true"></i></div>
         <div>
           <div class="ot-status-label">{% trans "In Progress" %}</div>
           <div class="ot-status-sub">{% trans "Your food is being prepared · 40–60 min" %}</div>
-          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
-        </div>
-
-      {% elif order.status == "PICKED_UP" %}
-        <div class="ot-status-icon orange"><i class="ti ti-bike" aria-hidden="true"></i></div>
-        <div>
-          <div class="ot-status-label">{% trans "Picked Up" %}</div>
-          <div class="ot-status-sub">{% trans "Delivery partner has your order" %}</div>
           <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
         </div>
 

@@ -2196,7 +2196,7 @@ def order_tracking(request, order_id):
         order=order
     ).first()
     return render(request, 'order_tracking.html', {'order': order,
-    "show_floating_cart": False, 'simple_navbar': True, "existing_rating": existing_rating,
+    "show_floating_cart": False, "show_navbar": False, 'simple_navbar': False, "existing_rating": existing_rating,
     })
 
 
