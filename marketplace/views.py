@@ -2185,7 +2185,8 @@ def order_success(request, order_id):
         "order_success.html",
         {
             "order": order,
-            "show_floating_cart": False, 'simple_navbar': True,
+            "show_navbar": False,
+            "show_floating_cart": False, 'simple_navbar': False,
         }
     )
 
