@@ -2,38 +2,453 @@
 {% load i18n %}
 {% block content %}
 
+<style>
 
-<div class="container page-content">
-    <h2>{% trans "My Orders" %}</h2>
+    .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <form method="GET" class="mb-4">
-        <input type="text" name="phone" placeholder="Enter your phone number"
-               class="form-control" required>
-        <button class="btn btn-primary mt-2">{% trans "Search Orders" %}</button>
+.mo-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+html,
+body,
+.mo-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+  * { box-sizing: border-box; }
+
+  /* ── PAGE ── */
+  .mo-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+  /* ── STICKY NAV ── */
+  .mo-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1A3A16;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .mo-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mo-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
+
+  .mo-nav-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+  }
+
+  /* ── SEARCH SECTION ── */
+  .mo-search-wrap {
+    background: #1A3A16;
+    padding: 0 14px 18px;
+  }
+
+  .mo-search-inner {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mo-search-input {
+    flex: 1;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .mo-search-input::placeholder { color: rgba(255,255,255,0.4); }
+  .mo-search-input:focus {
+    border-color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.15);
+  }
+
+  .mo-search-btn {
+    background: #E8621A;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mo-search-btn:active { transform: scale(0.96); background: #C05018; }
+
+  /* ── BODY ── */
+  .mo-body { padding: 16px 14px 0; }
+
+  /* ── SECTION LABEL ── */
+  .mo-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #A8C9A5;
+    padding: 4px 0 8px;
+  }
+
+  /* ── ORDER CARD ── */
+  .mo-card {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    padding: 12px 13px;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mo-card:active {
+    border-color: #A8C9A5;
+    box-shadow: 0 2px 10px rgba(45,90,39,0.08);
+  }
+
+  /* status dot */
+  .mo-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .mo-dot.green  { background: #2D6B27; }
+  .mo-dot.orange { background: #E8621A; }
+  .mo-dot.grey   { background: #C0D0BE; }
+  .mo-dot.red    { background: #C05018; }
+  .mo-dot.amber  { background: #B07810; }
+
+  /* card info */
+  .mo-info { flex: 1; min-width: 0; }
+
+  .mo-store {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1A2E19;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mo-meta {
+    font-size: 11px;
+    color: #9AA899;
+    margin-top: 3px;
+  }
+
+  /* card right */
+  .mo-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .mo-amount {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1A2E19;
+  }
+
+  .mo-track-btn {
+    background: #2D5A27;
+    color: #fff;
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .mo-view-btn {
+    background: #F0F4EF;
+    color: #4A7045;
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* ── STATUS PILL ── */
+  .mo-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .mo-pill.green    { background: #EAF2E8; color: #2D6B27; }
+  .mo-pill.orange   { background: #FDF1EB; color: #C05018; }
+  .mo-pill.grey     { background: #F0F4EF; color: #9AA899; font-weight: 400; }
+  .mo-pill.red      { background: #FDE8E8; color: #B03030; }
+  .mo-pill.amber    { background: #FDF8EE; color: #B07810; }
+
+  /* ── EMPTY STATE ── */
+  .mo-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: #9AA899;
+  }
+
+  .mo-empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .mo-empty-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #6B7B69;
+    margin-bottom: 6px;
+  }
+
+  .mo-empty-sub {
+    font-size: 13px;
+    color: #A8C9A5;
+    line-height: 1.5;
+  }
+
+  /* ── NO SEARCH YET ── */
+  .mo-prompt {
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .mo-prompt-icon {
+    font-size: 44px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .mo-prompt-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #6B7B69;
+    margin-bottom: 6px;
+  }
+
+  .mo-prompt-sub {
+    font-size: 13px;
+    color: #A8C9A5;
+    line-height: 1.5;
+  }
+
+  /* ── SECTION SPACER ── */
+  .mo-section { margin-bottom: 6px; }
+</style>
+
+<div class="mo-page">
+
+  <!-- STICKY NAV -->
+  <div class="mo-nav">
+    <a href="/" class="mo-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="mo-nav-title">{% trans "My Orders" %}</span>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="mo-search-wrap">
+    <form method="GET">
+      <div class="mo-search-inner">
+        <input type="text"
+               name="phone"
+               value="{{ phone }}"
+               class="mo-search-input"
+               placeholder="{% trans 'Enter your mobile number' %}"
+               maxlength="10"
+               required>
+        <button type="submit" class="mo-search-btn">
+          {% trans "Search" %}
+        </button>
+      </div>
     </form>
+  </div>
 
-    {% if orders %}
-        {% for order in orders %}
-            <div class="card p-3 mb-3 shadow-sm">
-                <p>
-                    {% trans "Store:" %} <strong>{{ order.store.name }}</strong><br>
-                    {% trans "Ordered On:" %} {{ order.created_at|date:"d M Y, H:i" }}<br>
-                    {% trans "Total:" %} ₹{{ order.total }}<br>
-                    {% trans "Status:" %} {{ order.get_status_display }}
-                </p>
+  <div class="mo-body">
 
-                <a href="{% url 'order_tracking' order.id %}" class="btn btn-sm btn-outline-dark">
-                    {% trans "Track Order" %}
-                </a>
-            </div>
+    {% if not phone %}
+    <!-- NO SEARCH YET -->
+    <div class="mo-prompt">
+      <span class="mo-prompt-icon">🔍</span>
+      <div class="mo-prompt-title">{% trans "Find your orders" %}</div>
+      <div class="mo-prompt-sub">{% trans "Enter your mobile number above to see all your past and active orders." %}</div>
+    </div>
 
-        {% endfor %}
+    {% elif phone and not orders %}
+    <!-- NO ORDERS FOUND -->
+    <div class="mo-empty">
+      <span class="mo-empty-icon">📦</span>
+      <div class="mo-empty-title">{% trans "No orders found" %}</div>
+      <div class="mo-empty-sub">{% trans "We couldn't find any orders for this number. Please check the number and try again." %}</div>
+    </div>
+
+    {% else %}
+
+    <!-- ── ACTIVE ORDERS ── -->
+    {% with active_statuses="REQUEST_SUBMITTED,ACCEPTED,IN_PROGRESS,PICKED_UP,OUT_FOR_DELIVERY" %}
+    {% for order in orders %}
+    {% if order.status in active_statuses or order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
+    {% if forloop.first %}
+    <div class="mo-section">
+      <div class="mo-section-label">{% trans "Active" %}</div>
     {% endif %}
 
-</div>
+      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+        <div class="mo-dot orange"></div>
+        <div class="mo-info">
+          <div class="mo-store">{{ order.store.name }}</div>
+          <div class="mo-meta">
+            {{ order.created_at|date:"d M Y · H:i" }} · #{{ order.id }}
+          </div>
+        </div>
+        <div class="mo-right">
+          <span class="mo-amount">₹{{ order.total }}</span>
+          <span class="mo-track-btn">{% trans "Track" %}</span>
+        </div>
+      </a>
 
-{% if phone and not orders %}
-<p class="mt-4">{% trans "No orders found for this number." %}</p>
-{% endif %}
+    {% if forloop.last %}</div>{% endif %}
+    {% endif %}
+    {% endfor %}
+    {% endwith %}
+
+    <!-- ── DELIVERED ORDERS ── -->
+    {% for order in orders %}
+    {% if order.status == "DELIVERED" %}
+    {% if forloop.first %}
+    <div class="mo-section">
+      <div class="mo-section-label">{% trans "Delivered" %}</div>
+    {% endif %}
+
+      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+        <div class="mo-dot green"></div>
+        <div class="mo-info">
+          <div class="mo-store">{{ order.store.name }}</div>
+          <div class="mo-meta">
+            {{ order.created_at|date:"d M Y · H:i" }} · #{{ order.id }}
+          </div>
+        </div>
+        <div class="mo-right">
+          <span class="mo-amount">₹{{ order.total }}</span>
+          <span class="mo-view-btn">{% trans "View" %}</span>
+        </div>
+      </a>
+
+    {% if forloop.last %}</div>{% endif %}
+    {% endif %}
+    {% endfor %}
+
+    <!-- ── FAILED ORDERS ── -->
+    {% for order in orders %}
+    {% if order.status == "FAILED" %}
+    {% if forloop.first %}
+    <div class="mo-section">
+      <div class="mo-section-label">{% trans "Failed" %}</div>
+    {% endif %}
+
+      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+        <div class="mo-dot amber"></div>
+        <div class="mo-info">
+          <div class="mo-store">{{ order.store.name }}</div>
+          <div class="mo-meta">
+            {{ order.created_at|date:"d M Y · H:i" }} · #{{ order.id }}
+          </div>
+        </div>
+        <div class="mo-right">
+          <span class="mo-amount">₹{{ order.total }}</span>
+          <span class="mo-pill amber">{% trans "Failed" %}</span>
+        </div>
+      </a>
+
+    {% if forloop.last %}</div>{% endif %}
+    {% endif %}
+    {% endfor %}
+
+    <!-- ── CANCELLED ORDERS ── -->
+    {% for order in orders %}
+    {% if order.status == "CANCELLED" %}
+    {% if forloop.first %}
+    <div class="mo-section">
+      <div class="mo-section-label">{% trans "Cancelled" %}</div>
+    {% endif %}
+
+      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+        <div class="mo-dot grey"></div>
+        <div class="mo-info">
+          <div class="mo-store">{{ order.store.name }}</div>
+          <div class="mo-meta">
+            {{ order.created_at|date:"d M Y · H:i" }} · #{{ order.id }}
+          </div>
+        </div>
+        <div class="mo-right">
+          <span class="mo-amount">₹{{ order.total }}</span>
+          <span class="mo-pill grey">{% trans "Cancelled" %}</span>
+        </div>
+      </a>
+
+    {% if forloop.last %}</div>{% endif %}
+    {% endif %}
+    {% endfor %}
+
+    {% endif %}
+
+  </div><!-- /mo-body -->
+
+</div><!-- /mo-page -->
 
 {% endblock %}

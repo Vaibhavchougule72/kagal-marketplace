@@ -2212,8 +2212,8 @@ def my_orders(request):
     return render(request, 'my_orders.html', {
         'orders': orders,
         'phone': phone,
-        'show_navbar': True,
-        'simple_navbar': True,
+        'show_navbar': False,
+        'simple_navbar': False,
         "show_floating_cart": False
     })
 
