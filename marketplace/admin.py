@@ -38,17 +38,18 @@ def download_customer_csv(modeladmin, request, queryset):
     customers = (
         Order.objects
         .exclude(customer_name="")
-        .exclude(customer_name__isnull=True)
         .exclude(phone="")
-        .exclude(phone__isnull=True)
-        .order_by('phone', '-created_at')
+        .values(
+            "customer_name",
+            "phone"
+        )
+        .distinct()
     )
     
     for customer in customers:
-
         writer.writerow([
-            customer['customer_name'],
-            customer['phone']
+            customer["customer_name"],
+            customer["phone"]
         ])
 
     return response
