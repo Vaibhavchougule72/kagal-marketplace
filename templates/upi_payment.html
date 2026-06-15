@@ -2,291 +2,630 @@
 {% load i18n %}
 {% block content %}
 
-<div class="container page-content text-center mt-5">
+<style>
 
-    <h4 id="title">Complete Your UPI Payment</h4>
+    .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <button id="rzp-button" class="btn btn-success mt-4 px-4 py-2">
-        Pay ₹ {{ display_amount }}
+.upi-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+html,
+body,
+.upi-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+  * { box-sizing: border-box; }
+
+  /* ── PAGE ── */
+  .upi-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* ── STICKY NAV ── */
+  .upi-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1A3A16;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .upi-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .upi-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
+
+  .upi-nav-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+  }
+
+  /* ── HEADER ── */
+  .upi-header {
+    background: #1A3A16;
+    padding: 22px 16px 32px;
+    text-align: center;
+  }
+
+  .upi-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .upi-header-icon svg { width: 26px; height: 26px; }
+  .upi-header-icon svg path,
+  .upi-header-icon svg rect,
+  .upi-header-icon svg line {
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .upi-header-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .upi-header-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  /* ── CARDS ── */
+  .upi-cards {
+    padding: 0 14px;
+    margin-top: -20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .upi-card {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+  }
+
+  .upi-card-head {
+    background: #2D5A27;
+    padding: 9px 14px;
+  }
+
+  .upi-card-head span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .upi-card-body { padding: 13px 14px; }
+
+  .upi-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding: 4px 0;
+    color: #9AA899;
+  }
+
+  .upi-row strong { color: #1A2E19; }
+
+  .upi-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1A3A16;
+    padding-top: 9px;
+    margin-top: 5px;
+    border-top: 0.5px solid #F0F4EF;
+  }
+
+  /* ── PAY BUTTON ── */
+  .upi-pay-btn {
+    width: 100%;
+    background: #E8621A;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 17px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 20px rgba(232, 98, 26, 0.38), 0 1px 0 rgba(255,255,255,0.12) inset;
+    transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.13s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .upi-pay-btn:active {
+    transform: scale(0.975);
+    background: #D4581A;
+    box-shadow: 0 1px 6px rgba(232, 98, 26, 0.25);
+  }
+
+  .upi-pay-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* ── TRUST ROW ── */
+  .upi-trust-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #A8C9A5;
+  }
+
+  /* ── LOADER STATE ── */
+  .upi-loader-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 36px 20px;
+  }
+
+  .upi-pulse-wrap {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(45,90,39,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .upi-pulse-wrap::before,
+  .upi-pulse-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(45,90,39,0.25);
+    animation: upi-ripple 2s ease-out infinite;
+  }
+
+  .upi-pulse-wrap::after { animation-delay: 0.7s; }
+
+  @keyframes upi-ripple {
+    0%   { transform: scale(1);    opacity: 0.6; }
+    100% { transform: scale(1.7);  opacity: 0;   }
+  }
+
+  .upi-pulse-inner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #2D5A27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upi-pulse-inner svg { width: 24px; height: 24px; }
+  .upi-pulse-inner svg path,
+  .upi-pulse-inner svg rect {
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .upi-loader-status {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A2E19;
+    text-align: center;
+  }
+
+  .upi-loader-sub {
+    font-size: 12px;
+    color: #A8C9A5;
+    text-align: center;
+  }
+
+  .upi-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .upi-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2D6B27;
+    animation: upi-blink 1.4s ease infinite;
+  }
+
+  .upi-dot:nth-child(2) { animation-delay: 0.2s; }
+  .upi-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes upi-blink {
+    0%, 100% { opacity: 0.2; }
+    50%      { opacity: 1;   }
+  }
+
+  /* ── BACK / RETRY BUTTON (cancel box) ── */
+  .upi-back-btn-full {
+    width: 100%;
+    background: #2D5A27;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 15px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .upi-back-btn-full:active {
+    transform: scale(0.97);
+    background: #1A3A16;
+  }
+</style>
+
+<div class="upi-page">
+
+  <!-- STICKY NAV -->
+  <div class="upi-nav">
+    <a href="javascript:void(0)" id="topBackBtn" class="upi-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="upi-nav-title" id="title">{% trans "Complete UPI Payment" %}</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="upi-header">
+    <div class="upi-header-icon">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="6" width="18" height="13" rx="2"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="7" y1="15" x2="11" y2="15"/>
+      </svg>
+    </div>
+    <div class="upi-header-title">{% trans "UPI Payment" %}</div>
+    <div class="upi-header-sub">Loka Marketplace</div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="upi-cards">
+
+    <!-- ORDER SUMMARY CARD -->
+    <div class="upi-card" id="summaryCard">
+      <div class="upi-card-head"><span>{% trans "Order summary" %}</span></div>
+      <div class="upi-card-body">
+        <div class="upi-row">
+          <span>{% trans "Customer" %}</span>
+          <strong>{{ customer_name }}</strong>
+        </div>
+        <div class="upi-row">
+          <span>{% trans "Phone" %}</span>
+          <strong>{{ phone }}</strong>
+        </div>
+        <div class="upi-row">
+          <span>{% trans "Order ref" %}</span>
+          <strong>#{{ pending_id }}</strong>
+        </div>
+        <div class="upi-total-row">
+          <span>{% trans "Amount to pay" %}</span>
+          <span>₹{{ display_amount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAY BUTTON -->
+    <button id="rzp-button" class="upi-pay-btn">
+      {% trans "Pay" %} &nbsp;₹{{ display_amount }}
     </button>
 
-    <div id="loader" style="display:none; margin-top:25px;">
-        <div class="spinner-border text-success"></div>
-        <p class="mt-3">Opening secure payment...</p>
+    <!-- TRUST ROW -->
+    <div class="upi-trust-row">
+      <i class="ti ti-shield-check" aria-hidden="true"></i>
+      {% trans "Secured by Razorpay" %}
     </div>
 
-    <!-- Cancel / Back Buttons -->
-    <div id="cancelBox" style="display:none; margin-top:25px;">
-
-        <button id="backBtn" class="btn btn-primary w-100 mb-2">
-            Back
-        </button>
-
+    <!-- LOADER STATE -->
+    <div id="loader" class="upi-card" style="display:none;">
+      <div class="upi-loader-wrap">
+        <div class="upi-pulse-wrap">
+          <div class="upi-pulse-inner">
+            <svg viewBox="0 0 24 24">
+              <rect x="5" y="11" width="14" height="9" rx="2"/>
+              <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="upi-loader-status" id="loaderStatus">{% trans "Opening secure payment..." %}</div>
+        <div class="upi-loader-sub">{% trans "Please wait a moment" %}</div>
+        <div class="upi-dots">
+          <div class="upi-dot"></div>
+          <div class="upi-dot"></div>
+          <div class="upi-dot"></div>
+        </div>
+      </div>
     </div>
 
-</div>
+    <!-- CANCEL / BACK BOX -->
+    <div id="cancelBox" style="display:none;">
+      <button id="backBtn" class="upi-back-btn-full">
+        {% trans "Back" %}
+      </button>
+    </div>
+
+  </div><!-- /upi-cards -->
+
+</div><!-- /upi-page -->
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
 sessionStorage.removeItem("last_payment_id");
+
 document.addEventListener("DOMContentLoaded", function () {
 
+  function checkPaymentCompleted() {
+    var paymentDone = sessionStorage.getItem("payment_done_{{ pending_id }}");
+    if (paymentDone) {
+      window.location.replace("/payment-success/?pending_id={{ pending_id }}");
+      return true;
+    }
+    return false;
+  }
 
-    function checkPaymentCompleted(){
+  if (checkPaymentCompleted()) {
+    return;
+  }
 
-        const paymentDone = sessionStorage.getItem(
-            "payment_done_{{ pending_id }}"
-        );
+  var btn          = document.getElementById("rzp-button");
+  var loader       = document.getElementById("loader");
+  var loaderStatus = document.getElementById("loaderStatus");
+  var title        = document.getElementById("title");
+  var cancelBox    = document.getElementById("cancelBox");
+  var backBtn      = document.getElementById("backBtn");
+  var topBackBtn   = document.getElementById("topBackBtn");
+  var summaryCard  = document.getElementById("summaryCard");
+  var trustRow     = document.querySelector(".upi-trust-row");
 
-        if (paymentDone) {
+  if (!btn) return;
 
-            window.location.replace(
-                "/payment-success/?pending_id={{ pending_id }}"
-            );
+  var params = new URLSearchParams(window.location.search);
+  var startPayment = params.get("start_payment");
 
-            return true;
+  /* ── DETECT RETURN FROM APP ── */
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) {
+      checkPaymentCompleted();
+    }
+  });
+
+  /* ── TOP NAV BACK BUTTON ── */
+  topBackBtn.onclick = function () {
+    if (startPayment) {
+      window.location.href = "https://www.loka-store.online/payment-failed/";
+    } else {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "https://www.loka-store.online/";
+      }
+    }
+  };
+
+  /* ── BACK BUTTON IN CANCEL BOX ── */
+  if (backBtn) {
+    backBtn.onclick = function () {
+      if (startPayment) {
+        window.location.href = "https://www.loka-store.online/payment-failed/";
+      } else {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = "https://www.loka-store.online/";
         }
+      }
+    };
+  }
 
-        return false;
+  /* ── STEP 1: APP WEBVIEW MODE ── */
+  if (!startPayment) {
+
+    btn.disabled = false;
+    btn.style.display = "flex";
+    btn.innerHTML = "{% trans 'Pay' %} &nbsp;₹{{ display_amount }}";
+    loader.style.display = "none";
+    cancelBox.style.display = "none";
+    summaryCard.style.display = "block";
+    trustRow.style.display = "flex";
+    title.innerText = "{% trans 'Complete UPI Payment' %}";
+
+    btn.onclick = function (e) {
+      e.preventDefault();
+
+      btn.disabled = true;
+      btn.innerText = "{% trans 'Redirecting...' %}";
+
+      var nextUrl = window.location.href;
+      if (nextUrl.includes("?")) {
+        nextUrl += "&start_payment=true";
+      } else {
+        nextUrl += "?start_payment=true";
+      }
+
+      window.location.href = nextUrl + "&t=" + Date.now();
+
+      setTimeout(function () {
+        btn.disabled = false;
+        btn.innerHTML = "{% trans 'Pay' %} &nbsp;₹{{ display_amount }}";
+      }, 4000);
+    };
+
+    return;
+  }
+
+  /* ── STEP 2: CHROME PAYMENT MODE ── */
+  btn.style.display = "none";
+  summaryCard.style.display = "none";
+  trustRow.style.display = "none";
+  loader.style.display = "block";
+  title.innerText = "{% trans 'Secure Browser Payment' %}";
+
+  setTimeout(function () {
+
+    if (typeof Razorpay === "undefined") {
+      loader.style.display = "none";
+      title.innerText = "{% trans 'Payment system unavailable' %}";
+      cancelBox.style.display = "block";
+      return;
     }
 
-    // CHECK IMMEDIATELY
-    if(checkPaymentCompleted()){
-        return;
-    }
+    var options = {
+      key: "{{ razorpay_key }}",
+      amount: Number("{{ amount }}"),
+      currency: "INR",
+      name: "Kagal Marketplace",
+      description: "Order Payment",
+      order_id: "{{ razorpay_order_id }}",
 
-    const btn = document.getElementById("rzp-button");
-    const loader = document.getElementById("loader");
-    const title = document.getElementById("title");
-    const cancelBox = document.getElementById("cancelBox");
-    const backBtn = document.getElementById("backBtn");
+      prefill: {
+        name: "{{ customer_name }}",
+        contact: "{{ phone }}"
+      },
 
-    if (!btn) return;
+      theme: {
+        color: "#2D5A27"
+      },
 
-    const params = new URLSearchParams(window.location.search);
-    const startPayment = params.get("start_payment");
+      handler: function (response) {
 
-    // ======================================
-    // DETECT RETURN FROM APP
-    // ======================================
+        loader.style.display = "block";
+        loaderStatus.innerText = "{% trans 'Verifying payment...' %}";
+        title.innerText = "{% trans 'Verifying payment...' %}";
 
-    document.addEventListener("visibilitychange", function () {
+        sessionStorage.setItem("last_payment_id", response.razorpay_payment_id);
 
-        if (!document.hidden) {
+        var attempts = 0;
 
-            checkPaymentCompleted();
+        var poll = setInterval(function () {
 
+          attempts++;
+
+          fetch("/check-payment-status/?order_id={{ razorpay_order_id }}")
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+
+              if (data.success) {
+                sessionStorage.setItem("payment_done_{{ pending_id }}", "1");
+                sessionStorage.removeItem("last_payment_id");
+                clearInterval(poll);
+                window.location.replace(data.redirect_url);
+              }
+
+              if (attempts > 30) {
+                clearInterval(poll);
+                loader.style.display = "none";
+                title.innerText = "{% trans 'Payment received. Please wait.' %}";
+                cancelBox.style.display = "block";
+              }
+
+            });
+
+        }, 2000);
+      },
+
+      modal: {
+        ondismiss: function () {
+
+          loader.style.display = "none";
+          title.innerText = "{% trans 'Payment Cancelled' %}";
+          cancelBox.style.display = "block";
+
+          backBtn.onclick = function () {
+            window.location.href = "https://www.loka-store.online/";
+          };
+
+          topBackBtn.onclick = function () {
+            window.location.href = "https://www.loka-store.online/";
+          };
         }
+      }
+    };
 
+    var rzp = new Razorpay(options);
+
+    rzp.on("payment.failed", function () {
+      loader.style.display = "none";
+      title.innerText = "{% trans 'Payment Failed' %}";
+      cancelBox.style.display = "block";
     });
 
-    // -----------------------------------------
-    // BACK BUTTON LOGIC
-    // -----------------------------------------
-    if (backBtn) {
+    rzp.open();
 
-        backBtn.onclick = function () {
+  }, 1200);
 
-            // Chrome payment mode (came from app)
-            if (startPayment) {
-                window.location.href =
-                    "https://www.loka-store.online/payment-failed/";
-            }
-
-            // Normal website mode
-            else {
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href =
-                        "https://www.loka-store.online/";
-                }
-            }
-        };
-    }
-
-    // -----------------------------------------
-    // STEP 1 : APP WEBVIEW MODE
-    // -----------------------------------------
-    if (!startPayment) {
-
-        // Reset UI every page load
-        btn.disabled = false;
-        btn.style.display = "inline-block";
-        btn.innerText = "Pay ₹ {{ display_amount }}";
-        loader.style.display = "none";
-        cancelBox.style.display = "none";
-        title.innerText = "Complete Your UPI Payment";
-
-        btn.onclick = function (e) {
-            e.preventDefault();
-
-            btn.disabled = true;
-            btn.innerText = "Redirecting...";
-
-            let nextUrl = window.location.href;
-
-            if (nextUrl.includes("?")) {
-                nextUrl += "&start_payment=true";
-            } else {
-                nextUrl += "?start_payment=true";
-            }
-
-            const isAndroidApp = /wv|Android/i.test(navigator.userAgent);
-
-            if (isAndroidApp) {
-                window.location.href =
-                    nextUrl + "&t=" + Date.now();
-            } else {
-                window.location.href = nextUrl + "&t=" + Date.now();
-            }
-
-            // Auto reset if user returns
-            setTimeout(function () {
-                btn.disabled = false;
-                btn.innerText = "Pay ₹ {{ display_amount }}";
-            }, 4000);
-        };
-
-        return;
-    }
-
-    // -----------------------------------------
-    // STEP 2 : CHROME PAYMENT MODE
-    // -----------------------------------------
-    btn.style.display = "none";
-    loader.style.display = "block";
-    title.innerText = "Secure Browser Payment";
-
-    setTimeout(function () {
-
-        if (typeof Razorpay === "undefined") {
-            loader.style.display = "none";
-            title.innerText = "Payment system unavailable";
-            cancelBox.style.display = "block";
-            return;
-        }
-
-        const options = {
-            key: "{{ razorpay_key }}",
-            amount: Number("{{ amount }}"),
-            currency: "INR",
-            name: "Kagal Marketplace",
-            description: "Order Payment",
-            order_id: "{{ razorpay_order_id }}",
-
-            prefill: {
-                name: "{{ customer_name }}",
-                contact: "{{ phone }}"
-            },
-
-            theme: {
-                color: "#198754"
-            },
-
-            handler: function (response) {
-
-                loader.style.display = "block";
-
-                title.innerText = "Verifying payment...";
-
-                // 🔥 SAVE PAYMENT ID
-                sessionStorage.setItem(
-                    "last_payment_id",
-                    response.razorpay_payment_id
-                );
-
-                // 🔥 START POLLING
-                let attempts = 0;
-
-                const poll = setInterval(function(){
-
-                    attempts++;
-
-                    fetch(
-                        "/check-payment-status/?order_id={{ razorpay_order_id }}"
-                    )
-                    .then(res => res.json())
-                    .then(data => {
-
-                        if(data.success){
-
-                            sessionStorage.setItem(
-                                "payment_done_{{ pending_id }}",
-                                "1"
-                            );
-
-                            sessionStorage.removeItem("last_payment_id");
-
-                            clearInterval(poll);
-
-                            window.location.replace(
-                                data.redirect_url
-                            );
-                        }
-
-                        // timeout after 60 sec
-                        if(attempts > 30){
-
-                            clearInterval(poll);
-
-                            title.innerText =
-                                "Payment received. Please wait.";
-
-                            cancelBox.style.display = "block";
-                        }
-
-                    });
-
-                }, 2000);
-            },
-
-            modal: {
-                ondismiss: function () {
-
-                    loader.style.display = "none";
-
-                    title.innerText = "Payment Cancelled";
-
-                    cancelBox.style.display = "block";
-
-                    // 🔥 MAKE BACK BUTTON GO HOME
-                    backBtn.onclick = function () {
-
-                        // Android app
-                        const isAndroidApp =
-                            /wv|Android/i.test(navigator.userAgent);
-
-                        if(isAndroidApp){
-
-                            window.location.href =
-                                "https://www.loka-store.online/";
-
-                        } else {
-
-                            window.location.href =
-                                "https://www.loka-store.online/";
-
-                        }
-                    };
-                }
-            }
-        };
-
-        const rzp = new Razorpay(options);
-
-        rzp.on("payment.failed", function () {
-            loader.style.display = "none";
-            title.innerText = "Payment Failed";
-            cancelBox.style.display = "block";
-        });
-
-        rzp.open();
-
-    }, 1200);
 });
-
 </script>
 
 {% endblock %}
