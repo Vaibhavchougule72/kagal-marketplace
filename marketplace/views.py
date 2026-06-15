@@ -3815,7 +3815,9 @@ def upi_payment(request):
         "phone": request.GET.get("phone"),
         "pending_id": request.GET.get("pending_id"),
         "show_floating_cart": False,
-        "simple_navbar": True,
+        "show_navbar": False,
+        "simple_navbar": False,
+
     }
 
     print("UPI PAYMENT PENDING ID:",
