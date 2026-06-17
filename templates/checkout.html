@@ -936,10 +936,22 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var infoEl = document.getElementById('deliveryInfo');
+
+        if (data.hide_message) {
+            infoEl.innerText = '';
+            infoEl.classList.remove('visible');
+            return;
+        }
         if (data.next_is_free) {
           infoEl.innerText = '🎉 This order has FREE delivery!';
         } else {
-          var rem = 5 - (data.order_count % 5);
+          var rem;
+
+          if (data.order_count < 4) {
+              rem = 5 - data.order_count;
+          } else {
+              rem = 10 - data.order_count;
+          }
           infoEl.innerText = rem + ' more order' + (rem > 1 ? 's' : '') + ' to unlock FREE delivery';
         }
         infoEl.classList.add('visible');

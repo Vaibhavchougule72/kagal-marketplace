@@ -1103,8 +1103,11 @@ def checkout(request):
             status="DELIVERED"
         ).count()
 
+        next_order_number = delivered_orders + 1
+
         free_delivery_order = (
-            ((delivered_orders + 1) % 5 == 0)
+            next_order_number == 5
+            or next_order_number == 10
         )
 
     context.update({
@@ -1187,8 +1190,11 @@ def checkout(request):
             ).count()
 
             # 1st order OR every 5th order
+            next_order_number = delivered_orders + 1
+
             is_free_delivery_order = (
-                ((delivered_orders + 1) % 5 == 0)
+                next_order_number == 5
+                or next_order_number == 10
             )
 
             if is_free_delivery_order:
@@ -2527,8 +2533,11 @@ def calculate_delivery(request):
             status="DELIVERED"
         ).count()
 
+    next_order_number = delivered_orders + 1
+
     free_delivery = (
-        ((delivered_orders + 1) % 5 == 0)
+        next_order_number == 5
+        or next_order_number == 10
     )
 
     if not latitude or not longitude:
@@ -3077,32 +3086,42 @@ from .models import Order
 
 from django.db.models import Q
 
+from django.http import JsonResponse
+
 def check_free_delivery(request):
 
     phone = request.GET.get("phone", "").strip()
 
-    if not phone:
+    if not re.match(r'^[6-9]\d{9}$', phone):
         return JsonResponse({
-            "error": "Phone missing"
-        }, status=400)
+            "next_is_free": False,
+            "hide_message": True
+        })
 
-    # Count all successful / active orders
-    order_count = Order.objects.filter(
+    delivered_orders = Order.objects.filter(
         phone=phone,
         status="DELIVERED"
     ).count()
 
-    next_is_free = (order_count + 1) % 5 == 0
-        
+    next_order = delivered_orders + 1
 
-    remaining = 5 - (order_count % 5)
-    if remaining == 5:
-        remaining = 0
+    # 5th or 10th order
+    if next_order in [5, 10]:
+        return JsonResponse({
+            "next_is_free": True,
+            "order_count": delivered_orders
+        })
+
+    # Stop showing messages after 10 delivered orders
+    if delivered_orders >= 10:
+        return JsonResponse({
+            "next_is_free": False,
+            "hide_message": True
+        })
 
     return JsonResponse({
-        "order_count": order_count,
-        "next_is_free": next_is_free,
-        "remaining_orders": remaining
+        "next_is_free": False,
+        "order_count": delivered_orders
     })
 
 def combo_detail(request, combo_id):
