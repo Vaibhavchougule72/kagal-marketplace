@@ -3258,8 +3258,6 @@ def generate_store_pdf(request, order_id):
 
     elements.append(Paragraph("<b>Store Order Slip</b>", styles['Title']))
     elements.append(Spacer(1, 0.3 * inch))
-
-    elements.append(Paragraph(f"<b>Customer:</b> {order.customer_name}", styles['Normal']))
     elements.append(Paragraph(f"<b>Store:</b> {order.store.name}", styles['Normal']))
     elements.append(Spacer(1, 0.3 * inch))
 
