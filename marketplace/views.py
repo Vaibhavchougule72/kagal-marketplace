@@ -2839,97 +2839,309 @@ import io
 
 
 def generate_invoice(request, order_id):
+    """
+    Concept C — Watermark + PAID stamp invoice.
+    Brand: forest green (#2D5A27) + orange (#E8621A).
+    Uses canvas-level drawing for full layout control.
+    """
+    from reportlab.pdfgen import canvas as rl_canvas
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.colors import HexColor
+    from reportlab.lib.units import mm
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    import io, os
+    from django.conf import settings
 
     order = get_object_or_404(Order, id=order_id)
 
+    # ── Fonts ──
+    font_path = os.path.join(settings.BASE_DIR, "static/fonts/NotoSans-Regular.ttf")
+    font_bold_path = os.path.join(settings.BASE_DIR, "static/fonts/NotoSans-Bold.ttf")
+
+    try:
+        pdfmetrics.registerFont(TTFont("Noto", font_path))
+        pdfmetrics.registerFont(TTFont("Noto-Bold", font_bold_path))
+        FONT_REG  = "Noto"
+        FONT_BOLD = "Noto-Bold"
+    except Exception:
+        FONT_REG  = "Helvetica"
+        FONT_BOLD = "Helvetica-Bold"
+
+    # ── Brand colours ──
+    GREEN_DARK  = HexColor('#1A3A16')
+    GREEN_MID   = HexColor('#2D5A27')
+    GREEN_LIGHT = HexColor('#EAF2E8')
+    ORANGE      = HexColor('#E8621A')
+    GREY_TEXT   = HexColor('#9AA899')
+    GREY_BORDER = HexColor('#E0E8DF')
+    GREY_LIGHT  = HexColor('#D0E4CE')
+    OFF_WHITE   = HexColor('#F7F9F6')
+    TEXT_DARK   = HexColor('#1A2E19')
+    TEXT_MID    = HexColor('#6B7B69')
+
+    W, H   = A4
+    margin = 18 * mm
+    cw     = W - 2 * margin   # content width
+
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer)
-    elements = []
+    c = rl_canvas.Canvas(buffer, pagesize=A4)
+    c.setTitle(f"LOKA Invoice #{order.id}")
 
-    styles = getSampleStyleSheet()
-    styles['Title'].fontName = 'Noto'
-    styles['Heading2'].fontName = 'Noto'
-    styles['Normal'].fontName = 'Noto'
+    # ─────────────────────────────────────────
+    # WATERMARK
+    # ─────────────────────────────────────────
+    c.saveState()
+    c.setFillColor(GREEN_MID)
+    c.setFillAlpha(0.032)
+    c.setFont(FONT_BOLD, 88)
+    c.translate(W / 2, H / 2)
+    c.rotate(28)
+    c.drawCentredString(0, 0, "LOKA")
+    c.restoreState()
 
-    # 🔹 Title
-    elements.append(Paragraph("<b>LOKA - Online Store</b>", styles['Title']))
-    elements.append(Spacer(1, 0.3 * inch))
+    y = H - 18 * mm
 
-    elements.append(Paragraph(f"Invoice for Order #{order.id}", styles['Heading2']))
-    elements.append(Spacer(1, 0.2 * inch))
+    # ─────────────────────────────────────────
+    # LOGO MARK  (green rounded square + orange bar)
+    # ─────────────────────────────────────────
+    ls = 11 * mm   # logo square size
+    c.setFillColor(GREEN_MID)
+    c.roundRect(margin, y - ls, ls, ls, 2 * mm, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.setFont(FONT_BOLD, 8)
+    c.drawString(margin + ls * 0.17, y - ls * 0.72, "L")
+    c.setFillColor(ORANGE)
+    c.rect(margin + ls * 0.4, y - ls * 0.52, ls * 0.42, ls * 0.15, fill=1, stroke=0)
 
-    # 🔹 Customer Info
-    elements.append(Paragraph(f"<b>Customer:</b> {order.customer_name}", styles['Normal']))
-    elements.append(Paragraph(f"<b>Phone:</b> {order.phone}", styles['Normal']))
-    elements.append(Paragraph(f"<b>Address:</b> {order.address}", styles['Normal']))
-    elements.append(Spacer(1, 0.3 * inch))
+    # Brand name
+    c.setFillColor(GREEN_MID)
+    c.setFont(FONT_BOLD, 18)
+    c.drawString(margin + ls + 3 * mm, y - 5.5 * mm, "LOKA")
+    c.setFillColor(GREY_TEXT)
+    c.setFont(FONT_REG, 7)
+    c.drawString(margin + ls + 3 * mm, y - 10.5 * mm, "Loka Marketplace  ·  loka-store.online")
 
-    # 🔹 Table Data
-    data = [["Product", "Qty", "Price", "Subtotal"]]
+    # Invoice number (top right)
+    c.setFillColor(GREY_TEXT)
+    c.setFont(FONT_REG, 7)
+    c.drawRightString(W - margin, y - 1 * mm, "INVOICE")
+    c.setFillColor(TEXT_DARK)
+    c.setFont(FONT_BOLD, 16)
+    c.drawRightString(W - margin, y - 7 * mm, f"#{order.id}")
+    c.setFillColor(GREY_TEXT)
+    c.setFont(FONT_REG, 8)
+    c.drawRightString(W - margin, y - 12.5 * mm, order.created_at.strftime("%d %b %Y"))
 
-    for item in order.items.all():
+    y -= 18 * mm
 
-        subtotal = item.price * item.quantity
+    # ─────────────────────────────────────────
+    # GRADIENT DIVIDER  (orange → green)
+    # ─────────────────────────────────────────
+    steps = 80
+    seg   = cw / steps
+    for i in range(steps):
+        t = i / steps
+        r = int(0xE8 + (0x2D - 0xE8) * t)
+        g = int(0x62 + (0x5A - 0x62) * t)
+        b = int(0x1A + (0x27 - 0x1A) * t)
+        c.setFillColorRGB(r / 255, g / 255, b / 255)
+        c.rect(margin + i * seg, y, seg + 0.6, 2 * mm, fill=1, stroke=0)
 
-        if item.product:
-            name = item.product.name
+    y -= 7 * mm
+
+    # ─────────────────────────────────────────
+    # TWO-COLUMN  Bill to / Invoice details
+    # ─────────────────────────────────────────
+    col_w = cw / 2 - 5 * mm
+
+    def label(x, yy, txt):
+        c.setFillColor(GREY_TEXT)
+        c.setFont(FONT_REG, 7)
+        c.drawString(x, yy, txt.upper())
+
+    def val(x, yy, txt, bold=False):
+        c.setFillColor(TEXT_DARK)
+        c.setFont(FONT_BOLD if bold else FONT_REG, 9)
+        c.drawString(x, yy, txt)
+
+    label(margin, y, "Bill To")
+    y -= 5 * mm
+    val(margin, y, order.customer_name, bold=True)
+    y -= 4.5 * mm
+    val(margin, y, str(order.phone))
+    y -= 4.5 * mm
+    # truncate address so it stays on one line
+    addr = str(order.address)[:55]
+    val(margin, y, addr)
+
+    # right column
+    rx = margin + col_w + 8 * mm
+    ry = y + 9 * mm
+    label(rx, ry, "Invoice Details")
+    ry -= 5 * mm
+    val(rx, ry, f"Date: {order.created_at.strftime('%d %b %Y')}")
+    ry -= 4.5 * mm
+    val(rx, ry, f"Payment: {order.payment_method}")
+    ry -= 4.5 * mm
+    val(rx, ry, f"Store: {order.store.name}")
+
+    y -= 12 * mm
+
+    # ─────────────────────────────────────────
+    # ITEMS TABLE
+    # ─────────────────────────────────────────
+    col_widths = [cw - 72 * mm, 18 * mm, 27 * mm, 27 * mm]
+    headers    = ["Product", "Qty", "Price", "Total"]
+
+    # Table header bar
+    hh = 8.5 * mm
+    c.setFillColor(GREEN_MID)
+    c.roundRect(margin, y - hh, cw, hh, 2 * mm, fill=1, stroke=0)
+
+    hx = margin + 3 * mm
+    c.setFillColor(colors.white)
+    c.setFont(FONT_BOLD, 7.5)
+    for i, h in enumerate(headers):
+        if i == 0:
+            c.drawString(hx, y - 5.8 * mm, h)
         else:
-            name = item.bundle_name
+            c.drawRightString(hx + col_widths[i] - 2 * mm, y - 5.8 * mm, h)
+        hx += col_widths[i]
 
-        data.append([
-            name,
-            str(item.quantity),
-            f"₹{item.price}",
-            f"₹{subtotal}"
-        ])
+    y -= hh
 
-    # Add summary rows
-    data.append(["", "", "Subtotal:", f"₹{order.subtotal}"])
+    # Item rows
+    for idx, item in enumerate(order.items.all()):
+        rh   = 8.5 * mm
+        bg   = OFF_WHITE if idx % 2 == 0 else colors.white
+        c.setFillColor(bg)
+        c.rect(margin, y - rh, cw, rh, fill=1, stroke=0)
 
+        name = item.product.name if item.product else (item.bundle_name or "Combo")
+        name = name[:55]
+        price    = float(item.price)
+        subtotal = float(item.price * item.quantity)
+
+        ix = margin + 3 * mm
+        c.setFillColor(TEXT_DARK)
+        c.setFont(FONT_REG, 8.5)
+        c.drawString(ix, y - 5.8 * mm, name)
+        ix += col_widths[0]
+        c.drawRightString(ix + col_widths[1] - 2 * mm, y - 5.8 * mm, str(item.quantity))
+        ix += col_widths[1]
+        c.drawRightString(ix + col_widths[2] - 2 * mm, y - 5.8 * mm, f"Rs.{price:.0f}")
+        ix += col_widths[2]
+        c.drawRightString(ix + col_widths[3] - 2 * mm, y - 5.8 * mm, f"Rs.{subtotal:.0f}")
+
+        y -= rh
+        c.setStrokeColor(GREY_BORDER)
+        c.setLineWidth(0.3)
+        c.line(margin, y, margin + cw, y)
+
+    y -= 5 * mm
+
+    # ─────────────────────────────────────────
+    # TOTALS BOX
+    # ─────────────────────────────────────────
+    totals_data = [("Subtotal", float(order.subtotal))]
     if order.delivery_fee > 0:
-        data.append(["", "", "Delivery:", f"₹{order.delivery_fee}"])
-
+        totals_data.append(("Delivery", float(order.delivery_fee)))
     if order.handling_fee > 0:
-        data.append(["", "", "handling Fee:", f"₹{order.handling_fee}"])
-
+        totals_data.append(("Handling Fee", float(order.handling_fee)))
     if order.discount > 0:
-        data.append(["", "", "Coupon Discount:", f"-₹{order.discount}"])
+        totals_data.append(("Coupon Discount", -float(order.discount)))
+    totals_data.append(("Total", float(order.total)))
 
-    data.append(["", "", "Total:", f"₹{order.total}"])
+    box_h = len(totals_data) * 6.5 * mm + 12 * mm
+    c.setFillColor(OFF_WHITE)
+    c.roundRect(margin, y - box_h, cw, box_h, 2 * mm, fill=1, stroke=0)
 
-    table = Table(data, colWidths=[2.5 * inch, 0.7 * inch, 1 * inch, 1 * inch])
+    ty = y - 6.5 * mm
+    right_edge = margin + cw - 3 * mm
+    label_x    = margin + cw * 0.52
 
-    table.setStyle(TableStyle([
+    for label_txt, amount in totals_data[:-1]:
+        c.setFillColor(TEXT_MID)
+        c.setFont(FONT_REG, 8.5)
+        c.drawString(label_x, ty, label_txt)
+        prefix = "-Rs." if amount < 0 else "Rs."
+        c.drawRightString(right_edge, ty, f"{prefix}{abs(amount):.0f}")
+        ty -= 6.5 * mm
 
-        ('FONTNAME', (0,0), (-1,-1), 'Noto'),
+    # dashed separator
+    c.setStrokeColor(GREY_LIGHT)
+    c.setLineWidth(0.5)
+    c.setDash(2, 3)
+    c.line(label_x, ty + 4 * mm, right_edge, ty + 4 * mm)
+    c.setDash()
 
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+    # grand total
+    c.setFillColor(GREEN_DARK)
+    c.setFont(FONT_BOLD, 13)
+    c.drawString(label_x, ty, "Total")
+    c.drawRightString(right_edge, ty, f"Rs.{float(order.total):.0f}")
 
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    y -= box_h + 6 * mm
 
-        ('ALIGN', (1, 1), (-1, -1), 'CENTER')
+    # ─────────────────────────────────────────
+    # DELIVERED STAMP  (rotated, right side)
+    # ─────────────────────────────────────────
+    c.saveState()
+    stamp_cx = margin + cw * 0.78
+    stamp_cy = y + 14 * mm
+    c.translate(stamp_cx, stamp_cy)
+    c.rotate(-8)
+    c.setStrokeColor(GREEN_MID)
+    c.setFillColor(GREEN_LIGHT)
+    c.setLineWidth(1.5)
+    c.roundRect(-14 * mm, -4 * mm, 28 * mm, 10 * mm, 2 * mm, fill=1, stroke=1)
+    c.setFillColor(GREEN_MID)
+    c.setFont(FONT_BOLD, 8)
+    c.drawCentredString(0, -1 * mm, f"{order.status}  \u2713")
+    c.restoreState()
 
-    ]))
-
-    elements.append(table)
-    elements.append(Spacer(1, 0.4 * inch))
-
-    elements.append(Paragraph(f"<b>Payment Method:</b> {order.payment_method}", styles['Normal']))
-    elements.append(Paragraph(f"<b>Status:</b> {order.status}", styles['Normal']))
-
+    # refund note if applicable
     if order.is_refunded:
-        elements.append(Paragraph(f"<b>Refunded:</b> ₹{order.refund_amount}", styles['Normal']))
+        c.setFillColor(ORANGE)
+        c.setFont(FONT_REG, 8)
+        c.drawString(margin, y - 2 * mm, f"Refunded: Rs.{float(order.refund_amount):.0f}")
 
-    doc.build(elements)
+    y -= 10 * mm
+
+    # ─────────────────────────────────────────
+    # FOOTER
+    # ─────────────────────────────────────────
+    footer_h = 18 * mm
+    c.setFillColor(GREEN_DARK)
+    c.rect(0, 0, W, footer_h, fill=1, stroke=0)
+
+    c.setFillColor(colors.white)
+    c.setFont(FONT_BOLD, 8.5)
+    c.drawString(margin, 13 * mm, "Thank you for ordering with LOKA!")
+    c.setFont(FONT_REG, 7)
+    c.setFillColor(HexColor('#A8C9A5'))
+    c.drawString(margin, 8.5 * mm, "loka-store.online  ·  आपल्यासाठी, आपल्या लोकांसाठी")
+
+    c.setFillColor(HexColor('#A8C9A5'))
+    c.setFont(FONT_REG, 7)
+    c.drawRightString(W - margin, 13 * mm, f"Order #{order.id}")
+    c.drawRightString(W - margin, 8.5 * mm, order.payment_method)
+
+    # orange accent strip at very bottom
+    c.setFillColor(ORANGE)
+    c.rect(0, 0, W, 3 * mm, fill=1, stroke=0)
+
+    # ─────────────────────────────────────────
+    # BUILD & RETURN
+    # ─────────────────────────────────────────
+    c.save()
     buffer.seek(0)
 
-    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-
-    # 🔥 IMPORTANT LINE
-    response['Content-Disposition'] = 'inline; filename="invoice.pdf"'
-
+    response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="loka-invoice-{order.id}.pdf"'
     return response
-
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
 from reportlab.lib.styles import getSampleStyleSheet
