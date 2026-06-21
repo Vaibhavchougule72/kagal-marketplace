@@ -250,7 +250,31 @@ Checkout
 
 <script>
 
-    const checkoutBtn =
+    document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+    const rewardBtn =
+        document.getElementById(
+            "rewardCheckoutBtn"
+        );
+
+    const subtotal =
+        parseFloat("{{ subtotal }}");
+
+    if(
+        rewardBtn &&
+        subtotal >= 249
+    ){
+
+        rewardBtn.style.opacity = "1";
+        rewardBtn.style.pointerEvents = "auto";
+
+    }
+
+});
+
+const checkoutBtn =
 document.getElementById(
 "checkoutBtn"
 );
@@ -331,7 +355,7 @@ productId +
 
 .then(data=>{
 
-refreshCrossSell();
+    location.reload();
 
 });
 

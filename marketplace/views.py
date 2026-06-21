@@ -748,27 +748,23 @@ def cross_sell_status(request):
 
     threshold = Decimal("249")
 
+    progress = 0
+
+    if subtotal > 0:
+        progress = min(
+            100,
+            (subtotal / threshold) * 100
+        )
+
     return JsonResponse({
-
         "subtotal": float(subtotal),
-
         "remaining": float(
-            max(
-                Decimal("0"),
-                threshold - subtotal
-            )
+            max(Decimal("0"), threshold - subtotal)
         ),
-
-        "progress": float(
-            min(
-                100,
-                (subtotal / threshold) * 100
-            )
-        ),
-
+        "progress": float(progress),
         "qualified": subtotal >= threshold
     })
-    
+
 def view_cart(request):
 
     cart = request.session.get('cart', {
