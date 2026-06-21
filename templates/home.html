@@ -3,1091 +3,874 @@
 {% load static %}
 {% block content %}
 
-<style>
-  * { box-sizing: border-box; }
+<!-- STICKY HOME SEARCH -->
 
-  /* ── PAGE ── */
-  .home-page {
-    background: #FAF7F2;
-    min-height: 100vh;
-    font-family: inherit;
-  }
+<section class="home-search-sticky">
 
-  /* ═══════════════════════════════
-     STICKY NAV — same gradient as hero
-     so they read as one seamless block
-  ═══════════════════════════════ */
-  .home-nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
-    padding: 11px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+<div class="container">
 
-  .home-nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    text-decoration: none;
-  }
+<form method="GET"
+      action="{% url 'search_products' %}"
+      class="position-relative">
 
-  .home-nav-logo-sq {
-    width: 26px;
-    height: 26px;
-    background: rgba(255,255,255,0.15);
-    border: 0.5px solid rgba(255,255,255,0.22);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    flex-shrink: 0;
-  }
+    <input
+        class="home-search-input"
+        type="search"
+        id="homeSearchInput"
+        name="q"
+        placeholder="Search for food, snacks..."
+        autocomplete="off">
 
-  .home-nav-logo-sq::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    width: 8px;
-    height: 6px;
-    background: #E8621A;
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-  }
-
-  .home-nav-logo-l {
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1;
-  }
-
-  .home-nav-brand {
-    font-size: 16px;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  .home-nav-btns {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .home-nav-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    border: 0.5px solid rgba(255,255,255,0.22);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    text-decoration: none;
-    flex-shrink: 0;
-    position: relative;
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .home-nav-btn:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
-  .home-nav-btn i { font-size: 15px; }
-
-  .home-nav-badge {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: #E8621A;
-    font-size: 8px;
-    font-weight: 700;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* ═══════════════════════════════
-     HERO — continues nav gradient
-  ═══════════════════════════════ */
-  .home-hero {
-    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
-    padding: 4px 14px 30px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .home-hero::before {
-    content: '';
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background: rgba(232,98,26,0.12);
-    pointer-events: none;
-  }
-
-  .home-hero::after {
-    content: '';
-    position: absolute;
-    bottom: -40px;
-    left: -10px;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.03);
-    pointer-events: none;
-  }
-
-  .home-hero-location {
-    font-size: 11px;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .home-hero-greeting {
-    font-size: 22px;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 3px;
-  }
-
-  .home-hero-tagline {
-    font-size: 13px;
-    color: rgba(255,255,255,0.55);
-    margin-bottom: 18px;
-  }
-
-  .home-hero-search {
-    background: #fff;
-    border-radius: 14px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.24);
-    position: relative;
-    z-index: 2;
-    text-decoration: none;
-  }
-
-  .home-hero-search input {
-    border: none;
-    outline: none;
-    font-size: 14px;
-    color: #1A2E19;
-    background: transparent;
-    flex: 1;
-    font-family: inherit;
-  }
-
-  .home-hero-search input::placeholder { color: #C0D0BE; }
-  .home-hero-search i { font-size: 17px; color: #2D5A27; flex-shrink: 0; }
-
-  /* autocomplete suggestion box */
-  #homeSuggestionBox {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border-radius: 0 0 12px 12px;
-    border: 0.5px solid #E0E8DF;
-    border-top: none;
-    z-index: 200;
-    max-height: 220px;
-    overflow-y: auto;
-    display: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  }
-
-  /* ═══════════════════════════════
-     APP DOWNLOAD BANNER
-  ═══════════════════════════════ */
-  .home-app-banner {
-    background: linear-gradient(135deg, #E8621A, #C04A10);
-    margin: 14px 14px;
-    border-radius: 13px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    text-decoration: none;
-    transition: transform 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .home-app-banner:active { transform: scale(0.98); }
-
-  .home-app-banner-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: #fff;
-  }
-
-  .home-app-banner-sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.7);
-    margin-top: 2px;
-  }
-
-  .home-app-banner-btn {
-    background: #fff;
-    color: #E8621A;
-    border-radius: 9px;
-    padding: 7px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  /* ═══════════════════════════════
-     OFFER CAROUSEL
-  ═══════════════════════════════ */
-  .offer-slider-section {
-    padding: 0 14px;
-    margin-bottom: 22px;
-  }
-
-  .offer-slider-image {
-    width: 100%;
-    height: 110px;
-    object-fit: cover;
-    border-radius: 13px;
-    display: block;
-  }
-
-  /* bootstrap carousel dots override */
-  #lokaOfferCarousel .carousel-indicators button {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #D0E4CE;
-    border: none;
-    opacity: 1;
-    transition: all 0.2s;
-  }
-
-  #lokaOfferCarousel .carousel-indicators .active {
-    background: #2D5A27;
-    width: 14px;
-    border-radius: 3px;
-  }
-
-  /* ═══════════════════════════════
-     SHARED SECTION WRAPPER
-  ═══════════════════════════════ */
-  .home-section {
-    padding: 0 14px;
-    margin-bottom: 22px;
-  }
-
-  .home-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 13px;
-  }
-
-  .home-section-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1A2E19;
-  }
-
-  .home-section-see-all {
-    font-size: 12px;
-    color: #E8621A;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  /* ═══════════════════════════════
-     CATEGORIES GRID
-  ═══════════════════════════════ */
-  .home-cat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  @media (min-width: 400px) {
-    .home-cat-grid { grid-template-columns: repeat(4, 1fr); }
-  }
-
-  .home-cat-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 0.5px solid #E0E8DF;
-    padding: 10px 6px;
-    text-align: center;
-    text-decoration: none;
-    display: block;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .home-cat-card:active {
-    border-color: #A8C9A5;
-    box-shadow: 0 2px 10px rgba(45,90,39,0.1);
-  }
-
-  .home-cat-img {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #EAF2E8;
-    margin: 0 auto 6px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .home-cat-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .home-cat-name {
-    font-size: 11px;
-    color: #1A2E19;
-    font-weight: 500;
-    line-height: 1.3;
-  }
-
-  /* ═══════════════════════════════
-     COMBOS HORIZONTAL SCROLL
-  ═══════════════════════════════ */
-  .home-combo-row {
-    display: flex;
-    gap: 11px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 4px;
-  }
-
-  .home-combo-row::-webkit-scrollbar { display: none; }
-
-  .home-combo-card {
-    background: #fff;
-    border-radius: 13px;
-    border: 0.5px solid #E0E8DF;
-    overflow: hidden;
-    flex-shrink: 0;
-    width: 130px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .home-combo-card:active { border-color: #A8C9A5; }
-
-  .home-combo-image {
-    width: 100%;
-    height: 80px;
-    object-fit: cover;
-    display: block;
-    background: #EAF2E8;
-  }
-
-  .home-combo-img-placeholder {
-    width: 100%;
-    height: 80px;
-    background: #EAF2E8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-  }
-
-  .home-combo-for-you {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    background: #FFF3CD;
-    color: #856404;
-    font-size: 8px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    z-index: 1;
-  }
-
-  .home-combo-img-wrap {
-    position: relative;
-  }
-
-  .home-combo-body {
-    padding: 9px 10px;
-  }
-
-  .home-combo-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: #1A2E19;
-    margin-bottom: 6px;
-    line-height: 1.3;
-  }
-
-  .home-combo-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .home-combo-price {
-    font-size: 13px;
-    font-weight: 700;
-    color: #E8621A;
-  }
-
-  .home-combo-add-btn {
-    background: #2D5A27;
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    padding: 4px 11px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: transform 0.1s ease, background 0.1s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .home-combo-add-btn:active { transform: scale(0.93); background: #1A3A16; }
-
-  /* ═══════════════════════════════
-     FEATURED STORES — vertical stack
-  ═══════════════════════════════ */
-  .home-featured-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .home-featured-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 0.5px solid #E0E8DF;
-    overflow: hidden;
-    display: flex;
-    align-items: stretch;
-    text-decoration: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .home-featured-card:active {
-    border-color: #A8C9A5;
-    box-shadow: 0 2px 12px rgba(45,90,39,0.1);
-  }
-
-  .home-featured-img {
-    width: 110px;
-    min-width: 110px;
-    background: linear-gradient(145deg, #2D5A27, #1A3A16);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-
-  .home-featured-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .home-featured-badge {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: #E8621A;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 600;
-    padding: 3px 9px;
-    border-bottom-right-radius: 8px;
-  }
-
-  .home-featured-body {
-    flex: 1;
-    padding: 13px 14px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .home-featured-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1A2E19;
-    margin-bottom: 5px;
-  }
-
-  .home-featured-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 12px;
-    color: #9AA899;
-    margin-bottom: 5px;
-  }
-
-  .home-featured-offer {
-    font-size: 12px;
-    color: #E8621A;
-    font-weight: 500;
-    margin-bottom: 10px;
-  }
-
-  .home-featured-btn {
-    background: #2D5A27;
-    color: #fff;
-    border-radius: 9px;
-    padding: 7px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
-    align-self: flex-start;
-  }
-
-  /* ═══════════════════════════════
-     FOOTER
-  ═══════════════════════════════ */
-  .loka-footer {
-    background: #1A3A16;
-    padding: 22px 14px 16px;
-    margin-top: 8px;
-  }
-
-  .loka-footer-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
-
-  .loka-footer-logo {
-    font-size: 17px;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  .loka-footer-tagline {
-    font-size: 11px;
-    color: rgba(255,255,255,0.4);
-    margin-top: 3px;
-  }
-
-  .loka-footer-download-btn {
-    background: #E8621A;
-    color: #fff;
-    border-radius: 10px;
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    text-decoration: none;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .loka-footer-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-
- 
-
-  .loka-footer-card-icon {
-    font-size: 14px;
-    margin-bottom: 5px;
-  }
-
-  .loka-footer-card-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.75);
-    margin-bottom: 7px;
-  }
-
-  .loka-footer-card-link {
-    font-size: 10px;
-    color: rgba(255,255,255,0.4);
-    display: block;
-    padding: 2px 0;
-    line-height: 1.6;
-    text-decoration: none;
-  }
-
-  .loka-footer-bottom {
-    border-top: 0.5px solid rgba(255,255,255,0.08);
-    padding-top: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .loka-footer-copy {
-    font-size: 10px;
-    color: rgba(255,255,255,0.3);
-  }
-
-  .loka-footer-trust {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-  }
-
-  .loka-trust-pill {
-    background: rgba(255,255,255,0.07);
-    border: 0.5px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 10px;
-    color: rgba(255,255,255,0.5);
-  }
-
-  /* ═══════════════════════════════
-     COMBO MODAL — override bootstrap
-  ═══════════════════════════════ */
-  #comboModal .modal-content {
-    border-radius: 16px;
-    border: none;
-    overflow: hidden;
-  }
-
-  #comboModal .modal-header {
-    background: #2D5A27;
-    padding: 14px 16px;
-    border-bottom: none;
-  }
-
-  #comboModal .modal-title { font-size: 14px; font-weight: 500; color: #fff; }
-  #comboModal .btn-close { filter: invert(1); }
-
-  #comboModal .modal-body { padding: 14px 16px; }
-
-  /* ═══════════════════════════════
-     POPUP BANNER
-  ═══════════════════════════════ */
-  #popupBanner .popup-inner {
-    background: #fff;
-    width: 92%;
-    max-width: 360px;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  }
-</style>
-
-<div class="home-page">
-
-  <!-- ═══ STICKY NAV (merges with hero) ═══ -->
-  <nav class="home-nav">
-    <a href="/" class="home-nav-logo">
-      <div class="home-nav-logo-sq">
-        <span class="home-nav-logo-l">L</span>
-      </div>
-      <span class="home-nav-brand">LOKA</span>
-    </a>
-    <div class="home-nav-btns">
-      <a href="/" class="home-nav-btn" aria-label="{% trans 'Home' %}">
-        <i class="ti ti-home" aria-hidden="true"></i>
-      </a>
-      <a href="{% url 'my_orders' %}" class="home-nav-btn" aria-label="{% trans 'My Orders' %}">
-        <i class="ti ti-receipt" aria-hidden="true"></i>
-      </a>
-      <a href="#" class="home-nav-btn" id="cartNavBtn" aria-label="{% trans 'Cart' %}">
-        <i class="ti ti-shopping-bag" aria-hidden="true"></i>
-        <span class="home-nav-badge cart-count-badge" style="display:none">0</span>
-      </a>
+    <div id="homeSuggestionBox"
+         class="home-suggestion-box">
     </div>
-  </nav>
 
-  <!-- ═══ HERO (continues nav gradient — no gap) ═══ -->
-  <div class="home-hero">
-    <div class="home-hero-location">
-      <i class="ti ti-map-pin" aria-hidden="true"></i>
-      {% trans "Kagal, Maharashtra" %}
-    </div>
-    <div class="home-hero-greeting">{% trans "Good morning 👋" %}</div>
-    <div class="home-hero-tagline">{% trans "What are you craving today?" %}</div>
+</form>
 
-    <form method="GET" action="{% url 'search_products' %}" class="position-relative">
-      <div class="home-hero-search">
-        <i class="ti ti-search" aria-hidden="true"></i>
-        <input type="search"
-               id="homeSearchInput"
-               name="q"
-               placeholder="{% trans 'Search for food, snacks...' %}"
-               autocomplete="off">
-      </div>
-      <div id="homeSuggestionBox" class="home-suggestion-box"></div>
-    </form>
-  </div>
-
-  <!-- ═══ APP DOWNLOAD BANNER ═══ -->
-  <a href="{% url 'download_app' %}" class="home-app-banner">
-    <div>
-      <div class="home-app-banner-title">📲 {% trans "Download LOKA App" %}</div>
-      <div class="home-app-banner-sub">{% trans "Get exclusive deals & faster checkout" %}</div>
-    </div>
-    <div class="home-app-banner-btn">{% trans "Download" %}</div>
-  </a>
-
-  <!-- ═══ OFFER CAROUSEL ═══ -->
-  {% if offer_sliders %}
-  <div class="offer-slider-section">
-    <div id="lokaOfferCarousel"
-         class="carousel slide"
-         data-bs-ride="carousel"
-         data-bs-interval="2500">
-      <div class="carousel-indicators">
-        {% for offer in offer_sliders %}
-        <button type="button"
-                data-bs-target="#lokaOfferCarousel"
-                data-bs-slide-to="{{ forloop.counter0 }}"
-                {% if forloop.first %}class="active"{% endif %}></button>
-        {% endfor %}
-      </div>
-      <div class="carousel-inner" style="border-radius:13px;overflow:hidden;">
-        {% for offer in offer_sliders %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-          {% if offer.image %}
-          <img src="{{ offer.image.url }}"
-               class="offer-slider-image"
-               alt="{{ offer.title }}">
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- ═══ CATEGORIES ═══ -->
-  <div class="home-section">
-    <div class="home-section-header">
-      <span class="home-section-title">{% trans "Categories" %}</span>
-    </div>
-    <div class="home-cat-grid">
-      {% for category in categories %}
-      <a href="{% url 'category_stores' category.id %}" class="home-cat-card">
-        <div class="home-cat-img">
-          {% if category.image %}
-          <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
-          {% endif %}
-        </div>
-        <div class="home-cat-name">{{ category.name }}</div>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- ═══ COMBOS ═══ -->
-  {% if combos %}
-  <div class="home-section">
-    <div class="home-section-header">
-      <span class="home-section-title">{% trans "Combos" %}</span>
-    </div>
-    <div class="home-combo-row">
-      {% for combo in combos %}
-      <div class="home-combo-card"
-           data-id="{{ combo.id }}"
-           data-name="{{ combo.name }}"
-           data-price="{{ combo.price }}"
-           data-items='[{% for item in combo.items.all %}{"name":"{{ item.product.name|escapejs }}","qty":"{{ item.quantity }}","price":"{{ item.product.price }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'>
-
-        <div class="home-combo-img-wrap">
-          {% if combo.image %}
-          <img src="{{ combo.image.url }}" class="home-combo-image" loading="lazy" alt="{{ combo.name }}">
-          {% else %}
-          <div class="home-combo-img-placeholder">🍱</div>
-          {% endif %}
-          <div class="home-combo-for-you">For You</div>
-        </div>
-
-        <div class="home-combo-body">
-          <div class="home-combo-name">{{ combo.name }}</div>
-          <div class="home-combo-foot">
-            <span class="home-combo-price">₹{{ combo.price|floatformat:0 }}</span>
-            <button class="home-combo-add-btn add-bundle-btn" data-id="{{ combo.id }}">ADD</button>
-          </div>
-        </div>
-
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- ═══ FEATURED STORES — large vertical stack ═══ -->
-  {% if featured_stores %}
-  <div class="home-section">
-    <div class="home-section-header">
-      <span class="home-section-title">{% trans "Featured Stores" %}</span>
-    </div>
-    <div class="home-featured-stack">
-      {% for store in featured_stores %}
-      <a href="{% url 'store_detail' store.id %}" class="home-featured-card">
-
-        <div class="home-featured-img">
-          <div class="home-featured-badge">Featured</div>
-          {% for product in store.featured_products %}
-            {% if forloop.first and product.image %}
-            <img src="{{ product.image.url }}" alt="{{ store.name }}">
-            {% endif %}
-          {% endfor %}
-        </div>
-
-        <div class="home-featured-body">
-          <div class="home-featured-name">{{ store.name }}</div>
-          <div class="home-featured-meta">
-            <span>⏱ 35–45 min</span>
-            <span>⭐ {{ store.average_rating|floatformat:1 }}</span>
-          </div>
-          <div class="home-featured-offer">🎉 {% trans "Special Offers Available" %}</div>
-          <div class="home-featured-btn">{% trans "View Store" %} →</div>
-        </div>
-
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- ═══ FOOTER ═══ -->
-  <footer class="loka-footer">
-    <div class="loka-footer-inner">
-      <div class="loka-footer-top">
-        <div>
-          <div class="loka-footer-logo">🌿 LOKA</div>
-          <div class="loka-footer-tagline">{% trans "Your neighbourhood store, online." %}</div>
-        </div>
-        <a href="{% url 'download_app' %}" class="loka-footer-download-btn">
-          📲 {% trans "Download App" %}
-        </a>
-      </div>
-
-      <div class="loka-footer-cards">
-        <div class="loka-footer-card">
-          <div class="loka-footer-card-icon">🙋</div>
-          <div class="loka-footer-card-title">{% trans "Help" %}</div>
-          <a href="{% url 'faqs' %}" class="loka-footer-card-link">{% trans "FAQs" %}</a>
-          <a href="{% url 'return_policy' %}" class="loka-footer-card-link">{% trans "Return Policy" %}</a>
-          <a href="{% url 'delivery_info' %}" class="loka-footer-card-link">{% trans "Delivery Info" %}</a>
-        </div>
-        <div class="loka-footer-card">
-          <div class="loka-footer-card-icon">🔒</div>
-          <div class="loka-footer-card-title">{% trans "Legal" %}</div>
-          <a href="{% url 'privacy_policy' %}" class="loka-footer-card-link">{% trans "Privacy Policy" %}</a>
-          <a href="#" class="loka-footer-card-link">{% trans "Terms of Service" %}</a>
-          <a href="#" class="loka-footer-card-link">{% trans "Refund Policy" %}</a>
-        </div>
-        <div class="loka-footer-card">
-          <div class="loka-footer-card-icon">📞</div>
-          <div class="loka-footer-card-title">{% trans "Contact" %}</div>
-          <a href="tel:+917038984687" class="loka-footer-card-link">+91 7038984687</a>
-          <a href="mailto:support@lokastore.com" class="loka-footer-card-link">support@lokastore.com</a>
-          <a href="https://wa.me/917038984687" class="loka-footer-card-link">{% trans "WhatsApp Us" %}</a>
-        </div>
-      </div>
-
-      <div class="loka-footer-bottom">
-        <div class="loka-footer-copy">© 2026 LOKA – Online Store. {% trans "All rights reserved." %}</div>
-        <div class="loka-footer-trust">
-          <span class="loka-trust-pill">🔒 {% trans "Secure" %}</span>
-          <span class="loka-trust-pill">🚚 {% trans "Fast" %}</span>
-          <span class="loka-trust-pill">⭐ {% trans "Trusted" %}</span>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-</div><!-- /home-page -->
-
-
-<!-- ═══ COMBO MODAL ═══ -->
-<div class="modal fade" id="comboModal">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="comboTitle"></h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="comboItems"></div>
-      </div>
-    </div>
-  </div>
 </div>
 
+</section>
 
-<!-- ═══ POPUP BANNER ═══ -->
+ <!-- OFFER SLIDER -->
+
+{% if offer_sliders %}
+
+<section class="offer-slider-section">
+
+<div class="container">
+
+<div id="lokaOfferCarousel"
+     class="carousel slide"
+     data-bs-ride="carousel"
+     data-bs-interval="2000">
+
+    <div class="carousel-inner">
+
+        {% for offer in offer_sliders %}
+
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+
+            <div class="offer-card-wrapper">
+
+                {% if offer.image %}
+                <img src="{{ offer.image.url }}"
+                     class="offer-slider-image"
+                     alt="{{ offer.title }}">
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
+
+<!-- DOWNLOAD APP SECTION -->
+<section class="py-2">
+
+<div class="container">
+
+<div class="loka-download-mini text-center">
+
+    <span class="download-mini-text">
+        📲 Download LOKA App
+    </span>
+
+    <a href="{% url 'download_app' %}"
+       class="download-mini-btn">
+
+        Download
+
+    </a>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- CATEGORIES -->
+<section class="category-section" id="categories">
+    <div class="container">
+
+        <h3 class="section-title">
+            Category
+        </h3>
+
+
+        <div class="row g-4">
+
+            {% for category in categories %}
+            <div class="col-4 col-sm-4 col-md-3 col-lg-2">
+
+                <a href="{% url 'category_stores' category.id %}" 
+                   class="category-link">
+
+                    <div class="blinkit-category-card">
+
+                        <div class="category-image-wrapper">
+                            {% if category.image.url %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="category-title">
+                            {{ category.name }}
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</section>
+
+{% if combos %}
+
+<!-- COMBOS -->
+<section class="combo-section">
+
+<div class="container">
+
+<div class="combo-container">
+
+<h3 class="section-title">
+    Combos
+</h3>
+
+<div class="combo-row">
+
+{% for combo in combos %}
+
+<div class="combo-col">
+
+<div class="combo-card"
+     data-id="{{ combo.id }}"
+     data-name="{{ combo.name }}"
+     data-price="{{ combo.price }}"
+     data-items='[
+        {% for item in combo.items.all %}
+            {
+                "name": "{{ item.product.name|escapejs }}",
+                "qty": "{{ item.quantity }}",
+                "price": "{{ item.product.price }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+        ]'>
+
+<div class="combo-image position-relative">
+    <div style="
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:#ffeb3b;
+    color:#000;
+    padding:3px 8px;
+    font-size:11px;
+    font-weight:600;
+    border-radius:6px;
+    z-index:10;
+">
+    For You
+</div>
+
+{% if combo.image.url %}
+<img src="{{ combo.image.url }}" loading="lazy">
+{% endif %}
+
+</div>
+
+<div class="combo-body">
+
+    <div class="combo-name">
+        {{ combo.name }}
+    </div>
+
+    <div class="combo-bottom">
+
+        <div class="combo-price">
+
+            <div style="color:red;font-size:16px;font-weight:700;">
+                ₹{{ combo.price|floatformat:0 }}
+            </div>
+
+        </div>
+
+        <button class="combo-add-btn add-bundle-btn"
+            data-id="{{ combo.id }}">
+            ADD
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
+
+{% if featured_stores %}
+
+<section class="featured-store-section">
+
+<div class="container">
+
+<h3 class="section-title">
+    Featured
+</h3>
+
+<div class="featured-store-slider">
+
+{% for store in featured_stores %}
+
+<a href="{% url 'store_detail' store.id %}"
+   class="featured-store-card">
+
+    <div class="featured-store-image">
+        <div class="featured-badge">
+            Featured
+        </div>
+
+        {% for product in store.featured_products %}
+
+            {% if forloop.first %}
+
+            <img src="{{ product.image.url }}"
+                 class="active-slide">
+
+            {% else %}
+
+            {% if product.image %}
+            <img src="{{ product.image.url }}">
+            {% endif %}
+
+            <div class="featured-dots">
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+            </div>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+    <div class="featured-store-info">
+
+        <div class="featured-store-name">
+            {{ store.name }}
+        </div>
+
+        <div class="featured-meta">
+
+            <span>
+                ⏱ 35-40 min
+            </span>
+
+            <span>
+                ⭐ {{ store.average_rating|floatformat:1 }}
+            </span>
+
+        </div>
+
+        <div class="featured-offer">
+
+            🎉 Special Offers Available
+        </div>
+
+    </div>
+
+</a>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
+
+<!-- FOOTER -->
+<footer class="loka-footer">
+    <div class="loka-footer-inner">
+
+        <!-- TOP ROW: Logo + Download -->
+        <div class="loka-footer-top">
+            <div>
+                <div class="loka-footer-logo">🌿 LOKA</div>
+                <div class="loka-footer-tagline">Your neighbourhood store, online.</div>
+            </div>
+            <a href="{% url 'download_app' %}" class="loka-footer-download-btn">
+                <span>📲</span> Download App
+            </a>
+        </div>
+
+        <!-- CARD GRID -->
+        <div class="loka-footer-cards">
+
+            <!-- Help Card -->
+            <div class="loka-footer-card">
+                <div class="loka-footer-card-icon">🙋</div>
+                <div class="loka-footer-card-title">Help</div>
+                <a href="{% url 'faqs' %}" class="loka-footer-card-link">FAQs</a>
+                <a href="{% url 'return_policy' %}" class="loka-footer-card-link">Return Policy</a>
+                <a href="{% url 'delivery_info' %}" class="loka-footer-card-link">Delivery Info</a>
+            </div>
+
+            <!-- Legal Card -->
+            <div class="loka-footer-card">
+                <div class="loka-footer-card-icon">🔒</div>
+                <div class="loka-footer-card-title">Legal</div>
+                <a href="{% url 'privacy_policy' %}" class="loka-footer-card-link">Privacy Policy</a>
+                <a href="#" class="loka-footer-card-link">Terms of Service</a>
+                <a href="#" class="loka-footer-card-link">Refund Policy</a>
+            </div>
+
+            <!-- Contact Card -->
+            <div class="loka-footer-card">
+                <div class="loka-footer-card-icon">📞</div>
+                <div class="loka-footer-card-title">Contact</div>
+                <a href="tel:+917038984687" class="loka-footer-card-link">+91 7038984687</a>
+                <a href="mailto:support@lokastore.com" class="loka-footer-card-link">support@lokastore.com</a>
+                <a href="https://wa.me/917038984687" class="loka-footer-card-link">WhatsApp Us</a>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM: Copyright + Trust Badges -->
+        <div class="loka-footer-bottom">
+            <div class="loka-footer-copy">© 2026 LOKA – Online Store. All rights reserved.</div>
+            <div class="loka-footer-trust">
+                <span class="loka-trust-pill">🔒 Secure</span>
+                <span class="loka-trust-pill">🚚 Fast</span>
+                <span class="loka-trust-pill">⭐ Trusted</span>
+            </div>
+        </div>
+
+    </div>
+</footer>
+
+<!-- COMBO MODAL -->
+
+<div class="modal fade" id="comboModal">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h5 class="modal-title" id="comboTitle"></h5>
+
+<button class="btn-close" data-bs-dismiss="modal"></button>
+
+</div>
+
+<div class="modal-body">
+
+<div id="comboItems"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    document.querySelectorAll(".combo-card").forEach(card => {
+
+        card.addEventListener("click", function(e){
+
+            // ✅ Prevent modal when clicking ADD button
+            if(e.target.closest(".add-bundle-btn")){
+                return;
+            }
+
+            // ✅ Get combo data
+            const comboName = this.dataset.name;
+
+            let items = [];
+
+            try{
+                items = JSON.parse(this.dataset.items);
+            }catch(err){
+                console.error(
+                    "Combo parse error:",
+                    err,
+                    this.dataset.items
+                );
+            }
+
+            // ✅ Set modal title
+            document.getElementById("comboTitle").innerText = comboName;
+
+            // ✅ Build product list
+            let html = "";
+
+            items.forEach(item => {
+
+                html += `
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                        <div>
+                            <strong>${item.name}</strong>
+                            <br>
+                            <small class="text-muted">
+                                Qty: ${item.qty}
+                            </small>
+                        </div>
+
+                        <div class="fw-bold">
+                            ₹${item.price}
+                        </div>
+
+                    </div>
+                `;
+            });
+
+            // ✅ Inject items
+            document.getElementById("comboItems").innerHTML = html;
+
+            // ✅ Open Bootstrap modal
+            const modal = new bootstrap.Modal(
+                document.getElementById("comboModal")
+            );
+
+            modal.show();
+
+        });
+
+    });
+
+});
+
+</script>
+
 {% if popup_banner %}
 <div id="popupBanner" style="
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.6);display:none;z-index:9999;
-  align-items:center;justify-content:center;">
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+z-index:9999;
+align-items:center;
+justify-content:center;
+">
 
-  <div style="background:#fff;width:92%;max-width:360px;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25);">
+<div style="
+    background:white;
+    width:92%;
+    max-width:360px;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    ">
 
     {% if popup_banner.image %}
     <img src="{{ popup_banner.image.url }}?v={{ popup_banner.updated_at|date:'U' }}"
-         style="width:100%;height:240px;object-fit:cover;display:block;">
+        style="
+        width:100%;
+        height:240px;
+        object-fit:cover;
+        display:block;
+    ">
     {% endif %}
 
-    <div style="padding:20px;text-align:center;">
-      <div style="font-size:30px;font-weight:800;color:#111;line-height:1;">
+    <div class="p-4 text-center">
+
+        <div style="
+        font-size:30px;
+        font-weight:800;
+        color:#111;
+        line-height:1;
+        ">
         {% if popup_banner.product %}
+
         ₹{{ popup_banner.product.discount_price|default:popup_banner.product.price }}
+
         {% elif popup_banner.bundle %}
+
         ₹{{ popup_banner.bundle.price }}
+
         {% endif %}
-      </div>
-      <div style="color:#E8621A;font-size:13px;font-weight:600;margin-top:8px;">⏰ {% trans "Limited Time Offer" %}</div>
-      <h5 style="font-weight:700;color:#C05018;margin:8px 0 4px;">{{ popup_banner.title }}</h5>
-      {% if popup_banner.subtitle %}
-      <p style="color:#9AA899;font-size:13px;margin-bottom:12px;">{{ popup_banner.subtitle }}</p>
-      {% endif %}
-      <button id="popupAddBtn"
-              {% if popup_banner.product %}data-id="{{ popup_banner.product.id }}" data-type="product"
-              {% elif popup_banner.bundle %}data-id="{{ popup_banner.bundle.id }}" data-type="bundle"{% endif %}
-              style="width:100%;background:#E8621A;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">
-        {{ popup_banner.button_text|default:"Order Now" }}
-      </button>
-      <button onclick="document.getElementById('popupBanner').style.display='none'"
-              style="background:none;border:none;color:#9AA899;font-size:13px;margin-top:10px;cursor:pointer;font-family:inherit;">
-        {% trans "Close" %}
-      </button>
+        </div>
+        <div style="
+        color:#ff3d00;
+        font-size:13px;
+        font-weight:600;
+        margin-top:8px;
+        ">
+        ⏰ Limited Time Offer
+        </div>
+
+        <h5 class="fw-bold text-danger">
+            {{ popup_banner.title }}
+        </h5>
+
+        {% if popup_banner.subtitle %}
+        <p class="text-muted mb-2">
+            {{ popup_banner.subtitle }}
+        </p>
+        {% endif %}
+
+        <button id="popupAddBtn"
+                {% if popup_banner.product %}
+                data-id="{{ popup_banner.product.id }}"
+                data-type="product"
+                {% elif popup_banner.bundle %}
+                data-id="{{ popup_banner.bundle.id }}"
+                data-type="bundle"
+                {% endif %}
+                class="btn btn-danger w-100 fw-bold py-2"
+                style="
+                border-radius:12px;
+                font-size:17px;
+                ">
+            {{ popup_banner.button_text|default:"Order Now" }}
+        </button>
+
+        <button onclick="document.getElementById('popupBanner').style.display='none'"
+            class="btn btn-link mt-2">
+            Close
+        </button>
+
     </div>
-  </div>
+
 </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const popup = document.getElementById("popupBanner");
+
+    // unique session key
+    const popupKey = "loka_popup_seen";
+
+    if(popup){
+
+        // show only once per session
+        if(!sessionStorage.getItem(popupKey)){
+
+            setTimeout(() => {
+
+                popup.style.display = "flex";
+
+                // mark as shown
+                sessionStorage.setItem(popupKey, "1");
+
+            }, 1200);
+
+        }
+
+    }
+
+});
+</script>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const popupBtn = document.getElementById("popupAddBtn");
+
+    if(!popupBtn) return;
+
+    popupBtn.addEventListener("click", function(){
+
+        const productId = this.dataset.id;
+
+        if(!productId){
+            alert("Product not available");
+            return;
+        }
+
+        const type = this.dataset.type;
+
+        let url = "";
+
+        if(type === "bundle"){
+            url = `/add-bundle/${productId}/`;
+        }else{
+            url = `/add-to-cart/${productId}/?source=popup`;
+        }
+
+        fetch(url)
+        .then(res => res.json())
+        .then(data => {
+
+            // CLOSE POPUP
+            const popup = document.getElementById("popupBanner");
+
+            if(popup){
+                popup.style.display = "none";
+            }
+
+            // REFRESH CART BADGE
+            refreshCartBadge();
+
+            // OPEN CART
+            document.getElementById("cartPanel").classList.add("open");
+
+            document.getElementById("cartOverlay").classList.add("active");
+
+            document.body.style.overflow = "hidden";
+
+            // LOAD CART CONTENT
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById("cartContent").innerHTML = html;
+
+            });
+
+            // ANALYTICS
+            if(typeof gtag === "function"){
+                gtag('event', 'popup_add_to_cart', {
+                    item_id: productId
+                });
+            }
+
+        })
+        .catch(err => {
+            console.error("Popup cart error:", err);
+        });
+
+    });
+
+});
+
+</script>
 {% endif %}
 
-
-<!-- ═══ SCRIPTS (all original logic preserved) ═══ -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
 
-  /* ── cart nav badge ── */
-  function updateCartBadge() {
-    const badge = document.querySelector(".cart-count-badge");
-    if (!badge) return;
-    fetch("/cart/", { headers: { "X-Requested-With": "XMLHttpRequest" } })
-      .then(r => r.text())
-      .then(html => {
-        const tmp = document.createElement("div");
-        tmp.innerHTML = html;
-        const countEl = tmp.querySelector("[data-cart-count]");
-        if (countEl) {
-          const n = parseInt(countEl.dataset.cartCount) || 0;
-          badge.textContent = n;
-          badge.style.display = n > 0 ? "flex" : "none";
+    const id = this.dataset.id;
+
+    fetch(`/add-to-cart/${id}/?source=home`)
+    .then(res => res.json())
+    .then(data => {
+
+        if(data){
+
+            // CLOSE POPUP
+            const popup = document.getElementById("popupBanner");
+
+            if(popup){
+                popup.style.display = "none";
+            }
+
+            refreshCartBadge();
+
+            // OPEN CART PANEL
+            document.getElementById("cartPanel").classList.add("open");
+
+            document.getElementById("cartOverlay").classList.add("active");
+
+            document.body.style.overflow = "hidden";
+
+            // LOAD UPDATED CART
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById("cartContent").innerHTML = html;
+
+            });
+
         }
-      }).catch(() => {});
-  }
-  updateCartBadge();
 
-  /* cart nav btn opens cart panel */
-  document.getElementById("cartNavBtn")?.addEventListener("click", function(e) {
-    e.preventDefault();
-    document.getElementById("cartPanel")?.classList.add("open");
-    document.getElementById("cartOverlay")?.classList.add("active");
-    document.body.style.overflow = "hidden";
-    fetch("/cart/", { headers: { "X-Requested-With": "XMLHttpRequest" } })
-      .then(r => r.text())
-      .then(html => { const el = document.getElementById("cartContent"); if(el) el.innerHTML = html; });
-  });
-
-  /* ── combo card click → modal ── */
-  document.querySelectorAll(".home-combo-card").forEach(card => {
-    card.addEventListener("click", function(e) {
-      if (e.target.closest(".add-bundle-btn")) return;
-      const comboName = this.dataset.name;
-      let items = [];
-      try { items = JSON.parse(this.dataset.items); } catch(err) {}
-      document.getElementById("comboTitle").innerText = comboName;
-      let html = "";
-      items.forEach(item => {
-        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:.5px solid #F0F4EF;">
-          <div><div style="font-size:13px;font-weight:500;color:#1A2E19;">${item.name}</div>
-          <div style="font-size:11px;color:#9AA899;margin-top:2px;">Qty: ${item.qty}</div></div>
-          <div style="font-size:13px;font-weight:500;color:#E8621A;">₹${item.price}</div>
-        </div>`;
-      });
-      document.getElementById("comboItems").innerHTML = html;
-      new bootstrap.Modal(document.getElementById("comboModal")).show();
     });
-  });
 
-  /* ── popup banner ── */
-  const popup = document.getElementById("popupBanner");
-  if (popup && !sessionStorage.getItem("loka_popup_seen")) {
-    setTimeout(() => {
-      popup.style.display = "flex";
-      sessionStorage.setItem("loka_popup_seen", "1");
-    }, 1200);
-  }
+});
+</script>
 
-  const popupBtn = document.getElementById("popupAddBtn");
-  if (popupBtn) {
-    popupBtn.addEventListener("click", function() {
-      const id = this.dataset.id;
-      if (!id) return;
-      const type = this.dataset.type;
-      const url = type === "bundle" ? `/add-bundle/${id}/` : `/add-to-cart/${id}/?source=popup`;
-      fetch(url).then(r => r.json()).then(() => {
-        if (popup) popup.style.display = "none";
-        if (typeof refreshCartBadge === "function") refreshCartBadge();
-        const cartPanel = document.getElementById("cartPanel");
-        const cartOverlay = document.getElementById("cartOverlay");
-        if (cartPanel) cartPanel.classList.add("open");
-        if (cartOverlay) cartOverlay.classList.add("active");
+<script>
+
+document.querySelector(".banner-order-btn")?.addEventListener("click", function(){
+
+    const id = this.dataset.id;
+
+    const type = this.dataset.type;
+
+    let url = "";
+
+    if(type === "bundle"){
+        url = `/add-bundle/${id}/`;
+    }else{
+        url = `/add-to-cart/${id}/?source=banner`;
+    }
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+
+        refreshCartBadge();
+
+        document.getElementById("cartPanel").classList.add("open");
+
+        document.getElementById("cartOverlay").classList.add("active");
+
         document.body.style.overflow = "hidden";
-        fetch("/cart/", { headers: { "X-Requested-With": "XMLHttpRequest" } })
-          .then(r => r.text()).then(html => { const el = document.getElementById("cartContent"); if(el) el.innerHTML = html; });
-        if (typeof gtag === "function") gtag('event', 'popup_add_to_cart', { item_id: id });
-      });
-    });
-  }
 
-  /* ── main banner order btn ── */
-  document.querySelector(".banner-order-btn")?.addEventListener("click", function() {
-    const id = this.dataset.id, type = this.dataset.type;
-    const url = type === "bundle" ? `/add-bundle/${id}/` : `/add-to-cart/${id}/?source=banner`;
-    fetch(url).then(r => r.json()).then(() => {
-      if (typeof refreshCartBadge === "function") refreshCartBadge();
-      const cartPanel = document.getElementById("cartPanel");
-      const cartOverlay = document.getElementById("cartOverlay");
-      if (cartPanel) cartPanel.classList.add("open");
-      if (cartOverlay) cartOverlay.classList.add("active");
-      document.body.style.overflow = "hidden";
-      fetch("/cart/", { headers: { "X-Requested-With": "XMLHttpRequest" } })
-        .then(r => r.text()).then(html => { const el = document.getElementById("cartContent"); if(el) el.innerHTML = html; });
+        fetch("/cart/", {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+
+            document.getElementById("cartContent").innerHTML = html;
+
+        });
+
     });
-  });
+
+});
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const slider =
+        document.querySelector(".featured-slider");
+
+    if(!slider) return;
+
+    const cards =
+        slider.querySelectorAll(".featured-card");
+
+    const prevBtn =
+        document.querySelector(".featured-prev");
+
+    const nextBtn =
+        document.querySelector(".featured-next");
+
+    function updateCenterCard(){
+
+        let activeCard = null;
+
+        let minDistance = Infinity;
+
+        const center =
+            slider.scrollLeft +
+            slider.clientWidth / 2;
+
+        cards.forEach(card => {
+
+            const cardCenter =
+                card.offsetLeft +
+                card.offsetWidth / 2;
+
+            const distance =
+                Math.abs(center - cardCenter);
+
+            if(distance < minDistance){
+
+                minDistance = distance;
+
+                activeCard = card;
+            }
+
+        });
+
+        cards.forEach(card =>
+            card.classList.remove("active")
+        );
+
+        activeCard?.classList.add("active");
+    }
+
+    nextBtn?.addEventListener("click", () => {
+
+        slider.scrollBy({
+            left: cards[0].offsetWidth,
+            behavior:"smooth"
+        });
+
+    });
+
+    prevBtn?.addEventListener("click", () => {
+
+        slider.scrollBy({
+            left: -cards[0].offsetWidth,
+            behavior:"smooth"
+        });
+
+    });
+
+    slider.addEventListener("scroll", function(){
+
+        updateCenterCard();
+
+        const half =
+            slider.scrollWidth / 2;
+
+        if(slider.scrollLeft >= half){
+
+            slider.scrollLeft =
+                slider.scrollLeft - half;
+        }
+
+    });
+
+    updateCenterCard();
 
 });
 </script>
 
 {% endblock %}
+

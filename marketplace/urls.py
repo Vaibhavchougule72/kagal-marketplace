@@ -126,7 +126,11 @@ urlpatterns = [
         views.store_orders_pdf,
         name="store_orders_pdf"
     ),
-
+    path(
+        "cross-sell-status/",
+        views.cross_sell_status,
+        name="cross_sell_status"
+    ),
 ]
 
 

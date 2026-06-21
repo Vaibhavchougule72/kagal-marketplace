@@ -733,6 +733,41 @@ def remove_from_cart(request, product_id):
         'success': True,
         'cart_count': cart_count
     })
+
+def cross_sell_status(request):
+
+    cart = request.session.get(
+        "cart",
+        {
+            "store_id": None,
+            "items": {}
+        }
+    )
+
+    subtotal = get_cart_details(cart)
+
+    threshold = Decimal("249")
+
+    return JsonResponse({
+
+        "subtotal": float(subtotal),
+
+        "remaining": float(
+            max(
+                Decimal("0"),
+                threshold - subtotal
+            )
+        ),
+
+        "progress": float(
+            min(
+                100,
+                (subtotal / threshold) * 100
+            )
+        ),
+
+        "qualified": subtotal >= threshold
+    })
     
 def view_cart(request):
 
@@ -903,6 +938,52 @@ def view_cart(request):
         remaining_amount = Decimal(0)
         progress_percent = 100
 
+    
+    cross_sell_threshold = Decimal("249")
+
+    show_cross_sell = (
+        subtotal >= Decimal("150")
+        and subtotal < cross_sell_threshold
+    )
+
+    remaining_cross_sell = max(
+        Decimal("0"),
+        cross_sell_threshold - subtotal
+    )
+
+    cross_sell_progress = min(
+        100,
+        (subtotal / cross_sell_threshold) * 100
+    )
+
+    recommended_products = []
+
+    if cart.get("store_id"):
+
+        store = Store.objects.filter(
+            id=cart["store_id"]
+        ).first()
+
+        if store:
+
+            cart_product_ids = [
+                int(i)
+                for i in cart["items"]
+                if i.isdigit()
+            ]
+
+            recommended_products = (
+                Product.objects
+                .filter(
+                    store=store,
+                    is_active=True
+                )
+                .exclude(
+                    id__in=cart_product_ids
+                )
+                .order_by("price")[:6]
+            )
+
     # =========================
     # RESPONSE
     # =========================
@@ -916,6 +997,10 @@ def view_cart(request):
         'total_savings': total_savings,
         'remaining_amount': remaining_amount,
         'progress_percent': progress_percent,
+        "show_cross_sell": show_cross_sell,
+        "remaining_cross_sell": remaining_cross_sell,
+        "cross_sell_progress": cross_sell_progress,
+        "recommended_products": recommended_products,
     })
 
 
