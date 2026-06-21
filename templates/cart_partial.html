@@ -133,6 +133,7 @@
 
             <a
             href="{% url 'checkout' %}"
+            id="checkoutBtn"
             class="btn btn-success w-100">
 
             🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
@@ -248,6 +249,9 @@ Checkout
 
 </div>
 
+
+{% endif %}
+
 <script>
 
     document.addEventListener(
@@ -283,7 +287,7 @@ if(checkoutBtn){
 
 checkoutBtn.addEventListener(
 "click",
-function(){
+function(e){
 
 const subtotal =
 parseFloat(
@@ -292,8 +296,11 @@ parseFloat(
 
 if(
 subtotal >= 150 &&
-subtotal < 249
+subtotal < 249 &&
+document.getElementById("crossSellModal")
 ){
+
+e.preventDefault();
 
 const modalElement =
 document.getElementById(
@@ -408,7 +415,4 @@ btn.style.pointerEvents =
 
 }
 </script>
-{% endif %}
-
-
 {% endif %}
