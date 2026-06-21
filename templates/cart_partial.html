@@ -131,13 +131,13 @@
 
             </div>
 
-            <button
-            id="checkoutBtn"
+            <a
+            href="{% url 'checkout' %}"
             class="btn btn-success w-100">
 
             🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
 
-            </button>
+            </a>
 
         </div>
 
