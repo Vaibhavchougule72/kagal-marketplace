@@ -315,12 +315,7 @@ if(modalElement){
 }
 
 }
-else{
 
-window.location =
-"{% url 'checkout' %}";
-
-}
 
 });
 
@@ -362,7 +357,7 @@ productId +
 
 .then(data=>{
 
-    location.reload();
+    window.location.href = window.location.href;
 
 });
 
