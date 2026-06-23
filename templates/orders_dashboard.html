@@ -213,12 +213,157 @@
 
     </div>
 
+    <div class="row mb-3">
+
+        <div class="col-md-2">
+            <a href="?rfm_segment=Champion"
+            class="card text-center border-success">
+                <div class="card-body">
+                    <h5>{{ champion_count }}</h5>
+                    <small>🏆 Champion</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-2">
+            <a href="?rfm_segment=Loyal"
+            class="card text-center border-primary">
+                <div class="card-body">
+                    <h5>{{ loyal_count }}</h5>
+                    <small>💙 Loyal</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-2">
+            <a href="?rfm_segment=New"
+            class="card text-center border-info">
+                <div class="card-body">
+                    <h5>{{ new_count }}</h5>
+                    <small>🆕 New</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-2">
+            <a href="?rfm_segment=At Risk"
+            class="card text-center border-warning">
+                <div class="card-body">
+                    <h5>{{ atrisk_count }}</h5>
+                    <small>⚠️ At Risk</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-2">
+            <a href="?rfm_segment=Lost"
+            class="card text-center border-danger">
+                <div class="card-body">
+                    <h5>{{ lost_count }}</h5>
+                    <small>❌ Lost</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-2">
+            <a href="?"
+            class="card text-center border-dark">
+                <div class="card-body">
+                    <h5>{{ customer_rfm|length }}</h5>
+                    <small>All</small>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
     <!-- RFM ANALYSIS -->
 
     <div class="card shadow-sm mt-4">
 
         <div class="card-header">
-            <strong>Customer RFM Analysis</strong>
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+                <strong>
+                    Customer RFM Analysis
+                </strong>
+
+                <form method="get" class="d-flex">
+
+                    <input
+                        type="hidden"
+                        name="start"
+                        value="{{ start_date }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="end"
+                        value="{{ end_date }}"
+                    >
+
+                    <select
+                        name="rfm_segment"
+                        class="form-select form-select-sm"
+                        onchange="this.form.submit()"
+                    >
+
+                        <option value="">
+                            All Segments
+                        </option>
+
+                        <option
+                            value="Champion"
+                            {% if selected_segment == "Champion" %}
+                            selected
+                            {% endif %}
+                        >
+                            Champion
+                        </option>
+
+                        <option
+                            value="Loyal"
+                            {% if selected_segment == "Loyal" %}
+                            selected
+                            {% endif %}
+                        >
+                            Loyal
+                        </option>
+
+                        <option
+                            value="New"
+                            {% if selected_segment == "New" %}
+                            selected
+                            {% endif %}
+                        >
+                            New
+                        </option>
+
+                        <option
+                            value="At Risk"
+                            {% if selected_segment == "At Risk" %}
+                            selected
+                            {% endif %}
+                        >
+                            At Risk
+                        </option>
+
+                        <option
+                            value="Lost"
+                            {% if selected_segment == "Lost" %}
+                            selected
+                            {% endif %}
+                        >
+                            Lost
+                        </option>
+
+                    </select>
+
+                </form>
+
+            </div>
+
         </div>
 
         <div class="card-body table-responsive">

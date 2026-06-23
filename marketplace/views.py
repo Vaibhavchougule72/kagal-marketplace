@@ -5249,6 +5249,38 @@ def orders_dashboard(request):
             "monetary": monetary,
             "segment": segment,
         })
+    
+    champion_count = sum(
+        1 for c in customer_rfm
+        if c["segment"] == "Champion"
+    )
+
+    loyal_count = sum(
+        1 for c in customer_rfm
+        if c["segment"] == "Loyal"
+    )
+
+    new_count = sum(
+        1 for c in customer_rfm
+        if c["segment"] == "New"
+    )
+
+    atrisk_count = sum(
+        1 for c in customer_rfm
+        if c["segment"] == "At Risk"
+    )
+
+    lost_count = sum(
+        1 for c in customer_rfm
+        if c["segment"] == "Lost"
+    )
+
+    segment_filter = request.GET.get("rfm_segment", "")
+    if segment_filter:
+        customer_rfm = [
+            c for c in customer_rfm
+            if c["segment"] == segment_filter
+        ]
 
     context = {
         "total_orders": total_orders,
@@ -5263,10 +5295,16 @@ def orders_dashboard(request):
 
         "table_rows": table_rows,
         "customer_rfm": customer_rfm,
+        "selected_segment": segment_filter,
 
         "start_date": start_date,
         "end_date": end_date,
-        "show_navbar": False
+        "show_navbar": False,
+        "champion_count": champion_count,
+        "loyal_count": loyal_count,
+        "new_count": new_count,
+        "atrisk_count": atrisk_count,
+        "lost_count": lost_count,
     }
 
     return render(
@@ -5280,6 +5318,7 @@ def orders_dashboard(request):
 def orders_dashboard_customers(request):
 
     segment = request.GET.get("segment")
+    
 
     customers = (
         Order.objects
