@@ -5266,6 +5266,7 @@ def orders_dashboard(request):
 
         "start_date": start_date,
         "end_date": end_date,
+        "show_navbar": False
     }
 
     return render(

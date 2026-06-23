@@ -137,6 +137,11 @@ urlpatterns = [
         views.orders_dashboard,
         name="orders_dashboard"
     ),
+    path(
+        "orders-dashboard/customers/",
+        views.orders_dashboard_customers,
+        name="orders_dashboard_customers"
+    ),
 ]
 
 

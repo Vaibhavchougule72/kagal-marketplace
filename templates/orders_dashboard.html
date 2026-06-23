@@ -383,7 +383,7 @@ document.querySelectorAll(
                 this.dataset.segment;
 
             fetch(
-                `/orders-dashboard/customers/?segment=${segment}`
+                "{% url 'orders_dashboard_customers' %}?segment=" + segment
             )
             .then(
                 response => response.json()
