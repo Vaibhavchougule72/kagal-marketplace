@@ -131,14 +131,13 @@
 
             </div>
 
-            <a
-            href="{% url 'checkout' %}"
+            <button
             id="checkoutBtn"
             class="btn btn-success w-100">
 
             🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
 
-            </a>
+            </button>
 
         </div>
 
@@ -146,268 +145,119 @@
 
 </div>
 
-{% if show_cross_sell %}
+<div class="modal fade" id="crossSellModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
-<div class="modal fade"
-     id="crossSellModal">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    🎁 Unlock Reward
+                </h5>
 
-<div class="modal-dialog modal-dialog-centered">
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
 
-<div class="modal-content">
+            <div class="modal-body">
 
-<div class="modal-body">
+                {% if show_cross_sell %}
 
-<h5>
-🎁 Add ₹<span id="remainingAmount">
-{{ remaining_cross_sell|floatformat:0 }}
-</span> more
-</h5>
+                <div class="alert alert-warning">
 
-<div class="progress mb-3">
+                    Add ₹{{ remaining_cross_sell|floatformat:0 }}
+                    more to unlock a 5% OFF coupon.
 
-<div
-    id="rewardProgress"
-    class="progress-bar bg-success"
-    data-progress="{{ cross_sell_progress }}">
+                </div>
+
+                <div class="mb-3">
+
+                    <div class="progress">
+                        <div
+                            class="progress-bar bg-success"
+                            style="width: {{ cross_sell_progress }}%;">
+                        </div>
+                    </div>
+
+                </div>
+
+                <h6 class="mb-3">
+                    Recommended Products
+                </h6>
+
+                <p style="color:red;">
+                Products Found:
+                {{ recommended_products|length }}
+                </p>
+
+                {% for product in recommended_products %}
+
+                <div class="card mb-2">
+
+                    <div class="card-body p-2">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <div>
+                                <strong>{{ product.name }}</strong>
+                                <br>
+                                <small>₹{{ product.price }}</small>
+                            </div>
+
+                            <button
+                                class="btn btn-success btn-sm cross-sell-add"
+                                data-id="{{ product.id }}">
+
+                                + Add
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="text-muted">
+                    No recommendations available.
+                </div>
+
+                {% endfor %}
+
+                {% else %}
+
+                <div class="text-center">
+                    No reward available.
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            <div class="modal-footer">
+
+                <a
+                    href="{% url 'checkout' %}"
+                    class="btn btn-secondary">
+
+                    Skip & Checkout
+
+                </a>
+
+                <a
+                    href="{% url 'checkout' %}"
+                    class="btn btn-warning text-white">
+
+                    Checkout
+
+                </a>
+
+            </div>
+
+        </div>
+    </div>
 </div>
-
-</div>
-
-{% for product in recommended_products %}
-
-<div class="card p-2 mb-2">
-
-<div class="d-flex justify-content-between">
-
-<div>
-
-<strong>
-{{ product.name }}
-</strong>
-
-<br>
-
-₹{{ product.price }}
-
-</div>
-
-<button
-class="btn btn-success btn-sm cross-sell-add"
-data-id="{{ product.id }}">
-
-+ Add
-
-</button>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-<div class="border-top pt-3">
-
-Subtotal:
-₹<span id="popupSubtotal">
-{{ subtotal|floatformat:0 }}
-</span>
-
-</div>
-
-<div class="d-flex gap-2 mt-3">
-
-<a
-href="{% url 'checkout' %}"
-class="btn btn-light flex-fill">
-
-Skip & Checkout
-
-</a>
-
-<a
-href="{% url 'checkout' %}"
-id="rewardCheckoutBtn"
-class="btn flex-fill"
-style="
-background:#ff6b00;
-color:white;
-opacity:.4;
-pointer-events:none;
-">
-
-Checkout
-
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-{% endif %}
-
-<script>
-
-    document.addEventListener(
-"DOMContentLoaded",
-function(){
-
-    const rewardBtn =
-        document.getElementById(
-            "rewardCheckoutBtn"
-        );
-
-    const subtotal =
-        parseFloat("{{ subtotal }}");
-
-    if(
-        rewardBtn &&
-        subtotal >= 249
-    ){
-
-        rewardBtn.style.opacity = "1";
-        rewardBtn.style.pointerEvents = "auto";
-
-    }
-
-});
-
-const checkoutBtn =
-document.getElementById(
-"checkoutBtn"
-);
-
-if(checkoutBtn){
-
-checkoutBtn.addEventListener(
-"click",
-function(e){
-
-const subtotal =
-parseFloat(
-"{{ subtotal }}"
-);
-
-if(
-subtotal >= 150 &&
-subtotal < 249 &&
-document.getElementById("crossSellModal")
-){
-
-e.preventDefault();
-
-const modalElement =
-document.getElementById(
-"crossSellModal"
-);
-
-if(modalElement){
-
-    new bootstrap.Modal(
-        modalElement
-    ).show();
-}
-
-}
-
-
-});
-
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-
-    const progressBar =
-        document.getElementById("rewardProgress");
-
-    if(progressBar){
-
-        progressBar.style.width =
-            progressBar.dataset.progress + "%";
-    }
-
-});
-
-document
-.querySelectorAll(
-".cross-sell-add"
-)
-.forEach(btn=>{
-
-btn.addEventListener(
-"click",
-function(){
-
-const productId =
-this.dataset.id;
-
-fetch(
-"/add-to-cart/" +
-productId +
-"/"
-)
-
-.then(r=>r.json())
-
-.then(data=>{
-
-    window.location.href = window.location.href;
-
-});
-
-});
-
-});
-
-function refreshCrossSell(){
-
-fetch(
-"/cross-sell-status/"
-)
-
-.then(r=>r.json())
-
-.then(data=>{
-
-document.getElementById(
-"popupSubtotal"
-).innerText =
-data.subtotal;
-
-document.getElementById(
-"remainingAmount"
-).innerText =
-Math.ceil(
-data.remaining
-);
-
-document.getElementById(
-"rewardProgress"
-).style.width =
-data.progress + "%";
-
-if(data.qualified){
-
-const btn =
-document.getElementById(
-"rewardCheckoutBtn"
-);
-
-btn.style.opacity = "1";
-
-btn.style.pointerEvents =
-"auto";
-
-}
-
-});
-
-}
-</script>
-{% endif %}

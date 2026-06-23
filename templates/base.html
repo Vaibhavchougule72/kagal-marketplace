@@ -1110,6 +1110,37 @@ document.addEventListener("DOMContentLoaded", function(){
 
     });
 
+    document.querySelectorAll(".progress-bar").forEach(bar => {
+        const progress = bar.dataset.progress;
+        if(progress){
+            bar.style.width = progress + "%";
+        }
+    });
+
+});
+
+document.addEventListener("click", function(e){
+
+    const checkoutBtn =
+        e.target.closest("#checkoutBtn");
+
+    if(!checkoutBtn) return;
+
+    const modal =
+        document.getElementById(
+            "crossSellModal"
+        );
+
+    if(modal){
+
+        e.preventDefault();
+
+        new bootstrap.Modal(
+            modal
+        ).show();
+
+    }
+
 });
 
 </script>
