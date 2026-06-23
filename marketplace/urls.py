@@ -131,6 +131,12 @@ urlpatterns = [
         views.cross_sell_status,
         name="cross_sell_status"
     ),
+
+    path(
+        "orders-dashboard/",
+        views.orders_dashboard,
+        name="orders_dashboard"
+    ),
 ]
 
 

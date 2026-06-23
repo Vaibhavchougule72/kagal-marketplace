@@ -5023,3 +5023,300 @@ def store_orders_pdf(request):
     )
 
     return response
+
+from django.db.models import (
+    Count,
+    Sum,
+    Min,
+    Max
+)
+from django.db.models.functions import TruncDate
+from django.contrib.admin.views.decorators import staff_member_required
+
+from django.http import JsonResponse
+from django.utils import timezone
+
+
+@staff_member_required
+def orders_dashboard(request):
+
+    start_date = request.GET.get("start")
+    end_date = request.GET.get("end")
+
+    orders = Order.objects.filter(
+        status="DELIVERED"
+    )
+
+    if start_date:
+        orders = orders.filter(
+            created_at__date__gte=start_date
+        )
+
+    if end_date:
+        orders = orders.filter(
+            created_at__date__lte=end_date
+        )
+
+    # ==================================
+    # KPI
+    # ==================================
+
+    total_orders = orders.count()
+
+    total_sales = (
+        orders.aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+    aov = round(
+        total_sales / total_orders,
+        2
+    ) if total_orders else 0
+
+    unique_customers = (
+        orders.values("phone")
+        .distinct()
+        .count()
+    )
+
+    # ==================================
+    # CUSTOMER FREQUENCY
+    # ==================================
+
+    customer_orders = (
+        orders
+        .values(
+            "phone",
+            "customer_name"
+        )
+        .annotate(
+            order_count=Count("id")
+        )
+    )
+
+    one_time = customer_orders.filter(
+        order_count=1
+    ).count()
+
+    two_time = customer_orders.filter(
+        order_count=2
+    ).count()
+
+    three_time = customer_orders.filter(
+        order_count=3
+    ).count()
+
+    five_plus = customer_orders.filter(
+        order_count__gte=5
+    ).count()
+
+    # ==================================
+    # FIRST ORDER DATE
+    # ==================================
+
+    first_orders = {
+        item["phone"]: item["first_order"].date()
+        for item in (
+            Order.objects
+            .filter(status="DELIVERED")
+            .values("phone")
+            .annotate(
+                first_order=Min("created_at")
+            )
+        )
+    }
+
+    # ==================================
+    # DAILY SUMMARY
+    # ==================================
+
+    table_rows = []
+
+    daily_stats = (
+        orders
+        .annotate(
+            day=TruncDate("created_at")
+        )
+        .values("day")
+        .annotate(
+            total_orders=Count("id"),
+            total_sales=Sum("total"),
+            delivery_fee=Sum("delivery_fee"),
+            handling_fee=Sum("handling_fee")
+        )
+        .order_by("-day")
+    )
+
+    for row in daily_stats:
+
+        day = row["day"]
+
+        day_orders = orders.filter(
+            created_at__date=day
+        )
+
+        phones = list(
+            day_orders
+            .values_list(
+                "phone",
+                flat=True
+            )
+            .distinct()
+        )
+
+        new_customers = sum(
+            1
+            for phone in phones
+            if first_orders.get(phone) == day
+        )
+
+        repeat_customers = (
+            len(phones)
+            - new_customers
+        )
+
+        sales = row["total_sales"] or 0
+
+        table_rows.append({
+            "date": day,
+            "orders": row["total_orders"],
+            "sales": sales,
+            "aov": round(
+                sales / row["total_orders"],
+                2
+            ) if row["total_orders"] else 0,
+            "new_customers": new_customers,
+            "repeat_customers": repeat_customers,
+            "delivery_fee": row["delivery_fee"] or 0,
+            "handling_fee": row["handling_fee"] or 0,
+        })
+
+    # ==================================
+    # RFM ANALYSIS
+    # ==================================
+
+    customer_rfm = []
+
+    customers = (
+        orders
+        .values(
+            "phone",
+            "customer_name"
+        )
+        .annotate(
+            frequency=Count("id"),
+            monetary=Sum("total"),
+            last_order=Max("created_at")
+        )
+        .order_by("-monetary")
+    )
+
+    today = timezone.now().date()
+
+    for customer in customers:
+
+        recency = (
+            today
+            - customer["last_order"].date()
+        ).days
+
+        frequency = customer["frequency"]
+
+        monetary = customer["monetary"]
+
+        if recency <= 15 and frequency >= 5:
+            segment = "Champion"
+
+        elif frequency >= 3:
+            segment = "Loyal"
+
+        elif recency <= 30:
+            segment = "New"
+
+        elif recency > 90:
+            segment = "Lost"
+
+        else:
+            segment = "At Risk"
+
+        customer_rfm.append({
+            "name": customer["customer_name"],
+            "phone": customer["phone"],
+            "recency": recency,
+            "frequency": frequency,
+            "monetary": monetary,
+            "segment": segment,
+        })
+
+    context = {
+        "total_orders": total_orders,
+        "total_sales": total_sales,
+        "aov": aov,
+        "unique_customers": unique_customers,
+
+        "one_time": one_time,
+        "two_time": two_time,
+        "three_time": three_time,
+        "five_plus": five_plus,
+
+        "table_rows": table_rows,
+        "customer_rfm": customer_rfm,
+
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+
+    return render(
+        request,
+        "orders_dashboard.html",
+        context
+    )
+
+
+@staff_member_required
+def orders_dashboard_customers(request):
+
+    segment = request.GET.get("segment")
+
+    customers = (
+        Order.objects
+        .filter(
+            status="DELIVERED"
+        )
+        .values(
+            "customer_name",
+            "phone"
+        )
+        .annotate(
+            orders_count=Count("id"),
+            total_spend=Sum("total")
+        )
+        .order_by("-orders_count")
+    )
+
+    if segment == "one":
+        customers = customers.filter(
+            orders_count=1
+        )
+
+    elif segment == "two":
+        customers = customers.filter(
+            orders_count=2
+        )
+
+    elif segment == "three":
+        customers = customers.filter(
+            orders_count=3
+        )
+
+    elif segment == "five":
+        customers = customers.filter(
+            orders_count__gte=5
+        )
+
+    return JsonResponse(
+        list(customers),
+        safe=False
+    )
