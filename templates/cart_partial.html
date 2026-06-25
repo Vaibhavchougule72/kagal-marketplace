@@ -1,5 +1,6 @@
-{% if not items %} 
 {% load i18n %}
+
+{% if not items %}
 {% if error %}
 <div class="alert alert-danger text-center">
     {{ error }}
@@ -146,3 +147,4 @@
 
 </div>
 
+{% endif %}
