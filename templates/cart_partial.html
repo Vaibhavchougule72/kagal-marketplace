@@ -131,13 +131,14 @@
 
             </div>
 
-            <button
+            <a
+            href="{% url 'checkout' %}"
             id="checkoutBtn"
             class="btn btn-success w-100">
 
             🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
 
-            </button>
+            </a>
 
         </div>
 
@@ -145,119 +146,3 @@
 
 </div>
 
-<div class="modal fade" id="crossSellModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    🎁 Unlock Reward
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                {% if show_cross_sell %}
-
-                <div class="alert alert-warning">
-
-                    Add ₹{{ remaining_cross_sell|floatformat:0 }}
-                    more to unlock a 5% OFF coupon.
-
-                </div>
-
-                <div class="mb-3">
-
-                    <div class="progress">
-                        <div
-                            class="progress-bar bg-success"
-                            style="width: {{ cross_sell_progress }}%;">
-                        </div>
-                    </div>
-
-                </div>
-
-                <h6 class="mb-3">
-                    Recommended Products
-                </h6>
-
-                <p style="color:red;">
-                Products Found:
-                {{ recommended_products|length }}
-                </p>
-
-                {% for product in recommended_products %}
-
-                <div class="card mb-2">
-
-                    <div class="card-body p-2">
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-                                <strong>{{ product.name }}</strong>
-                                <br>
-                                <small>₹{{ product.price }}</small>
-                            </div>
-
-                            <button
-                                class="btn btn-success btn-sm cross-sell-add"
-                                data-id="{{ product.id }}">
-
-                                + Add
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                {% empty %}
-
-                <div class="text-muted">
-                    No recommendations available.
-                </div>
-
-                {% endfor %}
-
-                {% else %}
-
-                <div class="text-center">
-                    No reward available.
-                </div>
-
-                {% endif %}
-
-            </div>
-
-            <div class="modal-footer">
-
-                <a
-                    href="{% url 'checkout' %}"
-                    class="btn btn-secondary">
-
-                    Skip & Checkout
-
-                </a>
-
-                <a
-                    href="{% url 'checkout' %}"
-                    class="btn btn-warning text-white">
-
-                    Checkout
-
-                </a>
-
-            </div>
-
-        </div>
-    </div>
-</div>

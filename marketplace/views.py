@@ -2331,7 +2331,10 @@ def search_products(request):
                 'query': query,
                 'products': [],
                 'stores': [],
-                "show_floating_cart": True
+                "show_floating_cart": True,
+                "show_navbar": False,
+                "simple_navbar": False
+                
             })
 
         store_filter = request.GET.get("store")

@@ -1,320 +1,659 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load i18n %}
-{% block content %}
 {% load static %}
+{% block content %}
 
-<div class="container page-content">
+<style>
+       .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <!-- 🔍 TITLE -->
-    <h4 class="mb-3">
-        Results for "<span class="text-success">{{ query }}</span>"
-    </h4>
+.sr-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <!-- ⚡ QUICK FILTER BUTTONS -->
-    <div class="mb-3 d-flex gap-2 flex-wrap">
+html,
+body,
+.upi-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-        <a href="?q={{ query }}" class="btn btn-sm btn-outline-dark">
-            All
-        </a>
+  * { box-sizing: border-box; }
 
-        <a href="?q={{ query }}&sort=price_low" class="btn btn-sm btn-outline-success">
-            ₹ Low
-        </a>
+  /* ── PAGE ── */
+  .sr-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+  }
 
-        <a href="?q={{ query }}&sort=price_high" class="btn btn-sm btn-outline-success">
-            ₹ High
-        </a>
+  /* ═══════════════════════════════
+     STICKY GREEN HERO
+     nav + search + query + chips
+  ═══════════════════════════════ */
+  .sr-hero {
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 10px 14px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
 
+  /* back + search row */
+  .sr-nav-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .sr-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sr-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
+
+  .sr-search-form {
+    flex: 1;
+    position: relative;
+  }
+
+  .sr-search-box {
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    border-radius: 10px;
+    padding: 9px 13px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .sr-search-box i { font-size: 15px; color: rgba(255,255,255,0.45); flex-shrink: 0; }
+
+  .sr-search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #fff;
+    flex: 1;
+    font-family: inherit;
+  }
+
+  .sr-search-input::placeholder { color: rgba(255,255,255,0.4); }
+
+  /* suggestion box */
+  #homeSuggestionBox {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+    border: 0.5px solid #E0E8DF;
+    border-top: none;
+    z-index: 200;
+    max-height: 220px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+
+  /* query label + count */
+  .sr-query-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .sr-query-txt { font-size: 13px; color: rgba(255,255,255,0.75); }
+  .sr-query-txt strong { color: #fff; }
+  .sr-count { font-size: 11px; color: rgba(255,255,255,0.45); }
+
+  /* sort chips */
+  .sr-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sr-chips::-webkit-scrollbar { display: none; }
+
+  .sr-chip {
+    font-size: 11px;
+    padding: 5px 13px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    border: 0.5px solid rgba(255,255,255,0.15);
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .sr-chip.active { background: #E8621A; color: #fff; border-color: #E8621A; }
+
+  /* ═══════════════════════════════
+     STORE + PRICE FILTER BAR
+  ═══════════════════════════════ */
+  .sr-filter-bar {
+    background: #fff;
+    padding: 9px 14px;
+    border-bottom: 0.5px solid #F0F4EF;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .sr-filter-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #9AA899;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sr-filter-left i { font-size: 14px; color: #A8C9A5; flex-shrink: 0; }
+
+  .sr-store-select {
+    font-size: 12px;
+    color: #2D5A27;
+    font-weight: 500;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sr-price-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .sr-price-input {
+    width: 60px;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 7px;
+    padding: 5px 8px;
+    font-size: 11px;
+    color: #6B7B69;
+    background: #FAFAF8;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .sr-price-input:focus { border-color: #2D5A27; }
+
+  .sr-price-sep { font-size: 11px; color: #C0D0BE; }
+
+  /* ═══════════════════════════════
+     PRODUCT GRID
+  ═══════════════════════════════ */
+  .sr-body { padding: 12px 12px 32px; }
+
+  .sr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  @media (min-width: 560px) { .sr-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 768px) { .sr-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  /* ═══════════════════════════════
+     PRODUCT CARD
+  ═══════════════════════════════ */
+  .sr-card {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    scroll-margin-top: 130px;
+  }
+
+  .sr-card:active:not(.unavailable) {
+    border-color: #A8C9A5;
+    box-shadow: 0 2px 10px rgba(45,90,39,0.1);
+  }
+
+  .sr-card.unavailable { opacity: 0.58; }
+
+  /* highlight (search focus) */
+  .sr-card.highlight {
+    border: 2px solid #E8621A;
+    box-shadow: 0 0 16px rgba(232,98,26,0.28);
+    animation: sr-pulse 1s infinite alternate;
+  }
+
+  @keyframes sr-pulse {
+    from { transform: scale(1); }
+    to   { transform: scale(1.02); }
+  }
+
+  /* image area */
+  .sr-img-wrap {
+    position: relative;
+    height: 90px;
+    background: #EAF2E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .sr-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sr-img-placeholder { font-size: 34px; }
+
+  /* status badge */
+  .sr-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 20px;
+  }
+
+  .sr-badge.open   { background: #EAF2E8; color: #2D6B27; }
+  .sr-badge.closed { background: #FDF1EB; color: #C05018; }
+  .sr-badge.unavail{ background: #FDF8EE; color: #B07810; }
+
+  /* closed overlay */
+  .sr-closed-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #C05018;
+  }
+
+  /* card body */
+  .sr-card-body { padding: 9px 10px; }
+
+  .sr-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #1A2E19;
+    margin-bottom: 2px;
+    line-height: 1.35;
+  }
+
+  .sr-card-store {
+    font-size: 10px;
+    color: #9AA899;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .sr-card-opens {
+    font-size: 10px;
+    color: #C05018;
+    margin-bottom: 4px;
+  }
+
+  .sr-card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .sr-card-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1A2E19;
+  }
+
+  /* ADD button */
+  .sr-add-btn {
+    background: #2D5A27;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 4px 11px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s ease, background 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sr-add-btn:active { transform: scale(0.92); background: #1A3A16; }
+
+  .sr-add-btn.sr-btn-closed {
+    background: #E0E8DF;
+    color: #A8C9A5;
+    cursor: not-allowed;
+    font-size: 10px;
+  }
+
+  .sr-add-btn.sr-btn-unavail {
+    background: #FDF8EE;
+    color: #B07810;
+    cursor: not-allowed;
+    font-size: 10px;
+  }
+
+  /* ═══════════════════════════════
+     EMPTY STATE
+  ═══════════════════════════════ */
+  .sr-empty {
+    text-align: center;
+    padding: 56px 24px;
+  }
+
+  .sr-empty-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .sr-empty-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #6B7B69;
+    margin-bottom: 6px;
+  }
+
+  .sr-empty-sub {
+    font-size: 13px;
+    color: #A8C9A5;
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+
+  .sr-empty-btn {
+    background: #2D5A27;
+    color: #fff;
+    border-radius: 12px;
+    padding: 13px 28px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sr-empty-btn:active { transform: scale(0.97); }
+
+  /* ── LOADING SPINNER ── */
+  .sr-loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .sr-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2.5px solid #D0E4CE;
+    border-top-color: #2D5A27;
+    border-radius: 50%;
+    animation: sr-spin 0.7s linear infinite;
+    margin: 0 auto 8px;
+  }
+
+  @keyframes sr-spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="sr-page">
+
+  <!-- ═══ STICKY HERO: back + search + query + chips ═══ -->
+  <div class="sr-hero">
+
+    <!-- Back + Search -->
+    <div class="sr-nav-row">
+      <a href="/" class="sr-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+
+      <form method="GET"
+            action="{% url 'search_products' %}"
+            class="sr-search-form"
+            id="searchForm">
+        <div class="sr-search-box">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input type="search"
+                 name="q"
+                 id="homeSearchInput"
+                 class="sr-search-input"
+                 value="{{ query }}"
+                 placeholder="{% trans 'Search for food, snacks...' %}"
+                 autocomplete="off">
+          <!-- preserve other filters when re-searching -->
+          {% if selected_store %}<input type="hidden" name="store" value="{{ selected_store }}">{% endif %}
+          {% if selected_sort  %}<input type="hidden" name="sort"  value="{{ selected_sort  }}">{% endif %}
+          {% if min_price      %}<input type="hidden" name="min_price" value="{{ min_price }}">{% endif %}
+          {% if max_price      %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
+        </div>
+        <div id="homeSuggestionBox"></div>
+      </form>
     </div>
 
-    <!-- 🔽 FILTERS -->
-    <form method="GET" class="row g-3 mb-4">
+    <!-- Query label + count -->
+    {% if query %}
+    <div class="sr-query-row">
+      <div class="sr-query-txt">
+        {% trans "Results for" %} <strong>"{{ query }}"</strong>
+      </div>
+      <span class="sr-count">{{ products|length }} {% trans "found" %}</span>
+    </div>
+    {% endif %}
 
-        <input type="hidden" name="q" value="{{ query }}">
-
-        <!-- Store -->
-        <div class="col-md-4">
-            <select name="store" class="form-select">
-                <option value="">{% trans "All Stores" %}</option>
-                {% for store in stores %}
-                <option value="{{ store.id }}"
-                    {% if selected_store == store.id|stringformat:"s" %}selected{% endif %}>
-                    {{ store.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Price -->
-        <div class="col-md-4">
-            <div class="d-flex">
-                <input type="number"
-                    name="min_price"
-                    class="form-control me-2"
-                    placeholder="Min ₹"
-                    value="{{ min_price|default:'' }}">
-
-                <input type="number"
-                    name="max_price"
-                    class="form-control"
-                    placeholder="Max ₹"
-                    value="{{ max_price|default:'' }}">
-            </div>
-        </div>
-
-        <!-- Sort -->
-        <div class="col-md-4">
-            <select name="sort" class="form-select">
-                <option value="">{% trans "Sort By" %}</option>
-                <option value="price_low" {% if selected_sort == "price_low" %}selected{% endif %}>
-                    Price Low → High
-                </option>
-                <option value="price_high" {% if selected_sort == "price_high" %}selected{% endif %}>
-                    Price High → Low
-                </option>
-                <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>
-                    Newest
-                </option>
-            </select>
-        </div>
-
-        <div class="col-md-12">
-            <button class="btn btn-success w-100">
-                Apply Filters
-            </button>
-        </div>
-
-    </form>
-
-    <!-- LOADING (optional UX boost) -->
-    <div id="searchLoading" class="text-center mb-3" style="display:none;">
-        <div class="spinner-border text-success"></div>
+    <!-- Sort chips -->
+    <div class="sr-chips">
+      <a href="?q={{ query }}{% if selected_store %}&store={{ selected_store }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+         class="sr-chip {% if not selected_sort %}active{% endif %}">
+        {% trans "All" %}
+      </a>
+      <a href="?q={{ query }}&sort=price_low{% if selected_store %}&store={{ selected_store }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+         class="sr-chip {% if selected_sort == 'price_low' %}active{% endif %}">
+        ₹ {% trans "Low–High" %}
+      </a>
+      <a href="?q={{ query }}&sort=price_high{% if selected_store %}&store={{ selected_store }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+         class="sr-chip {% if selected_sort == 'price_high' %}active{% endif %}">
+        ₹ {% trans "High–Low" %}
+      </a>
+      <a href="?q={{ query }}&sort=newest{% if selected_store %}&store={{ selected_store }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+         class="sr-chip {% if selected_sort == 'newest' %}active{% endif %}">
+        {% trans "Newest" %}
+      </a>
     </div>
 
-    <hr>
+  </div><!-- /sr-hero -->
 
-    <!-- 🛍 PRODUCTS -->
+  <!-- ═══ STORE + PRICE FILTER BAR ═══ -->
+  <form method="GET" action="{% url 'search_products' %}" id="filterForm">
+    <input type="hidden" name="q" value="{{ query }}">
+    {% if selected_sort %}<input type="hidden" name="sort" value="{{ selected_sort }}">{% endif %}
+
+    <div class="sr-filter-bar">
+      <div class="sr-filter-left">
+        <i class="ti ti-building-store" aria-hidden="true"></i>
+        <select name="store" class="sr-store-select" onchange="document.getElementById('filterForm').submit()">
+          <option value="">{% trans "All Stores" %}</option>
+          {% for store in stores %}
+          <option value="{{ store.id }}"
+                  {% if selected_store == store.id|stringformat:"s" %}selected{% endif %}>
+            {{ store.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="sr-price-row">
+        <input type="number"
+               name="min_price"
+               class="sr-price-input"
+               placeholder="Min ₹"
+               value="{{ min_price|default:'' }}"
+               onblur="document.getElementById('filterForm').submit()">
+        <span class="sr-price-sep">—</span>
+        <input type="number"
+               name="max_price"
+               class="sr-price-input"
+               placeholder="Max ₹"
+               value="{{ max_price|default:'' }}"
+               onblur="document.getElementById('filterForm').submit()">
+      </div>
+    </div>
+  </form>
+
+  <!-- LOADING INDICATOR -->
+  <div class="sr-loading" id="searchLoading">
+    <div class="sr-spinner"></div>
+    <div style="font-size:12px;color:#A8C9A5;">{% trans "Searching..." %}</div>
+  </div>
+
+  <!-- ═══ PRODUCT GRID ═══ -->
+  <div class="sr-body">
+
     {% if products %}
+    <div class="sr-grid">
 
-    <div class="row g-4">
+      {% for product in products %}
+      <div class="sr-card
+                  {% if highlight_id == product.id|stringformat:'s' %}highlight{% endif %}
+                  {% if not product.open_status or not product.available_now %}unavailable{% endif %}"
+           data-id="{{ product.id }}"
+           data-name="{{ product.name }}"
+           data-price="{{ product.price }}"
+           data-desc="{{ product.description }}"
+           data-available="{% if product.available_now %}true{% else %}false{% endif %}"
+           data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
 
-        {% for product in products %}
+        <!-- IMAGE -->
+        <div class="sr-img-wrap">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+          {% else %}
+            <div class="sr-img-placeholder">🍽</div>
+          {% endif %}
 
-        <div class="col-6 col-md-4 col-lg-3">
-
-            <div class="loka-product-card product-card position-relative
-
-                {% if highlight_id == product.id|stringformat:'s' %}
-                highlight-product
-                {% endif %}
-
-                {% if not product.open_status or not product.available_now %}
-                opacity-50
-                {% endif %}
-                "
-
-                data-id="{{ product.id }}"
-                data-name="{{ product.name }}"
-                data-price="{{ product.price }}"
-                data-desc="{{ product.description }}"
-                data-available="{% if product.available_now %}true{% else %}false{% endif %}"
-                data-image="{% if product.image %}{{ product.image.url }}{% endif %}">
-
-                <!-- IMAGE -->
-                <div class="loka-product-image position-relative">
-
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}"
-                        class="img-fluid product-img"
-                        alt="{{ product.name }}"
-                        loading="lazy">
-                    {% else %}
-                    <img src="{% static 'images/no-image.png' %}"
-                        class="img-fluid product-img"
-                        alt="No image"
-                        loading="lazy">
-                    {% endif %}
-
-                    <!-- 🔥 STATUS BADGE -->
-                    {% if not product.open_status %}
-
-                    <span class="badge bg-danger shadow-sm px-2 position-absolute top-0 end-0 m-2">
-                        🔴 Closed
-                    </span>
-
-                    {% elif not product.available_now %}
-
-                    <span class="badge bg-warning text-dark shadow-sm px-2 position-absolute top-0 end-0 m-2">
-                        ⏰ Unavailable
-                    </span>
-
-                    {% else %}
-
-                    <span class="badge bg-success shadow-sm px-2 position-absolute top-0 end-0 m-2">
-                        🟢 Available
-                    </span>
-
-                    {% endif %}
-
-                        <!-- 🔥 OVERLAY -->
-                        {% if not product.open_status %}
-
-                        <div style="
-                            position:absolute;
-                            top:0;
-                            left:0;
-                            width:100%;
-                            height:100%;
-                            background:rgba(255,255,255,0.6);
-                            display:flex;
-                            align-items:center;
-                            justify-content:center;
-                            font-weight:bold;
-                        ">
-                            Closed
-                        </div>
-
-                        {% endif %}
-
-                </div>
-
-                <!-- BODY -->
-                <div class="loka-product-body">
-
-                    <h6 class="loka-product-name">
-                        {{ product.name }}
-                    </h6>
-
-                    <!-- STORE NAME (IMPORTANT FOR TRUST) -->
-                    <p class="loka-product-desc fw-bold text-dark">
-                        {{ product.store.name }}
-                    </p>
-
-                    <!-- ⏰ OPEN TIME -->
-                    {% if not product.open_status %}
-                        <div class="small text-danger mb-1">
-                            {% if product.store.next_open_time %}
-                            <div class="small text-danger mb-1">
-                                ⏰ Opens at {{ product.store.next_open_time }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    <div class="loka-product-bottom">
-
-                        <span class="loka-price fw-bold">
-                            ₹{{ product.price }}
-                        </span>
-
-                        {% if not product.open_status %}
-
-                        <button class="loka-add-btn btn-secondary" disabled>
-                            Closed
-                        </button>
-
-                        {% elif not product.available_now %}
-
-                        <button class="loka-add-btn btn-warning" disabled>
-                            Not Available Now
-                        </button>
-
-                        {% else %}
-
-                        <button class="loka-add-btn add-to-cart-btn fw-bold"
-                                data-id="{{ product.id }}"
-                                style="background:#ff5722; color:white;">
-                            Add
-                        </button>
-
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            </div>
-
+          <!-- STATUS BADGE -->
+          {% if not product.open_status %}
+            <span class="sr-badge closed">{% trans "Closed" %}</span>
+            <div class="sr-closed-overlay">{% trans "Closed" %}</div>
+          {% elif not product.available_now %}
+            <span class="sr-badge unavail">⏰ {% trans "Unavailable" %}</span>
+          {% else %}
+            <span class="sr-badge open">✓ {% trans "Open" %}</span>
+          {% endif %}
         </div>
 
-        {% endfor %}
+        <!-- CARD BODY -->
+        <div class="sr-card-body">
+          <div class="sr-card-name">{{ product.name }}</div>
+          <div class="sr-card-store">{{ product.store.name }}</div>
+
+          {% if not product.open_status %}
+            {% if product.store.next_open_time %}
+            <div class="sr-card-opens">⏰ {% trans "Opens at" %} {{ product.store.next_open_time }}</div>
+            {% endif %}
+          {% endif %}
+
+          <div class="sr-card-foot">
+            <span class="sr-card-price">₹{{ product.price }}</span>
+
+            {% if not product.open_status %}
+              <button class="sr-add-btn sr-btn-closed" disabled>{% trans "Closed" %}</button>
+            {% elif not product.available_now %}
+              <button class="sr-add-btn sr-btn-unavail" disabled>{% trans "N/A" %}</button>
+            {% else %}
+              <button class="sr-add-btn add-to-cart-btn" data-id="{{ product.id }}">
+                {% trans "ADD" %}
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
 
     </div>
 
     {% else %}
 
-    <!-- ❌ EMPTY STATE -->
-    <div class="text-center mt-5">
-
-        <h5>No results found 😔</h5>
-
-        <p class="text-muted">
-            Try different keywords or remove filters
-        </p>
-
-        <a href="/" class="btn btn-success">
-            Explore Categories
-        </a>
-
+    <!-- EMPTY STATE -->
+    <div class="sr-empty">
+      <span class="sr-empty-icon">🔍</span>
+      <div class="sr-empty-title">{% trans "No results found" %}</div>
+      <div class="sr-empty-sub">
+        {% if query %}
+          {% trans "We couldn't find anything for" %} "<strong>{{ query }}</strong>".<br>
+          {% trans "Try different keywords or browse categories." %}
+        {% else %}
+          {% trans "Enter a search term above to find products." %}
+        {% endif %}
+      </div>
+      <a href="/" class="sr-empty-btn">{% trans "Explore Categories" %}</a>
     </div>
 
     {% endif %}
 
-</div>
+  </div><!-- /sr-body -->
+
+</div><!-- /sr-page -->
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
 
-document.querySelector("form")?.addEventListener("submit", function(){
-
+  /* ── show spinner on filter form submit ── */
+  document.getElementById("searchForm")?.addEventListener("submit", function() {
     document.getElementById("searchLoading").style.display = "block";
+  });
+
+  /* ── auto-scroll to highlighted product ── */
+  const highlighted = document.querySelector(".sr-card.highlight");
+  if (highlighted) {
+    setTimeout(function() {
+      highlighted.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }
 
 });
-
-window.addEventListener("load", () => {
-
-    const highlighted =
-        document.querySelector(".highlight-product");
-
-    if(highlighted){
-
-        highlighted.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-
-    }
-
-});
-
 </script>
-
-<style>
-
-.loka-product-card {
-    transition: transform 0.2s ease;
-}
-
-.loka-product-card:hover {
-    transform: scale(1.03);
-}
-
-.highlight-product{
-    border: 3px solid #ff5722;
-    box-shadow: 0 0 20px rgba(255,87,34,0.5);
-    animation: pulseGlow 1s infinite alternate;
-    scroll-margin-top: 120px;
-    border-radius: 18px;
-}
-
-@keyframes pulseGlow{
-    from{
-        transform: scale(1);
-    }
-    to{
-        transform: scale(1.03);
-    }
-}
-
-</style>
 
 {% endblock %}
