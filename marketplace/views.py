@@ -767,187 +767,271 @@ def cross_sell_status(request):
 
 def view_cart(request):
 
-    cart = request.session.get('cart', {
-        'store_id': None,
-        'items': {}
-    })
+    try:
 
-    items = []
-    total_savings = Decimal(0)
-    subtotal = Decimal(0)
-
-    # =========================
-    # PRELOAD DATA (OPTIMIZED)
-    # =========================
-    product_ids = [int(i) for i in cart['items'] if i.isdigit()]
-    bundle_ids = [int(i.split("_")[1]) for i in cart['items'] if i.startswith("bundle_")]
-
-    products_map = {
-        p.id: p for p in Product.objects.filter(id__in=product_ids).select_related("store")
-    }
-
-    bundles_map = {
-        b.id: b for b in Bundle.objects.filter(id__in=bundle_ids, is_active=True).select_related("store")
-    }
-
-    # =========================
-    # STORE OPEN CACHE (🔥 FIX)
-    # =========================
-    store_status_map = {}
-
-    cleaned_items = {}
-
-    for item_id, item in cart["items"].items():
-
-        # PRODUCT
-        if item_id.isdigit():
-
-            if int(item_id) not in products_map:
-                continue
-
-        # BUNDLE
-        elif item_id.startswith("bundle_"):
-
-            try:
-
-                bundle_id = int(item_id.split("_")[1])
-
-            except:
-                continue
-
-            if bundle_id not in bundles_map:
-                continue
-
-        else:
-            continue
-
-        cleaned_items[item_id] = {
-            "quantity": safe_qty(
-                item.get("quantity", 1)
-            )
-        }
-
-    cart["items"] = cleaned_items
-    request.session["cart"] = cart
-    request.session.modified = True
-
-
-    # =========================
-    # BUILD CART ITEMS
-    # =========================
-    for item_id, item in cart['items'].items():
-
-        qty = safe_qty(item.get('quantity', 1))
-
-        # ----------------------
-        # PRODUCT
-        # ----------------------
-        if item_id.isdigit():
-
-            product = products_map.get(int(item_id))
-            if not product:
-                continue
-
-            if product.store.id not in store_status_map:
-                store_status_map[product.store.id] = is_store_open_cached(product.store)
-
-            if not store_status_map[product.store.id]:
-                continue
-
-            original_price = product.price
-            final_price = product.discount_price or product.price
-
-            line_total = final_price * qty
-            subtotal += line_total
-
-            # 🔥 SAVINGS CALCULATION
-            if product.discount_price:
-                total_savings += (original_price - final_price) * qty
-
-            
-
-            items.append({
-                "key": item_id,
-                "product": product,
-                "name": product.name,
-                "quantity": qty,
-                "price": final_price,
-                "subtotal": line_total
-            })
-
-        # ----------------------
-        # BUNDLE
-        # ----------------------
-        elif item_id.startswith("bundle_"):
-
-            bundle_id = int(item_id.split("_")[1])
-            bundle = bundles_map.get(bundle_id)
-
-            if not bundle:
-                continue
-
-            if bundle.store.id not in store_status_map:
-                store_status_map[bundle.store.id] = is_store_open_cached(bundle.store)
-
-            if not store_status_map[bundle.store.id]:
-                continue
-
-            price = bundle.price
-            line_total = price * qty
-            # bundles no savings (optional future)
-
-            subtotal += line_total
-
-            items.append({
-                "key": item_id,
-                "product": None,
-                "name": bundle.name,
-                "quantity": qty,
-                "price": price,
-                "subtotal": line_total
-            })
-
-    # =========================
-    # BUSINESS RULES
-    # =========================
-    remaining_to_149 = Decimal(149) - subtotal if subtotal < 149 else Decimal(0)
-    cod_not_allowed = subtotal < 149
-    remaining_to_free_delivery = Decimal(999) - subtotal if subtotal < 999 else Decimal(0)
-
-    # =========================
-    # CLEAN EMPTY CART
-    # =========================
-    if not items:
-        request.session['cart'] = {
+        cart = request.session.get('cart', {
             'store_id': None,
             'items': {}
+        })
+
+        items = []
+        total_savings = Decimal(0)
+        subtotal = Decimal(0)
+
+        # =========================
+        # PRELOAD DATA (OPTIMIZED)
+        # =========================
+        product_ids = [int(i) for i in cart['items'] if i.isdigit()]
+        bundle_ids = [int(i.split("_")[1]) for i in cart['items'] if i.startswith("bundle_")]
+
+        products_map = {
+            p.id: p for p in Product.objects.filter(id__in=product_ids).select_related("store")
         }
+
+        bundles_map = {
+            b.id: b for b in Bundle.objects.filter(id__in=bundle_ids, is_active=True).select_related("store")
+        }
+
+        # =========================
+        # STORE OPEN CACHE (🔥 FIX)
+        # =========================
+        store_status_map = {}
+
+        cleaned_items = {}
+
+        for item_id, item in cart["items"].items():
+
+            # PRODUCT
+            if item_id.isdigit():
+
+                if int(item_id) not in products_map:
+                    continue
+
+            # BUNDLE
+            elif item_id.startswith("bundle_"):
+
+                try:
+
+                    bundle_id = int(item_id.split("_")[1])
+
+                except:
+                    continue
+
+                if bundle_id not in bundles_map:
+                    continue
+
+            else:
+                continue
+
+            cleaned_items[item_id] = {
+                "quantity": safe_qty(
+                    item.get("quantity", 1)
+                )
+            }
+
+        cart["items"] = cleaned_items
+        request.session["cart"] = cart
         request.session.modified = True
+        
 
-    # 🔥 FREE DELIVERY PROGRESS
-    FREE_DELIVERY_THRESHOLD = Decimal(999)
+        # =========================
+        # BUILD CART ITEMS
+        # =========================
+        for item_id, item in cart['items'].items():
 
-    if subtotal < FREE_DELIVERY_THRESHOLD:
-        remaining_amount = FREE_DELIVERY_THRESHOLD - subtotal
-        progress_percent = (subtotal / FREE_DELIVERY_THRESHOLD) * 100
-    else:
-        remaining_amount = Decimal(0)
-        progress_percent = 100
+            qty = safe_qty(item.get('quantity', 1))
 
-    # =========================
-    # RESPONSE
-    # =========================
-    return render(request, 'cart_partial.html', {
-        'items': items,
-        'subtotal': subtotal,
-        'remaining_to_149': remaining_to_149,
-        'cod_not_allowed': cod_not_allowed,
-        'remaining_to_free_delivery': remaining_to_free_delivery,
-        "show_floating_cart": False,
-        'total_savings': total_savings,
-        'remaining_amount': remaining_amount,
-        'progress_percent': progress_percent,
-    })
+            # ----------------------
+            # PRODUCT
+            # ----------------------
+            if item_id.isdigit():
+
+                product = products_map.get(int(item_id))
+                if not product:
+                    continue
+
+                if product.store.id not in store_status_map:
+                    store_status_map[product.store.id] = is_store_open_cached(product.store)
+
+                if not store_status_map[product.store.id]:
+                    continue
+
+                original_price = product.price
+                final_price = product.discount_price or product.price
+
+                line_total = final_price * qty
+                subtotal += line_total
+
+                # 🔥 SAVINGS CALCULATION
+                if product.discount_price:
+                    total_savings += (original_price - final_price) * qty
+
+                
+
+                items.append({
+                    "key": item_id,
+                    "product": product,
+                    "name": product.name,
+                    "quantity": qty,
+                    "price": final_price,
+                    "subtotal": line_total
+                })
+
+            # ----------------------
+            # BUNDLE
+            # ----------------------
+            elif item_id.startswith("bundle_"):
+
+                bundle_id = int(item_id.split("_")[1])
+                bundle = bundles_map.get(bundle_id)
+
+                if not bundle:
+                    continue
+
+                if bundle.store.id not in store_status_map:
+                    store_status_map[bundle.store.id] = is_store_open_cached(bundle.store)
+
+                if not store_status_map[bundle.store.id]:
+                    continue
+
+                price = bundle.price
+                line_total = price * qty
+                # bundles no savings (optional future)
+
+                subtotal += line_total
+
+                items.append({
+                    "key": item_id,
+                    "product": None,
+                    "name": bundle.name,
+                    "quantity": qty,
+                    "price": price,
+                    "subtotal": line_total
+                })
+
+        # =========================
+        # BUSINESS RULES
+        # =========================
+        remaining_to_149 = Decimal(149) - subtotal if subtotal < 149 else Decimal(0)
+        cod_not_allowed = subtotal < 149
+        remaining_to_free_delivery = Decimal(999) - subtotal if subtotal < 999 else Decimal(0)
+
+        # =========================
+        # CLEAN EMPTY CART
+        # =========================
+        if not items:
+            request.session['cart'] = {
+                'store_id': None,
+                'items': {}
+            }
+            request.session.modified = True
+
+        # 🔥 FREE DELIVERY PROGRESS
+        FREE_DELIVERY_THRESHOLD = Decimal(999)
+
+        if subtotal < FREE_DELIVERY_THRESHOLD:
+            remaining_amount = FREE_DELIVERY_THRESHOLD - subtotal
+            progress_percent = (subtotal / FREE_DELIVERY_THRESHOLD) * 100
+        else:
+            remaining_amount = Decimal(0)
+            progress_percent = 100
+
+        
+        cross_sell_threshold = Decimal("249")
+
+        show_cross_sell = (
+            subtotal >= Decimal("150")
+            and subtotal < cross_sell_threshold
+        )
+
+        remaining_cross_sell = max(
+            Decimal("0"),
+            cross_sell_threshold - subtotal
+        )
+
+        cross_sell_progress = min(
+            100,
+            (subtotal / cross_sell_threshold) * 100
+        )
+
+        recommended_products = []
+
+        if cart.get("store_id"):
+
+            store = Store.objects.filter(
+                id=cart["store_id"]
+            ).first()
+
+            if store:
+
+                cart_product_ids = [
+                    int(i)
+                    for i in cart["items"]
+                    if i.isdigit()
+                ]
+
+                recommended_products = (
+                    Product.objects
+                    .filter(
+                        store=store,
+                        is_active=True
+                    )
+                    .exclude(
+                        id__in=cart_product_ids
+                    )
+                    .order_by("price")[:6]
+                )
+
+        # =========================
+        # RESPONSE
+        # =========================
+        return render(request, 'cart_partial.html', {
+            'items': items,
+            'subtotal': subtotal,
+            'remaining_to_149': remaining_to_149,
+            'cod_not_allowed': cod_not_allowed,
+            'remaining_to_free_delivery': remaining_to_free_delivery,
+            "show_floating_cart": False,
+            'total_savings': total_savings,
+            'remaining_amount': remaining_amount,
+            'progress_percent': progress_percent,
+            "show_cross_sell": show_cross_sell,
+            "remaining_cross_sell": remaining_cross_sell,
+            "cross_sell_progress": cross_sell_progress,
+            "recommended_products": recommended_products,
+        })
+    except Exception as e:
+
+            print("\n" + "=" * 80)
+            print("🚨 VIEW_CART ERROR")
+            print("=" * 80)
+
+            print("SESSION CART:")
+            print(request.session.get("cart"))
+
+            print("\nERROR TYPE:")
+            print(type(e).__name__)
+
+            print("\nERROR:")
+            print(str(e))
+
+            print("\nTRACEBACK:")
+            traceback.print_exc()
+
+            print("=" * 80 + "\n")
+
+            logger.exception("VIEW_CART FAILED")
+
+            return HttpResponse(
+                f"""
+                <h2>VIEW_CART ERROR</h2>
+                <p><strong>{type(e).__name__}</strong></p>
+                <pre>{traceback.format_exc()}</pre>
+                """,
+                status=500
+            )
+
+
 
 
 # =====================================================
