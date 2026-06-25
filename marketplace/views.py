@@ -2491,7 +2491,10 @@ def search_products(request):
             'min_price': min_price,
             'max_price': max_price,
             "highlight_id": highlight_id,
+            "show_navbar": False,
+            "simple_navbar": False,
             "show_floating_cart": True
+            
         })
 
     # =====================================================
