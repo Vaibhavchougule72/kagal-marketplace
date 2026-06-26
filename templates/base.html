@@ -86,7 +86,7 @@
             display: none;
             position: fixed;
             top: 0;
-            transform: translateX(100%);
+            
             width: 100%;
             max-width: 400px;
             height: 100dvh;
@@ -597,43 +597,44 @@ document.addEventListener("DOMContentLoaded", function(){
 
         e.preventDefault();
 
-        const modal = new bootstrap.Modal(
-            document.getElementById("crossSellModal")
-        );
+        closeCartPanel(function(){
 
-        fetch("/cross-sell-popup/")
-        .then(async (res) => {
+            const modal = new bootstrap.Modal(
+                document.getElementById("crossSellModal")
+            );
 
-            if (!res.ok) {
+            fetch("/cross-sell-popup/")
+            .then(async (res)=>{
 
-                const error = await res.text();
+                if(!res.ok){
 
-                console.error("CROSS SELL POPUP ERROR");
-                console.error(error);
+                    const error = await res.text();
 
-                alert(error);   // Optional: remove later
+                    console.error(error);
 
-                throw new Error("Server returned " + res.status);
-            }
+                    throw new Error("Cross Sell Popup Error");
 
-            return res.text();
+                }
 
-        })
-        .then(html => {
+                return res.text();
 
-            document.getElementById("crossSellContent").innerHTML = html;
+            })
+            .then(html=>{
 
-            modal.show();
+                document.getElementById("crossSellContent").innerHTML = html;
 
-            document.querySelectorAll(".cross-progress").forEach(el=>{
-                el.style.width = el.dataset.progress + "%";
+                modal.show();
+
+                refreshCrossProgress();
+
+            })
+            .catch(err=>{
+
+                console.error(err);
+
             });
 
-        })
-        .catch(err=>{
-            console.error(err);
         });
-
     });
 
     function openCart() {
@@ -644,10 +645,22 @@ document.addEventListener("DOMContentLoaded", function(){
         refreshCartBadge();
     }
 
-    function closeCartPanel() {
+    function closeCartPanel(callback) {
+
         cartPanel.classList.remove("open");
         cartOverlay.classList.remove("active");
         document.body.style.overflow = "auto";
+
+        if (callback) {
+
+            cartPanel.addEventListener(
+                "transitionend",
+                callback,
+                { once: true }
+            );
+
+        }
+
     }
 
     
