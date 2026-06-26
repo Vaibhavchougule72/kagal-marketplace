@@ -597,42 +597,39 @@ document.addEventListener("DOMContentLoaded", function(){
 
         e.preventDefault();
 
-        closeCartPanel(function(){
+        // Start loading popup immediately
+        const popupPromise = fetch("/cross-sell-popup/")
+        .then(async (res)=>{
+
+            if(!res.ok){
+
+                const error = await res.text();
+
+                console.error(error);
+
+                throw new Error("Cross Sell Popup Error");
+
+            }
+
+            return res.text();
+
+        });
+
+        // Close cart
+        closeCartPanel(async function(){
+
+            // Wait only if request isn't finished yet
+            const html = await popupPromise;
+
+            document.getElementById("crossSellContent").innerHTML = html;
 
             const modal = new bootstrap.Modal(
                 document.getElementById("crossSellModal")
             );
 
-            fetch("/cross-sell-popup/")
-            .then(async (res)=>{
+            modal.show();
 
-                if(!res.ok){
-
-                    const error = await res.text();
-
-                    console.error(error);
-
-                    throw new Error("Cross Sell Popup Error");
-
-                }
-
-                return res.text();
-
-            })
-            .then(html=>{
-
-                document.getElementById("crossSellContent").innerHTML = html;
-
-                modal.show();
-
-                refreshCrossProgress();
-
-            })
-            .catch(err=>{
-
-                console.error(err);
-
-            });
+            refreshCrossProgress();
 
         });
     });
@@ -645,21 +642,34 @@ document.addEventListener("DOMContentLoaded", function(){
         refreshCartBadge();
     }
 
-    function closeCartPanel(callback) {
+    function closeCartPanel(callback){
 
         cartPanel.classList.remove("open");
         cartOverlay.classList.remove("active");
         document.body.style.overflow = "auto";
 
-        if (callback) {
+        if(!callback) return;
 
-            cartPanel.addEventListener(
-                "transitionend",
-                callback,
-                { once: true }
-            );
+        let fired = false;
+
+        function done(){
+
+            if(fired) return;
+
+            fired = true;
+
+            callback();
 
         }
+
+        cartPanel.addEventListener(
+            "transitionend",
+            done,
+            { once:true }
+        );
+
+        // Fallback in case transitionend doesn't fire
+        setTimeout(done, 350);
 
     }
 
