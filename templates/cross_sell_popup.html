@@ -1,0 +1,169 @@
+<div class="modal-header">
+
+    <div>
+
+        <h5 class="mb-1">
+            🎁 Unlock 5% OFF Coupon
+        </h5>
+
+        <small class="text-muted">
+            {% if can_checkout_reward %}
+                <span class="text-success fw-bold">
+                    🎉 Reward unlocked!
+                </span>
+            {% else %}
+                <span class="text-muted">
+                    Only ₹{{ remaining_cross_sell|floatformat:0 }}
+                    more to unlock 5% OFF on your next order.
+                </span>
+            {% endif %}
+        </small>
+
+    </div>
+
+    <button
+        class="btn-close"
+        data-bs-dismiss="modal">
+    </button>
+
+</div>
+
+<div class="modal-body">
+
+    <!-- Progress -->
+
+    <div class="mb-3">
+
+        <div class="progress" style="height:10px;">
+            <div
+                class="progress-bar bg-success cross-progress"
+                data-progress="{{ cross_sell_progress }}">
+            </div>
+        </div>
+
+        <div class="mt-2 text-center">
+
+            <strong>
+
+                ₹{{ subtotal|floatformat:0 }}
+
+            </strong>
+
+            /
+
+            ₹249
+
+        </div>
+
+    </div>
+
+    <h6 class="mb-3">
+        Recommended for you
+    </h6>
+
+    {% for product in recommended_products %}
+
+    <div class="card mb-2 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="d-flex align-items-center">
+
+                <img
+                    src="{{ product.image.url }}"
+                    class="rounded me-3"
+                    width="70"
+                    height="70"
+                    style="object-fit:cover;">
+
+                <div class="flex-grow-1">
+
+                    <h6 class="mb-1">
+                        {{ product.name }}
+                    </h6>
+
+                    <small class="text-success fw-bold">
+                        ₹{{ product.price }}
+                    </small>
+
+                </div>
+
+                <div>
+
+            <div>
+
+                <h6 class="mb-1">
+                    {{ product.name }}
+                </h6>
+
+                <small class="text-success">
+                    ₹{{ product.price }}
+                </small>
+
+            </div>
+
+            {% if product.id in cart_quantities %}
+
+            <div class="d-flex align-items-center">
+
+                <button
+                    class="btn btn-outline-dark btn-sm popup-qty-btn"
+                    data-action="decrease"
+                    data-id="{{ product.id }}">
+                    -
+                </button>
+
+                <span class="mx-2">
+                    {{ cart_quantities|get_item:product.id }}
+                </span>
+
+                <button
+                    class="btn btn-success btn-sm popup-qty-btn"
+                    data-action="add"
+                    data-id="{{ product.id }}">
+                    +
+                </button>
+
+            </div>
+
+            {% else %}
+
+            <button
+                class="btn btn-success btn-sm popup-add-btn"
+                data-id="{{ product.id }}">
+                + Add
+            </button>
+
+            {% endif %}
+        </div>
+
+    </div>
+    </div>
+    {% empty %}
+
+    <p class="text-muted">
+        No recommendations available.
+    </p>
+
+    {% endfor %}
+
+</div>
+
+<div class="modal-footer">
+
+    <a href="{% url 'checkout' %}"
+    class="btn btn-secondary flex-fill">
+        Skip & Checkout
+    </a>
+
+    <button
+        id="popupCheckoutBtn"
+        class="btn btn-warning text-white flex-fill"
+        {% if not can_checkout_reward %}
+            disabled
+            style="opacity:.5;"
+        {% endif %}>
+        Checkout
+    </button>
+
+</div>

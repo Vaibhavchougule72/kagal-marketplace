@@ -567,19 +567,58 @@ document.addEventListener("DOMContentLoaded", function(){
     
     function refreshCart(){
 
-    fetch("/cart/", {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-    .then(res => res.text())
-    .then(html => {
-        cartContent.innerHTML = html;
-        document.querySelectorAll(".progress-bar-fill").forEach(el => {
-            const width = el.getAttribute("data-width") || 0;
-            el.style.width = width + "%";
+        fetch("/cart/", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => {
+            cartContent.innerHTML = html;
+            document.querySelectorAll(".progress-bar-fill").forEach(el => {
+                const width = el.getAttribute("data-width") || 0;
+                el.style.width = width + "%";
+            });
         });
-    });
 
-}
+    }
+
+    document.addEventListener("click", function(e){
+
+        if(e.target.id !== "checkoutBtn") return;
+
+        const canCheckout =
+            e.target.dataset.canCheckout === "true";
+
+        if(canCheckout){
+
+            window.location = "/checkout/";
+
+            return;
+        }
+
+        e.preventDefault();
+
+        const modal = new bootstrap.Modal(
+            document.getElementById("crossSellModal")
+        );
+
+        fetch("/cross-sell-popup/")
+        .then(res=>res.text())
+        .then(html=>{
+
+            document.getElementById(
+                "crossSellContent"
+            ).innerHTML=html;
+
+            modal.show();
+
+            document.querySelectorAll(".cross-progress")
+            .forEach(el=>{
+                el.style.width = el.dataset.progress + "%";
+            });
+
+        });
+
+    });
 
     function openCart() {
         cartPanel.classList.add("open");
@@ -806,6 +845,165 @@ document.addEventListener("DOMContentLoaded", function(){
 
             return;
         }
+
+    });
+
+    function refreshCrossProgress(){
+
+        document.querySelectorAll(".cross-progress")
+        .forEach(el=>{
+            el.style.width = el.dataset.progress + "%";
+        });
+
+    }
+
+    document.addEventListener("click", function(e){
+
+        const btn = e.target.closest(".popup-add-btn");
+
+        if(!btn) return;
+
+        e.preventDefault();
+
+        const productId = btn.dataset.id;
+
+        fetch(`/add-to-cart/${productId}/`,{
+            headers:{
+                "X-Requested-With":"XMLHttpRequest"
+            }
+        })
+        .then(res=>res.json())
+        .then(data=>{
+
+            if(!data.success) return;
+
+            refreshCartBadge();
+
+            // Wait for cart refresh first
+            return fetch("/cart/",{
+                headers:{
+                    "X-Requested-With":"XMLHttpRequest"
+                }
+            });
+
+        })
+        .then(res=>{
+
+            if(!res) return;
+
+            return res.text();
+
+        })
+        .then(html=>{
+
+            if(!html) return;
+
+            cartContent.innerHTML = html;
+
+            document.querySelectorAll(".progress-bar-fill")
+            .forEach(el=>{
+                el.style.width =
+                    el.dataset.width + "%";
+            });
+
+            // Now refresh popup
+            return fetch("/cross-sell-popup/");
+
+        })
+        .then(res=>{
+
+            if(!res) return;
+
+            return res.text();
+
+        })
+        .then(html=>{
+
+            if(!html) return;
+
+            document.getElementById(
+                "crossSellContent"
+            ).innerHTML = html;
+
+            refreshCrossProgress();
+
+        });
+
+    });
+
+    document.addEventListener("click", function(e){
+
+        const btn = e.target.closest(".popup-qty-btn");
+
+        if(!btn) return;
+
+        e.preventDefault();
+
+        const productId = btn.dataset.id;
+        const action = btn.dataset.action;
+
+        let url;
+
+        if(action === "add"){
+            url = `/add-to-cart/${productId}/`;
+        }else{
+            url = `/decrease-cart/${productId}/`;
+        }
+
+        fetch(url,{
+            headers:{
+                "X-Requested-With":"XMLHttpRequest"
+            }
+        })
+        .then(res=>res.json())
+        .then(data=>{
+
+            if(!data.success) return;
+
+            refreshCartBadge();
+
+            return fetch("/cart/",{
+                headers:{
+                    "X-Requested-With":"XMLHttpRequest"
+                }
+            });
+
+        })
+        .then(res=>res ? res.text() : null)
+        .then(html=>{
+
+            if(!html) return;
+
+            cartContent.innerHTML = html;
+
+            document.querySelectorAll(".progress-bar-fill")
+            .forEach(el=>{
+                el.style.width = el.dataset.width + "%";
+            });
+
+            return fetch("/cross-sell-popup/");
+
+        })
+        .then(res=>res ? res.text() : null)
+        .then(html=>{
+
+            if(!html) return;
+
+            document.getElementById("crossSellContent").innerHTML = html;
+
+            refreshCrossProgress();
+
+        });
+
+    });
+
+    document.addEventListener("click", function(e){
+
+        if(e.target.id !== "popupCheckoutBtn") return;
+
+        if(e.target.disabled) return;
+
+        window.location = "/checkout/";
 
     });
 
@@ -1114,6 +1312,25 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </script>
 
+<div class="modal fade"
+     id="crossSellModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div id="crossSellContent">
+
+                Loading...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>

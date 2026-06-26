@@ -132,14 +132,15 @@
 
             </div>
 
-            <a
-            href="{% url 'checkout' %}"
-            id="checkoutBtn"
-            class="btn btn-success w-100">
+            <button
+                id="checkoutBtn"
+                class="btn btn-success w-100"
+                data-subtotal="{{ subtotal }}"
+                data-can-checkout="{{ can_checkout_reward|yesno:'true,false' }}">
 
-            🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
+                🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
 
-            </a>
+            </button>
 
         </div>
 

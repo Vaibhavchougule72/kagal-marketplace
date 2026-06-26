@@ -142,6 +142,11 @@ urlpatterns = [
         views.orders_dashboard_customers,
         name="orders_dashboard_customers"
     ),
+    path(
+        "cross-sell-popup/",
+        views.cross_sell_popup,
+        name="cross_sell_popup"
+    ),
 ]
 
 

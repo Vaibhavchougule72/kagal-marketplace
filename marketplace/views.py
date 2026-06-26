@@ -5400,3 +5400,70 @@ def orders_dashboard_customers(request):
         list(customers),
         safe=False
     )
+
+
+def cross_sell_popup(request):
+
+    cart = request.session.get(
+        "cart",
+        {
+            "store_id":None,
+            "items":{}
+        }
+    )
+
+    subtotal = get_cart_details(cart)
+
+    threshold = Decimal("249")
+
+    remaining = max(
+        Decimal("0"),
+        threshold - subtotal
+    )
+
+    progress = min(
+        100,
+        subtotal / threshold * 100
+    )
+
+    recommended_products=[]
+
+    if cart.get("store_id"):
+
+        store = Store.objects.get(
+            id=cart["store_id"]
+        )
+
+        cart_ids = [
+            int(i)
+            for i in cart["items"]
+            if i.isdigit()
+        ]
+
+        recommended_products = (
+            Product.objects.filter(
+                store=store,
+                is_active=True
+            )
+            .exclude(id__in=cart_ids)
+            .order_by("price")[:6]
+        )
+
+    cart_quantities = {}
+
+    for key, item in cart["items"].items():
+        if key.isdigit():
+            cart_quantities[int(key)] = item["quantity"]
+
+    return render(
+        request,
+        "cross_sell_popup.html",
+        {
+            "subtotal":subtotal,
+            "remaining_cross_sell":remaining,
+            "cross_sell_progress":progress,
+            "recommended_products":recommended_products,
+            "can_checkout_reward":subtotal>=threshold,
+            "cart_quantities": cart_quantities,
+        }
+    )
