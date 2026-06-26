@@ -5466,6 +5466,9 @@ def cross_sell_popup(request):
             if k.isdigit()
         }
 
+        for product in recommended_products:
+            product.cart_qty = cart_quantities.get(product.id, 0)
+
         return render(
             request,
             "cross_sell_popup.html",
@@ -5475,7 +5478,6 @@ def cross_sell_popup(request):
                 "cross_sell_progress": cross_sell_progress,
                 "can_checkout_reward": can_checkout_reward,
                 "recommended_products": recommended_products,
-                "cart_quantities": cart_quantities,
             }
         )
 
