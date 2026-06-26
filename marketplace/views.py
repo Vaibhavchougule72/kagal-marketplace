@@ -5402,68 +5402,110 @@ def orders_dashboard_customers(request):
     )
 
 
+import traceback
+import logging
+from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
+
 def cross_sell_popup(request):
-
-    cart = request.session.get(
-        "cart",
-        {
-            "store_id":None,
-            "items":{}
-        }
-    )
-
-    subtotal = get_cart_details(cart)
-
-    threshold = Decimal("249")
-
-    remaining = max(
-        Decimal("0"),
-        threshold - subtotal
-    )
-
-    progress = min(
-        100,
-        subtotal / threshold * 100
-    )
-
-    recommended_products=[]
-
-    if cart.get("store_id"):
-
-        store = Store.objects.get(
-            id=cart["store_id"]
+    try:
+        cart = request.session.get(
+            "cart",
+            {
+                "store_id": None,
+                "items": {}
+            }
         )
 
-        cart_ids = [
-            int(i)
-            for i in cart["items"]
-            if i.isdigit()
-        ]
+        subtotal = get_cart_details(cart)
 
-        recommended_products = (
-            Product.objects.filter(
-                store=store,
-                is_active=True
-            )
-            .exclude(id__in=cart_ids)
-            .order_by("price")[:6]
+        threshold = Decimal("249")
+
+        remaining_cross_sell = max(
+            Decimal("0"),
+            threshold - subtotal
         )
 
-    cart_quantities = {}
+        cross_sell_progress = min(
+            100,
+            (subtotal / threshold) * 100 if subtotal > 0 else 0
+        )
 
-    for key, item in cart["items"].items():
-        if key.isdigit():
-            cart_quantities[int(key)] = item["quantity"]
+        can_checkout_reward = subtotal >= threshold
 
-    return render(
-        request,
-        "cross_sell_popup.html",
-        {
-            "subtotal":subtotal,
-            "remaining_cross_sell":remaining,
-            "cross_sell_progress":progress,
-            "recommended_products":recommended_products,
-            "can_checkout_reward":subtotal>=threshold,
-            "cart_quantities": cart_quantities,
+        recommended_products = []
+
+        if cart.get("store_id"):
+
+            store = Store.objects.filter(
+                id=cart["store_id"]
+            ).first()
+
+            if store:
+
+                cart_product_ids = [
+                    int(i)
+                    for i in cart["items"]
+                    if i.isdigit()
+                ]
+
+                recommended_products = (
+                    Product.objects
+                    .filter(
+                        store=store,
+                        is_active=True
+                    )
+                    .exclude(id__in=cart_product_ids)
+                    .order_by("price")[:6]
+                )
+
+        cart_quantities = {
+            int(k): v["quantity"]
+            for k, v in cart["items"].items()
+            if k.isdigit()
         }
-    )
+
+        return render(
+            request,
+            "cross_sell_popup.html",
+            {
+                "subtotal": subtotal,
+                "remaining_cross_sell": remaining_cross_sell,
+                "cross_sell_progress": cross_sell_progress,
+                "can_checkout_reward": can_checkout_reward,
+                "recommended_products": recommended_products,
+                "cart_quantities": cart_quantities,
+            }
+        )
+
+    except Exception as e:
+
+        print("\n" + "=" * 80)
+        print("🚨 CROSS SELL POPUP ERROR")
+        print("=" * 80)
+
+        print("SESSION CART:")
+        print(request.session.get("cart"))
+
+        print("\nERROR TYPE:")
+        print(type(e).__name__)
+
+        print("\nERROR:")
+        print(str(e))
+
+        print("\nTRACEBACK:")
+        traceback.print_exc()
+
+        print("=" * 80 + "\n")
+
+        logger.exception("CROSS SELL POPUP FAILED")
+
+        return HttpResponse(
+            f"""
+            <h2>CROSS SELL POPUP ERROR</h2>
+            <p><strong>{type(e).__name__}</strong></p>
+            <pre>{traceback.format_exc()}</pre>
+            """,
+            status=500
+        )

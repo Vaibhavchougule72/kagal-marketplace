@@ -602,20 +602,36 @@ document.addEventListener("DOMContentLoaded", function(){
         );
 
         fetch("/cross-sell-popup/")
-        .then(res=>res.text())
-        .then(html=>{
+        .then(async (res) => {
 
-            document.getElementById(
-                "crossSellContent"
-            ).innerHTML=html;
+            if (!res.ok) {
+
+                const error = await res.text();
+
+                console.error("CROSS SELL POPUP ERROR");
+                console.error(error);
+
+                alert(error);   // Optional: remove later
+
+                throw new Error("Server returned " + res.status);
+            }
+
+            return res.text();
+
+        })
+        .then(html => {
+
+            document.getElementById("crossSellContent").innerHTML = html;
 
             modal.show();
 
-            document.querySelectorAll(".cross-progress")
-            .forEach(el=>{
+            document.querySelectorAll(".cross-progress").forEach(el=>{
                 el.style.width = el.dataset.progress + "%";
             });
 
+        })
+        .catch(err=>{
+            console.error(err);
         });
 
     });
@@ -908,15 +924,25 @@ document.addEventListener("DOMContentLoaded", function(){
 
             // Now refresh popup
             return fetch("/cross-sell-popup/");
+            })
+            .then(async (res)=>{
 
-        })
-        .then(res=>{
+                if(!res) return;
 
-            if(!res) return;
+                if(!res.ok){
 
-            return res.text();
+                    const error = await res.text();
 
-        })
+                    console.error("POPUP REFRESH ERROR");
+                    console.error(error);
+
+                    throw new Error("Popup refresh failed");
+
+                }
+
+                return res.text();
+
+            })
         .then(html=>{
 
             if(!html) return;
@@ -982,9 +1008,25 @@ document.addEventListener("DOMContentLoaded", function(){
             });
 
             return fetch("/cross-sell-popup/");
+            })
+            .then(async (res)=>{
 
-        })
-        .then(res=>res ? res.text() : null)
+                if(!res) return;
+
+                if(!res.ok){
+
+                    const error = await res.text();
+
+                    console.error("POPUP QTY ERROR");
+                    console.error(error);
+
+                    throw new Error("Popup qty refresh failed");
+
+                }
+
+                return res.text();
+
+            })
         .then(html=>{
 
             if(!html) return;

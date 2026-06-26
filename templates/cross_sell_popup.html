@@ -69,12 +69,21 @@
 
             <div class="d-flex align-items-center">
 
-                <img
-                    src="{{ product.image.url }}"
-                    class="rounded me-3"
-                    width="70"
-                    height="70"
-                    style="object-fit:cover;">
+                {% if product.image %}
+                    <img
+                        src="{{ product.image.url }}"
+                        class="rounded me-3"
+                        width="70"
+                        height="70"
+                        style="object-fit:cover;">
+                {% else %}
+                    <img
+                        src="{% static 'images/no-image.png' %}"
+                        class="rounded me-3"
+                        width="70"
+                        height="70"
+                        style="object-fit:cover;">
+                {% endif %}
 
                 <div class="flex-grow-1">
 
@@ -89,18 +98,6 @@
                 </div>
 
                 <div>
-
-            <div>
-
-                <h6 class="mb-1">
-                    {{ product.name }}
-                </h6>
-
-                <small class="text-success">
-                    ₹{{ product.price }}
-                </small>
-
-            </div>
 
             {% if product.id in cart_quantities %}
 
