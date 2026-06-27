@@ -1,497 +1,151 @@
-{% load static %}
 {% load i18n %}
 
-<style>
-  /* ── MODAL OVERRIDES ── */
-  #crossSellModal .modal-dialog {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 32px);
-    margin: 16px auto;
-    padding: 0 16px;
-    max-width: 320px;
-  }
+{% if not items %}
+{% if error %}
+<div class="alert alert-danger text-center">
+    {{ error }}
+</div>
+{% endif %}
 
-  #crossSellModal .modal-content {
-    border: none;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.36);
-    width: 100%;
-    max-width: 320px;
-    /* Lock height to viewport so it never overflows */
-    max-height: calc(100vh - 48px);
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ── GREEN HEADER ── */
-  .cs-head {
-    background: linear-gradient(135deg, #2D5A27, #1A3A16);
-    padding: 14px 14px 12px;
-    flex-shrink: 0;
-  }
-
-  .cs-head-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .cs-head-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 3px;
-  }
-
-  .cs-head-sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.55);
-  }
-
-  .cs-head-sub.unlocked {
-    color: #A8E6A0;
-    font-weight: 500;
-  }
-
-  .cs-close-btn {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: 0.5px solid rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.75);
-    font-size: 16px;
-    cursor: pointer;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  /* unlock pill */
-  .cs-unlock-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 11px;
-    margin-bottom: 10px;
-  }
-
-  .cs-unlock-pill.locked {
-    background: rgba(232,98,26,0.22);
-    color: #FAB080;
-    border: 0.5px solid rgba(232,98,26,0.3);
-  }
-
-  .cs-unlock-pill.unlocked {
-    background: rgba(90,160,80,0.25);
-    color: #A8E6A0;
-    border: 0.5px solid rgba(90,160,80,0.3);
-  }
-
-  /* progress bar */
-  .cs-progress-track {
-    height: 7px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-bottom: 5px;
-  }
-
-  .cs-progress-fill {
-    height: 100%;
-    border-radius: 20px;
-    background: linear-gradient(90deg, #E8621A, #FAA060);
-    transition: width 0.5s ease;
-  }
-
-  .cs-progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: rgba(255,255,255,0.4);
-  }
-
-  /* ── SWIPE HINT ── */
-  .cs-swipe-hint {
-    background: #FAF7F2;
-    padding: 7px 14px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #1A2E19;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 0.5px solid #F0F4EF;
-    flex-shrink: 0;
-  }
-
-  .cs-swipe-hint span { color: #9AA899; font-weight: 400; }
-
-  /* dot indicators */
-  .cs-dots {
-    display: flex;
-    gap: 4px;
-  }
-
-  .cs-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #C0D0BE;
-    transition: all 0.2s;
-  }
-
-  .cs-dot.active {
-    background: #2D5A27;
-    width: 12px;
-    border-radius: 3px;
-  }
-
-  /* ── SNAP SCROLL AREA ── */
-  .cs-snap-area {
-    background: #FAF7F2;
-    padding: 10px 12px 6px;
-    flex-shrink: 0;
-    /* Never let this grow beyond what the popup can hold */
-    overflow: hidden;
-  }
-
-  .cs-snap-row {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .cs-snap-row::-webkit-scrollbar { display: none; }
-
-  /* individual snap product card */
-  .cs-snap-card {
-    scroll-snap-align: start;
-    flex-shrink: 0;
-    width: 130px;
-    background: #fff;
-    border-radius: 13px;
-    border: 0.5px solid #E0E8DF;
-    overflow: hidden;
-    transition: border-color 0.15s;
-  }
-
-  .cs-snap-card.in-cart {
-    border-color: #A8C9A5;
-  }
-
-  .cs-snap-img {
-    height: 74px;
-    background: #EAF2E8;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .cs-snap-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .cs-snap-img-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-  }
-
-  .cs-snap-body { padding: 8px 9px; }
-
-  .cs-snap-name {
-    font-size: 11px;
-    font-weight: 500;
-    color: #1A2E19;
-    margin-bottom: 5px;
-    line-height: 1.3;
-  }
-
-  .cs-snap-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .cs-snap-price {
-    font-size: 12px;
-    font-weight: 700;
-    color: #E8621A;
-  }
-
-  /* ADD button */
-  .cs-add-btn {
-    background: #2D5A27;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: transform 0.1s ease, background 0.1s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .cs-add-btn:active { transform: scale(0.92); background: #1A3A16; }
-
-  /* qty controls */
-  .cs-qty-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .cs-qty-btn {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    border: 0.5px solid #E0E8DF;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: #2D5A27;
-    cursor: pointer;
-    transition: transform 0.1s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .cs-qty-btn.plus {
-    background: #2D5A27;
-    color: #fff;
-    border-color: #2D5A27;
-  }
-
-  .cs-qty-btn:active { transform: scale(0.88); }
-
-  .cs-qty-n {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1A2E19;
-    min-width: 14px;
-    text-align: center;
-  }
-
-  /* ── DOTS ROW ── */
-  .cs-dots-row {
-    background: #FAF7F2;
-    padding: 5px 0 10px;
-    display: flex;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  /* ── FOOTER ── */
-  .cs-footer {
-    background: #fff;
-    padding: 10px 12px 14px;
-    display: flex;
-    gap: 9px;
-    border-top: 0.5px solid #F0F4EF;
-    flex-shrink: 0;
-  }
-
-  .cs-btn-skip {
-    flex: 1;
-    background: #F0F4EF;
-    color: #6B7B69;
-    border-radius: 10px;
-    padding: 11px 8px;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    font-family: inherit;
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .cs-btn-skip:active { transform: scale(0.97); background: #E0E8DF; }
-
-  .cs-btn-checkout {
-    flex: 1.4;
-    background: #E8621A;
-    color: #fff;
-    border-radius: 10px;
-    padding: 11px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    font-family: inherit;
-    box-shadow: 0 3px 12px rgba(232,98,26,0.3);
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .cs-btn-checkout:hover { color: #fff; text-decoration: none; }
-  .cs-btn-checkout:active { transform: scale(0.97); background: #C05018; }
-
-  .cs-btn-checkout:disabled,
-  .cs-btn-checkout[disabled] {
-    background: #D0E4CE;
-    color: #9AA899;
-    box-shadow: none;
-    cursor: not-allowed;
-    transform: none;
-  }
-</style>
-
-<!-- MODAL HEADER -->
-<div class="cs-head">
-  <div class="cs-head-top">
-    <div>
-      <div class="cs-head-title">Almost there! 🎁</div>
-      {% if can_checkout_reward %}
-        <div class="cs-head-sub unlocked">🎉 5% OFF coupon unlocked!</div>
-      {% else %}
-        <div class="cs-head-sub">
-          Add ₹{{ remaining_cross_sell|floatformat:0 }} more to unlock 5% OFF
-        </div>
-      {% endif %}
-    </div>
-    <button class="cs-close-btn" data-bs-dismiss="modal" aria-label="Close">×</button>
-  </div>
-
-  {% if can_checkout_reward %}
-    <div class="cs-unlock-pill unlocked">🏷 Coupon ready to use!</div>
-  {% else %}
-    <div class="cs-unlock-pill locked">🔒 ₹{{ subtotal|floatformat:0 }} / ₹249</div>
-  {% endif %}
-
-  <div class="cs-progress-track">
-    <div class="cs-progress-fill"
-         data-progress="{{ cross_sell_progress|default:0 }}"></div>
-  </div>
-  <div class="cs-progress-label">
-    <span>₹{{ subtotal|floatformat:0 }}</span>
-    <span>₹249</span>
-  </div>
+<div class="text-center p-5">
+    <h5>🛒 Your cart is empty</h5>
+    <p class="text-muted">Add items and get fast delivery 🚀</p>
+    <p class="text-muted">{% trans "Add some products to get started." %}</p>
+    <a href="/" class="btn btn-primary mt-3">{% trans "Start Shopping" %}</a>
 </div>
 
-<!-- SWIPE HINT + DOTS -->
-<div class="cs-swipe-hint">
-  <span>Recommended for you</span>
-  <div class="cs-dots" id="csDots">
-    {% for product in recommended_products %}
-    <div class="cs-dot {% if forloop.first %}active{% endif %}"></div>
-    {% endfor %}
-  </div>
-</div>
+{% else %}
 
-<!-- HORIZONTAL SNAP PRODUCT CARDS -->
-<div class="cs-snap-area">
-  <div class="cs-snap-row" id="csSnapRow">
+<div class="cart-wrapper">
 
-    {% for product in recommended_products %}
-    <div class="cs-snap-card {% if product.cart_qty > 0 %}in-cart{% endif %}"
-         data-index="{{ forloop.counter0 }}">
+    <!-- SCROLLABLE ITEMS -->
+    <div class="cart-items">
 
-      <div class="cs-snap-img">
-        {% if product.image %}
-          <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-        {% else %}
-          <div class="cs-snap-img-placeholder">🍽</div>
-        {% endif %}
-      </div>
+        {% for item in items %}
+        <div class="card mb-3 p-3 shadow-sm cart-item-row"
+            data-qty="{{ item.quantity }}">
 
-      <div class="cs-snap-body">
-        <div class="cs-snap-name">{{ product.name }}</div>
-        <div class="cs-snap-foot">
-          <span class="cs-snap-price">₹{{ product.price }}</span>
+            <div class="d-flex justify-content-between align-items-center">
 
-          {% if product.cart_qty > 0 %}
-          <div class="cs-qty-row">
-            <button class="cs-qty-btn popup-qty-btn"
-                    data-action="decrease"
-                    data-id="{{ product.id }}">−</button>
-            <span class="cs-qty-n">{{ product.cart_qty }}</span>
-            <button class="cs-qty-btn plus popup-qty-btn"
-                    data-action="add"
-                    data-id="{{ product.id }}">+</button>
-          </div>
-          {% else %}
-          <button class="cs-add-btn popup-add-btn"
-                  data-id="{{ product.id }}">ADD</button>
-          {% endif %}
+                <div>
+                    <strong>
+                        {% if item.product %}
+                        {{ item.product.name }}
+                        {% else %}
+                        {{ item.name }}
+                        {% endif %}
+                    </strong>
+
+                    <small class="text-muted">
+                        ₹{% if item.product %}{{ item.product.price }}{% else %}{{ item.price }}{% endif %}
+                    </small>
+                </div>
+
+                <div class="d-flex align-items-center">
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-dark qty-btn"
+                            data-id="{{ item.key }}"
+                            data-action="decrease">
+                        -
+                    </button>
+
+                    <span class="mx-2 fw-bold">
+                        {{ item.quantity }}
+                    </span>
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-dark qty-btn"
+                            data-id="{{ item.key }}"
+                            data-action="add">
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="mt-2 d-flex justify-content-between align-items-center">
+
+                <div>
+                    {% trans "Subtotal" %}:
+                    <strong>₹{{ item.subtotal }}</strong>
+                </div>
+
+                <button type="button"
+                        class="btn btn-sm text-danger remove-btn"
+                        data-id="{{ item.key }}">
+                    {% trans "Remove" %}
+                </button>
+
+            </div>
 
         </div>
-      </div>
+        {% endfor %}
+
     </div>
-    {% empty %}
-    <div style="padding:20px;text-align:center;color:#9AA899;font-size:12px;width:100%">
-      {% trans "No recommendations available." %}
+
+    <!-- STICKY BOTTOM -->
+    <div class="cart-summary-sticky">
+
+        <div class="mb-3">
+
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"
+                    data-width="{{ progress_percent|default:0 }}">
+                </div>
+            </div>
+
+            <small>
+                {% if remaining_amount > 0 %}
+                Add ₹{{ remaining_amount|floatformat:0 }} more to unlock FREE delivery above ₹999 🚀
+                {% else %}
+                🎉 You unlocked FREE delivery!
+                {% endif %}
+            </small>
+
+        </div>
+
+        <small style="color:red;">
+            ⏰ Prices may change soon
+        </small>
+
+        <div class="mt-3 border-top pt-3">
+
+            <div class="d-flex justify-content-between mb-2">
+
+                {% if total_savings > 0 %}
+                <p style="color:green; font-weight:600;">
+                    🎉 You saved ₹{{ total_savings|floatformat:0 }}
+                </p>
+                {% endif %}
+
+                <strong>Total:</strong>
+                <strong>₹{{ subtotal }}</strong>
+
+            </div>
+
+            <div class="text-center mb-2">
+
+                <small>🚚 30–50 mins delivery</small><br>
+                <small>💵 Cash on Delivery available</small>
+
+            </div>
+
+            <button
+                id="checkoutBtn"
+                class="btn btn-success w-100"
+                data-subtotal="{{ subtotal }}"
+                data-can-checkout="{{ can_checkout_reward|yesno:'true,false' }}">
+
+                🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
+
+            </button>
+
+        </div>
+
     </div>
-    {% endfor %}
 
-  </div>
 </div>
 
-<!-- DOTS ROW -->
-<div class="cs-dots-row">
-  <!-- dots re-rendered via JS scroll listener -->
-</div>
-
-<!-- FOOTER -->
-<div class="cs-footer">
-  <a href="{% url 'checkout' %}" class="cs-btn-skip">
-    {% trans "Skip & Checkout" %}
-  </a>
-  <button id="popupCheckoutBtn"
-          class="cs-btn-checkout"
-          {% if not can_checkout_reward %}disabled{% endif %}>
-    {% trans "Checkout" %} →
-  </button>
-</div>
-
-<script>
-(function () {
-  /* Apply progress bar width from data attribute (avoids VSCode CSS lint warning
-     caused by Django template tags inside inline style values) */
-  document.querySelectorAll(".cs-progress-fill[data-progress]").forEach(function(el) {
-    el.style.width = el.dataset.progress + "%";
-  });
-
-  var snapRow = document.getElementById("csSnapRow");
-  var dots    = document.querySelectorAll("#csDots .cs-dot");
-
-  if (!snapRow || !dots.length) return;
-
-  /* update active dot based on scroll position */
-  snapRow.addEventListener("scroll", function () {
-    var cardW = snapRow.querySelector(".cs-snap-card")?.offsetWidth || 130;
-    var gap   = 10;
-    var idx   = Math.round(snapRow.scrollLeft / (cardW + gap));
-
-    dots.forEach(function (d, i) {
-      d.classList.toggle("active", i === idx);
-    });
-  }, { passive: true });
-})();
-</script>
+{% endif %}

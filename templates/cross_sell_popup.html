@@ -7,9 +7,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    margin: 0 auto;
-    padding: 16px;
+    min-height: calc(100vh - 32px);
+    margin: 16px auto;
+    padding: 0 16px;
     max-width: 320px;
   }
 
@@ -18,9 +18,10 @@
     border-radius: 18px;
     overflow: hidden;
     box-shadow: 0 24px 64px rgba(0,0,0,0.36);
-    /* 2:3 width:height ratio */
     width: 100%;
     max-width: 320px;
+    /* Lock height to viewport so it never overflows */
+    max-height: calc(100vh - 48px);
     display: flex;
     flex-direction: column;
   }
@@ -160,6 +161,8 @@
     background: #FAF7F2;
     padding: 10px 12px 6px;
     flex-shrink: 0;
+    /* Never let this grow beyond what the popup can hold */
+    overflow: hidden;
   }
 
   .cs-snap-row {
@@ -366,10 +369,10 @@
     <div>
       <div class="cs-head-title">Almost there! 🎁</div>
       {% if can_checkout_reward %}
-        <div class="cs-head-sub unlocked">🎉 Reward unlocked!</div>
+        <div class="cs-head-sub unlocked">🎉 5% OFF coupon unlocked!</div>
       {% else %}
         <div class="cs-head-sub">
-          Add ₹{{ remaining_cross_sell|floatformat:0 }} more to unlock surprise!
+          Add ₹{{ remaining_cross_sell|floatformat:0 }} more to unlock 5% OFF
         </div>
       {% endif %}
     </div>
@@ -377,7 +380,7 @@
   </div>
 
   {% if can_checkout_reward %}
-    <div class="cs-unlock-pill unlocked">🏷 Surprise is ready!</div>
+    <div class="cs-unlock-pill unlocked">🏷 Coupon ready to use!</div>
   {% else %}
     <div class="cs-unlock-pill locked">🔒 ₹{{ subtotal|floatformat:0 }} / ₹249</div>
   {% endif %}
