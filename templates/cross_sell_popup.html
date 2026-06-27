@@ -1,16 +1,29 @@
 {% load static %}
 {% load i18n %}
+{# IMPORTANT: The parent modal-dialog must have class="modal-dialog modal-dialog-centered"
+   for vertical centering to work. Example:
+   <div class="modal-dialog modal-dialog-centered" role="document"> #}
 
 <style>
   /* ── MODAL OVERRIDES ── */
+
+  /* Remove Bootstrap's default modal-dialog margin/padding behaviour */
+  #crossSellModal {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
   #crossSellModal .modal-dialog {
+    margin: 0 auto;
+    padding: 0 20px;
+    max-width: 360px;
+    width: 100%;
+    /* Let Bootstrap flex-center handle vertical position */
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 32px);
-    margin: 16px auto;
-    padding: 0 16px;
-    max-width: 320px;
+    min-height: unset;
   }
 
   #crossSellModal .modal-content {
@@ -19,9 +32,9 @@
     overflow: hidden;
     box-shadow: 0 24px 64px rgba(0,0,0,0.36);
     width: 100%;
-    max-width: 320px;
-    /* Lock height to viewport so it never overflows */
-    max-height: calc(100vh - 48px);
+    /* height:auto so it shrinks to content, max-height prevents overflow */
+    height: auto;
+    max-height: calc(var(--vh, 1vh) * 100 - 64px);
     display: flex;
     flex-direction: column;
   }
@@ -294,15 +307,6 @@
     text-align: center;
   }
 
-  /* ── DOTS ROW ── */
-  .cs-dots-row {
-    background: #FAF7F2;
-    padding: 5px 0 10px;
-    display: flex;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
   /* ── FOOTER ── */
   .cs-footer {
     background: #fff;
@@ -453,11 +457,6 @@
   </div>
 </div>
 
-<!-- DOTS ROW -->
-<div class="cs-dots-row">
-  <!-- dots re-rendered via JS scroll listener -->
-</div>
-
 <!-- FOOTER -->
 <div class="cs-footer">
   <a href="{% url 'checkout' %}" class="cs-btn-skip">
@@ -472,6 +471,13 @@
 
 <script>
 (function () {
+  /* Fix real viewport height on mobile (address bar shrinks 100vh) */
+  function setVh() {
+    document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+  }
+  setVh();
+  window.addEventListener('resize', setVh);
+
   /* Apply progress bar width from data attribute (avoids VSCode CSS lint warning
      caused by Django template tags inside inline style values) */
   document.querySelectorAll(".cs-progress-fill[data-progress]").forEach(function(el) {
