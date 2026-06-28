@@ -370,10 +370,10 @@
     <div>
       <div class="cs-head-title">Almost there! 🎁</div>
       {% if can_checkout_reward %}
-        <div class="cs-head-sub unlocked">🎉 5% OFF coupon unlocked!</div>
+        <div class="cs-head-sub unlocked">🎉 Surprise gift unlocked!</div>
       {% else %}
         <div class="cs-head-sub">
-          Add ₹{{ remaining_cross_sell|floatformat:0 }} more to unlock 5% OFF
+          Add ₹{{ remaining_cross_sell|floatformat:0 }} more to get surprise gift!
         </div>
       {% endif %}
     </div>
@@ -381,7 +381,7 @@
   </div>
 
   {% if can_checkout_reward %}
-    <div class="cs-unlock-pill unlocked">🏷 Coupon ready to use!</div>
+    <div class="cs-unlock-pill unlocked">Surprise is ready!</div>
   {% else %}
     <div class="cs-unlock-pill locked">🔒 ₹{{ subtotal|floatformat:0 }} / ₹249</div>
   {% endif %}
