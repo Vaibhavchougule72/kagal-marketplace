@@ -713,7 +713,7 @@ document.addEventListener("DOMContentLoaded", function(){
             animateAddToCart(img);
         }
 
-        let pendingProductId = null;
+        
 
         fetch(`/add-to-cart/${productId}/?source=${source}`, {
             headers: { "X-Requested-With": "XMLHttpRequest" }
@@ -1217,7 +1217,7 @@ document.getElementById("quickQty").innerText = quickQty;
 
 }
 
-
+let pendingProductId = null;
 document.addEventListener("DOMContentLoaded", function(){
 
     const quickBtn = document.getElementById("quickAddBtn");
@@ -1353,6 +1353,45 @@ document.addEventListener("DOMContentLoaded", function(){
         );
     }
 
+    document.addEventListener("click", function(e){
+
+        if(e.target.id !== "replaceCartBtn") return;
+
+        fetch(`/replace-cart/${pendingProductId}/`,{
+            headers:{
+                "X-Requested-With":"XMLHttpRequest"
+            }
+        })
+        .then(res=>res.json())
+        .then(data=>{
+
+            if(!data.success) return;
+
+            refreshCartBadge();
+
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById("cartContent").innerHTML = html;
+
+                bootstrap.Modal
+                    .getInstance(
+                        document.getElementById("replaceCartModal")
+                    )
+                    .hide();
+
+                showToast();
+            });
+
+        });
+
+    });
+
 });
 
 </script>
@@ -1389,34 +1428,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 
-document.addEventListener("click", function(e){
 
-    if(e.target.id !== "replaceCartBtn") return;
-
-    fetch(`/replace-cart/${pendingProductId}/`,{
-        headers:{
-            "X-Requested-With":"XMLHttpRequest"
-        }
-    })
-    .then(res=>res.json())
-    .then(data=>{
-
-        if(!data.success) return;
-
-        refreshCartBadge();
-        refreshCart();
-
-        bootstrap.Modal
-            .getInstance(
-                document.getElementById("replaceCartModal")
-            )
-            .hide();
-
-        showToast();
-
-    });
-
-});
 
 </script>
 
