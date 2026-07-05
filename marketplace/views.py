@@ -1006,6 +1006,7 @@ def view_cart(request):
             "remaining_cross_sell": remaining_cross_sell,
             "cross_sell_progress": cross_sell_progress,
             "recommended_products": recommended_products,
+            "remaining_for_min_order": remaining_for_min_order,
         })
     except Exception as e:
 
