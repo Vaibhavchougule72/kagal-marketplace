@@ -927,14 +927,21 @@ def view_cart(request):
             request.session.modified = True
 
         # 🔥 FREE DELIVERY PROGRESS
-        FREE_DELIVERY_THRESHOLD = Decimal(999)
+        MIN_ORDER = Decimal("99")
+        FREE_DELIVERY = Decimal("999")
 
-        if subtotal < FREE_DELIVERY_THRESHOLD:
-            remaining_amount = FREE_DELIVERY_THRESHOLD - subtotal
-            progress_percent = (subtotal / FREE_DELIVERY_THRESHOLD) * 100
+        if subtotal < MIN_ORDER:
+            progress_percent = (subtotal / MIN_ORDER) * 100
+            remaining_for_min_order = MIN_ORDER - subtotal
+            remaining_amount = FREE_DELIVERY - subtotal
+
         else:
-            remaining_amount = Decimal(0)
-            progress_percent = 100
+            progress_percent = (subtotal / FREE_DELIVERY) * 100
+            if progress_percent > 100:
+                progress_percent = 100
+
+            remaining_for_min_order = Decimal("0")
+            remaining_amount = max(Decimal("0"), FREE_DELIVERY - subtotal)
 
         
         cross_sell_threshold = Decimal("249")

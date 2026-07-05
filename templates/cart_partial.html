@@ -96,13 +96,39 @@
                 </div>
             </div>
 
-            <small>
-                {% if remaining_amount > 0 %}
-                Add ₹{{ remaining_amount|floatformat:0 }} more to unlock FREE delivery above ₹999 🚀
-                {% else %}
-                🎉 You unlocked FREE delivery!
-                {% endif %}
-            </small>
+            {% if subtotal < 99 %}
+
+                <small class="fw-semibold">
+                    🛒 Start your order
+                </small>
+
+                <br>
+
+                <small class="text-muted">
+                    ₹{{ subtotal|floatformat:0 }} / ₹99
+                </small>
+
+                <br>
+
+                <small class="text-success">
+                    Add only ₹{{ remaining_for_min_order|floatformat:0 }}
+                    more to place your order 🚀
+                </small>
+
+            {% elif remaining_amount > 0 %}
+
+                <small>
+                    Add ₹{{ remaining_amount|floatformat:0 }}
+                    more to unlock FREE delivery above ₹999 🚀
+                </small>
+
+            {% else %}
+
+                <small>
+                    🎉 You unlocked FREE delivery!
+                </small>
+
+            {% endif %}
 
         </div>
 
@@ -132,6 +158,18 @@
 
             </div>
 
+            {% if subtotal < 99 %}
+
+            <button
+                class="btn btn-secondary w-100"
+                disabled>
+
+                Add ₹{{ remaining_for_min_order|floatformat:0 }} More
+
+            </button>
+
+            {% else %}
+
             <button
                 id="checkoutBtn"
                 class="btn btn-success w-100"
@@ -141,6 +179,8 @@
                 🚀 Place Order • ₹{{ subtotal|floatformat:0 }}
 
             </button>
+
+            {% endif %}
 
         </div>
 
