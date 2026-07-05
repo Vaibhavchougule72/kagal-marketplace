@@ -147,6 +147,11 @@ urlpatterns = [
         views.cross_sell_popup,
         name="cross_sell_popup"
     ),
+    path(
+        "replace-cart/<int:product_id>/",
+        views.replace_cart,
+        name="replace_cart",
+    )
 ]
 
 

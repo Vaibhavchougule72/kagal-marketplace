@@ -479,11 +479,15 @@ def add_bundle_to_cart(request, bundle_id):
     })
 
     # Single store restriction
-    if cart['store_id'] and cart['store_id'] != bundle.store.id:
-        cart = {
-            'store_id': bundle.store.id,
-            'items': {}
-        }
+    if cart.get("store_id") and cart["store_id"] != bundle.store.id:
+
+        return JsonResponse({
+            "success": False,
+            "different_store": True,
+            "bundle_id": bundle.id,
+            "is_bundle": True,
+            "store_name": bundle.store.name
+        })
 
     cart['store_id'] = bundle.store.id
 
@@ -626,12 +630,14 @@ def add_to_cart(request, product_id):
     })
 
     # single store rule
-    if cart.get('store_id') and cart['store_id'] != product.store.id:
-        request.session['cart'] = {
-            'store_id': product.store.id,
-            'items': {}
-        }
-        cart = request.session['cart']
+    if cart.get("store_id") and cart["store_id"] != product.store.id:
+
+        return JsonResponse({
+            "success": False,
+            "different_store": True,
+            "store_name": product.store.name,
+            "product_id": product.id
+        })
     
     if not cart.get('store_id'):
         cart['store_id'] = product.store.id
@@ -5519,3 +5525,24 @@ def cross_sell_popup(request):
             """,
             status=500
         )
+    
+
+def replace_cart(request, product_id):
+
+    product = get_object_or_404(Product, id=product_id)
+
+    request.session["cart"] = {
+        "store_id": product.store.id,
+        "items": {
+            str(product.id): {
+                "quantity": 1
+            }
+        }
+    }
+
+    request.session.modified = True
+
+    return JsonResponse({
+        "success": True,
+        "cart_count": 1
+    })
