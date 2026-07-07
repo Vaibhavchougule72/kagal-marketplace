@@ -152,11 +152,11 @@ class Product(models.Model):
         hour = now.hour
 
         # Morning
-        if 10 <= hour < 13:
+        if 10 <= hour < 12:
             return not self.unavailable_morning
 
         # Afternoon
-        if 13 <= hour < 17:
+        if 12 <= hour < 17:
             return not self.unavailable_afternoon
 
         # Evening
