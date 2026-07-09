@@ -151,7 +151,9 @@ urlpatterns = [
         "replace-cart/<int:product_id>/",
         views.replace_cart,
         name="replace_cart",
-    )
+    ),
+    path('rider-location/<int:order_id>/', views.get_rider_location, name='get_rider_location'),
+    
 ]
 
 

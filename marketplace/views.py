@@ -4168,6 +4168,31 @@ def update_rider_location(request, order_id):
 
     return JsonResponse({"success": True})
 
+def get_rider_location(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id)
+
+    if order.status != "OUT_FOR_DELIVERY":
+        return JsonResponse({
+            "success": False,
+            "message": "Order is not out for delivery",
+            "status": order.status
+        })
+
+    if not order.rider_latitude or not order.rider_longitude:
+        return JsonResponse({
+            "success": False,
+            "message": "Waiting for rider's location…"
+        })
+
+    return JsonResponse({
+        "success": True,
+        "rider_lat": order.rider_latitude,
+        "rider_lng": order.rider_longitude,
+        "customer_lat": order.latitude,
+        "customer_lng": order.longitude,
+    })
+
 def upi_payment(request):
 
     context = {
@@ -5546,3 +5571,4 @@ def replace_cart(request, product_id):
         "success": True,
         "cart_count": 1
     })
+

@@ -26,7 +26,10 @@
 <h4>📦 Active Orders</h4>
 
 {% for order in active_orders %}
-<div class="card mb-3 shadow-sm">
+<div class="card mb-3 shadow-sm rider-order-card"
+     data-order-id="{{ order.id }}"
+     data-status="{{ order.status }}"
+     data-location-url="{% url 'update_rider_location' order.id %}">
 <div class="card-body">
 
 <b>Order #{{ order.id }}</b><br>
@@ -82,11 +85,7 @@ Out For Delivery
 
 {% if order.status == "OUT_FOR_DELIVERY" %}
 
-<button
-class="btn btn-dark btn-sm"
-onclick="startTracking('{{ order.id }}')">
-Start Live
-</button>
+<span style="font-size:12px;color:#2D6B27;">🟢 Sharing live location</span>
 
 <a href="{% url 'rider_update_status' order.id 'DELIVERED' %}"
 class="btn btn-success btn-sm">
@@ -120,19 +119,62 @@ Order #{{ order.id }} - ₹{{ order.delivery_payout }}
 </div>
 
 <script>
-function startTracking(orderId) {
+document.addEventListener("DOMContentLoaded", function () {
 
-    navigator.geolocation.watchPosition(function(pos) {
+  /* ── Read active OUT_FOR_DELIVERY orders straight from the DOM,
+     no Django template tags inside this script. ── */
+  var trackingUrls = [];
 
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        fetch("/rider/location/" + orderId + "/?lat=" + lat + "&lng=" + lng);
-
+  document.querySelectorAll('.rider-order-card[data-status="OUT_FOR_DELIVERY"]')
+    .forEach(function (card) {
+      trackingUrls.push(card.dataset.locationUrl);
     });
 
-    alert("Live tracking started");
-}
+  var lastSentTime = 0;
+  var lastSentLat = null;
+  var lastSentLng = null;
+
+  function sendLocation(lat, lng) {
+    trackingUrls.forEach(function (baseUrl) {
+      fetch(baseUrl + "?lat=" + lat + "&lng=" + lng);
+    });
+  }
+
+  function startTracking() {
+    if (!navigator.geolocation || trackingUrls.length === 0) return;
+
+    navigator.geolocation.watchPosition(
+      function (pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        var now = Date.now();
+
+        var movedEnough = true;
+        if (lastSentLat !== null) {
+          var approxMeters = Math.sqrt(
+            Math.pow(lat - lastSentLat, 2) + Math.pow(lng - lastSentLng, 2)
+          ) * 111000;
+          movedEnough = approxMeters > 15;
+        }
+
+        if (now - lastSentTime < 5000 && !movedEnough) return;
+
+        lastSentLat = lat;
+        lastSentLng = lng;
+        lastSentTime = now;
+
+        sendLocation(lat, lng);
+      },
+      function (err) {
+        console.error("Location error:", err);
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+  }
+
+  startTracking();
+
+});
 </script>
 
 {% endblock %}

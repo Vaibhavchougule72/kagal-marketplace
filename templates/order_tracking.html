@@ -373,6 +373,14 @@ body,
     overflow: hidden;
   }
 
+  #liveMap {
+    width: 100%;
+    height: 220px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #EAF2E8;
+  }
+
   /* ── BUTTONS ── */
   .ot-btn-row {
     display: flex;
@@ -459,6 +467,11 @@ body,
     margin: 0 auto 16px;
   }
 </style>
+
+{% if order.status == "OUT_FOR_DELIVERY" %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endif %}
 
 <div class="ot-page">
 
@@ -622,8 +635,8 @@ body,
       {% endif %}
     </div>
 
-    <!-- RIDER CARD (out for delivery + has location) -->
-    {% if order.status == "OUT_FOR_DELIVERY" and order.rider_latitude %}
+    <!-- RIDER CARD (out for delivery only) -->
+    {% if order.status == "OUT_FOR_DELIVERY" %}
     <div class="ot-rider-card">
       <div class="ot-card-head"><span>{% trans "Delivery partner" %}</span></div>
       <div class="ot-card-body">
@@ -642,11 +655,11 @@ body,
         </div>
         {% endif %}
         {% endif %}
-        <a href="https://www.google.com/maps?q={{ order.rider_latitude }},{{ order.rider_longitude }}"
-           target="_blank" class="ot-btn white" style="margin-top:4px;">
-          <i class="ti ti-map-pin" aria-hidden="true"></i>
-          {% trans "Track rider live" %}
-        </a>
+
+        <div id="liveMap"></div>
+        <div id="liveMapStatus" style="font-size:12px; color:#9AA899; margin-top:8px; text-align:center;">
+          {% trans "Locating rider…" %}
+        </div>
       </div>
     </div>
     {% endif %}
@@ -755,6 +768,29 @@ body,
 
   </div><!-- /ot-body -->
 
+  <!-- ═══════════════════════════════════════════════════════
+       ALL DYNAMIC / DJANGO VALUES LIVE HERE — the script block
+       below reads only from this element's dataset, never from
+       {% %} or {{ }} directly, so it stays valid pure JS.
+  ═══════════════════════════════════════════════════════ -->
+  <div id="otData"
+      data-status="{{ order.status }}"
+      data-order-id="{{ order.id }}"
+      data-customer-lat="{{ order.latitude|default_if_none:'' }}"
+      data-customer-lng="{{ order.longitude|default_if_none:'' }}"
+      data-rider-location-url="{% url 'get_rider_location' order.id %}"
+      data-submit-rating-url="{% url 'submit_rating' order.id %}"
+      data-csrf="{{ csrf_token }}"
+      data-i18n-waiting="{% trans 'Waiting for rider location…' %}"
+      data-i18n-almost="{% trans 'Rider is almost at your location' %}"
+      data-i18n-min="{% trans 'min' %}"
+      data-i18n-select-rating="{% trans 'Please select a rating.' %}"
+      data-i18n-submitting="{% trans 'Submitting...' %}"
+      data-i18n-submit-rating="{% trans 'Submit rating' %}"
+      data-i18n-thanks="{% trans 'Thank you for your feedback!' %}"
+      style="display:none;">
+  </div>
+
 </div><!-- /ot-page -->
 
 <!-- CANCEL MODAL (bottom sheet) -->
@@ -777,88 +813,172 @@ body,
 {% endif %}
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
+
+  var otData = document.getElementById("otData").dataset;
+  var finalStatuses = ["DELIVERED", "FAILED", "CANCELLED"];
 
   /* ── AUTO REFRESH ── */
-  var finalStatuses = ["DELIVERED","FAILED","CANCELLED"];
-  var currentStatus = "{{ order.status }}";
-  if (!finalStatuses.includes(currentStatus)) {
-    setTimeout(function() { location.reload(); }, 5000);
+  if (finalStatuses.indexOf(otData.status) === -1) {
+    setTimeout(function () { location.reload(); }, 5000);
   }
 
   /* ── CANCEL MODAL ── */
-  var openBtn    = document.getElementById("openCancelModal");
-  var backdrop   = document.getElementById("cancelModalBackdrop");
-  var closeBtn   = document.getElementById("closeCancelModal");
+  var openBtn  = document.getElementById("openCancelModal");
+  var backdrop = document.getElementById("cancelModalBackdrop");
+  var closeBtn = document.getElementById("closeCancelModal");
 
   if (openBtn) {
-    openBtn.addEventListener("click", function() {
+    openBtn.addEventListener("click", function () {
       backdrop.classList.add("open");
     });
   }
 
   if (closeBtn) {
-    closeBtn.addEventListener("click", function() {
+    closeBtn.addEventListener("click", function () {
       backdrop.classList.remove("open");
     });
   }
 
   if (backdrop) {
-    backdrop.addEventListener("click", function(e) {
+    backdrop.addEventListener("click", function (e) {
       if (e.target === backdrop) backdrop.classList.remove("open");
     });
+  }
+
+  /* ── LIVE RIDER MAP (only runs when status is OUT_FOR_DELIVERY) ── */
+  if (otData.status === "OUT_FOR_DELIVERY") {
+
+    var liveMap, riderMarker, routeLine;
+    var customerLat = otData.customerLat ? parseFloat(otData.customerLat) : null;
+    var customerLng = otData.customerLng ? parseFloat(otData.customerLng) : null;
+
+    var initLiveMap = function (riderLat, riderLng) {
+      liveMap = L.map("liveMap", { zoomControl: false, attributionControl: false })
+        .setView([riderLat, riderLng], 15);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(liveMap);
+
+      var riderIcon = L.divIcon({
+        className: "",
+        html: '<div style="background:#E8621A;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);"><i class="ti ti-bike" style="color:#fff;font-size:16px;"></i></div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+
+      var homeIcon = L.divIcon({
+        className: "",
+        html: '<div style="background:#2D5A27;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);"><i class="ti ti-map-pin-filled" style="color:#fff;font-size:14px;"></i></div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+
+      riderMarker = L.marker([riderLat, riderLng], { icon: riderIcon }).addTo(liveMap);
+
+      if (customerLat && customerLng) {
+        L.marker([customerLat, customerLng], { icon: homeIcon }).addTo(liveMap);
+        routeLine = L.polyline(
+          [[riderLat, riderLng], [customerLat, customerLng]],
+          { color: "#E8621A", weight: 3, dashArray: "6,6" }
+        ).addTo(liveMap);
+        liveMap.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+      }
+    };
+
+    var haversineKm = function (lat1, lon1, lat2, lon2) {
+      var toRad = function (v) { return (v * Math.PI) / 180; };
+      var R = 6371;
+      var dLat = toRad(lat2 - lat1);
+      var dLon = toRad(lon2 - lon1);
+      var a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
+
+    var pollRiderLocation = function () {
+      fetch(otData.riderLocationUrl)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var statusEl = document.getElementById("liveMapStatus");
+
+          if (!data.success) {
+            statusEl.innerText = data.message || otData.i18nWaiting;
+            return;
+          }
+
+          if (!liveMap) {
+            initLiveMap(data.rider_lat, data.rider_lng);
+          } else {
+            riderMarker.setLatLng([data.rider_lat, data.rider_lng]);
+            if (routeLine) {
+              routeLine.setLatLngs([[data.rider_lat, data.rider_lng], [customerLat, customerLng]]);
+            }
+          }
+
+          if (customerLat && customerLng) {
+            var distKm = haversineKm(data.rider_lat, data.rider_lng, customerLat, customerLng);
+            var etaMin = Math.max(1, Math.round(distKm * 5));
+            statusEl.innerText = distKm < 0.1
+              ? otData.i18nAlmost
+              : distKm.toFixed(1) + " km away · ~" + etaMin + " " + otData.i18nMin;
+          }
+        })
+        .catch(function () { /* keep last known state on a failed poll */ });
+    };
+
+    pollRiderLocation();
+    setInterval(pollRiderLocation, 6000);
   }
 
   /* ── STAR RATING ── */
   var selectedRating = 0;
   var stars = document.querySelectorAll(".ot-star");
 
-  stars.forEach(function(star) {
-    star.addEventListener("click", function() {
-      selectedRating = parseInt(this.dataset.value);
-      stars.forEach(function(s) {
-        s.classList.toggle("active", parseInt(s.dataset.value) <= selectedRating);
+  stars.forEach(function (star) {
+    star.addEventListener("click", function () {
+      selectedRating = parseInt(this.dataset.value, 10);
+      stars.forEach(function (s) {
+        s.classList.toggle("active", parseInt(s.dataset.value, 10) <= selectedRating);
       });
     });
   });
 
   var submitBtn = document.getElementById("submitRatingBtn");
   if (submitBtn) {
-    submitBtn.addEventListener("click", function() {
+    submitBtn.addEventListener("click", function () {
+      var msg = document.getElementById("ratingMessage");
+
       if (selectedRating === 0) {
-        var msg = document.getElementById("ratingMessage");
         msg.className = "ot-rating-msg error";
-        msg.innerText = "{% trans 'Please select a rating.' %}";
+        msg.innerText = otData.i18nSelectRating;
         return;
       }
-      submitBtn.disabled = true;
-      submitBtn.innerText = "{% trans 'Submitting...' %}";
 
-      fetch("/submit-rating/{{ order.id }}/", {
+      submitBtn.disabled = true;
+      submitBtn.innerText = otData.i18nSubmitting;
+
+      fetch(otData.submitRatingUrl, {
         method: "POST",
         headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
+          "X-CSRFToken": otData.csrf,
           "Content-Type": "application/x-www-form-urlencoded"
         },
         body: "rating=" + selectedRating +
-              "&comment=" + encodeURIComponent(
-                document.getElementById("ratingComment").value
-              )
+              "&comment=" + encodeURIComponent(document.getElementById("ratingComment").value)
       })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var msg = document.getElementById("ratingMessage");
-        if (data.success) {
-          msg.className = "ot-rating-msg success";
-          msg.innerText = "{% trans 'Thank you for your feedback!' %}";
-          submitBtn.style.display = "none";
-        } else {
-          msg.className = "ot-rating-msg error";
-          msg.innerText = data.message;
-          submitBtn.disabled = false;
-          submitBtn.innerText = "{% trans 'Submit rating' %}";
-        }
-      });
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success) {
+            msg.className = "ot-rating-msg success";
+            msg.innerText = otData.i18nThanks;
+            submitBtn.style.display = "none";
+          } else {
+            msg.className = "ot-rating-msg error";
+            msg.innerText = data.message;
+            submitBtn.disabled = false;
+            submitBtn.innerText = otData.i18nSubmitRating;
+          }
+        });
     });
   }
 
