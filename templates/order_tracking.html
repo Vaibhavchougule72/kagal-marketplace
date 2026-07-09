@@ -768,11 +768,10 @@ body,
 
   </div><!-- /ot-body -->
 
-  <!-- ═══════════════════════════════════════════════════════
-       ALL DYNAMIC / DJANGO VALUES LIVE HERE — the script block
-       below reads only from this element's dataset, never from
-       {% %} or {{ }} directly, so it stays valid pure JS.
-  ═══════════════════════════════════════════════════════ -->
+  {#
+  ALL DYNAMIC VALUES LIVE HERE.
+  The script only reads values from data-* attributes.
+  #}
   <div id="otData"
       data-status="{{ order.status }}"
       data-order-id="{{ order.id }}"
