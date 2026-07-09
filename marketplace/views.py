@@ -2325,14 +2325,114 @@ def order_success(request, order_id):
         }
     )
 
+import traceback
+import logging
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+
+logger = logging.getLogger(__name__)
+
 def order_tracking(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    existing_rating = StoreRating.objects.filter(
-        order=order
-    ).first()
-    return render(request, 'order_tracking.html', {'order': order,
-    "show_floating_cart": False, "show_navbar": False, 'simple_navbar': False, "existing_rating": existing_rating,
-    })
+
+    try:
+
+        print("\n" + "=" * 80)
+        print("ORDER TRACKING REQUEST")
+        print("=" * 80)
+        print("Order ID:", order_id)
+        print("Path:", request.path)
+        print("Method:", request.method)
+
+        if request.user.is_authenticated:
+            print("User:", request.user.username)
+        else:
+            print("User: Anonymous")
+
+        print("Customer Phone:", request.session.get("customer_phone"))
+        print("=" * 80)
+
+        order = get_object_or_404(
+            Order.objects.select_related("store", "assigned_delivery"),
+            id=order_id
+        )
+
+        existing_rating = StoreRating.objects.filter(
+            order=order
+        ).first()
+
+        context = {
+            "order": order,
+            "existing_rating": existing_rating,
+            "show_floating_cart": False,
+            "show_navbar": False,
+            "simple_navbar": False,
+        }
+
+        return render(
+            request,
+            "order_tracking.html",
+            context
+        )
+
+    except Exception as e:
+
+        print("\n" + "=" * 80)
+        print("🚨 ORDER_TRACKING ERROR")
+        print("=" * 80)
+
+        print("\nORDER ID:")
+        print(order_id)
+
+        print("\nREQUEST PATH:")
+        print(request.path)
+
+        print("\nREQUEST METHOD:")
+        print(request.method)
+
+        print("\nUSER:")
+        if request.user.is_authenticated:
+            print(request.user.username)
+        else:
+            print("Anonymous")
+
+        print("\nSESSION:")
+        try:
+            print(dict(request.session))
+        except Exception:
+            print("Unable to read session")
+
+        print("\nERROR TYPE:")
+        print(type(e).__name__)
+
+        print("\nERROR MESSAGE:")
+        print(str(e))
+
+        print("\nFULL TRACEBACK:")
+        traceback.print_exc()
+
+        print("=" * 80 + "\n")
+
+        logger.exception(
+            "ORDER_TRACKING FAILED (order_id=%s)",
+            order_id
+        )
+
+        return HttpResponse(
+            f"""
+            <h2>ORDER TRACKING ERROR</h2>
+
+            <p><strong>Order ID:</strong> {order_id}</p>
+
+            <p><strong>Error Type:</strong> {type(e).__name__}</p>
+
+            <p><strong>Error:</strong> {str(e)}</p>
+
+            <hr>
+
+            <pre>{traceback.format_exc()}</pre>
+            """,
+            status=500
+        )
 
 
 def my_orders(request):
