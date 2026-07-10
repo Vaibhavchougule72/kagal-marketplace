@@ -1,0 +1,257 @@
+<div id="ot-live-region">
+
+  <!-- PILLS -->
+  <div class="ot-pills-wrap">
+    {% if order.status == "CANCELLED" %}
+    <div class="ot-pills">
+      <div class="ot-pill done"><i class="ti ti-check" aria-hidden="true"></i> Submitted</div>
+      <div class="ot-pill cancelled-pill"><i class="ti ti-x" aria-hidden="true"></i> Cancelled</div>
+    </div>
+
+    {% elif order.status == "FAILED" %}
+    <div class="ot-pills">
+      <div class="ot-pill done"><i class="ti ti-check" aria-hidden="true"></i> Submitted</div>
+      <div class="ot-pill failed-pill"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Failed</div>
+    </div>
+
+    {% else %}
+    <div class="ot-pills">
+
+      <div class="ot-pill done">
+        <i class="ti ti-check" aria-hidden="true"></i> Submitted
+      </div>
+
+      <div class="ot-pill
+        {% if order.status == 'ACCEPTED' %}active
+        {% elif order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done
+        {% else %}pending{% endif %}">
+        {% if order.status == 'ACCEPTED' %}
+            <i class="ti ti-check"></i>
+        {% elif order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
+        {% endif %}
+        Accepted
+      </div>
+
+      <div class="ot-pill
+        {% if order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' %}active
+        {% elif order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done
+        {% else %}pending{% endif %}">
+        {% if order.status == 'IN_PROGRESS' or order.status == 'PICKED_UP' %}
+            <i class="ti ti-chef-hat"></i>
+        {% elif order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
+        {% endif %}
+        Cooking
+      </div>
+
+      <div class="ot-pill
+        {% if order.status == 'OUT_FOR_DELIVERY' %}active
+        {% elif order.status == 'DELIVERED' %}done
+        {% else %}pending{% endif %}">
+        {% if order.status == 'OUT_FOR_DELIVERY' %}
+            <i class="ti ti-bike"></i>
+        {% elif order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
+        {% endif %}
+        Delivery
+      </div>
+
+      <div class="ot-pill
+        {% if order.status == 'DELIVERED' %}done
+        {% else %}pending{% endif %}">
+        {% if order.status == 'DELIVERED' %}
+            <i class="ti ti-check"></i>
+        {% endif %}
+        Done
+      </div>
+
+    </div>
+    {% endif %}
+  </div><!-- /ot-pills-wrap -->
+
+  <!-- BODY -->
+  <div class="ot-body">
+
+    <!-- STATUS CARD -->
+    <div class="ot-status-card">
+      {% if order.status == "REQUEST_SUBMITTED" %}
+        <div class="ot-status-icon orange"><i class="ti ti-clock" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Request Submitted" %}</div>
+          <div class="ot-status-sub">{% trans "Waiting for store to accept" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+      {% elif order.status == "ACCEPTED" %}
+        <div class="ot-status-icon orange"><i class="ti ti-chef-hat" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Accepted" %}</div>
+          <div class="ot-status-sub">{% trans "Your order is being prepared" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+      {% elif order.status == "PICKED_UP" %}
+        <div class="ot-status-icon orange"><i class="ti ti-chef-hat" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "In Progress" %}</div>
+          <div class="ot-status-sub">{% trans "Your food is being prepared · 40–60 min" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+      {% elif order.status == "OUT_FOR_DELIVERY" %}
+        <div class="ot-status-icon orange"><i class="ti ti-bike" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Out for Delivery" %}</div>
+          <div class="ot-status-sub">{% trans "Your order is on the way!" %}</div>
+          <div class="ot-refresh-badge"><div class="ot-refresh-dot"></div> {% trans "Auto-refreshing" %}</div>
+        </div>
+      {% elif order.status == "DELIVERED" %}
+        <div class="ot-status-icon green"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Delivered" %}</div>
+          <div class="ot-status-sub">{% trans "Enjoy your meal!" %}</div>
+        </div>
+      {% elif order.status == "CANCELLED" %}
+        <div class="ot-status-icon red"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Order Cancelled" %}</div>
+          <div class="ot-status-sub">{% trans "Your order was cancelled" %}</div>
+        </div>
+      {% elif order.status == "FAILED" %}
+        <div class="ot-status-icon amber"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div>
+        <div>
+          <div class="ot-status-label">{% trans "Delivery Failed" %}</div>
+          <div class="ot-status-sub">{% trans "Please contact support" %}</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- RIDER CARD (out for delivery only) -->
+    {% if order.status == "OUT_FOR_DELIVERY" %}
+    <div class="ot-rider-card">
+      <div class="ot-card-head"><span>{% trans "Delivery partner" %}</span></div>
+      <div class="ot-card-body">
+        {% if order.assigned_delivery %}
+        <div class="ot-row">
+          <span>{% trans "Partner" %}</span>
+          <strong>{{ order.assigned_delivery.get_full_name|default:order.assigned_delivery.username }}</strong>
+        </div>
+        {% if order.assigned_delivery.deliverypartnerprofile.phone %}
+        <div style="margin-top:10px;">
+          <a href="tel:{{ order.assigned_delivery.deliverypartnerprofile.phone }}"
+             class="ot-btn green" style="margin-bottom:8px;">
+            <i class="ti ti-phone" aria-hidden="true"></i>
+            {% trans "Call rider" %} ({{ order.assigned_delivery.deliverypartnerprofile.phone }})
+          </a>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <div id="liveMap"></div>
+        <div id="liveMapStatus" style="font-size:12px; color:#9AA899; margin-top:8px; text-align:center;">
+          {% trans "Locating rider…" %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ORDER INFO CARD -->
+    <div class="ot-card">
+      <div class="ot-card-head"><span>{% trans "Order info" %}</span></div>
+      <div class="ot-card-body">
+        <div class="ot-row">
+          <span>{% trans "Store" %}</span>
+          <strong>{{ order.store.name }}</strong>
+        </div>
+        <div class="ot-row">
+          <span>{% trans "Ordered on" %}</span>
+          <strong>{{ order.created_at|date:"d M Y, H:i" }}</strong>
+        </div>
+        <div class="ot-row">
+          <span>{% trans "Payment" %}</span>
+          <strong>{{ order.payment_method }}</strong>
+        </div>
+        <div class="ot-row">
+          <span>{% trans "Total" %}</span>
+          <strong>₹{{ order.total }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- RATING CARD (delivered only) -->
+    {% if order.status == "DELIVERED" %}
+    <div class="ot-card">
+      <div class="ot-card-head"><span>{% trans "Rate your experience" %}</span></div>
+      <div class="ot-card-body">
+        {% if existing_rating %}
+          <div style="font-size:14px;font-weight:500;color:#1A2E19;margin-bottom:8px;">{% trans "Thank you!" %}</div>
+          <div class="ot-existing-stars">
+            {% for i in "12345" %}
+              {% if forloop.counter <= existing_rating.rating %}
+                <span class="ot-existing-star" style="color:#E8621A;">★</span>
+              {% else %}
+                <span class="ot-existing-star" style="color:#E0E8DF;">★</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if existing_rating.comment %}
+          <p style="font-size:13px;color:#9AA899;margin:0;">{{ existing_rating.comment }}</p>
+          {% endif %}
+        {% else %}
+          <div style="font-size:13px;color:#9AA899;margin-bottom:4px;">
+            {% trans "Rate this store" %}
+          </div>
+          <div class="ot-stars" id="ratingStars">
+            <span class="ot-star" data-value="1">★</span>
+            <span class="ot-star" data-value="2">★</span>
+            <span class="ot-star" data-value="3">★</span>
+            <span class="ot-star" data-value="4">★</span>
+            <span class="ot-star" data-value="5">★</span>
+          </div>
+          <textarea id="ratingComment" class="ot-comment"
+                    placeholder="{% trans 'Comment (optional)' %}"></textarea>
+          <button class="ot-btn green" id="submitRatingBtn" style="width:100%;">
+            {% trans "Submit rating" %}
+          </button>
+          <div id="ratingMessage" class="ot-rating-msg"></div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- INVOICE BUTTONS -->
+    <div class="ot-btn-row">
+      <a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"
+         target="_blank" class="ot-btn green">
+        <i class="ti ti-file-text" aria-hidden="true"></i>
+        {% trans "View bill" %}
+      </a>
+      <a href="{% url 'generate_invoice' order.id %}?download=1"
+         download class="ot-btn white">
+        <i class="ti ti-download" aria-hidden="true"></i>
+        {% trans "Download" %}
+      </a>
+      <a href="/" class="ot-btn white">
+        <i class="ti ti-home" aria-hidden="true"></i>
+        {% trans "Home" %}
+      </a>
+    </div>
+
+    <!-- CANCEL BUTTON -->
+    {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" %}
+    <button class="ot-btn red" id="openCancelModal" style="width:100%;">
+      <i class="ti ti-x" aria-hidden="true"></i>
+      {% trans "Cancel order" %}
+    </button>
+    {% endif %}
+
+    <!-- POLICY -->
+    <div class="ot-policy">
+      <div class="ot-policy-title">{% trans "Return policy" %}</div>
+      <div class="ot-policy-li">{% trans "Contact us immediately if you receive incorrect or damaged items." %}</div>
+      <div class="ot-policy-li">{% trans "Used items cannot be returned." %}</div>
+      <div class="ot-policy-li">{% trans "Perishable goods are non-returnable." %}</div>
+      <div class="ot-policy-li">{% trans "Final decision rests with the store." %}</div>
+    </div>
+
+  </div><!-- /ot-body -->
+
+</div><!-- /ot-live-region -->

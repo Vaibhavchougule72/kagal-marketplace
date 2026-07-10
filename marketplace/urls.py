@@ -153,7 +153,16 @@ urlpatterns = [
         name="replace_cart",
     ),
     path('rider-location/<int:order_id>/', views.get_rider_location, name='get_rider_location'),
-    
+    path(
+        "order-status/<int:order_id>/",
+        views.order_status_api,
+        name="order_status_api",
+    ),
+    path(
+        "order-tracking-content/<int:order_id>/",
+        views.order_tracking_partial,
+        name="order_tracking_partial",
+    ),
 ]
 
 

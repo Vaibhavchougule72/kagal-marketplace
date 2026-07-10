@@ -2434,6 +2434,56 @@ def order_tracking(request, order_id):
             status=500
         )
 
+from django.http import JsonResponse
+
+def order_status_api(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id)
+
+    rider_phone = ""
+
+    if order.assigned_delivery:
+        profile = getattr(
+            order.assigned_delivery,
+            "deliverypartnerprofile",
+            None
+        )
+
+        if profile:
+            rider_phone = profile.phone
+
+    return JsonResponse({
+
+        "status": order.status,
+
+        "rider_name":
+            order.assigned_delivery.get_full_name()
+            if order.assigned_delivery else "",
+
+        "rider_phone": rider_phone,
+
+        "assigned":
+            bool(order.assigned_delivery)
+
+    })
+
+def order_tracking_partial(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id)
+
+    existing_rating = StoreRating.objects.filter(
+        order=order
+    ).first()
+
+    return render(
+        request,
+        "partials/order_tracking_content.html",
+        {
+            "order": order,
+            "existing_rating": existing_rating,
+        }
+    )
+
 
 def my_orders(request):
 
