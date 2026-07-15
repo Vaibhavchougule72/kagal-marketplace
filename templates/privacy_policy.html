@@ -1,101 +1,426 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
 
-<div class="container mt-5 mb-5" style="max-width:900px; line-height:1.8;">
+<style>
 
-    <h2 class="mb-4 text-center">LOKA गोपनीयता धोरण</h2>
+    .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <p><strong>शेवटचा अद्यतन:</strong> 28/04/2026</p>
+.pp-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <p>
-        LOKA Marketplace आपल्या गोपनीयतेचा आदर करते. हे गोपनीयता धोरण आम्ही
-        आपल्या वेबसाइट आणि मोबाईल अॅप वापरताना कोणती माहिती गोळा करतो,
-        ती कशी वापरतो, साठवतो आणि सुरक्षित ठेवतो हे स्पष्ट करते.
-    </p>
+html,
+body,
+.pp-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <h4 class="mt-4">1. आम्ही कोणती माहिती गोळा करतो</h4>
+  * { box-sizing: border-box; }
 
-    <p>आम्ही खालील माहिती गोळा करू शकतो:</p>
+  .pp-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+  }
 
-    <ul>
-        <li>नाव</li>
-        <li>मोबाईल नंबर</li>
-        <li>डिलिव्हरी पत्ता</li>
-        <li>लोकेशन माहिती (जवळील दुकाने व डिलिव्हरी सेवांसाठी)</li>
-        <li>ऑर्डर माहिती</li>
-        <li>पेमेंट स्थिती (आम्ही कार्ड/UPI पासवर्ड साठवत नाही)</li>
-        <li>अॅप कार्यक्षमतेसाठी डिव्हाइस माहिती</li>
-    </ul>
+  /* ── STICKY NAV ── */
+  .pp-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
 
-    <h4 class="mt-4">2. माहितीचा वापर कसा करतो</h4>
+  .pp-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    <ul>
-        <li>आपल्या ऑर्डर प्रक्रिया व डिलिव्हरीसाठी</li>
-        <li>जवळील दुकाने व सेवा दाखवण्यासाठी</li>
-        <li>अॅप आणि वेबसाइट अनुभव सुधारण्यासाठी</li>
-        <li>ग्राहक सहाय्य देण्यासाठी</li>
-        <li>ऑर्डर अपडेट्स व सूचना पाठवण्यासाठी</li>
-        <li>फसवणूक किंवा गैरवापर रोखण्यासाठी</li>
-    </ul>
+  .pp-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
 
-    <h4 class="mt-4">3. लोकेशन परवानगी</h4>
+  .pp-nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+  }
 
-    <p>
-        आमचे अॅप आपल्या परिसरातील डिलिव्हरी सेवा, जवळील दुकाने
-        आणि जलद सेवा उपलब्धता दाखवण्यासाठी लोकेशन परवानगी मागू शकते.
-    </p>
+  /* ── DARK GREEN HERO ── */
+  .pp-hero {
+    background: #1A3A16;
+    padding: 22px 16px 20px;
+    text-align: center;
+  }
 
-    <h4 class="mt-4">4. पेमेंट</h4>
+  .pp-hero-icon { font-size: 38px; display: block; margin-bottom: 10px; }
+  .pp-hero-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .pp-hero-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
 
-    <p>
-        पेमेंट सुरक्षित तृतीय-पक्ष पेमेंट प्रदात्यांद्वारे प्रक्रिया केले जाते.
-        LOKA कोणतेही बँक पासवर्ड, UPI PIN किंवा कार्ड CVV साठवत नाही.
-    </p>
+  /* ── BODY ── */
+  .pp-body {
+    padding: 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    <h4 class="mt-4">5. माहिती शेअर करणे</h4>
+  /* ── SECTION CARD ── */
+  .pp-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+  }
 
-    <p>आम्ही मर्यादित माहिती खालील पक्षांसोबत शेअर करू शकतो:</p>
+  .pp-card-head {
+    background: #2D5A27;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-    <ul>
-        <li>डिलिव्हरी पार्टनर</li>
-        <li>पेमेंट गेटवे सेवा प्रदाते</li>
-        <li>कायद्याने आवश्यक असल्यास संबंधित प्राधिकरण</li>
-    </ul>
+  .pp-card-head-icon { font-size: 14px; }
 
-    <h4 class="mt-4">6. डेटा सुरक्षा</h4>
+  .pp-card-head-txt {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
 
-    <p>
+  .pp-card-body {
+    padding: 13px 14px;
+    font-size: 13px;
+    color: #6B7B69;
+    line-height: 1.75;
+  }
+
+  .pp-card-body strong { color: #1A2E19; }
+
+  /* bullet list inside card */
+  .pp-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pp-list li {
+    font-size: 13px;
+    color: #6B7B69;
+    padding: 4px 0 4px 16px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .pp-list li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: #A8C9A5;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  /* badge row */
+  .pp-badge-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding: 0 14px 13px;
+  }
+
+  .pp-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: 20px;
+  }
+
+  .pp-badge.green  { background: #EAF2E8; color: #2D6B27; }
+  .pp-badge.orange { background: #FDF1EB; color: #C05018; }
+  .pp-badge.grey   { background: #F0F4EF; color: #6B7B69; }
+
+  /* ── UPDATED DATE PILL ── */
+  .pp-updated {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #EAF2E8;
+    color: #2D6B27;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 2px;
+  }
+
+  /* ── NOTE BOX ── */
+  .pp-note {
+    background: #FDF8F3;
+    border: 0.5px solid #F0DCC8;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pp-note-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .pp-note-text { font-size: 12px; color: #9A6020; line-height: 1.6; }
+
+  /* ── CONTACT BANNER ── */
+  .pp-contact {
+    background: linear-gradient(135deg, #E8621A, #C04A10);
+    border-radius: 14px;
+    padding: 14px;
+    text-decoration: none;
+    transition: transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    display: block;
+  }
+
+  .pp-contact:active { transform: scale(0.98); }
+
+  .pp-contact-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .pp-contact-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+  }
+
+  .pp-contact-icon { font-size: 14px; }
+
+  .pp-contact-link {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    word-break: break-all;
+  }
+</style>
+
+<div class="pp-page">
+
+  <!-- STICKY NAV -->
+  <div class="pp-nav">
+    <a href="/" class="pp-nav-back" aria-label="Go back">&#8249;</a>
+    <span class="pp-nav-title">गोपनीयता धोरण</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="pp-hero">
+    <span class="pp-hero-icon">🔒</span>
+    <div class="pp-hero-title">LOKA गोपनीयता धोरण</div>
+    <div class="pp-hero-sub">LOKA Marketplace · ग्राहक संरक्षण</div>
+  </div>
+
+  <div class="pp-body">
+
+    <!-- UPDATED DATE -->
+    <div style="text-align:center;">
+      <span class="pp-updated">🗓 शेवटचा अद्यतन: 28/04/2026</span>
+    </div>
+
+    <!-- INTRO -->
+    <div class="pp-note">
+      <span class="pp-note-icon">ℹ️</span>
+      <div class="pp-note-text">
+        LOKA Marketplace आपल्या गोपनीयतेचा आदर करते. हे धोरण आम्ही आपली माहिती कशी गोळा करतो, वापरतो आणि सुरक्षित ठेवतो हे स्पष्ट करते.
+      </div>
+    </div>
+
+    <!-- 1. WHAT WE COLLECT -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">📋</span>
+        <span class="pp-card-head-txt">1. आम्ही काय गोळा करतो</span>
+      </div>
+      <div class="pp-card-body" style="padding-bottom:8px;">
+        आम्ही खालील माहिती गोळा करू शकतो:
+      </div>
+      <div style="padding:0 14px 13px;">
+        <ul class="pp-list">
+          <li>नाव</li>
+          <li>मोबाईल नंबर</li>
+          <li>डिलिव्हरी पत्ता</li>
+          <li>लोकेशन माहिती (जवळील दुकाने व डिलिव्हरी सेवांसाठी)</li>
+          <li>ऑर्डर माहिती</li>
+          <li>पेमेंट स्थिती (आम्ही कार्ड/UPI पासवर्ड साठवत नाही)</li>
+          <li>अॅप कार्यक्षमतेसाठी डिव्हाइस माहिती</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 2. HOW WE USE -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">⚙️</span>
+        <span class="pp-card-head-txt">2. माहितीचा वापर</span>
+      </div>
+      <div class="pp-card-body" style="padding-bottom:8px;">
+        आपली माहिती खालील कारणांसाठी वापरली जाते:
+      </div>
+      <div style="padding:0 14px 13px;">
+        <ul class="pp-list">
+          <li>ऑर्डर प्रक्रिया व डिलिव्हरीसाठी</li>
+          <li>जवळील दुकाने व सेवा दाखवण्यासाठी</li>
+          <li>अॅप आणि वेबसाइट अनुभव सुधारण्यासाठी</li>
+          <li>ग्राहक सहाय्य देण्यासाठी</li>
+          <li>ऑर्डर अपडेट्स व सूचना पाठवण्यासाठी</li>
+          <li>फसवणूक किंवा गैरवापर रोखण्यासाठी</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 3. LOCATION -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">📍</span>
+        <span class="pp-card-head-txt">3. लोकेशन परवानगी</span>
+      </div>
+      <div class="pp-card-body">
+        आमचे अॅप आपल्या परिसरातील डिलिव्हरी सेवा, जवळील दुकाने आणि जलद सेवा उपलब्धता दाखवण्यासाठी लोकेशन परवानगी मागू शकते.
+      </div>
+      <div class="pp-badge-row">
+        <div class="pp-badge green">📍 डिलिव्हरीसाठी</div>
+        <div class="pp-badge grey">जवळील दुकाने</div>
+      </div>
+    </div>
+
+    <!-- 4. PAYMENT -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">💳</span>
+        <span class="pp-card-head-txt">4. पेमेंट सुरक्षा</span>
+      </div>
+      <div class="pp-card-body">
+        पेमेंट सुरक्षित तृतीय-पक्ष पेमेंट प्रदात्यांद्वारे प्रक्रिया केले जाते. <strong>LOKA कोणतेही बँक पासवर्ड, UPI PIN किंवा कार्ड CVV साठवत नाही.</strong>
+      </div>
+      <div class="pp-badge-row">
+        <div class="pp-badge green">🔒 UPI PIN साठवत नाही</div>
+        <div class="pp-badge green">🔒 CVV साठवत नाही</div>
+      </div>
+    </div>
+
+    <!-- 5. DATA SHARING -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">🤝</span>
+        <span class="pp-card-head-txt">5. माहिती शेअर करणे</span>
+      </div>
+      <div class="pp-card-body" style="padding-bottom:8px;">
+        आम्ही मर्यादित माहिती खालील पक्षांसोबत शेअर करू शकतो:
+      </div>
+      <div style="padding:0 14px 13px;">
+        <ul class="pp-list">
+          <li>डिलिव्हरी पार्टनर</li>
+          <li>पेमेंट गेटवे सेवा प्रदाते</li>
+          <li>कायद्याने आवश्यक असल्यास संबंधित प्राधिकरण</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 6. DATA SECURITY -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">🛡</span>
+        <span class="pp-card-head-txt">6. डेटा सुरक्षा</span>
+      </div>
+      <div class="pp-card-body">
         आपली माहिती सुरक्षित ठेवण्यासाठी आम्ही योग्य तांत्रिक व प्रशासकीय उपाय वापरतो.
-    </p>
+      </div>
+      <div class="pp-badge-row">
+        <div class="pp-badge green">🔒 एनक्रिप्टेड</div>
+        <div class="pp-badge green">✓ सुरक्षित</div>
+      </div>
+    </div>
 
-    <h4 class="mt-4">7. कुकीज व विश्लेषण</h4>
+    <!-- 7. COOKIES -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">🍪</span>
+        <span class="pp-card-head-txt">7. कुकीज व विश्लेषण</span>
+      </div>
+      <div class="pp-card-body">
+        आमची वेबसाइट/अॅप कार्यक्षमता सुधारण्यासाठी आणि चांगला अनुभव देण्यासाठी कुकीज किंवा विश्लेषण साधने वापरू शकते.
+      </div>
+    </div>
 
-    <p>
-        आमची वेबसाइट/अॅप कार्यक्षमता सुधारण्यासाठी आणि चांगला अनुभव देण्यासाठी
-        कुकीज किंवा विश्लेषण साधने वापरू शकते.
-    </p>
+    <!-- 8. YOUR RIGHTS -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">⚖️</span>
+        <span class="pp-card-head-txt">8. आपले हक्क</span>
+      </div>
+      <div class="pp-card-body">
+        आपण आपल्या वैयक्तिक माहितीमध्ये <strong>दुरुस्ती किंवा हटवण्याची विनंती</strong> आमच्याशी संपर्क करून करू शकता.
+      </div>
+      <div class="pp-badge-row">
+        <div class="pp-badge orange">✎ दुरुस्ती</div>
+        <div class="pp-badge orange">🗑 हटवणे</div>
+      </div>
+    </div>
 
-    <h4 class="mt-4">8. आपले हक्क</h4>
+    <!-- 9. POLICY CHANGES -->
+    <div class="pp-card">
+      <div class="pp-card-head">
+        <span class="pp-card-head-icon">🔄</span>
+        <span class="pp-card-head-txt">9. धोरणातील बदल</span>
+      </div>
+      <div class="pp-card-body">
+        आम्ही वेळोवेळी हे गोपनीयता धोरण अद्यतनित करू शकतो. बदल झाल्यास नवीन आवृत्ती या पृष्ठावर प्रकाशित केली जाईल.
+      </div>
+    </div>
 
-    <p>
-        आपण आपल्या वैयक्तिक माहितीमध्ये दुरुस्ती किंवा हटवण्याची विनंती
-        आमच्याशी संपर्क करून करू शकता.
-    </p>
+    <!-- 10. CONTACT -->
+    <div class="pp-contact">
+      <div class="pp-contact-title">10. संपर्क करा</div>
+      <div class="pp-contact-row">
+        <span class="pp-contact-icon">📧</span>
+        <a href="mailto:support.loka@email.com" class="pp-contact-link">support.loka@email.com</a>
+      </div>
+      <div class="pp-contact-row">
+        <span class="pp-contact-icon">🌐</span>
+        <a href="https://www.loka-store.online" class="pp-contact-link" target="_blank" rel="noopener">www.loka-store.online</a>
+      </div>
+    </div>
 
-    <h4 class="mt-4">9. धोरणातील बदल</h4>
+  </div><!-- /pp-body -->
 
-    <p>
-        आम्ही वेळोवेळी हे गोपनीयता धोरण अद्यतनित करू शकतो.
-        बदल झाल्यास नवीन आवृत्ती या पृष्ठावर प्रकाशित केली जाईल.
-    </p>
-
-    <h4 class="mt-4">10. संपर्क करा</h4>
-
-    <p>
-        ईमेल: support.loka@email.com<br>
-        वेबसाइट: https://www.loka-store.online
-    </p>
-
-</div>
+</div><!-- /pp-page -->
 
 {% endblock %}

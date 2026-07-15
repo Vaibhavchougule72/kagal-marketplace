@@ -1,24 +1,309 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load i18n %}
+{% block content %}
 
-<div class="container page-content">
-    <h2 class="fw-bold mb-4">वारंवार विचारले जाणारे प्रश्न (FAQ)</h2>
+<style>
 
-    <div class="mb-4">
-        <h5 class="fw-bold">डिलिव्हरी किती वेळात मिळते?</h5>
-        <p>आम्ही कागल परिसरात 30–45 मिनिटांच्या आत डिलिव्हरी करतो.</p>
+     .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.faq-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+html,
+body,
+.faq-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+  * { box-sizing: border-box; }
+
+  /* ── PAGE ── */
+  .faq-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+  }
+
+  /* ── STICKY NAV ── */
+  .faq-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .faq-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .faq-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
+
+  .faq-nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+  }
+
+  /* ── DARK GREEN HERO ── */
+  .faq-hero {
+    background: #1A3A16;
+    padding: 22px 16px 20px;
+    text-align: center;
+  }
+
+  .faq-hero-icon { font-size: 38px; display: block; margin-bottom: 10px; }
+  .faq-hero-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .faq-hero-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+  /* ── BODY ── */
+  .faq-body {
+    padding: 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ── FAQ CARD ── */
+  .faq-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+  }
+
+  .faq-card-head {
+    background: #2D5A27;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .faq-card-head-icon { font-size: 14px; }
+
+  .faq-card-head-txt {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .faq-card-body {
+    padding: 13px 14px;
+    font-size: 13px;
+    color: #6B7B69;
+    line-height: 1.7;
+  }
+
+  .faq-card-body strong { color: #1A2E19; }
+
+  /* badge row */
+  .faq-badge-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding: 0 14px 13px;
+  }
+
+  .faq-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: 20px;
+  }
+
+  .faq-badge.green  { background: #EAF2E8; color: #2D6B27; }
+  .faq-badge.orange { background: #FDF1EB; color: #C05018; }
+  .faq-badge.grey   { background: #F0F4EF; color: #6B7B69; }
+
+  /* ── CONTACT BANNER ── */
+  .faq-contact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, #E8621A, #C04A10);
+    border-radius: 14px;
+    padding: 14px;
+    text-decoration: none;
+    transition: transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .faq-contact:active { transform: scale(0.98); }
+
+  .faq-contact-text { flex: 1; }
+
+  .faq-contact-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+
+  .faq-contact-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .faq-contact-btn {
+    background: #fff;
+    color: #E8621A;
+    border-radius: 9px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+</style>
+
+<div class="faq-page">
+
+  <!-- STICKY NAV -->
+  <div class="faq-nav">
+    <a href="/" class="faq-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="faq-nav-title">{% trans "वारंवार विचारले जाणारे प्रश्न" %}</span>
+  </div>
+
+  <!-- DARK GREEN HERO -->
+  <div class="faq-hero">
+    <span class="faq-hero-icon">❓</span>
+    <div class="faq-hero-title">{% trans "वारंवार विचारले जाणारे प्रश्न" %}</div>
+    <div class="faq-hero-sub">LOKA · {% trans "ग्राहक माहिती" %}</div>
+  </div>
+
+  <div class="faq-body">
+
+    <!-- ── DELIVERY ── -->
+    <div class="faq-card">
+      <div class="faq-card-head">
+        <span class="faq-card-head-icon">🚚</span>
+        <span class="faq-card-head-txt">{% trans "डिलिव्हरी" %}</span>
+      </div>
+      <div class="faq-card-body">
+        {% trans "आम्ही कागल परिसरात" %} <strong>{% trans "30–45 मिनिटांच्या आत" %}</strong> {% trans "डिलिव्हरी करतो. व्यस्त वेळी थोडा जास्त वेळ लागू शकतो." %}
+      </div>
+      <div class="faq-badge-row">
+        <div class="faq-badge green">⏱ {% trans "30–45 मिनिटे" %}</div>
+        <div class="faq-badge grey">📍 {% trans "कागल परिसर" %}</div>
+      </div>
     </div>
 
-    <div class="mb-4">
-        <h5 class="fw-bold">कोणते पेमेंट पर्याय उपलब्ध आहेत?</h5>
-        <p>Cash on Delivery (COD) आणि UPI पेमेंट उपलब्ध आहेत.</p>
+    <!-- ── PAYMENT ── -->
+    <div class="faq-card">
+      <div class="faq-card-head">
+        <span class="faq-card-head-icon">💳</span>
+        <span class="faq-card-head-txt">{% trans "पेमेंट" %}</span>
+      </div>
+      <div class="faq-card-body">
+        <strong>{% trans "Cash on Delivery (COD)" %}</strong> {% trans "आणि" %} <strong>{% trans "UPI पेमेंट" %}</strong> {% trans "उपलब्ध आहेत. COD साठी किमान ₹149 ची ऑर्डर आवश्यक आहे." %}
+      </div>
+      <div class="faq-badge-row">
+        <div class="faq-badge green">💵 {% trans "COD" %}</div>
+        <div class="faq-badge orange">📱 {% trans "UPI" %}</div>
+        <div class="faq-badge grey">{% trans "किमान ₹149 (COD)" %}</div>
+      </div>
     </div>
 
-    <div class="mb-4">
-        <h5 class="fw-bold">मी ऑर्डर कॅन्सल करू शकतो का?</h5>
-        <p>हो, ऑर्डर पिकअप होण्यापूर्वी तुम्ही ती कॅन्सल करू शकता.</p>
+    <!-- ── ORDER CANCEL ── -->
+    <div class="faq-card">
+      <div class="faq-card-head">
+        <span class="faq-card-head-icon">❌</span>
+        <span class="faq-card-head-txt">{% trans "ऑर्डर कॅन्सल" %}</span>
+      </div>
+      <div class="faq-card-body">
+        {% trans "हो, ऑर्डर" %} <strong>{% trans "पिकअप होण्यापूर्वी" %}</strong> {% trans "तुम्ही ती कॅन्सल करू शकता. ऑर्डर ट्रॅकिंग पेजवर कॅन्सल बटण उपलब्ध असेल." %}
+      </div>
+      <div class="faq-badge-row">
+        <div class="faq-badge green">✓ {% trans "पिकअपआधी शक्य" %}</div>
+      </div>
     </div>
-</div>
+
+    <!-- ── DELIVERY CHARGE ── -->
+    <div class="faq-card">
+      <div class="faq-card-head">
+        <span class="faq-card-head-icon">💰</span>
+        <span class="faq-card-head-txt">{% trans "डिलिव्हरी शुल्क" %}</span>
+      </div>
+      <div class="faq-card-body">
+        {% trans "डिलिव्हरी शुल्क अंतरानुसार" %} <strong>{% trans "₹15 पासून" %}</strong> {% trans "सुरू होते." %} <strong>{% trans "₹999 किंवा त्यापेक्षा जास्त" %}</strong> {% trans "ऑर्डरवर मोफत डिलिव्हरी मिळते." %}
+      </div>
+      <div class="faq-badge-row">
+        <div class="faq-badge green">🆓 {% trans "₹999+ वर मोफत" %}</div>
+        <div class="faq-badge grey">{% trans "₹15 पासून सुरू" %}</div>
+      </div>
+    </div>
+
+    <!-- ── REFUND ── -->
+    <div class="faq-card">
+      <div class="faq-card-head">
+        <span class="faq-card-head-icon">🔄</span>
+        <span class="faq-card-head-txt">{% trans "रिफंड" %}</span>
+      </div>
+      <div class="faq-card-body">
+        {% trans "खराब किंवा चुकीच्या वस्तू मिळाल्यास डिलिव्हरीच्या" %} <strong>{% trans "24 तासांच्या आत" %}</strong> {% trans "संपर्क करा. पडताळणीनंतर" %} <strong>{% trans "3–5 दिवसांत" %}</strong> {% trans "रिफंड मिळेल." %}
+      </div>
+      <div class="faq-badge-row">
+        <div class="faq-badge orange">⏰ {% trans "24 तासांत तक्रार" %}</div>
+        <div class="faq-badge green">{% trans "3–5 दिवसांत रिफंड" %}</div>
+      </div>
+    </div>
+
+    <!-- ── TRACKING ── -->
+    <div class="faq-card">
+      <div class="faq-card-head">
+        <span class="faq-card-head-icon">📍</span>
+        <span class="faq-card-head-txt">{% trans "ऑर्डर ट्रॅकिंग" %}</span>
+      </div>
+      <div class="faq-card-body">
+        {% trans "ऑर्डर केल्यानंतर तुम्हाला" %} <strong>{% trans "ऑर्डर ट्रॅकिंग पेज" %}</strong> {% trans "वर लाइव्ह स्टेटस दिसेल. माझ्या ऑर्डर्स पेजवर फोन नंबर टाकून ऑर्डर पाहता येते." %}
+      </div>
+      <div class="faq-badge-row">
+        <div class="faq-badge green">✓ {% trans "लाइव्ह ट्रॅकिंग" %}</div>
+      </div>
+    </div>
+
+    <!-- ── CONTACT BANNER ── -->
+    <a href="https://wa.me/917038984687" class="faq-contact" target="_blank" rel="noopener">
+      <div class="faq-contact-text">
+        <div class="faq-contact-title">{% trans "अजून प्रश्न आहेत?" %}</div>
+        <div class="faq-contact-sub">{% trans "WhatsApp वर संपर्क करा · 24 तासांत उत्तर" %}</div>
+      </div>
+      <div class="faq-contact-btn">WhatsApp →</div>
+    </a>
+
+  </div><!-- /faq-body -->
+
+</div><!-- /faq-page -->
 
 {% endblock %}
