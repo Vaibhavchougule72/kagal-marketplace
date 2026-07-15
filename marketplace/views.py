@@ -4498,32 +4498,94 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import DeviceToken
-
 @api_view(["POST"])
 def save_fcm_token(request):
 
-    token = request.data.get("token")
+    try:
+        token = str(
+            request.data.get("token", "")
+        ).strip()
 
-    phone = request.data.get("phone")
+        phone = str(
+            request.data.get("phone", "")
+        ).strip()
 
-    if not token:
+        # =========================
+        # VALIDATE TOKEN
+        # =========================
+        if not token:
 
-        return Response({
-            "error": "Token missing"
-        }, status=400)
+            return Response(
+                {
+                    "success": False,
+                    "error": "Token missing"
+                },
+                status=400
+            )
 
-    DeviceToken.objects.update_or_create(
+        # =========================
+        # VALIDATE PHONE
+        # =========================
+        if not phone:
 
-        token=token,
+            return Response(
+                {
+                    "success": False,
+                    "error": "Phone missing"
+                },
+                status=400
+            )
 
-        defaults={
-            "phone": phone
-        }
-    )
+        if not re.match(r"^[6-9]\d{9}$", phone):
 
-    return Response({
-        "message": "Token saved"
-    })
+            return Response(
+                {
+                    "success": False,
+                    "error": "Invalid phone number"
+                },
+                status=400
+            )
+
+        # =========================
+        # SAVE OR UPDATE TOKEN
+        # =========================
+        device, created = DeviceToken.objects.update_or_create(
+            token=token,
+            defaults={
+                "phone": phone
+            }
+        )
+
+        print(
+            "✅ FCM TOKEN SAVED:",
+            "PHONE =", phone,
+            "NEW =" if created else "UPDATED =",
+            created
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": "Token saved successfully",
+                "created": created
+            },
+            status=200
+        )
+
+    except Exception as e:
+
+        print(
+            "❌ SAVE FCM TOKEN ERROR:",
+            str(e)
+        )
+
+        return Response(
+            {
+                "success": False,
+                "error": "Failed to save FCM token"
+            },
+            status=500
+        )
 
 
 from django.contrib.admin.views.decorators import staff_member_required

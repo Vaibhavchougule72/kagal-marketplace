@@ -2,20 +2,336 @@
 {% load i18n %}
 {% block content %}
 
-<div class="container page-content">
-    <h2 class="fw-bold mb-4">{% trans "Return Policy" %}</h2>
+<style>
 
-    <p>
-        जर तुम्हाला खराब झालेल्या किंवा चुकीच्या वस्तू मिळाल्या तर, कृपया डिलिव्हरीच्या २४ तासांच्या आत आमच्याशी संपर्क साधा.
-    </p>
+      .page-wrapper,
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <p>
-        पडताळणीनंतर ३ ते ५ कामकाजाच्या दिवसांत refund दिला जाईल.
-    </p>
+.rp-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    <p>
-        नाशवंत वस्तू खराब झाल्या असल्याशिवाय परत करण्यासाठी पात्र नसतील.
-    </p>
-</div>
+html,
+body,
+.rp-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+  * { box-sizing: border-box; }
+
+  /* ── PAGE ── */
+  .rp-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+  }
+
+  /* ── STICKY NAV ── */
+  .rp-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .rp-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .rp-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
+
+  .rp-nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+  }
+
+  /* ── DARK GREEN HERO ── */
+  .rp-hero {
+    background: #1A3A16;
+    padding: 22px 16px 20px;
+    text-align: center;
+  }
+
+  .rp-hero-icon { font-size: 38px; display: block; margin-bottom: 10px; }
+  .rp-hero-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .rp-hero-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+  /* ── BODY ── */
+  .rp-body {
+    padding: 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ── SECTION CARD ── */
+  .rp-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+  }
+
+  .rp-card-head {
+    background: #2D5A27;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .rp-card-head span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .rp-card-body {
+    padding: 13px 14px;
+    font-size: 13px;
+    color: #6B7B69;
+    line-height: 1.7;
+  }
+
+  .rp-card-body strong { color: #1A2E19; }
+
+  /* badge row */
+  .rp-badge-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding: 0 14px 13px;
+  }
+
+  .rp-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: 20px;
+  }
+
+  .rp-badge.green  { background: #EAF2E8; color: #2D6B27; }
+  .rp-badge.red    { background: #FDE8E8; color: #B03030; }
+  .rp-badge.orange { background: #FDF1EB; color: #C05018; }
+
+  /* ── INELIGIBLE BOX ── */
+  .rp-ineligible {
+    background: #FDE8E8;
+    border: 0.5px solid #F5C6C6;
+    border-radius: 10px;
+    padding: 11px 13px;
+    margin: 0 14px 13px;
+  }
+
+  .rp-ineligible-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #B03030;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .rp-ineligible-item {
+    font-size: 12px;
+    color: #9A3030;
+    padding: 2px 0 2px 12px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .rp-ineligible-item::before {
+    content: '×';
+    position: absolute;
+    left: 0;
+    color: #B03030;
+    font-weight: 700;
+  }
+
+  /* ── CONTACT BANNER ── */
+  .rp-contact {
+    background: linear-gradient(135deg, #E8621A, #C04A10);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-decoration: none;
+    transition: transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .rp-contact:active { transform: scale(0.98); }
+
+  .rp-contact-text { flex: 1; }
+
+  .rp-contact-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+
+  .rp-contact-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .rp-contact-btn {
+    background: #fff;
+    color: #E8621A;
+    border-radius: 9px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── NOTE ── */
+  .rp-note {
+    background: #FDF8F3;
+    border: 0.5px solid #F0DCC8;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .rp-note-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .rp-note-text { font-size: 12px; color: #9A6020; line-height: 1.6; }
+</style>
+
+<div class="rp-page">
+
+  <!-- STICKY NAV -->
+  <div class="rp-nav">
+    <a href="/" class="rp-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="rp-nav-title">{% trans "परतावा धोरण" %}</span>
+  </div>
+
+  <!-- DARK GREEN HERO -->
+  <div class="rp-hero">
+    <span class="rp-hero-icon">🔄</span>
+    <div class="rp-hero-title">{% trans "परतावा धोरण" %}</div>
+    <div class="rp-hero-sub">LOKA · {% trans "ग्राहक संरक्षण" %}</div>
+  </div>
+
+  <div class="rp-body">
+
+    <!-- ── ELIGIBILITY ── -->
+    <div class="rp-card">
+      <div class="rp-card-head">
+        <span>{% trans "पात्रता" %}</span>
+      </div>
+      <div class="rp-card-body">
+        {% trans "जर तुम्हाला" %} <strong>{% trans "खराब झालेल्या किंवा चुकीच्या वस्तू" %}</strong>
+        {% trans "मिळाल्या तर तुम्ही रिफंडसाठी पात्र आहात. नाशवंत वस्तू खराब असल्याशिवाय परत करण्यासाठी पात्र नाहीत." %}
+      </div>
+      <div class="rp-badge-row">
+        <div class="rp-badge green">✓ {% trans "खराब वस्तू" %}</div>
+        <div class="rp-badge green">✓ {% trans "चुकीची वस्तू" %}</div>
+        <div class="rp-badge red">✗ {% trans "नाशवंत माल" %}</div>
+      </div>
+    </div>
+
+    <!-- ── TIME LIMIT ── -->
+    <div class="rp-card">
+      <div class="rp-card-head">
+        <span>{% trans "वेळ मर्यादा" %}</span>
+      </div>
+      <div class="rp-card-body">
+        {% trans "डिलिव्हरीच्या" %} <strong>{% trans "२४ तासांच्या आत" %}</strong>
+        {% trans "आमच्याशी संपर्क साधा. उशिरा केलेल्या तक्रारी स्वीकारल्या जाणार नाहीत." %}
+      </div>
+      <div class="rp-badge-row">
+        <div class="rp-badge orange">⏰ {% trans "२४ तासांच्या आत तक्रार" %}</div>
+      </div>
+    </div>
+
+    <!-- ── REFUND PROCESS ── -->
+    <div class="rp-card">
+      <div class="rp-card-head">
+        <span>{% trans "रिफंड प्रक्रिया" %}</span>
+      </div>
+      <div class="rp-card-body">
+        {% trans "तक्रार मिळाल्यानंतर आमची टीम पडताळणी करेल. पडताळणीनंतर" %}
+        <strong>{% trans "३ ते ५ कामकाजाच्या दिवसांत" %}</strong>
+        {% trans "रिफंड मूळ पेमेंट पद्धतीने दिला जाईल." %}
+      </div>
+      <div class="rp-badge-row">
+        <div class="rp-badge green">{% trans "3–5 कामकाजाचे दिवस" %}</div>
+        <div class="rp-badge green">{% trans "मूळ पेमेंट पद्धती" %}</div>
+      </div>
+    </div>
+
+    <!-- ── INELIGIBLE ITEMS ── -->
+    <div class="rp-card">
+      <div class="rp-card-head">
+        <span>{% trans "रिफंडसाठी अपात्र" %}</span>
+      </div>
+      <div class="rp-card-body" style="padding-bottom:8px;">
+        {% trans "खालील प्रकरणांमध्ये रिफंड दिला जाणार नाही:" %}
+      </div>
+      <div class="rp-ineligible">
+        <div class="rp-ineligible-item">{% trans "नाशवंत वस्तू (खराब नसल्यास)" %}</div>
+        <div class="rp-ineligible-item">{% trans "वापरलेल्या किंवा खाल्लेल्या वस्तू" %}</div>
+        <div class="rp-ineligible-item">{% trans "२४ तासांनंतर केलेल्या तक्रारी" %}</div>
+        <div class="rp-ineligible-item">{% trans "ग्राहकाच्या चुकीमुळे झालेले नुकसान" %}</div>
+      </div>
+    </div>
+
+    <!-- ── NOTE ── -->
+    <div class="rp-note">
+      <span class="rp-note-icon">ℹ️</span>
+      <div class="rp-note-text">
+        {% trans "अंतिम निर्णय LOKA आणि संबंधित दुकानाचा राहील. कोणत्याही तक्रारीसाठी फोटोसह संपर्क करणे आवश्यक आहे." %}
+      </div>
+    </div>
+
+    <!-- ── CONTACT BANNER ── -->
+    <a href="https://wa.me/917038984687" class="rp-contact" target="_blank" rel="noopener">
+      <div class="rp-contact-text">
+        <div class="rp-contact-title">{% trans "तक्रार असल्यास संपर्क करा" %}</div>
+        <div class="rp-contact-sub">{% trans "२४ तासांत उत्तर मिळेल" %}</div>
+      </div>
+      <div class="rp-contact-btn">WhatsApp →</div>
+    </a>
+
+  </div><!-- /rp-body -->
+
+</div><!-- /rp-page -->
 
 {% endblock %}

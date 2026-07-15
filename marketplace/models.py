@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 from decimal import Decimal
 from .firebase import send_push_notification
-
+from firebase_admin import messaging
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -398,9 +398,21 @@ class Order(models.Model):
                             body
                         )
 
+                    except messaging.UnregisteredError:
+
+                        print(
+                            "🗑 Removing invalid FCM token:",
+                            device.id
+                        )
+
+                        device.delete()
+
                     except Exception as e:
 
-                        print("Push Notification Error:", e)
+                        print(
+                            "❌ Push Notification Error:",
+                            str(e)
+                        )
 
 from django.contrib.auth.models import User
 
@@ -813,6 +825,10 @@ class DeviceToken(models.Model):
 
     created_at = models.DateTimeField(
         auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
     )
 
     def __str__(self):
