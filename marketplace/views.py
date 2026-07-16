@@ -4203,18 +4203,26 @@ def store_dashboard(request):
         "show_floating_cart": False
     })
 
+
 def faqs(request):
     return render(request, "faqs.html", {
-        "show_floating_cart": False,
+        "show_navbar": False,
         "simple_navbar": False,
-        "show_navbar": False
+        "show_floating_cart": False,
     })
 
 def return_policy(request):
     return render(request, "return_policy.html", {
-        "show_floating_cart": False,
+        "show_navbar": False,
         "simple_navbar": False,
-        "show_navbar": False
+        "show_floating_cart": False,
+    })
+
+def delivery_info(request):
+    return render(request, "delivery_info.html", {
+        "show_navbar": False,
+        "simple_navbar": False,
+        "show_floating_cart": False,
     })
 
 def privacy_policy(request):
@@ -4224,12 +4232,6 @@ def privacy_policy(request):
         "show_navbar": False
     })
 
-def delivery_info(request):
-    return render(request, "delivery_info.html", {
-        "show_floating_cart": False,
-        "simple_navbar": False,
-        "show_navbar": False
-    })
 
 from django.views.decorators.csrf import csrf_exempt
 import json

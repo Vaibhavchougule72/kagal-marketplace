@@ -36,9 +36,9 @@ urlpatterns = [
     path("payment-success/", views.payment_success, name="payment_success"),
     path("cancel-order/<int:order_id>/", views.cancel_order, name="cancel_order"),
     path('invoice/<int:order_id>/', views.generate_invoice, name='generate_invoice'),
-    path("faqs/", TemplateView.as_view(template_name="faqs.html"), name="faqs"),
-    path("return-policy/", TemplateView.as_view(template_name="return_policy.html"), name="return_policy"),
-    path("delivery-info/", TemplateView.as_view(template_name="delivery_info.html"), name="delivery_info"),
+    path("faqs/", views.faqs, name="faqs"),
+    path("return-policy/", views.return_policy, name="return_policy"),
+    path("delivery-info/", views.delivery_info, name="delivery_info"),
     path("check-free-delivery/", views.check_free_delivery, name="check_free_delivery"),
     path("add-bundle/<int:bundle_id>/", views.add_bundle_to_cart, name="add_bundle"),
     path(
