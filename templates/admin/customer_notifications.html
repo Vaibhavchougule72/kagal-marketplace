@@ -1,0 +1,1781 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Customer Push Notifications{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/customer_notifications.css' %}">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- =========================
+         PAGE HEADER
+    ========================== -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+
+        <div>
+
+            <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_dashboard' %}">
+                            Dashboard
+                        </a>
+                    </li>
+
+                    <li class="breadcrumb-item active">
+                        Customer Notifications
+                    </li>
+                </ol>
+            </nav>
+
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-bell text-warning me-2"></i>
+                Customer Push Notifications
+            </h2>
+
+            <p class="text-muted mb-0">
+                Send promotional notifications and engage your customers.
+            </p>
+
+        </div>
+
+        <div class="mt-3 mt-lg-0">
+
+            <button class="btn btn-outline-primary me-2">
+
+                <i class="fas fa-clock me-2"></i>
+
+                Campaign History
+
+            </button>
+
+            <button
+                class="btn btn-success"
+                id="newCampaignBtn">
+
+                <i class="fas fa-paper-plane me-2"></i>
+
+                New Campaign
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+            KPI CARDS
+    ========================== -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- Total Customers -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+                                Total Customers
+                            </small>
+
+                            <h3 id="totalCustomers" class="fw-bold mt-2">
+                                {{ total_customers }}
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-primary">
+
+                            <i class="fas fa-users text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Active Devices -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Active Devices
+
+                            </small>
+
+                            <h3 id="activeDevices" class="fw-bold mt-2">
+                                {{ active_devices }}
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-success">
+
+                            <i class="fas fa-mobile-screen-button text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Notifications Today -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Today's Notifications
+
+                            </small>
+
+                            <h3 id="todayNotifications" class="fw-bold mt-2">
+                                {{ today_notifications }}
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-warning">
+
+                            <i class="fas fa-paper-plane text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Total Campaigns -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Campaigns
+
+                            </small>
+
+                            <h3 id="totalCampaigns" class="fw-bold mt-2">
+                                {{ total_campaigns }}
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-danger">
+
+                            <i class="fas fa-bullhorn text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Total Sent -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Total Notifications
+
+                            </small>
+
+                            <h3 class="fw-bold mt-2">
+
+                                {{ total_sent }}
+
+                            </h3>
+
+                        </div>
+
+                        <div id="totalsent" class="icon-circle bg-info">
+
+                            <i class="fas fa-bell text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Monthly -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                This Month
+
+                            </small>
+
+                            <h3 id="monthtlytotal" class="fw-bold mt-2">
+
+                                {{ monthly_notifications }}
+
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-secondary">
+
+                            <i class="fas fa-calendar text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Delivery Rate -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Delivery Rate
+
+                            </small>
+
+                            <h3 id="deliveryrate" ampaignsclass="fw-bold mt-2">
+
+                                {{ delivery_rate }}%
+
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-success">
+
+                            <i class="fas fa-check-circle text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Invalid Tokens -->
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+
+            <div class="card dashboard-card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <small class="text-muted">
+
+                                Invalid Tokens
+
+                            </small>
+
+                            <h3 id="invalidtokens" class="fw-bold mt-2 text-danger">
+
+                                {{ invalid_tokens }}
+
+                            </h3>
+
+                        </div>
+
+                        <div class="icon-circle bg-dark">
+
+                            <i class="fas fa-triangle-exclamation text-white"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+            MAIN CONTENT
+    ========================== -->
+
+    <div class="row">
+
+        <!-- Notification Composer -->
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="fas fa-pen me-2"></i>
+
+                        Notification Composer
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Part 2 -->
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Live Preview -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="fas fa-mobile-alt me-2"></i>
+
+                        Live Preview
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Part 2 -->
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Campaign Summary -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                Campaign Summary
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form id="notificationForm">
+
+                {% csrf_token %}
+
+                <!-- Notification Title -->
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Notification Title
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="title"
+                        maxlength="60"
+                        placeholder="Weekend Special Offer">
+
+                    <div class="text-end mt-1">
+                        <small class="text-muted">
+                            <span id="titleCount">0</span>/60
+                        </small>
+                    </div>
+
+                </div>
+
+                <!-- Notification Message -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+                        Message
+                    </label>
+
+                    <textarea
+                        id="message"
+                        rows="5"
+                        maxlength="180"
+                        class="form-control"
+                        placeholder="Order now and get FREE Delivery today."></textarea>
+
+                    <div class="text-end mt-1">
+
+                        <small class="text-muted">
+
+                            <span id="messageCount">0</span>/180
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <!-- Audience -->
+
+                <h6 class="fw-bold mb-3">
+
+                    Audience
+
+                </h6>
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <div class="form-check mb-3">
+
+                            <input
+                                class="form-check-input audience-radio"
+                                type="radio"
+                                name="audience"
+                                value="all"
+                                checked>
+
+                            <label class="form-check-label">
+
+                                All Customers
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check mb-3">
+
+                            <input
+                                class="form-check-input audience-radio"
+                                type="radio"
+                                name="audience"
+                                value="new">
+
+                            <label class="form-check-label">
+
+                                New Customers
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check mb-3">
+
+                            <input
+                                class="form-check-input audience-radio"
+                                type="radio"
+                                name="audience"
+                                value="repeat">
+
+                            <label class="form-check-label">
+
+                                Repeat Customers
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <div class="form-check mb-3">
+
+                            <input
+                                class="form-check-input audience-radio"
+                                type="radio"
+                                name="audience"
+                                value="inactive">
+
+                            <label class="form-check-label">
+
+                                Inactive Customers
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-check mb-3">
+
+                            <input
+                                class="form-check-input audience-radio"
+                                type="radio"
+                                name="audience"
+                                value="phone">
+
+                            <label class="form-check-label">
+
+                                Specific Phone
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Phone -->
+
+                <div
+                    class="mb-4"
+                    id="phoneBox"
+                    style="display:none;">
+
+                    <label class="form-label">
+
+                        Customer Phone Number
+
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="phone"
+                        placeholder="9876543210">
+
+                </div>
+
+                <!-- Priority -->
+
+                <div class="form-check form-switch mb-4">
+
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        checked
+                        id="highPriority">
+
+                    <label class="form-check-label">
+
+                        High Priority Notification
+
+                    </label>
+
+                </div>
+
+                <!-- Save History -->
+
+                <div class="form-check form-switch mb-4">
+
+                    <input
+                        class="form-check-input"
+                        checked
+                        type="checkbox"
+                        id="saveHistory">
+
+                    <label class="form-check-label">
+
+                        Save Campaign History
+
+                    </label>
+
+                </div>
+
+                <!-- Send -->
+
+                <button
+                    type="button"
+                    class="btn btn-success btn-lg w-100"
+                    id="sendNotificationBtn">
+
+                    <i class="fas fa-paper-plane me-2"></i>
+
+                    Send Notification
+
+                </button>
+
+            </form>
+
+            <div class="android-preview">
+
+                <div class="notification-phone">
+
+                    <div class="notification-header">
+
+                        <i class="fas fa-bell text-success me-2"></i>
+
+                        <strong>LOKA</strong>
+
+                        <span class="float-end text-muted">
+
+                            now
+
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="previewTitle"
+                        class="fw-bold mt-3">
+
+                        Weekend Offer
+
+                    </div>
+
+                    <div
+                        id="previewMessage"
+                        class="text-muted mt-2">
+
+                        Get FREE Delivery on your next order.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="small">
+
+                <div class="d-flex justify-content-between mb-2">
+
+                    <span>Priority</span>
+
+                    <span id="previewPriority">
+
+                        High
+
+                    </span>
+
+                </div>
+
+                <div class="d-flex justify-content-between">
+
+                    <span>Audience</span>
+
+                    <span id="previewAudience">
+
+                        All Customers
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="row text-center">
+
+                <div class="col-md-3">
+
+                    <div class="summary-box">
+
+                        <h4 id="recipientCount">
+
+                            0
+
+                        </h4>
+
+                        <small>
+
+                            Recipients
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="summary-box">
+
+                        <h4 id="estimatedDelivery">
+
+                            0
+
+                        </h4>
+
+                        <small>
+
+                            Estimated Delivery
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="summary-box">
+
+                        <h4>
+
+                            {{ invalid_tokens }}
+
+                        </h4>
+
+                        <small>
+
+                            Invalid Tokens
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="summary-box">
+
+                        <h4 id="summaryPriority">
+
+                            High
+
+                        </h4>
+
+                        <small>
+
+                            Priority
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Notification History -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                Notification History
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-4">
+
+                <div class="col-md-3">
+
+                    <input
+                        type="text"
+                        id="historySearch"
+                        class="form-control"
+                        placeholder="Search title...">
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select
+                        id="statusFilter"
+                        class="form-select">
+
+                        <option value="">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="sending">Sending</option>
+                        <option value="failed">Failed</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select
+                        id="audienceFilter"
+                        class="form-select">
+
+                        <option value="">All Audience</option>
+                        <option value="all">All Customers</option>
+                        <option value="new">New Customers</option>
+                        <option value="repeat">Repeat Customers</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="phone">Specific Customer</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <input
+                        type="date"
+                        id="dateFilter"
+                        class="form-control">
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+            <thead class="table-light">
+
+            <tr>
+
+            <th>#</th>
+
+            <th>Campaign</th>
+
+            <th>Audience</th>
+
+            <th>Sent</th>
+
+            <th>Delivered</th>
+
+            <th>Failed</th>
+
+            <th>Priority</th>
+
+            <th>Status</th>
+
+            <th>Date</th>
+
+            <th width="170">
+
+            Actions
+
+            </th>
+
+            </tr>
+
+            </thead>
+
+            <tbody id="historyTableBody">
+
+            {% for campaign in campaigns %}
+
+            <tr>
+
+            <td>
+
+            {{ forloop.counter }}
+
+            </td>
+
+            <td>
+
+            <div class="fw-bold">
+
+            {{ campaign.title }}
+
+            </div>
+
+            <small class="text-muted">
+
+            {{ campaign.message|truncatechars:45 }}
+
+            </small>
+
+            </td>
+
+            <td>
+
+            <span class="badge bg-primary">
+
+            {{ campaign.get_audience_display }}
+
+            </span>
+
+            </td>
+
+            <td>
+
+            {{ campaign.total_recipients }}
+
+            </td>
+
+            <td>
+
+            <span class="text-success">
+
+            {{ campaign.successful }}
+
+            </span>
+
+            </td>
+
+            <td>
+
+            <span class="text-danger">
+
+            {{ campaign.failed }}
+
+            </span>
+
+            </td>
+
+            <td>
+
+            {% if campaign.high_priority %}
+
+            <span class="badge bg-danger">
+
+            High
+
+            </span>
+
+            {% else %}
+
+            <span class="badge bg-secondary">
+
+            Normal
+
+            </span>
+
+            {% endif %}
+
+            </td>
+
+            <td>
+
+            {% if campaign.status == "completed" %}
+
+            <span class="badge bg-success">
+
+            Completed
+
+            </span>
+
+            {% elif campaign.status == "sending" %}
+
+            <span class="badge bg-warning">
+
+            Sending
+
+            </span>
+
+            {% else %}
+
+            <span class="badge bg-danger">
+
+            Failed
+
+            </span>
+
+            {% endif %}
+
+            </td>
+
+            <td>
+
+            {{ campaign.created_at|date:"d M Y H:i" }}
+
+            </td>
+
+            <td>
+
+            <div class="btn-group">
+
+            <button
+            class="btn btn-sm btn-outline-primary viewCampaignBtn"
+            data-id="{{ campaign.id }}">
+
+            <i class="fas fa-eye"></i>
+
+            </button>
+
+            <button
+            class="btn btn-sm btn-outline-success duplicateCampaignBtn"
+            data-id="{{ campaign.id }}">
+
+            <i class="fas fa-copy"></i>
+
+            </button>
+
+            <button
+            class="btn btn-sm btn-outline-danger deleteCampaignBtn"
+            data-id="{{ campaign.id }}">
+
+            <i class="fas fa-trash"></i>
+
+            </button>
+
+            </div>
+
+            </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+            <td colspan="10">
+
+            <div class="text-center py-5">
+
+            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+
+            <h5>
+
+            No Campaign History
+
+            </h5>
+
+            <p class="text-muted">
+
+            Your sent notifications will appear here.
+
+            </p>
+
+            </div>
+
+            </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+            </table>
+
+            </div>
+
+            <nav class="mt-4">
+
+            <ul class="pagination justify-content-end">
+
+            <li class="page-item disabled">
+
+            <a class="page-link">
+
+            Previous
+
+            </a>
+
+            </li>
+
+            <li class="page-item active">
+
+            <a class="page-link">
+
+            1
+
+            </a>
+
+            </li>
+
+            <li class="page-item">
+
+            <a class="page-link">
+
+            2
+
+            </a>
+
+            </li>
+
+            <li class="page-item">
+
+            <a class="page-link">
+
+            3
+
+            </a>
+
+            </li>
+
+            <li class="page-item">
+
+            <a class="page-link">
+
+            Next
+
+            </a>
+
+            </li>
+
+            </ul>
+
+            </nav>
+
+        </div>
+
+    </div>
+
+    <!-- Quick Templates -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                Quick Templates
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <!-- Part 4 -->
+            <div class="row g-4">
+
+                <!-- Weekend Offer -->
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="🍕 Weekend Special!"
+                        data-message="It's the weekend! Order your favourite food on LOKA and enjoy delicious meals delivered to your doorstep.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-warning">
+                                🍕
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Weekend Offer
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Promote weekend food orders.
+                            </p>
+
+                            <button class="btn btn-outline-warning btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Free Delivery -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="🚚 Free Delivery"
+                        data-message="Today only! Enjoy FREE delivery on your order. Open LOKA and place your order now.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-success">
+                                🚚
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Free Delivery
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Increase conversion with free delivery.
+                            </p>
+
+                            <button class="btn btn-outline-success btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Festival Offer -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="🎉 Festival Offer"
+                        data-message="Celebrate with delicious food! Exclusive festival offers are waiting for you on LOKA.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-danger">
+                                🎉
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Festival Sale
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Promote festive discounts.
+                            </p>
+
+                            <button class="btn btn-outline-danger btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- New Restaurant -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="🍽️ New Restaurant Added"
+                        data-message="A new restaurant has joined LOKA! Explore the menu and order your favourite dishes today.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-primary">
+                                🍽️
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                New Restaurant
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Announce new partner stores.
+                            </p>
+
+                            <button class="btn btn-outline-primary btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Rate Order -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="⭐ Rate Your Experience"
+                        data-message="How was your last order? We'd love your feedback. Tap to rate your experience.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-info">
+                                ⭐
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Rate Order
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Collect customer feedback.
+                            </p>
+
+                            <button class="btn btn-outline-info btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Thank You -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="🙏 Thank You!"
+                        data-message="Thank you for choosing LOKA. We appreciate your support and look forward to serving you again.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-secondary">
+                                🙏
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Thank You
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Build customer loyalty.
+                            </p>
+
+                            <button class="btn btn-outline-secondary btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Limited Time -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="⏰ Limited Time Offer"
+                        data-message="Don't miss out! This offer is available for a limited time only. Order now on LOKA.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-dark text-white">
+                                ⏰
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Limited Offer
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Create urgency.
+                            </p>
+
+                            <button class="btn btn-outline-dark btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Flat Discount -->
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <div class="card template-card h-100"
+                        data-title="💰 Flat Discount"
+                        data-message="Special savings just for you! Open LOKA now and enjoy today's exclusive discount.">
+
+                        <div class="card-body text-center">
+
+                            <div class="template-icon bg-success">
+                                💰
+                            </div>
+
+                            <h6 class="mt-3 mb-2 fw-bold">
+                                Flat Discount
+                            </h6>
+
+                            <p class="small text-muted mb-3">
+                                Drive immediate sales.
+                            </p>
+
+                            <button class="btn btn-outline-success btn-sm use-template">
+                                Use Template
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Recent Activity -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                Recent Activity
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <!-- Part 5 -->
+            <div class="timeline">
+
+                {% if recent_activities %}
+
+                    {% for activity in recent_activities %}
+
+                    <div class="timeline-item">
+
+                        <div class="timeline-icon
+                            {% if activity.type == 'sent' %}
+                                bg-success
+                            {% elif activity.type == 'failed' %}
+                                bg-danger
+                            {% elif activity.type == 'deleted' %}
+                                bg-secondary
+                            {% elif activity.type == 'duplicate' %}
+                                bg-primary
+                            {% else %}
+                                bg-warning
+                            {% endif %}
+                        ">
+
+                            {% if activity.type == 'sent' %}
+                                <i class="fas fa-paper-plane text-white"></i>
+
+                            {% elif activity.type == 'failed' %}
+                                <i class="fas fa-circle-exclamation text-white"></i>
+
+                            {% elif activity.type == 'deleted' %}
+                                <i class="fas fa-trash text-white"></i>
+
+                            {% elif activity.type == 'duplicate' %}
+                                <i class="fas fa-copy text-white"></i>
+
+                            {% else %}
+                                <i class="fas fa-bell text-white"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div class="timeline-content">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <h6 class="mb-1">
+
+                                    {{ activity.title }}
+
+                                </h6>
+
+                                <small class="text-muted">
+
+                                    {{ activity.created_at|timesince }} ago
+
+                                </small>
+
+                            </div>
+
+                            <p class="text-muted mb-2">
+
+                                {{ activity.description }}
+
+                            </p>
+
+                            {% if activity.campaign %}
+
+                            <div class="small">
+
+                                <span class="badge bg-primary">
+
+                                    {{ activity.campaign.title }}
+
+                                </span>
+
+                                <span class="ms-3">
+
+                                    Audience:
+                                    <strong>
+
+                                        {{ activity.campaign.get_audience_display }}
+
+                                    </strong>
+
+                                </span>
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                <div class="text-center py-5">
+
+                    <i class="fas fa-clock-rotate-left fa-4x text-muted mb-3"></i>
+
+                    <h5>
+
+                        No Recent Activity
+
+                    </h5>
+
+                    <p class="text-muted">
+
+                        Notification activities will appear here.
+
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row">
+
+                <div class="col-md-3">
+
+                    <div class="activity-summary text-center">
+
+                        <h4 class="text-success">
+
+                            {{ sent_today }}
+
+                        </h4>
+
+                        <small class="text-muted">
+
+                            Sent Today
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="activity-summary text-center">
+
+                        <h4 class="text-primary">
+
+                            {{ successful_today }}
+
+                        </h4>
+
+                        <small class="text-muted">
+
+                            Successful
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="activity-summary text-center">
+
+                        <h4 class="text-danger">
+
+                            {{ failed_today }}
+
+                        </h4>
+
+                        <small class="text-muted">
+
+                            Failed
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="activity-summary text-center">
+
+                        <h4 class="text-warning">
+
+                            {{ cleaned_tokens }}
+
+                        </h4>
+
+                        <small class="text-muted">
+
+                            Invalid Tokens Removed
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div
+    class="modal fade"
+    id="sendModal"
+    tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Confirm Campaign
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                Are you sure you want to send this notification?
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="btn btn-success"
+                    id="confirmSendBtn">
+
+                    <i class="fas fa-paper-plane me-2"></i>
+
+                    Send
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/customer_notifications.js' %}"></script>
+{% endblock %}
