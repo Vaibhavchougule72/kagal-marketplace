@@ -273,6 +273,10 @@ function initializeDashboard() {
     initializeHistory();      // <-- Add here
 
     initializeUtilities();  
+
+    refreshDashboard();
+
+    refreshHistory();
 }
 
 
@@ -622,8 +626,8 @@ async function sendNotification() {
 
         };
 
-        const response = await fetch(
-            "/customer-notifications/send/",
+        const data = await apiRequest(
+            "/admin/customer-notifications/send/",
             {
 
                 method: "POST",
@@ -641,17 +645,7 @@ async function sendNotification() {
             }
         );
 
-        const data = await response.json();
-
-        stopLoading();
-
-        if (!response.ok) {
-
-            throw new Error(
-                parseFetchError(response, data)
-            );
-
-        }
+    
 
         showToast(
             data.message || "Notification sent successfully."
@@ -669,7 +663,6 @@ async function sendNotification() {
 
     catch (error) {
 
-        stopLoading();
 
         showToast(
             error.message,
@@ -719,13 +712,29 @@ async function refreshDashboard() {
 
     try {
 
-        const response = await fetch(
-            "/customer-notifications/dashboard-data/"
+        const data = await apiRequest(
+            "/admin/customer-notifications/dashboard/"
         );
 
-        if (!response.ok) return;
+        
 
-        const data = await response.json();
+        
+
+        window.dashboardData = {
+
+            totalCustomers:data.total_customers,
+
+            newCustomers:data.new_customers,
+
+            repeatCustomers:data.repeat_customers,
+
+            inactiveCustomers:data.inactive_customers,
+
+            invalidTokens:data.invalid_tokens || 0
+
+        };
+
+        updateCampaignSummary();
 
         document.querySelector(
             "#totalCustomers"
@@ -737,7 +746,7 @@ async function refreshDashboard() {
 
         document.querySelector(
             "#todayNotifications"
-        )?.textContent = data.today_notifications;
+        )?.textContent = data.todays_campaigns;
 
         document.querySelector(
             "#totalCampaigns"
@@ -757,22 +766,112 @@ async function refreshDashboard() {
 /* ==========================================================
    Refresh Campaign History
 ========================================================== */
-
 async function refreshHistory() {
 
     try {
 
         const response = await fetch(
-            "/customer-notifications/history/"
+            "/admin/customer-notifications/history/"
         );
 
-        if (!response.ok) return;
+        const data = await response.json();
 
-        const html = await response.text();
+        const tbody =
+            document.querySelector("#historyTableBody");
 
-        document.querySelector(
-            "#historyTableBody"
-        ).innerHTML = html;
+        tbody.innerHTML = "";
+
+        let html = "";
+
+        data.forEach((campaign, index) => {
+
+            html += `
+                <tr>
+
+                    <td>${index + 1}</td>
+
+                    <td>
+                        <strong>${campaign.title}</strong>
+                    </td>
+
+                    <td>
+                        <span class="badge bg-primary">
+                            ${campaign.audience}
+                        </span>
+                    </td>
+
+                    <td>${campaign.total}</td>
+
+                    <td>
+                        <span class="text-success">
+                            ${campaign.successful}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="text-danger">
+                            ${campaign.failed}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge ${
+                            campaign.high_priority
+                                ? "bg-danger"
+                                : "bg-secondary"
+                        }">
+                            ${
+                                campaign.high_priority
+                                    ? "High"
+                                    : "Normal"
+                            }
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge ${
+                            campaign.status === "completed"
+                                ? "bg-success"
+                                : campaign.status === "sending"
+                                    ? "bg-warning"
+                                    : "bg-danger"
+                        }">
+                            ${campaign.status}
+                        </span>
+                    </td>
+
+                    <td>${campaign.created_at}</td>
+
+                    <td>
+                        <div class="btn-group">
+
+                            <button
+                                class="btn btn-sm btn-outline-primary viewCampaignBtn"
+                                data-id="${campaign.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                            <button
+                                class="btn btn-sm btn-outline-success duplicateCampaignBtn"
+                                data-id="${campaign.id}">
+                                <i class="fas fa-copy"></i>
+                            </button>
+
+                            <button
+                                class="btn btn-sm btn-outline-danger deleteCampaignBtn"
+                                data-id="${campaign.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+
+                        </div>
+                    </td>
+
+                </tr>
+            `;
+
+        });
+
+        tbody.innerHTML = html;
 
     }
 
@@ -931,17 +1030,9 @@ async function viewCampaign(id) {
 
         const response = await fetch(
 
-            `/customer-notifications/${id}/`
+            `/admin/customer-notifications/${id}/`
 
         );
-
-        const campaign = await response.json();
-
-        elements.title.value =
-            campaign.title;
-
-        elements.message.value =
-            campaign.message;
 
         updatePreview();
 
@@ -982,9 +1073,9 @@ async function duplicateCampaign(id){
 
     try{
 
-        const response=await fetch(
+        const data=await apiRequest(
 
-            `/customer-notifications/${id}/duplicate/`,
+            `/admin/customer-notifications/${id}/duplicate/`,
             {
 
                 method:"POST",
@@ -999,13 +1090,9 @@ async function duplicateCampaign(id){
 
         );
 
-        const data=await response.json();
+        
 
-        if(!response.ok){
-
-            throw new Error(data.error);
-
-        }
+        
 
         showToast(
 
@@ -1054,12 +1141,12 @@ async function deleteCampaign(id){
 
     try{
 
-        const response=await fetch(
+        const data=await apiRequest(
 
-            `/customer-notifications/${id}/delete/`,
+            `/admin/customer-notifications/${id}/delete/`,
             {
 
-                method:"DELETE",
+                method:"POST",
 
                 headers:{
 
@@ -1071,17 +1158,7 @@ async function deleteCampaign(id){
 
         );
 
-        const data=await response.json();
-
-        if(!response.ok){
-
-            throw new Error(
-
-                data.error
-
-            );
-
-        }
+    
 
         showToast(
 
@@ -1244,35 +1321,25 @@ function setSendButtonState(disabled){
 async function apiRequest(url, options = {}) {
 
     const response = await fetch(url, {
-
         headers: {
-
             "X-CSRFToken": getCSRFToken(),
-
             "Content-Type": "application/json",
-
             ...(options.headers || {})
-
         },
-
         ...options
-
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-
         throw new Error(
-
-            parseFetchError(response, data)
-
+            data.error ||
+            data.message ||
+            "Request failed."
         );
-
     }
 
     return data;
-
 }
 
 /* ==========================================================

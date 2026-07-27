@@ -163,6 +163,54 @@ urlpatterns = [
         views.order_tracking_partial,
         name="order_tracking_partial",
     ),
+
+    path(
+        "customer-notifications/",
+        views.customer_notifications_dashboard,
+        name="customer_notifications_dashboard"
+    ),
+
+    path(
+        "customer-notifications/send/",
+        views.send_notification,
+        name="send_notification"
+    ),
+
+    path(
+        "customer-notifications/dashboard-data/",
+        views.notification_dashboard_data,
+        name="notification_dashboard_data"
+    ),
+
+    path(
+        "customer-notifications/history/",
+        views.notification_history,
+        name="notification_history"
+    ),
+
+    path(
+        "customer-notifications/<int:id>/",
+        views.notification_detail,
+        name="notification_detail"
+    ),
+
+    path(
+        "customer-notifications/<int:id>/duplicate/",
+        views.duplicate_notification,
+        name="duplicate_notification"
+    ),
+
+    path(
+        "customer-notifications/<int:id>/delete/",
+        views.delete_notification,
+        name="delete_notification"
+    ),
+
+    path(
+        "admin/customer-notifications/dashboard/",
+        views.notification_dashboard_data,
+        name="notification_dashboard_data",
+    ),
 ]
 
 

@@ -955,3 +955,85 @@ class OfferSlider(models.Model):
 
     def __str__(self):
         return self.title or f"Offer {self.id}"
+
+
+
+from django.contrib.auth.models import User
+
+
+class NotificationCampaign(models.Model):
+
+    AUDIENCE_CHOICES = [
+        ("all", "All Customers"),
+        ("new", "New Customers"),
+        ("repeat", "Repeat Customers"),
+        ("inactive", "Inactive Customers"),
+        ("phone", "Specific Customer"),
+    ]
+
+    STATUS_CHOICES = [
+        ("sending", "Sending"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+    ]
+
+    title = models.CharField(
+        max_length=100
+    )
+
+    message = models.TextField()
+
+    audience = models.CharField(
+        max_length=20,
+        choices=AUDIENCE_CHOICES
+    )
+
+    phone = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True
+    )
+
+    high_priority = models.BooleanField(
+        default=False
+    )
+
+    save_history = models.BooleanField(
+        default=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="completed"
+    )
+
+    total_recipients = models.PositiveIntegerField(
+        default=0
+    )
+
+    successful = models.PositiveIntegerField(
+        default=0
+    )
+
+    failed = models.PositiveIntegerField(
+        default=0
+    )
+
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} ({self.created_at:%d %b %Y})"

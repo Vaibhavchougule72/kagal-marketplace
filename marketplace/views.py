@@ -5808,3 +5808,191 @@ def replace_cart(request, product_id):
         "cart_count": 1
     })
 
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+from .models import NotificationCampaign
+from .notification_service import (
+    send_bulk_notifications,
+    duplicate_campaign,
+    delete_campaign
+)
+from .notification_utils import dashboard_statistics
+
+@staff_member_required
+def customer_notifications_dashboard(request):
+
+    context = dashboard_statistics()
+
+    return render(
+        request,
+        "customer_notifications/dashboard.html",
+        context
+    )
+
+@staff_member_required
+def notification_dashboard_data(request):
+
+    return JsonResponse(
+        dashboard_statistics()
+    )
+
+@staff_member_required
+@require_POST
+def send_notification(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        result = send_bulk_notifications(
+
+            title=data["title"],
+
+            message=data["message"],
+
+            audience=data["audience"],
+
+            phone=data.get("phone"),
+
+            high_priority=data.get(
+                "high_priority",
+                False
+            ),
+
+            save_history=data.get(
+                "save_history",
+                True
+            ),
+
+            created_by=request.user
+
+        )
+
+        return JsonResponse({
+
+            "success": True,
+
+            **result
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            "success": False,
+
+            "message": str(e)
+
+        }, status=500)
+
+
+@staff_member_required
+def notification_history(request):
+
+    campaigns = NotificationCampaign.objects.all()[:100]
+
+    data = []
+
+    for c in campaigns:
+
+        data.append({
+            "id": c.id,
+            "title": c.title,
+            "audience": c.audience,
+            "status": c.status,
+            "total": c.total_recipients,
+            "successful": c.successful,
+            "failed": c.failed,
+            "high_priority": c.high_priority,
+            "created_at": c.created_at.strftime("%d %b %Y %I:%M %p")
+        })
+
+    return JsonResponse(data, safe=False)
+
+@staff_member_required
+def notification_detail(request, pk):
+
+    campaign = get_object_or_404(
+        NotificationCampaign,
+        pk=pk
+    )
+
+    return JsonResponse({
+
+        "id": campaign.id,
+
+        "title": campaign.title,
+
+        "message": campaign.message,
+
+        "audience": campaign.audience,
+
+        "phone": campaign.phone,
+
+        "high_priority": campaign.high_priority,
+
+        "save_history": campaign.save_history,
+
+        "status": campaign.status
+
+    })
+
+@staff_member_required
+@require_POST
+def duplicate_notification_view(request, pk):
+
+    campaign = get_object_or_404(
+        NotificationCampaign,
+        pk=pk
+    )
+
+    campaign = duplicate_campaign(campaign)
+
+    return JsonResponse({
+
+        "success": True,
+
+        "id": campaign.id
+
+    })
+
+@staff_member_required
+@require_POST
+def delete_notification_view(request, pk):
+
+    campaign = get_object_or_404(
+        NotificationCampaign,
+        pk=pk
+    )
+
+    delete_campaign(campaign)
+
+    return JsonResponse({
+
+        "success": True
+
+    })
+
+from django.http import JsonResponse
+
+def notification_dashboard_data(request):
+    return JsonResponse({
+        "total_customers": DeviceToken.objects.values("phone").distinct().count(),
+        "active_devices": DeviceToken.objects.count(),
+        "todays_campaigns": NotificationCampaign.objects.filter(
+            created_at__date=timezone.localdate()
+        ).count(),
+        "total_campaigns": NotificationCampaign.objects.count(),
+
+        "new_customers": DeviceToken.objects.filter(order_count=1).count(),
+        "repeat_customers": DeviceToken.objects.filter(order_count__gte=2).count(),
+        "inactive_customers": DeviceToken.objects.filter(is_active=False).count(),
+        "invalid_tokens": DeviceToken.objects.filter(is_valid=False).count(),
+    })
