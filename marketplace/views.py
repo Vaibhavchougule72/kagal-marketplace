@@ -5807,72 +5807,153 @@ def replace_cart(request, product_id):
         "success": True,
         "cart_count": 1
     })
-
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-import json
 
-from .models import NotificationCampaign
+from django.utils import timezone
+
+import json
+import logging
+import traceback
+
+from .models import NotificationCampaign, DeviceToken
 from .notification_service import (
     send_bulk_notifications,
     duplicate_campaign,
     delete_campaign
 )
-from .notification_utils import dashboard_statistics
+
+logger = logging.getLogger(__name__)
+
+
+# =====================================================
+# DASHBOARD PAGE
+# =====================================================
 
 @staff_member_required
 def customer_notifications_dashboard(request):
 
-    context = dashboard_statistics()
+    logger.info("===== CUSTOMER NOTIFICATION DASHBOARD =====")
 
-    return render(
-        request,
-        "customer_notifications/dashboard.html",
-        context
-    )
+    try:
+
+        context = {
+            "total_customers": DeviceToken.objects.values("phone").distinct().count(),
+            "active_devices": DeviceToken.objects.count(),
+            "todays_campaigns": NotificationCampaign.objects.filter(
+                created_at__date=timezone.localdate()
+            ).count(),
+            "total_campaigns": NotificationCampaign.objects.count(),
+            "new_customers": DeviceToken.objects.filter(order_count=1).count(),
+            "repeat_customers": DeviceToken.objects.filter(order_count__gte=2).count(),
+            "inactive_customers": DeviceToken.objects.filter(is_active=False).count(),
+            "invalid_tokens": DeviceToken.objects.filter(is_valid=False).count(),
+        }
+
+        return render(
+            request,
+            "customer_notifications/dashboard.html",
+            context
+        )
+
+    except Exception:
+
+        logger.exception("CUSTOMER DASHBOARD FAILED")
+
+        print("=" * 80)
+        print("CUSTOMER DASHBOARD ERROR")
+        traceback.print_exc()
+        print("=" * 80)
+
+        raise
+
+
+# =====================================================
+# DASHBOARD AJAX
+# =====================================================
 
 @staff_member_required
 def notification_dashboard_data(request):
 
-    return JsonResponse(
-        dashboard_statistics()
-    )
+    logger.info("===== DASHBOARD DATA REQUEST =====")
+
+    try:
+
+        data = {
+            "total_customers": DeviceToken.objects.values("phone").distinct().count(),
+            "active_devices": DeviceToken.objects.count(),
+            "todays_campaigns": NotificationCampaign.objects.filter(
+                created_at__date=timezone.localdate()
+            ).count(),
+            "total_campaigns": NotificationCampaign.objects.count(),
+
+            "new_customers": DeviceToken.objects.filter(
+                order_count=1
+            ).count(),
+
+            "repeat_customers": DeviceToken.objects.filter(
+                order_count__gte=2
+            ).count(),
+
+            "inactive_customers": DeviceToken.objects.filter(
+                is_active=False
+            ).count(),
+
+            "invalid_tokens": DeviceToken.objects.filter(
+                is_valid=False
+            ).count(),
+        }
+
+        logger.info(data)
+
+        return JsonResponse(data)
+
+    except Exception:
+
+        logger.exception("DASHBOARD DATA FAILED")
+
+        print("=" * 80)
+        print("DASHBOARD DATA ERROR")
+        traceback.print_exc()
+        print("=" * 80)
+
+        return JsonResponse({
+            "success": False,
+            "message": "Dashboard failed."
+        }, status=500)
+
+
+# =====================================================
+# SEND NOTIFICATION
+# =====================================================
 
 @staff_member_required
 @require_POST
 def send_notification(request):
 
+    logger.info("===== SEND NOTIFICATION =====")
+
     try:
 
         data = json.loads(request.body)
 
+        logger.info(f"Incoming Data: {data}")
+
         result = send_bulk_notifications(
 
             title=data["title"],
-
             message=data["message"],
-
             audience=data["audience"],
-
             phone=data.get("phone"),
-
-            high_priority=data.get(
-                "high_priority",
-                False
-            ),
-
-            save_history=data.get(
-                "save_history",
-                True
-            ),
-
+            high_priority=data.get("high_priority", False),
+            save_history=data.get("save_history", True),
             created_by=request.user
 
         )
+
+        logger.info(f"Notification Result: {result}")
 
         return JsonResponse({
 
@@ -5884,115 +5965,185 @@ def send_notification(request):
 
     except Exception as e:
 
+        logger.exception("SEND NOTIFICATION FAILED")
+
+        print("=" * 80)
+        print("SEND NOTIFICATION ERROR")
+        traceback.print_exc()
+        print("=" * 80)
+
         return JsonResponse({
 
             "success": False,
-
             "message": str(e)
 
         }, status=500)
 
 
+# =====================================================
+# HISTORY
+# =====================================================
+
 @staff_member_required
 def notification_history(request):
 
-    campaigns = NotificationCampaign.objects.all()[:100]
+    logger.info("===== HISTORY REQUEST =====")
 
-    data = []
+    try:
 
-    for c in campaigns:
+        campaigns = NotificationCampaign.objects.all()[:100]
 
-        data.append({
-            "id": c.id,
-            "title": c.title,
-            "audience": c.audience,
-            "status": c.status,
-            "total": c.total_recipients,
-            "successful": c.successful,
-            "failed": c.failed,
-            "high_priority": c.high_priority,
-            "created_at": c.created_at.strftime("%d %b %Y %I:%M %p")
-        })
+        data = []
 
-    return JsonResponse(data, safe=False)
+        for c in campaigns:
+
+            data.append({
+
+                "id": c.id,
+                "title": c.title,
+                "audience": c.audience,
+                "status": c.status,
+                "total": c.total_recipients,
+                "successful": c.successful,
+                "failed": c.failed,
+                "high_priority": c.high_priority,
+                "created_at": c.created_at.strftime("%d %b %Y %I:%M %p")
+
+            })
+
+        logger.info(f"Loaded {len(data)} campaigns")
+
+        return JsonResponse(data, safe=False)
+
+    except Exception:
+
+        logger.exception("HISTORY FAILED")
+
+        print("=" * 80)
+        print("HISTORY ERROR")
+        traceback.print_exc()
+        print("=" * 80)
+
+        return JsonResponse({
+            "success": False
+        }, status=500)
+
+
+# =====================================================
+# DETAIL
+# =====================================================
 
 @staff_member_required
 def notification_detail(request, pk):
 
-    campaign = get_object_or_404(
-        NotificationCampaign,
-        pk=pk
-    )
+    logger.info(f"Notification Detail: {pk}")
 
-    return JsonResponse({
+    try:
 
-        "id": campaign.id,
+        campaign = get_object_or_404(
+            NotificationCampaign,
+            pk=pk
+        )
 
-        "title": campaign.title,
+        return JsonResponse({
 
-        "message": campaign.message,
+            "id": campaign.id,
+            "title": campaign.title,
+            "message": campaign.message,
+            "audience": campaign.audience,
+            "phone": campaign.phone,
+            "high_priority": campaign.high_priority,
+            "save_history": campaign.save_history,
+            "status": campaign.status
 
-        "audience": campaign.audience,
+        })
 
-        "phone": campaign.phone,
+    except Exception:
 
-        "high_priority": campaign.high_priority,
+        logger.exception("DETAIL FAILED")
 
-        "save_history": campaign.save_history,
+        print("=" * 80)
+        print("DETAIL ERROR")
+        traceback.print_exc()
+        print("=" * 80)
 
-        "status": campaign.status
+        raise
 
-    })
+
+# =====================================================
+# DUPLICATE
+# =====================================================
 
 @staff_member_required
 @require_POST
 def duplicate_notification_view(request, pk):
 
-    campaign = get_object_or_404(
-        NotificationCampaign,
-        pk=pk
-    )
+    logger.info(f"Duplicate Campaign: {pk}")
 
-    campaign = duplicate_campaign(campaign)
+    try:
 
-    return JsonResponse({
+        campaign = get_object_or_404(
+            NotificationCampaign,
+            pk=pk
+        )
 
-        "success": True,
+        campaign = duplicate_campaign(campaign)
 
-        "id": campaign.id
+        return JsonResponse({
 
-    })
+            "success": True,
+            "id": campaign.id
+
+        })
+
+    except Exception:
+
+        logger.exception("DUPLICATE FAILED")
+
+        print("=" * 80)
+        print("DUPLICATE ERROR")
+        traceback.print_exc()
+        print("=" * 80)
+
+        return JsonResponse({
+            "success": False
+        }, status=500)
+
+
+# =====================================================
+# DELETE
+# =====================================================
 
 @staff_member_required
 @require_POST
 def delete_notification_view(request, pk):
 
-    campaign = get_object_or_404(
-        NotificationCampaign,
-        pk=pk
-    )
+    logger.info(f"Delete Campaign: {pk}")
 
-    delete_campaign(campaign)
+    try:
 
-    return JsonResponse({
+        campaign = get_object_or_404(
+            NotificationCampaign,
+            pk=pk
+        )
 
-        "success": True
+        delete_campaign(campaign)
 
-    })
+        return JsonResponse({
 
-from django.http import JsonResponse
+            "success": True
 
-def notification_dashboard_data(request):
-    return JsonResponse({
-        "total_customers": DeviceToken.objects.values("phone").distinct().count(),
-        "active_devices": DeviceToken.objects.count(),
-        "todays_campaigns": NotificationCampaign.objects.filter(
-            created_at__date=timezone.localdate()
-        ).count(),
-        "total_campaigns": NotificationCampaign.objects.count(),
+        })
 
-        "new_customers": DeviceToken.objects.filter(order_count=1).count(),
-        "repeat_customers": DeviceToken.objects.filter(order_count__gte=2).count(),
-        "inactive_customers": DeviceToken.objects.filter(is_active=False).count(),
-        "invalid_tokens": DeviceToken.objects.filter(is_valid=False).count(),
-    })
+    except Exception:
+
+        logger.exception("DELETE FAILED")
+
+        print("=" * 80)
+        print("DELETE ERROR")
+        traceback.print_exc()
+        print("=" * 80)
+
+        return JsonResponse({
+            "success": False
+        }, status=500)
