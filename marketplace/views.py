@@ -5846,10 +5846,10 @@ def customer_notifications_dashboard(request):
                 created_at__date=timezone.localdate()
             ).count(),
             "total_campaigns": NotificationCampaign.objects.count(),
-            "new_customers": DeviceToken.objects.filter(order_count=1).count(),
-            "repeat_customers": DeviceToken.objects.filter(order_count__gte=2).count(),
-            "inactive_customers": DeviceToken.objects.filter(is_active=False).count(),
-            "invalid_tokens": DeviceToken.objects.filter(is_valid=False).count(),
+            "new_customers": 0,
+            "repeat_customers": 0,
+            "inactive_customers": 0,
+            "invalid_tokens": 0,
         }
 
         return render(
