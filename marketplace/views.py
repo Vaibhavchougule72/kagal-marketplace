@@ -5854,7 +5854,7 @@ def customer_notifications_dashboard(request):
 
         return render(
             request,
-            "customer_notifications/dashboard.html",
+            "admin/customer_notifications.html",
             context
         )
 
