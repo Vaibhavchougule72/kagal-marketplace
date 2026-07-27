@@ -189,20 +189,20 @@ urlpatterns = [
     ),
 
     path(
-        "customer-notifications/<int:id>/",
+        "customer-notifications/<int:pk>/",
         views.notification_detail,
         name="notification_detail"
     ),
 
     path(
-        "customer-notifications/<int:id>/duplicate/",
-        views.duplicate_notification,
+        "customer-notifications/<int:pk>/duplicate/",
+        views.duplicate_notification_view,
         name="duplicate_notification"
     ),
 
     path(
-        "customer-notifications/<int:id>/delete/",
-        views.delete_notification,
+        "customer-notifications/<int:pk>/delete/",
+        views.delete_notification_view,
         name="delete_notification"
     ),
 
