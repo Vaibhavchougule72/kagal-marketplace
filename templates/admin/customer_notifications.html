@@ -1,12 +1,13 @@
-{% extends "admin/base.html" %}
+{% extends "base.html" %}
 {% load static %}
-
-{% block title %}Customer Push Notifications{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/customer_notifications.css' %}">
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+{% endblock %}
+
+{% block title %}
+Customer Push Notifications
 {% endblock %}
 
 {% block content %}
@@ -1776,6 +1777,7 @@
 
 {% endblock %}
 
-{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/customer_notifications.js' %}"></script>
+
 {% endblock %}
