@@ -627,7 +627,7 @@ async function sendNotification() {
         };
 
         const data = await apiRequest(
-            "/admin/customer-notifications/send/",
+            "/customer-notifications/send/",
             {
 
                 method: "POST",
@@ -713,7 +713,7 @@ async function refreshDashboard() {
     try {
 
         const data = await apiRequest(
-            "/admin/customer-notifications/dashboard/"
+            "/customer-notifications/dashboard-data/"
         );
 
         
@@ -771,7 +771,7 @@ async function refreshHistory() {
     try {
 
         const response = await fetch(
-            "/admin/customer-notifications/history/"
+            "/customer-notifications/history/"
         );
 
         const data = await response.json();
@@ -1030,7 +1030,7 @@ async function viewCampaign(id) {
 
         const response = await fetch(
 
-            `/admin/customer-notifications/${id}/`
+            `/customer-notifications/${id}/`
 
         );
 
@@ -1075,7 +1075,7 @@ async function duplicateCampaign(id){
 
         const data=await apiRequest(
 
-            `/admin/customer-notifications/${id}/duplicate/`,
+            `/customer-notifications/${id}/duplicate/`,
             {
 
                 method:"POST",
@@ -1143,7 +1143,7 @@ async function deleteCampaign(id){
 
         const data=await apiRequest(
 
-            `/admin/customer-notifications/${id}/delete/`,
+            `/customer-notifications/${id}/delete/`,
             {
 
                 method:"POST",
