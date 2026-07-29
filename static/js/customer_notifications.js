@@ -736,21 +736,21 @@ async function refreshDashboard() {
 
         updateCampaignSummary();
 
-        document.querySelector(
-            "#totalCustomers"
-        )?.textContent = data.total_customers;
+        const totalCustomers = document.querySelector("#totalCustomers");
+        if (totalCustomers) totalCustomers.textContent = data.total_customers;
 
-        document.querySelector(
-            "#activeDevices"
-        )?.textContent = data.active_devices;
+        const activeDevices = document.querySelector("#activeDevices");
+        if (activeDevices) activeDevices.textContent = data.active_devices;
 
-        document.querySelector(
-            "#todayNotifications"
-        )?.textContent = data.todays_campaigns;
+        const todayNotifications = document.querySelector("#todayNotifications");
+        if (todayNotifications) {
+            todayNotifications.textContent = data.todays_campaigns;
+        }
 
-        document.querySelector(
-            "#totalCampaigns"
-        )?.textContent = data.total_campaigns;
+        const totalCampaigns = document.querySelector("#totalCampaigns");
+        if (totalCampaigns) {
+            totalCampaigns.textContent = data.total_campaigns;
+        }
 
     }
 
