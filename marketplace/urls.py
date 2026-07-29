@@ -176,11 +176,6 @@ urlpatterns = [
         name="send_notification"
     ),
 
-    path(
-        "customer-notifications/dashboard-data/",
-        views.notification_dashboard_data,
-        name="notification_dashboard_data"
-    ),
 
     path(
         "customer-notifications/history/",
@@ -210,6 +205,46 @@ urlpatterns = [
         "admin/customer-notifications/dashboard/",
         views.notification_dashboard_data,
         name="notification_dashboard_data",
+    ),
+
+    # ===========================
+    # Customer Notifications API
+    # ===========================
+
+    path(
+        "admin/customer-notifications/send/",
+        views.send_notification,
+        name="admin_send_notification",
+    ),
+
+    path(
+        "admin/customer-notifications/history/",
+        views.notification_history,
+        name="admin_notification_history",
+    ),
+
+    path(
+        "admin/customer-notifications/dashboard/",
+        views.notification_dashboard_data,
+        name="admin_notification_dashboard",
+    ),
+
+    path(
+        "admin/customer-notifications/<int:pk>/",
+        views.notification_detail,
+        name="admin_notification_detail",
+    ),
+
+    path(
+        "admin/customer-notifications/<int:pk>/duplicate/",
+        views.duplicate_notification_view,
+        name="admin_duplicate_notification",
+    ),
+
+    path(
+        "admin/customer-notifications/<int:pk>/delete/",
+        views.delete_notification_view,
+        name="admin_delete_notification",
     ),
 ]
 
