@@ -171,7 +171,7 @@ def send_bulk_notifications(
             campaign.save(update_fields=["status"])
 
         return {
-            "campaign": campaign,
+            "campaign_id": campaign.id if campaign else None,
             "total": 0,
             "successful": 0,
             "failed": 0,
@@ -217,7 +217,7 @@ def send_bulk_notifications(
             )
 
     return {
-        "campaign": campaign,
+        "campaign_id": campaign.id if campaign else None,
         "total": len(tokens),
         "successful": success,
         "failed": failed,

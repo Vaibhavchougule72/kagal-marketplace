@@ -5873,7 +5873,11 @@ def customer_notifications_dashboard(request):
 # =====================================================
 # DASHBOARD AJAX
 # =====================================================
-
+from .notification_service import (
+            get_new_customers,
+            get_repeat_customers,
+            get_inactive_customers,
+        )
 @staff_member_required
 def notification_dashboard_data(request):
 
@@ -5889,21 +5893,12 @@ def notification_dashboard_data(request):
             ).count(),
             "total_campaigns": NotificationCampaign.objects.count(),
 
-            "new_customers": DeviceToken.objects.filter(
-                order_count=1
-            ).count(),
+            "new_customers": get_new_customers().count(),
+            "repeat_customers": get_repeat_customers().count(),
+            "inactive_customers": get_inactive_customers().count(),
 
-            "repeat_customers": DeviceToken.objects.filter(
-                order_count__gte=2
-            ).count(),
-
-            "inactive_customers": DeviceToken.objects.filter(
-                is_active=False
-            ).count(),
-
-            "invalid_tokens": DeviceToken.objects.filter(
-                is_valid=False
-            ).count(),
+            # Count invalid tokens only if you later add such a field.
+            "invalid_tokens": 0,
         }
 
         logger.info(data)
