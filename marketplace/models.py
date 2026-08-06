@@ -1037,3 +1037,114 @@ class NotificationCampaign(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.created_at:%d %b %Y})"
+
+
+class Complaint(models.Model):
+
+    SEVERITY_CHOICES = [
+        ("LOW", "Low"),
+        ("MEDIUM", "Medium"),
+        ("HIGH", "High"),
+        ("CRITICAL", "Critical"),
+    ]
+
+    CATEGORY_CHOICES = [
+        ("PORTAL", "Portal / App"),
+        ("FOOD_QUALITY", "Food Quality"),
+        ("DELIVERED_FOOD", "Delivered Food Condition"),
+        ("DELIVERY_SERVICE", "Delivery Service"),
+    ]
+
+    STATUS_CHOICES = [
+        ("NEW", "New"),
+        ("UNDER_REVIEW", "Under Review"),
+        ("WAITING_RESTAURANT", "Waiting for Restaurant"),
+        ("WAITING_DELIVERY", "Waiting for Delivery Partner"),
+        ("RESOLVED", "Resolved"),
+        ("CLOSED", "Closed"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="complaint"
+    )
+
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+
+    customer_name = models.CharField(max_length=200)
+
+    phone = models.CharField(max_length=10)
+
+    delivery_partner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    severity = models.CharField(
+        max_length=20,
+        choices=SEVERITY_CHOICES
+    )
+
+    category = models.CharField(
+        max_length=30,
+        choices=CATEGORY_CHOICES
+    )
+
+    subcategory = models.CharField(
+        max_length=100
+    )
+
+    description = models.TextField()
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="NEW"
+    )
+
+    resolution_note = models.TextField(blank=True)
+
+    refund_amount = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0
+    )
+
+    coupon_code = models.CharField(
+        max_length=30,
+        blank=True
+    )
+
+    internal_note = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    resolved_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"Complaint #{self.id} - Order {self.order.id}"
+
+class ComplaintPhoto(models.Model):
+
+    complaint = models.ForeignKey(
+        Complaint,
+        related_name="photos",
+        on_delete=models.CASCADE
+    )
+
+    image = CloudinaryField("image")
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Complaint {self.complaint.id}"
+

@@ -6142,3 +6142,77 @@ def delete_notification_view(request, pk):
         return JsonResponse({
             "success": False
         }, status=500)
+
+from .models import Complaint, ComplaintPhoto
+from .forms import ComplaintForm
+
+from django.shortcuts import render, redirect, get_object_or_404
+
+def file_complaint(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id)
+
+    # Only delivered orders
+    if order.status != "DELIVERED":
+        messages.error(
+            request,
+            "You can file a complaint only after delivery."
+        )
+        return redirect("order_tracking", order.id)
+
+    # Prevent duplicate complaint
+    if hasattr(order, "complaint"):
+        return redirect(
+            "complaint_detail",
+            order.complaint.id
+        )
+
+    if request.method == "POST":
+
+        form = ComplaintForm(
+            request.POST,
+            request.FILES
+        )
+
+        if form.is_valid():
+
+            complaint = form.save(commit=False)
+
+            complaint.order = order
+            complaint.store = order.store
+            complaint.customer_name = order.customer_name
+            complaint.phone = order.phone
+            complaint.delivery_partner = order.assigned_delivery
+
+            complaint.save()
+
+            image = request.FILES.get("photo")
+
+            if image:
+                ComplaintPhoto.objects.create(
+                    complaint=complaint,
+                    image=image
+                )
+
+            messages.success(
+                request,
+                "Complaint submitted successfully."
+            )
+
+            return redirect(
+                "complaint_detail",
+                complaint.id
+            )
+
+    else:
+
+        form = ComplaintForm()
+
+    return render(
+        request,
+        "complaint_form.html",
+        {
+            "order": order,
+            "form": form,
+        }
+    )

@@ -218,6 +218,138 @@
     </div>
     {% endif %}
 
+    {% if order.status == "DELIVERED" %}
+
+    <div class="ot-card">
+        <div class="ot-card-head">
+            <span>Need Help?</span>
+        </div>
+
+        <div class="ot-card-body">
+
+            <div style="
+                display:flex;
+                align-items:flex-start;
+                gap:12px;
+                margin-bottom:16px;">
+
+                <div style="
+                    width:44px;
+                    height:44px;
+                    border-radius:12px;
+                    background:#FDF1EB;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    flex-shrink:0;">
+
+                    <i class="ti ti-help-circle"
+                      style="font-size:22px;color:#E8621A;"></i>
+
+                </div>
+
+                <div>
+
+                    <div style="
+                        font-size:16px;
+                        font-weight:600;
+                        color:#1A2E19;
+                        margin-bottom:5px;">
+
+                        Having an issue with your order?
+
+                    </div>
+
+                    <div style="
+                        font-size:13px;
+                        color:#8B978A;
+                        line-height:1.5;">
+
+                        If you faced any issue with your food, delivery or payment, 
+                        submit a complaint and our support team will review it as quickly as possible.
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% if order.complaint %}
+
+                <a href="{% url 'complaint_detail' order.complaint.id %}"
+                  class="ot-btn green"
+                  style="width:100%;margin-bottom:16px;">
+
+                    <i class="ti ti-eye"></i>
+                    View Complaint
+
+                </a>
+
+            {% else %}
+
+                <a href="{% url 'file_complaint' order.id %}"
+                  class="ot-btn orange"
+                  style="width:100%;margin-bottom:16px;">
+
+                    <i class="ti ti-alert-circle"></i>
+                    File Complaint
+
+                </a>
+
+            {% endif %}
+
+            <div style="
+                border-top:1px dashed #E6E6E6;
+                padding-top:14px;">
+
+                <div style="
+                    font-size:12px;
+                    font-weight:600;
+                    color:#6B7B69;
+                    margin-bottom:10px;">
+
+                    Report issues like
+
+                </div>
+
+                <div style="
+                    display:grid;
+                    gap:8px;">
+
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#586657;">
+                        <i class="ti ti-alert-circle" style="color:#E8621A;"></i>
+                        Wrong order
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#586657;">
+                        <i class="ti ti-alert-circle" style="color:#E8621A;"></i>
+                        Missing items
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#586657;">
+                        <i class="ti ti-alert-circle" style="color:#E8621A;"></i>
+                        Food quality
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#586657;">
+                        <i class="ti ti-alert-circle" style="color:#E8621A;"></i>
+                        Delivery partner behaviour
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#586657;">
+                        <i class="ti ti-alert-circle" style="color:#E8621A;"></i>
+                        Payment issues
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
     <!-- INVOICE BUTTONS -->
     <div class="ot-btn-row">
       <a href="https://docs.google.com/gview?embedded=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'generate_invoice' order.id %}"

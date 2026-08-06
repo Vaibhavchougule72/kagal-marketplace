@@ -15,6 +15,8 @@ import csv
 
 from django.http import HttpResponse
 from .models import Order
+from .models import Complaint, ComplaintPhoto
+from .forms import ComplaintForm
 
 def download_customer_csv(modeladmin, request, queryset):
 
@@ -649,3 +651,41 @@ admin.site.register(DeliveryPartnerProfile)
 from .models import Expense
 
 admin.site.register(Expense)
+class ComplaintPhotoInline(admin.TabularInline):
+    model = ComplaintPhoto
+    extra = 0
+    
+@admin.register(Complaint)
+class ComplaintAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "order",
+        "customer_name",
+        "category",
+        "severity",
+        "status",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "category",
+        "severity",
+        "created_at",
+    )
+
+    search_fields = (
+        "id",
+        "order__id",
+        "customer_name",
+        "phone",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
+    inlines = [ComplaintPhotoInline]
+
