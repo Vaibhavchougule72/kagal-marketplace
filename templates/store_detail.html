@@ -785,6 +785,172 @@ body{
 /* ── BOTTOM PAD ──────────────────────────── */
 .sd-bottom-pad { height: 32px; }
 
+.product-sheet-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.45);
+
+    display:flex;
+
+    align-items:flex-end;
+
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:.25s;
+
+    z-index:99999;
+
+}
+
+.product-sheet-overlay.show{
+
+    opacity:1;
+
+    pointer-events:auto;
+
+}
+
+.product-sheet{
+
+    width:100%;
+
+    background:#fff;
+
+    border-radius:24px 24px 0 0;
+
+    padding:20px;
+
+    transform:translateY(100%);
+
+    transition:.25s;
+
+}
+
+.product-sheet-overlay.show .product-sheet{
+
+    transform:translateY(0);
+
+}
+
+.sheet-close{
+
+    float:right;
+
+    width:36px;
+
+    height:36px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#eee;
+
+    cursor:pointer;
+
+}
+
+#sheetImage{
+
+    width:100%;
+
+    height:220px;
+
+    object-fit:cover;
+
+    border-radius:16px;
+
+    margin-top:15px;
+
+}
+
+#sheetName{
+
+    margin:15px 0 8px;
+
+    font-size:22px;
+
+}
+
+#sheetDescription{
+
+    color:#666;
+
+    margin-bottom:15px;
+
+}
+
+.sheet-price{
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    color:#2d7a3a;
+
+}
+
+.sheet-footer{
+
+    margin-top:20px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+.sheet-stepper{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.sheet-stepper button{
+
+    width:36px;
+
+    height:36px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#2d7a3a;
+
+    color:white;
+
+    font-size:20px;
+
+}
+
+#sheetAddBtn{
+
+    background:#2d7a3a;
+
+    color:#fff;
+
+    border:none;
+
+    padding:12px 28px;
+
+    border-radius:30px;
+
+    font-weight:700;
+
+}
+
 /* ── MOBILE ──────────────────────────────── */
 @media (max-width: 576px) {
     .sd-hero { height: 220px; }
@@ -1022,6 +1188,44 @@ body{
 
 <div class="sd-bottom-pad"></div>
 
+<div id="productSheetOverlay" class="product-sheet-overlay">
+
+    <div class="product-sheet">
+
+        <button class="sheet-close">✕</button>
+
+        <img id="sheetImage">
+
+        <h3 id="sheetName"></h3>
+
+        <p id="sheetDescription"></p>
+
+        <div class="sheet-price">
+            ₹<span id="sheetPrice"></span>
+        </div>
+
+        <div class="sheet-footer">
+
+            <div class="sheet-stepper">
+
+                <button id="minusQty">−</button>
+
+                <span id="sheetQty">1</span>
+
+                <button id="plusQty">+</button>
+
+            </div>
+
+            <button id="sheetAddBtn">
+                Add
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 <!-- ══════════════════════════════════════════
      JS — Sticky header + Filter toggle + scroll
 ══════════════════════════════════════════ -->
@@ -1209,6 +1413,99 @@ document
     );
 
 });
+
+const overlay=document.getElementById("productSheetOverlay");
+
+let currentProduct=null;
+
+document.addEventListener("click",function(e){
+
+    if(e.target.closest(".add-to-cart-btn"))
+        return;
+
+    const card=e.target.closest(".sd-product-card");
+
+    if(!card)
+        return;
+
+    currentProduct=card.dataset.id;
+
+    document.getElementById("sheetName").textContent=
+        card.dataset.name;
+
+    document.getElementById("sheetDescription").textContent=
+        card.dataset.description;
+
+    document.getElementById("sheetPrice").textContent=
+        card.dataset.price;
+
+    document.getElementById("sheetImage").src=
+        card.dataset.image;
+
+    qty = 1;
+    sheetQty.textContent = qty;
+
+    overlay.classList.add("show");
+
+});
+
+document.querySelector(".sheet-close").onclick=function(){
+
+    overlay.classList.remove("show");
+
+};
+
+overlay.onclick=function(e){
+
+    if(e.target===overlay)
+        overlay.classList.remove("show");
+
+};
+let qty = 1;
+
+const plusQty = document.getElementById("plusQty");
+const minusQty = document.getElementById("minusQty");
+const sheetQty = document.getElementById("sheetQty");
+
+plusQty.onclick = function(){
+
+    qty++;
+
+    sheetQty.textContent = qty;
+
+};
+
+minusQty.onclick = function(){
+
+    if(qty > 1){
+
+        qty--;
+
+        sheetQty.textContent = qty;
+
+    }
+
+};
+
+const sheetAddBtn = document.getElementById("sheetAddBtn");
+
+sheetAddBtn.onclick = function(){
+
+    const realButton = document.querySelector(
+        '.add-to-cart-btn[data-id="' + currentProduct + '"]'
+    );
+
+    if(!realButton) return;
+
+    overlay.classList.remove("show");
+
+    for(let i = 0; i < qty; i++){
+
+        realButton.click();
+
+    }
+
+};
 </script>
 
 {% endblock %}

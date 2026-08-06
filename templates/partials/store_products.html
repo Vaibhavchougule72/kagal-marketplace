@@ -1,8 +1,11 @@
 {% for product in products %}
     <div class="sd-product-card"
-        data-id="{{ product.id }}"
-        data-name="{{ product.name|lower }}"
-        data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
+    data-id="{{ product.id }}"
+    data-name="{{ product.name }}"
+    data-price="{{ product.discount_price|default:product.price }}"
+    data-description="{{ product.description|default:'No description available' }}"
+    data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+    data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
 
         <!-- Image -->
             <div class="sd-prod-img-wrap">
