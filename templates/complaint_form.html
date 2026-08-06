@@ -1,0 +1,82 @@
+<script>
+
+const category=document.getElementById("id_category");
+
+const subcategory=document.getElementById("id_subcategory");
+
+const photoCard=document.getElementById("photoCard");
+
+const options={
+
+PORTAL:[
+"Payment Issue",
+"Coupon Issue",
+"App Crash",
+"Login Issue",
+"Other"
+],
+
+FOOD_QUALITY:[
+"Taste",
+"Freshness",
+"Undercooked",
+"Overcooked",
+"Bad Smell",
+"Wrong Ingredients",
+"Other"
+],
+
+DELIVERED_FOOD:[
+"Packaging Damaged",
+"Food Spilled",
+"Missing Items",
+"Wrong Order",
+"Seal Broken",
+"Other"
+],
+
+DELIVERY_SERVICE:[
+"Late Delivery",
+"Delivery Partner Behaviour",
+"Couldn't Contact Rider",
+"Wrong Address Attempt",
+"Other"
+]
+
+};
+
+function refreshSubCategory(){
+
+const cat=category.value;
+
+subcategory.innerHTML="";
+
+(options[cat]||[]).forEach(function(item){
+
+const opt=document.createElement("option");
+
+opt.value=item;
+
+opt.innerHTML=item;
+
+subcategory.appendChild(opt);
+
+});
+
+if(cat==="FOOD_QUALITY" || cat==="DELIVERED_FOOD"){
+
+photoCard.style.display="block";
+
+}else{
+
+photoCard.style.display="none";
+
+}
+
+}
+
+category.addEventListener("change",refreshSubCategory);
+
+refreshSubCategory();
+
+</script>

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="success-page">
+
+<div class="success-card">
+
+<div class="success-icon">
+
+<i class="ti ti-circle-check"></i>
+
+</div>
+
+<h2>
+
+Complaint Submitted
+
+</h2>
+
+<p>
+
+Complaint ID
+
+<br>
+
+<b>CMP-{{ complaint.id }}</b>
+
+</p>
+
+<div class="status">
+
+🟡 Under Review
+
+</div>
+
+<p>
+
+We'll review your complaint within 24 hours.
+
+</p>
+
+<a href="{% url 'order_tracking' complaint.order.id %}"
+class="ot-btn green">
+
+Back to Order
+
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -210,7 +210,11 @@ urlpatterns = [
         views.file_complaint,
         name="file_complaint",
     ),
-    
+    path(
+        "complaint/<int:complaint_id>/success/",
+        views.complaint_success,
+        name="complaint_success",
+    ),
 ]
 
 

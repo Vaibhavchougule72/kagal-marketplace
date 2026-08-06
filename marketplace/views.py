@@ -6143,36 +6143,34 @@ def delete_notification_view(request, pk):
             "success": False
         }, status=500)
 
-from .models import Complaint, ComplaintPhoto
-from .forms import ComplaintForm
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .forms import ComplaintForm
+from .models import Complaint, ComplaintPhoto, Order
+
 
 def file_complaint(request, order_id):
 
     order = get_object_or_404(Order, id=order_id)
 
-    # Only delivered orders
     if order.status != "DELIVERED":
         messages.error(
             request,
-            "You can file a complaint only after delivery."
+            "Complaints can only be filed after delivery."
         )
         return redirect("order_tracking", order.id)
 
-    # Prevent duplicate complaint
     if hasattr(order, "complaint"):
         return redirect(
-            "complaint_detail",
+            "complaint_success",
             order.complaint.id
         )
 
     if request.method == "POST":
 
-        form = ComplaintForm(
-            request.POST,
-            request.FILES
-        )
+        form = ComplaintForm(request.POST)
 
         if form.is_valid():
 
@@ -6186,12 +6184,12 @@ def file_complaint(request, order_id):
 
             complaint.save()
 
-            image = request.FILES.get("photo")
+            photo = request.FILES.get("photo")
 
-            if image:
+            if photo:
                 ComplaintPhoto.objects.create(
                     complaint=complaint,
-                    image=image
+                    image=photo
                 )
 
             messages.success(
@@ -6200,7 +6198,7 @@ def file_complaint(request, order_id):
             )
 
             return redirect(
-                "complaint_detail",
+                "complaint_success",
                 complaint.id
             )
 
@@ -6212,7 +6210,23 @@ def file_complaint(request, order_id):
         request,
         "complaint_form.html",
         {
-            "order": order,
             "form": form,
+            "order": order,
+        }
+    )
+
+
+def complaint_success(request, complaint_id):
+
+    complaint = get_object_or_404(
+        Complaint,
+        id=complaint_id
+    )
+
+    return render(
+        request,
+        "complaint_success.html",
+        {
+            "complaint": complaint
         }
     )
