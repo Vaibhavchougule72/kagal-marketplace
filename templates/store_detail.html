@@ -1489,21 +1489,43 @@ minusQty.onclick = function(){
 
 const sheetAddBtn = document.getElementById("sheetAddBtn");
 
-sheetAddBtn.onclick = function(){
+sheetAddBtn.onclick = function () {
 
-    const realButton = document.querySelector(
-        '.add-to-cart-btn[data-id="' + currentProduct + '"]'
-    );
+    sheetAddBtn.disabled = true;
 
-    if(!realButton) return;
+    fetch(`/add-to-cart/${currentProduct}/?qty=${qty}`, {
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
 
-    overlay.classList.remove("show");
+        if (data.success) {
 
-    for(let i = 0; i < qty; i++){
+            refreshCartBadge();
+            showToast();
 
-        realButton.click();
+            overlay.classList.remove("show");
 
-    }
+        } else if (data.different_store) {
+
+            pendingProductId = currentProduct;
+
+            overlay.classList.remove("show");
+
+            const modal = new bootstrap.Modal(
+                document.getElementById("replaceCartModal")
+            );
+
+            modal.show();
+        }
+
+    })
+    .catch(err => console.error(err))
+    .finally(() => {
+        sheetAddBtn.disabled = false;
+    });
 
 };
 </script>
