@@ -1,0 +1,912 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+.complaint-detail-page {
+    min-height: 100vh;
+    background: #FAF7F2;
+    padding: 18px 14px 40px;
+}
+
+/* --------------------------------
+   TOP
+-------------------------------- */
+
+.cd-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.cd-back {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2D5A27;
+    text-decoration: none;
+}
+
+.cd-title {
+    margin: 0;
+    color: #1A2E19;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.cd-subtitle {
+    margin: 3px 0 0;
+    color: #8B978A;
+    font-size: 12px;
+}
+
+/* --------------------------------
+   CARD
+-------------------------------- */
+
+.cd-card {
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.cd-card-head {
+    background: #2D5A27;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.cd-card-body {
+    padding: 15px;
+}
+
+/* --------------------------------
+   COMPLAINT ID
+-------------------------------- */
+
+.cd-number {
+    background: #F5F9F4;
+    border: 1px solid #E0E8DF;
+    border-radius: 11px;
+    padding: 13px;
+    margin-bottom: 12px;
+}
+
+.cd-number-label {
+    font-size: 10px;
+    color: #9AA899;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.cd-number-value {
+    display: block;
+    color: #2D5A27;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+/* --------------------------------
+   STATUS
+-------------------------------- */
+
+.cd-status {
+    text-align: center;
+    padding: 20px 15px;
+}
+
+.cd-status-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #EEF5FF;
+    color: #1E6DB6;
+    font-size: 25px;
+}
+
+.cd-status-title {
+    margin: 0;
+    color: #1A2E19;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.cd-status-text {
+    margin: 5px 0 0;
+    color: #8B978A;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* --------------------------------
+   STATUS COLORS
+-------------------------------- */
+
+.status-new .cd-status-icon {
+    background: #EEF5FF;
+    color: #1976D2;
+}
+
+.status-review .cd-status-icon {
+    background: #EEF5FF;
+    color: #1E6DB6;
+}
+
+.status-resolved .cd-status-icon {
+    background: #EAF6EA;
+    color: #2D6B27;
+}
+
+.status-closed .cd-status-icon {
+    background: #F0F1F0;
+    color: #616861;
+}
+
+.status-rejected .cd-status-icon {
+    background: #FFF0EE;
+    color: #C0392B;
+}
+
+/* --------------------------------
+   DETAILS
+-------------------------------- */
+
+.cd-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 9px 0;
+    border-bottom: 1px solid #F0F3EF;
+}
+
+.cd-row:last-child {
+    border-bottom: none;
+}
+
+.cd-row-label {
+    color: #9AA899;
+    font-size: 12px;
+}
+
+.cd-row-value {
+    color: #1A2E19;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+}
+
+/* --------------------------------
+   DESCRIPTION
+-------------------------------- */
+
+.cd-description {
+    color: #4E5A4D;
+    font-size: 13px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+}
+
+/* --------------------------------
+   PHOTO
+-------------------------------- */
+
+.cd-photo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+}
+
+.cd-photo {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #E0E8DF;
+    display: block;
+}
+
+/* --------------------------------
+   TIMELINE
+-------------------------------- */
+
+.cd-timeline {
+    position: relative;
+}
+
+.cd-timeline-item {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding-bottom: 20px;
+}
+
+.cd-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.cd-timeline-line {
+    position: absolute;
+    left: 9px;
+    top: 21px;
+    bottom: 0;
+    width: 2px;
+    background: #E3EAE1;
+}
+
+.cd-timeline-item:last-child .cd-timeline-line {
+    display: none;
+}
+
+.cd-timeline-dot {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #E3EAE1;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    position: relative;
+    z-index: 1;
+}
+
+.cd-timeline-item.completed .cd-timeline-dot {
+    background: #2D6B27;
+}
+
+.cd-timeline-item.current .cd-timeline-dot {
+    background: #1E6DB6;
+    box-shadow: 0 0 0 4px #EAF2FB;
+}
+
+.cd-timeline-content strong {
+    display: block;
+    color: #1A2E19;
+    font-size: 13px;
+}
+
+.cd-timeline-content span {
+    display: block;
+    color: #8B978A;
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 3px;
+}
+
+/* --------------------------------
+   RESOLUTION
+-------------------------------- */
+
+.cd-resolution {
+    background: #EEF8EE;
+    border: 1px solid #D7EBD5;
+    border-radius: 11px;
+    padding: 13px;
+}
+
+.cd-resolution-title {
+    color: #2D6B27;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.cd-resolution-text {
+    color: #4F6B4C;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* --------------------------------
+   BUTTON
+-------------------------------- */
+
+.cd-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    background: #2D5A27;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 11px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+</style>
+
+
+<div class="complaint-detail-page">
+
+    <!-- TOP -->
+
+    <div class="cd-top">
+
+        <a
+            href="{% url 'order_tracking' complaint.order.id %}"
+            class="cd-back">
+
+            <i class="ti ti-arrow-left"></i>
+
+        </a>
+
+        <div>
+
+            <h1 class="cd-title">
+                Complaint Details
+            </h1>
+
+            <p class="cd-subtitle">
+                Order #{{ complaint.order.id }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- COMPLAINT NUMBER -->
+
+    <div class="cd-number">
+
+        <div class="cd-number-label">
+            Complaint ID
+        </div>
+
+        <span class="cd-number-value">
+            {{ complaint.complaint_number }}
+        </span>
+
+    </div>
+
+
+    <!-- STATUS -->
+
+    {% if complaint.status == "NEW" %}
+
+        <div class="cd-card status-new">
+
+            <div class="cd-status">
+
+                <div class="cd-status-icon">
+                    <i class="ti ti-file-description"></i>
+                </div>
+
+                <h2 class="cd-status-title">
+                    Complaint Submitted
+                </h2>
+
+                <p class="cd-status-text">
+                    Your complaint has been received and is waiting for review.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% elif complaint.status == "UNDER_REVIEW" %}
+
+        <div class="cd-card status-review">
+
+            <div class="cd-status">
+
+                <div class="cd-status-icon">
+                    <i class="ti ti-search"></i>
+                </div>
+
+                <h2 class="cd-status-title">
+                    Under Review
+                </h2>
+
+                <p class="cd-status-text">
+                    Our support team is currently reviewing your complaint.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% elif complaint.status == "RESOLVED" or complaint.status == "CLOSED" %}
+
+        <div class="cd-card status-resolved">
+
+            <div class="cd-status">
+
+                <div class="cd-status-icon">
+                    <i class="ti ti-circle-check"></i>
+                </div>
+
+                <h2 class="cd-status-title">
+                    {{ complaint.get_status_display }}
+                </h2>
+
+                <p class="cd-status-text">
+                    Your complaint has been resolved.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% elif complaint.status == "REJECTED" %}
+
+        <div class="cd-card status-rejected">
+
+            <div class="cd-status">
+
+                <div class="cd-status-icon">
+                    <i class="ti ti-circle-x"></i>
+                </div>
+
+                <h2 class="cd-status-title">
+                    Complaint Closed
+                </h2>
+
+                <p class="cd-status-text">
+                    Your complaint could not be approved.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="cd-card status-review">
+
+            <div class="cd-status">
+
+                <div class="cd-status-icon">
+                    <i class="ti ti-clock"></i>
+                </div>
+
+                <h2 class="cd-status-title">
+                    {{ complaint.get_status_display }}
+                </h2>
+
+                <p class="cd-status-text">
+                    Your complaint is currently being processed.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- COMPLAINT DETAILS -->
+
+    <div class="cd-card">
+
+        <div class="cd-card-head">
+            Complaint Details
+        </div>
+
+        <div class="cd-card-body">
+
+            <div class="cd-row">
+
+                <span class="cd-row-label">
+                    Category
+                </span>
+
+                <span class="cd-row-value">
+                    {{ complaint.get_category_display }}
+                </span>
+
+            </div>
+
+
+            <div class="cd-row">
+
+                <span class="cd-row-label">
+                    Issue
+                </span>
+
+                <span class="cd-row-value">
+                    {{ complaint.subcategory }}
+                </span>
+
+            </div>
+
+
+            <div class="cd-row">
+
+                <span class="cd-row-label">
+                    Seriousness
+                </span>
+
+                <span class="cd-row-value">
+                    {{ complaint.get_severity_display }}
+                </span>
+
+            </div>
+
+
+            <div class="cd-row">
+
+                <span class="cd-row-label">
+                    Store
+                </span>
+
+                <span class="cd-row-value">
+                    {{ complaint.store.name }}
+                </span>
+
+            </div>
+
+
+            <div class="cd-row">
+
+                <span class="cd-row-label">
+                    Submitted
+                </span>
+
+                <span class="cd-row-value">
+                    {{ complaint.created_at|date:"d M Y, h:i A" }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DESCRIPTION -->
+
+    <div class="cd-card">
+
+        <div class="cd-card-head">
+            Your Description
+        </div>
+
+        <div class="cd-card-body">
+
+            <div class="cd-description">
+                {{ complaint.description }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- PHOTOS -->
+
+    {% if complaint.photos.exists %}
+
+        <div class="cd-card">
+
+            <div class="cd-card-head">
+                Uploaded Photo
+            </div>
+
+            <div class="cd-card-body">
+
+                <div class="cd-photo-grid">
+
+                    {% for photo in complaint.photos.all %}
+
+                        {% if photo.image %}
+
+                            <a
+                                href="{{ photo.image.url }}"
+                                target="_blank">
+
+                                <img
+                                    src="{{ photo.image.url }}"
+                                    class="cd-photo"
+                                    alt="Complaint photo">
+
+                            </a>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- TIMELINE -->
+
+    <div class="cd-card">
+
+        <div class="cd-card-head">
+            Complaint Timeline
+        </div>
+
+        <div class="cd-card-body">
+
+            <div class="cd-timeline">
+
+
+                <!-- SUBMITTED -->
+
+                <div class="cd-timeline-item completed">
+
+                    <div class="cd-timeline-line"></div>
+
+                    <div class="cd-timeline-dot">
+                        <i class="ti ti-check"></i>
+                    </div>
+
+                    <div class="cd-timeline-content">
+
+                        <strong>
+                            Complaint Submitted
+                        </strong>
+
+                        <span>
+                            {{ complaint.created_at|date:"d M Y, h:i A" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REVIEW -->
+
+                <div class="
+                    cd-timeline-item
+                    {% if complaint.status == 'UNDER_REVIEW' or complaint.status == 'WAITING_RESTAURANT' or complaint.status == 'WAITING_DELIVERY' %}
+                        current
+                    {% elif complaint.status == 'RESOLVED' or complaint.status == 'CLOSED' %}
+                        completed
+                    {% endif %}
+                ">
+
+                    <div class="cd-timeline-line"></div>
+
+                    <div class="cd-timeline-dot">
+
+                        {% if complaint.status == "RESOLVED" or complaint.status == "CLOSED" %}
+
+                            <i class="ti ti-check"></i>
+
+                        {% elif complaint.status == "UNDER_REVIEW" or complaint.status == "WAITING_RESTAURANT" or complaint.status == "WAITING_DELIVERY" %}
+
+                            <i class="ti ti-search"></i>
+
+                        {% else %}
+
+                            <i class="ti ti-clock"></i>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="cd-timeline-content">
+
+                        <strong>
+                            Under Review
+                        </strong>
+
+                        <span>
+
+                            {% if complaint.status == "UNDER_REVIEW" or complaint.status == "WAITING_RESTAURANT" or complaint.status == "WAITING_DELIVERY" %}
+
+                                Our team is reviewing the complaint.
+
+                            {% elif complaint.status == "RESOLVED" or complaint.status == "CLOSED" %}
+
+                                Review completed.
+
+                            {% else %}
+
+                                Pending review.
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RESOLUTION -->
+
+                <div class="
+                    cd-timeline-item
+                    {% if complaint.status == 'RESOLVED' or complaint.status == 'CLOSED' %}
+                        current
+                    {% endif %}
+                ">
+
+                    <div class="cd-timeline-dot">
+
+                        {% if complaint.status == "RESOLVED" or complaint.status == "CLOSED" %}
+
+                            <i class="ti ti-check"></i>
+
+                        {% else %}
+
+                            <i class="ti ti-clock"></i>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="cd-timeline-content">
+
+                        <strong>
+                            Resolution
+                        </strong>
+
+                        <span>
+
+                            {% if complaint.status == "RESOLVED" or complaint.status == "CLOSED" %}
+
+                                {% if complaint.resolved_at %}
+
+                                    {{ complaint.resolved_at|date:"d M Y, h:i A" }}
+
+                                {% else %}
+
+                                    Complaint resolved.
+
+                                {% endif %}
+
+                            {% else %}
+
+                                Resolution pending.
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- RESOLUTION MESSAGE -->
+
+    {% if complaint.resolution_note %}
+
+        <div class="cd-card">
+
+            <div class="cd-card-head">
+                Resolution
+            </div>
+
+            <div class="cd-card-body">
+
+                <div class="cd-resolution">
+
+                    <div class="cd-resolution-title">
+
+                        <i class="ti ti-circle-check"></i>
+                        LOKA Support
+
+                    </div>
+
+                    <div class="cd-resolution-text">
+
+                        {{ complaint.resolution_note }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- REFUND -->
+
+    {% if complaint.refund_amount and complaint.refund_amount > 0 %}
+
+        <div class="cd-card">
+
+            <div class="cd-card-head">
+                Compensation
+            </div>
+
+            <div class="cd-card-body">
+
+                <div class="cd-row">
+
+                    <span class="cd-row-label">
+                        Refund
+                    </span>
+
+                    <span
+                        class="cd-row-value"
+                        style="color:#2D6B27;">
+
+                        ₹{{ complaint.refund_amount }}
+
+                    </span>
+
+                </div>
+
+
+                {% if complaint.coupon_code %}
+
+                    <div class="cd-row">
+
+                        <span class="cd-row-label">
+                            Coupon
+                        </span>
+
+                        <span
+                            class="cd-row-value"
+                            style="color:#E8621A;">
+
+                            {{ complaint.coupon_code }}
+
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- BACK -->
+
+    <a
+        href="{% url 'order_tracking' complaint.order.id %}"
+        class="cd-button">
+
+        <i class="ti ti-arrow-left"></i>
+
+        Back to Order
+
+    </a>
+
+</div>
+
+{% endblock %}

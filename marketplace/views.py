@@ -6273,6 +6273,8 @@ def file_complaint(request, order_id):
         {
             "form": form,
             "order": order,
+            "show_navbar": False,
+            "simple_navbar": False,
         }
     )
 
@@ -6288,6 +6290,117 @@ def complaint_success(request, complaint_id):
         request,
         "complaint_success.html",
         {
-            "complaint": complaint
+            "complaint": complaint,
+            "show_navbar": False,
+            "simple_navbar": False,
+        }
+    )
+
+
+def complaint_detail(request, complaint_id):
+
+    complaint = get_object_or_404(
+        Complaint.objects.select_related(
+            "order",
+            "store"
+        ).prefetch_related(
+            "photos"
+        ),
+        id=complaint_id
+    )
+
+    # -----------------------------------------
+    # CUSTOMER ACCESS CHECK
+    # -----------------------------------------
+
+    customer_phone = str(
+        request.session.get("customer_phone", "")
+    ).strip()
+
+    if not customer_phone:
+        messages.error(
+            request,
+            "Please access your complaint from your order."
+        )
+
+        return redirect(
+            "order_tracking",
+            complaint.order.id
+        )
+
+    if customer_phone != str(complaint.phone).strip():
+
+        messages.error(
+            request,
+            "You are not authorized to view this complaint."
+        )
+
+        return redirect(
+            "order_tracking",
+            complaint.order.id
+        )
+
+    # -----------------------------------------
+    # STATUS INFORMATION
+    # -----------------------------------------
+
+    status_steps = [
+        {
+            "key": "NEW",
+            "label": "Complaint Submitted",
+            "description": "Your complaint has been received."
+        },
+        {
+            "key": "UNDER_REVIEW",
+            "label": "Under Review",
+            "description": "Our support team is reviewing the issue."
+        },
+        {
+            "key": "RESOLVED",
+            "label": "Resolved",
+            "description": "The complaint has been resolved."
+        },
+    ]
+
+    status_order = [
+        "NEW",
+        "UNDER_REVIEW",
+        "RESOLVED",
+    ]
+
+    current_status = complaint.status
+
+    # Treat these as completed/terminal states
+    # for the customer-facing timeline.
+
+    if current_status == "CLOSED":
+        current_position = 2
+
+    elif current_status == "REJECTED":
+        current_position = 1
+
+    elif current_status == "WAITING_RESTAURANT":
+        current_position = 1
+
+    elif current_status == "WAITING_DELIVERY":
+        current_position = 1
+
+    elif current_status in status_order:
+        current_position = status_order.index(
+            current_status
+        )
+
+    else:
+        current_position = 0
+
+    return render(
+        request,
+        "complaint_detail.html",
+        {
+            "complaint": complaint,
+            "status_steps": status_steps,
+            "current_position": current_position,
+            "show_navbar": False,
+            "simple_navbar": False,
         }
     )

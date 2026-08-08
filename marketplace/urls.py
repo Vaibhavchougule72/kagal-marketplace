@@ -215,6 +215,11 @@ urlpatterns = [
         views.complaint_success,
         name="complaint_success",
     ),
+    path(
+        "complaint/<int:complaint_id>/",
+        views.complaint_detail,
+        name="complaint_detail",
+    ),
 ]
 
 

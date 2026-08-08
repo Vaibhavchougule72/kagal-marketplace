@@ -157,8 +157,22 @@
 
 
         <a
+            href="{% url 'complaint_detail' complaint.id %}"
+            class="success-button"
+            style="margin-bottom:10px;">
+
+            <i class="ti ti-eye"></i>
+
+            View Complaint
+
+        </a>
+
+        <a
             href="{% url 'order_tracking' complaint.order.id %}"
-            class="success-button">
+            class="success-button"
+            style="background:#fff;color:#2D5A27;border:1px solid #2D5A27;">
+
+            <i class="ti ti-arrow-left"></i>
 
             Back to Order
 
