@@ -1,52 +1,170 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
 
-<div class="success-page">
+<style>
 
-<div class="success-card">
+.complaint-success-page {
+    min-height: 100vh;
+    background: #FAF7F2;
+    padding: 35px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
 
-<div class="success-icon">
+.complaint-success-card {
+    width: 100%;
+    max-width: 430px;
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+}
 
-<i class="ti ti-circle-check"></i>
+.success-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #EAF2E8;
+    color: #2D6B27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    font-size: 34px;
+}
 
-</div>
+.success-title {
+    color: #1A2E19;
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0 0 8px;
+}
 
-<h2>
+.success-text {
+    color: #7C887A;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 20px;
+}
 
-Complaint Submitted
+.complaint-number-box {
+    background: #F6F9F5;
+    border: 1px solid #E1E9DF;
+    border-radius: 11px;
+    padding: 13px;
+    margin-bottom: 14px;
+}
 
-</h2>
+.complaint-number-label {
+    font-size: 11px;
+    color: #9AA899;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
 
-<p>
+.complaint-number {
+    display: block;
+    margin-top: 4px;
+    color: #2D5A27;
+    font-size: 16px;
+    font-weight: 600;
+}
 
-Complaint ID
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #EEF5FF;
+    color: #1E6DB6;
+    padding: 7px 13px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
 
-<br>
+.success-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: #2D5A27;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 11px;
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 500;
+}
 
-<b>CMP-{{ complaint.id }}</b>
+</style>
 
-</p>
 
-<div class="status">
+<div class="complaint-success-page">
 
-🟡 Under Review
+    <div class="complaint-success-card">
 
-</div>
+        <div class="success-icon">
 
-<p>
+            <i class="ti ti-circle-check"></i>
 
-We'll review your complaint within 24 hours.
+        </div>
 
-</p>
 
-<a href="{% url 'order_tracking' complaint.order.id %}"
-class="ot-btn green">
+        <h1 class="success-title">
 
-Back to Order
+            Complaint Submitted
 
-</a>
+        </h1>
 
-</div>
+
+        <p class="success-text">
+
+            Thank you for letting us know.
+            Our support team will review your complaint
+            and get back to you as soon as possible.
+
+        </p>
+
+
+        <div class="complaint-number-box">
+
+            <div class="complaint-number-label">
+
+                Complaint ID
+
+            </div>
+
+            <span class="complaint-number">
+
+                {{ complaint.complaint_number }}
+
+            </span>
+
+        </div>
+
+
+        <div class="status-pill">
+
+            <i class="ti ti-clock"></i>
+
+            Under Review
+
+        </div>
+
+
+        <a
+            href="{% url 'order_tracking' complaint.order.id %}"
+            class="success-button">
+
+            Back to Order
+
+        </a>
+
+    </div>
 
 </div>
 

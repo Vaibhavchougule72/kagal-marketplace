@@ -16,7 +16,6 @@ import csv
 from django.http import HttpResponse
 from .models import Order
 from .models import Complaint, ComplaintPhoto
-from .forms import ComplaintForm
 
 def download_customer_csv(modeladmin, request, queryset):
 
@@ -651,41 +650,212 @@ admin.site.register(DeliveryPartnerProfile)
 from .models import Expense
 
 admin.site.register(Expense)
+
 class ComplaintPhotoInline(admin.TabularInline):
     model = ComplaintPhoto
     extra = 0
+
+    readonly_fields = (
+        "preview",
+        "uploaded_at",
+    )
+
+    fields = (
+        "preview",
+        "image",
+        "uploaded_at",
+    )
+
+    def preview(self, obj):
+        if obj.image:
+            return format_html(
+                '''
+                <a href="{0}" target="_blank">
+                    <img src="{0}"
+                        style="
+                            width:90px;
+                            height:90px;
+                            object-fit:cover;
+                            border-radius:10px;
+                            border:1px solid #ddd;">
+                </a>
+                ''',
+                obj.image.url
+            )
+        return "-"
+
+    preview.short_description = "Photo"
     
 @admin.register(Complaint)
 class ComplaintAdmin(admin.ModelAdmin):
 
     list_display = (
-        "id",
+        "complaint_number",
         "order",
         "customer_name",
         "category",
-        "severity",
-        "status",
+        "severity_badge",
+        "status_badge",
         "created_at",
+    )
+
+    list_display_links = (
+        "complaint_number",
     )
 
     list_filter = (
         "status",
-        "category",
         "severity",
+        "category",
+        "store",
         "created_at",
     )
 
     search_fields = (
-        "id",
-        "order__id",
         "customer_name",
         "phone",
+        "order__id",
+        "subcategory",
+        "description",
+    )
+
+    autocomplete_fields = (
+        "store",
+        "delivery_partner",
     )
 
     readonly_fields = (
+        "complaint_number",
+        "order",
+        "store",
+        "customer_name",
+        "phone",
+        "delivery_partner",
         "created_at",
         "updated_at",
+        "resolved_at",
     )
 
     inlines = [ComplaintPhotoInline]
 
+    ordering = ("-created_at",)
+
+    fieldsets = (
+
+        ("Complaint", {
+            "fields": (
+                "complaint_number",
+                "order",
+                "store",
+                "customer_name",
+                "phone",
+                "delivery_partner",
+            )
+        }),
+
+
+        ("Issue", {
+            "fields": (
+                "severity",
+                "category",
+                "subcategory",
+                "description",
+            )
+        }),
+
+        ("Resolution", {
+            "fields": (
+                "status",
+                "refund_amount",
+                "coupon_code",
+                "resolution_note",
+                "internal_note",
+                "resolved_at",
+            )
+        }),
+
+        ("System", {
+            "fields": (
+                "created_at",
+                "updated_at",
+            )
+        }),
+    )
+
+    actions = [
+        "mark_under_review",
+        "mark_resolved",
+        "mark_closed",
+    ]
+
+    def mark_under_review(self, request, queryset):
+        queryset.update(status="UNDER_REVIEW")
+
+    mark_under_review.short_description = "Mark as Under Review"
+
+    def mark_resolved(self, request, queryset):
+        from django.utils import timezone
+
+        queryset.update(
+            status="RESOLVED",
+            resolved_at=timezone.now()
+        )
+
+    mark_resolved.short_description = "Mark as Resolved"
+
+    def mark_closed(self, request, queryset):
+        from django.utils import timezone
+
+        queryset.update(
+            status="CLOSED",
+            resolved_at=timezone.now()
+        )
+
+    mark_closed.short_description = "Close Complaints"
+
+    def severity_badge(self, obj):
+
+        colors = {
+            "LOW": "#4CAF50",
+            "MEDIUM": "#FF9800",
+            "HIGH": "#F44336",
+            "CRITICAL": "#8B0000",
+        }
+
+        return format_html(
+            '<span style="background:{};color:white;padding:4px 10px;border-radius:20px;font-weight:600;">{}</span>',
+            colors.get(obj.severity, "#777"),
+            obj.get_severity_display()
+        )
+
+    severity_badge.short_description = "Severity"
+
+
+    def status_badge(self, obj):
+
+        colors = {
+            "NEW":"#1976D2",
+            "UNDER_REVIEW": "#1E88E5",
+            "WAITING_RESTAURANT":"#9C27B0",
+            "WAITING_DELIVERY":"#795548",
+            "RESOLVED":"#4CAF50",
+            "CLOSED":"#616161",
+            "REJECTED":"#E53935",
+        }
+
+        return format_html(
+            '<span style="background:{};color:white;padding:4px 10px;border-radius:20px;font-weight:600;">{}</span>',
+            colors.get(obj.status, "#777"),
+            obj.get_status_display()
+        )
+
+    status_badge.short_description = "Status"
+
+    def save_model(self, request, obj, form, change):
+
+        from django.utils import timezone
+
+        if obj.status in ["RESOLVED", "CLOSED"] and not obj.resolved_at:
+            obj.resolved_at = timezone.now()
+
+        super().save_model(request, obj, form, change)

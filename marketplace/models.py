@@ -1071,17 +1071,25 @@ class Complaint(models.Model):
         related_name="complaint"
     )
 
-    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    store = models.ForeignKey(
+        Store,
+        on_delete=models.CASCADE,
+        related_name="complaints"
+    )
 
     customer_name = models.CharField(max_length=200)
 
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(
+        max_length=10,
+        db_index=True
+    )
 
     delivery_partner = models.ForeignKey(
         User,
-        on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="delivery_complaints"
     )
 
     severity = models.CharField(
@@ -1094,19 +1102,20 @@ class Complaint(models.Model):
         choices=CATEGORY_CHOICES
     )
 
-    subcategory = models.CharField(
-        max_length=100
-    )
+    subcategory = models.CharField(max_length=100)
 
     description = models.TextField()
 
     status = models.CharField(
         max_length=30,
         choices=STATUS_CHOICES,
-        default="NEW"
+        default="NEW",
+        db_index=True
     )
 
     resolution_note = models.TextField(blank=True)
+
+    internal_note = models.TextField(blank=True)
 
     refund_amount = models.DecimalField(
         max_digits=8,
@@ -1119,19 +1128,29 @@ class Complaint(models.Model):
         blank=True
     )
 
-    internal_note = models.TextField(blank=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
 
     resolved_at = models.DateTimeField(
         null=True,
         blank=True
     )
 
+    @property
+    
+    def complaint_number(self):
+        if self.created_at:
+            return f"CMP-{self.created_at:%Y%m%d}-{self.id:05d}"
+        return f"CMP-{self.id:05d}"
+
     def __str__(self):
-        return f"Complaint #{self.id} - Order {self.order.id}"
+        return self.complaint_number
 
 class ComplaintPhoto(models.Model):
 
@@ -1143,8 +1162,10 @@ class ComplaintPhoto(models.Model):
 
     image = CloudinaryField("image")
 
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
-        return f"Complaint {self.complaint.id}"
+        return f"{self.complaint.complaint_number}"
 

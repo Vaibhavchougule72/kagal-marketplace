@@ -1,82 +1,1082 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+.complaint-page {
+    min-height: 100vh;
+    background: #FAF7F2;
+    padding: 18px 14px 40px;
+}
+
+/* --------------------------------
+   TOP
+-------------------------------- */
+
+.complaint-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.complaint-back {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2D5A27;
+    text-decoration: none;
+}
+
+.complaint-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1A2E19;
+    margin: 0;
+}
+
+.complaint-subtitle {
+    font-size: 13px;
+    color: #8B978A;
+    margin: 3px 0 0;
+}
+
+/* --------------------------------
+   ORDER CARD
+-------------------------------- */
+
+.cf-order-card {
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    border-radius: 13px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.cf-order-label {
+    font-size: 11px;
+    color: #9AA899;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 5px;
+}
+
+.cf-order-id {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A2E19;
+}
+
+.cf-store {
+    font-size: 13px;
+    color: #6B7B69;
+    margin-top: 3px;
+}
+
+/* --------------------------------
+   CARD
+-------------------------------- */
+
+.cf-card {
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    border-radius: 13px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.cf-card-head {
+    background: #2D5A27;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.cf-card-body {
+    padding: 15px;
+}
+
+.cf-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1A2E19;
+    margin-bottom: 12px;
+}
+
+/* --------------------------------
+   SEVERITY
+-------------------------------- */
+
+.severity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+}
+
+.severity-option {
+    position: relative;
+}
+
+.severity-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.severity-label {
+    display: block;
+    padding: 12px;
+    border: 1px solid #E0E8DF;
+    border-radius: 11px;
+    cursor: pointer;
+    background: #fff;
+}
+
+.severity-label strong {
+    display: block;
+    font-size: 13px;
+    color: #1A2E19;
+    margin-bottom: 3px;
+}
+
+.severity-label span {
+    display: block;
+    font-size: 11px;
+    color: #8B978A;
+}
+
+.severity-option input:checked + .severity-label {
+    border: 1.5px solid #E8621A;
+    background: #FFF7F2;
+}
+
+/* --------------------------------
+   CATEGORY
+-------------------------------- */
+
+.category-list {
+    display: grid;
+    gap: 9px;
+}
+
+.category-option {
+    position: relative;
+}
+
+.category-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.category-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px;
+    border: 1px solid #E0E8DF;
+    border-radius: 11px;
+    cursor: pointer;
+}
+
+.category-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #F3F7F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2D5A27;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.category-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A2E19;
+}
+
+.category-description {
+    font-size: 11px;
+    color: #8B978A;
+    margin-top: 2px;
+}
+
+.category-option input:checked + .category-label {
+    border: 1.5px solid #E8621A;
+    background: #FFF7F2;
+}
+
+.category-option input:checked + .category-label .category-icon {
+    background: #E8621A;
+    color: #fff;
+}
+
+/* --------------------------------
+   SELECT
+-------------------------------- */
+
+.cf-select {
+    width: 100%;
+    border: 1px solid #DCE5D9;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 14px;
+    color: #1A2E19;
+    background: #fff;
+    outline: none;
+}
+
+.cf-select:focus {
+    border-color: #2D5A27;
+}
+
+/* --------------------------------
+   DESCRIPTION
+-------------------------------- */
+
+.cf-textarea {
+    width: 100%;
+    min-height: 130px;
+    resize: vertical;
+    border: 1px solid #DCE5D9;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    font-family: inherit;
+}
+
+.cf-textarea:focus {
+    border-color: #2D5A27;
+}
+
+.character-note {
+    text-align: right;
+    color: #9AA899;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+/* --------------------------------
+   PHOTO
+-------------------------------- */
+
+.photo-card {
+    display: none;
+}
+
+.photo-upload {
+    border: 1.5px dashed #D8E2D5;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    background: #FAFCF9;
+    cursor: pointer;
+}
+
+.photo-upload-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 8px;
+    border-radius: 12px;
+    background: #EAF2E8;
+    color: #2D5A27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+}
+
+.photo-upload strong {
+    display: block;
+    font-size: 13px;
+    color: #1A2E19;
+}
+
+.photo-upload span {
+    display: block;
+    font-size: 11px;
+    color: #8B978A;
+    margin-top: 3px;
+}
+
+.photo-input {
+    display: none;
+}
+
+.photo-preview {
+    display: none;
+    margin-top: 10px;
+}
+
+.photo-preview img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* --------------------------------
+   ERROR
+-------------------------------- */
+
+.cf-errors {
+    background: #FFF1EF;
+    border: 1px solid #F4C8C2;
+    color: #A53A2D;
+    border-radius: 11px;
+    padding: 11px 13px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+/* --------------------------------
+   SUBMIT
+-------------------------------- */
+
+.cf-submit {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    background: #E8621A;
+    color: #fff;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.cf-submit:active {
+    transform: scale(.98);
+}
+
+.cf-submit:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.cf-footer-note {
+    text-align: center;
+    color: #9AA899;
+    font-size: 11px;
+    margin-top: 10px;
+}
+
+</style>
+
+
+<div class="complaint-page">
+
+    <!-- TOP -->
+
+    <div class="complaint-top">
+
+        <a
+            href="{% url 'order_tracking' order.id %}"
+            class="complaint-back">
+
+            <i class="ti ti-arrow-left"></i>
+
+        </a>
+
+        <div>
+
+            <h1 class="complaint-title">
+                Report an Issue
+            </h1>
+
+            <p class="complaint-subtitle">
+                Tell us what went wrong with your order
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ORDER -->
+
+    <div class="cf-order-card">
+
+        <div class="cf-order-label">
+            Order
+        </div>
+
+        <div class="cf-order-id">
+            #{{ order.id }}
+        </div>
+
+        <div class="cf-store">
+            {{ order.store.name }}
+        </div>
+
+    </div>
+
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        id="complaintForm">
+
+        {% csrf_token %}
+
+
+        <!-- FORM ERRORS -->
+
+        {% if form.errors %}
+
+        <div class="cf-errors">
+
+            <strong>
+                Please check the form:
+            </strong>
+
+            {{ form.errors }}
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- SEVERITY -->
+
+        <div class="cf-card">
+
+            <div class="cf-card-head">
+                Seriousness
+            </div>
+
+            <div class="cf-card-body">
+
+                <div class="cf-label">
+                    How serious is the issue?
+                </div>
+
+
+                <div class="severity-grid">
+
+                    <div class="severity-option">
+
+                        <input
+                            type="radio"
+                            name="severity"
+                            id="severity_low"
+                            value="LOW">
+
+                        <label
+                            for="severity_low"
+                            class="severity-label">
+
+                            <strong>Low</strong>
+
+                            <span>Small inconvenience</span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="severity-option">
+
+                        <input
+                            type="radio"
+                            name="severity"
+                            id="severity_medium"
+                            value="MEDIUM">
+
+                        <label
+                            for="severity_medium"
+                            class="severity-label">
+
+                            <strong>Medium</strong>
+
+                            <span>Order partially affected</span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="severity-option">
+
+                        <input
+                            type="radio"
+                            name="severity"
+                            id="severity_high"
+                            value="HIGH">
+
+                        <label
+                            for="severity_high"
+                            class="severity-label">
+
+                            <strong>High</strong>
+
+                            <span>Order significantly affected</span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="severity-option">
+
+                        <input
+                            type="radio"
+                            name="severity"
+                            id="severity_critical"
+                            value="CRITICAL">
+
+                        <label
+                            for="severity_critical"
+                            class="severity-label">
+
+                            <strong>Critical</strong>
+
+                            <span>Health or safety concern</span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CATEGORY -->
+
+        <div class="cf-card">
+
+            <div class="cf-card-head">
+                Issue Category
+            </div>
+
+            <div class="cf-card-body">
+
+                <div class="cf-label">
+                    What is the issue about?
+                </div>
+
+
+                <div class="category-list">
+
+
+                    <div class="category-option">
+
+                        <input
+                            type="radio"
+                            name="category"
+                            id="category_portal"
+                            value="PORTAL">
+
+                        <label
+                            for="category_portal"
+                            class="category-label">
+
+                            <div class="category-icon">
+                                <i class="ti ti-device-mobile"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="category-name">
+                                    Portal / App
+                                </div>
+
+                                <div class="category-description">
+                                    Payment, app or ordering issue
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="category-option">
+
+                        <input
+                            type="radio"
+                            name="category"
+                            id="category_food"
+                            value="FOOD_QUALITY">
+
+                        <label
+                            for="category_food"
+                            class="category-label">
+
+                            <div class="category-icon">
+                                <i class="ti ti-tools-kitchen-2"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="category-name">
+                                    Food Quality
+                                </div>
+
+                                <div class="category-description">
+                                    Taste, freshness or preparation
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="category-option">
+
+                        <input
+                            type="radio"
+                            name="category"
+                            id="category_delivered"
+                            value="DELIVERED_FOOD">
+
+                        <label
+                            for="category_delivered"
+                            class="category-label">
+
+                            <div class="category-icon">
+                                <i class="ti ti-package"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="category-name">
+                                    Delivered Food Condition
+                                </div>
+
+                                <div class="category-description">
+                                    Wrong, damaged or spilled food
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="category-option">
+
+                        <input
+                            type="radio"
+                            name="category"
+                            id="category_delivery"
+                            value="DELIVERY_SERVICE">
+
+                        <label
+                            for="category_delivery"
+                            class="category-label">
+
+                            <div class="category-icon">
+                                <i class="ti ti-bike"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="category-name">
+                                    Delivery Service
+                                </div>
+
+                                <div class="category-description">
+                                    Delivery timing or partner issue
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUBCATEGORY -->
+
+        <div class="cf-card">
+
+            <div class="cf-card-head">
+                Specific Issue
+            </div>
+
+            <div class="cf-card-body">
+
+                <div class="cf-label">
+                    What went wrong?
+                </div>
+
+                <select
+                    name="subcategory"
+                    id="id_subcategory"
+                    class="cf-select"
+                    required>
+
+                    <option value="">
+                        Select an issue
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- DESCRIPTION -->
+
+        <div class="cf-card">
+
+            <div class="cf-card-head">
+                Description
+            </div>
+
+            <div class="cf-card-body">
+
+                <div class="cf-label">
+                    Tell us what happened
+                </div>
+
+                <textarea
+                    name="description"
+                    id="id_description"
+                    class="cf-textarea"
+                    placeholder="Please describe the issue clearly..."
+                    minlength="20"
+                    maxlength="2000"
+                    required></textarea>
+
+                <div class="character-note">
+                    Minimum 20 characters
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PHOTO -->
+
+        <div
+            class="cf-card photo-card"
+            id="photoCard">
+
+            <div class="cf-card-head">
+                Photo
+            </div>
+
+            <div class="cf-card-body">
+
+                <div class="cf-label">
+                    Add a photo <span style="font-weight:400;color:#9AA899;">(Optional)</span>
+                </div>
+
+                <label
+                    for="id_photo"
+                    class="photo-upload">
+
+                    <div class="photo-upload-icon">
+                        <i class="ti ti-camera"></i>
+                    </div>
+
+                    <strong>
+                        Add Photo
+                    </strong>
+
+                    <span>
+                        JPG, PNG or WEBP · Maximum 5 MB
+                    </span>
+
+                </label>
+
+                <input
+                    type="file"
+                    name="photo"
+                    id="id_photo"
+                    class="photo-input"
+                    accept="image/jpeg,image/png,image/webp">
+
+                <div
+                    class="photo-preview"
+                    id="photoPreview">
+
+                    <img
+                        id="photoPreviewImage"
+                        src=""
+                        alt="Selected photo">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUBMIT -->
+
+        <button
+            type="submit"
+            class="cf-submit"
+            id="submitComplaint">
+
+            <i class="ti ti-send"></i>
+            Submit Complaint
+
+        </button>
+
+        <div class="cf-footer-note">
+
+            Your complaint will be reviewed by the LOKA support team.
+
+        </div>
+
+    </form>
+
+</div>
+
+
 <script>
 
-const category=document.getElementById("id_category");
+document.addEventListener("DOMContentLoaded", function () {
 
-const subcategory=document.getElementById("id_subcategory");
+    const categoryInputs =
+        document.querySelectorAll(
+            'input[name="category"]'
+        );
 
-const photoCard=document.getElementById("photoCard");
+    const subcategory =
+        document.getElementById(
+            "id_subcategory"
+        );
 
-const options={
+    const photoCard =
+        document.getElementById(
+            "photoCard"
+        );
 
-PORTAL:[
-"Payment Issue",
-"Coupon Issue",
-"App Crash",
-"Login Issue",
-"Other"
-],
+    const photoInput =
+        document.getElementById(
+            "id_photo"
+        );
 
-FOOD_QUALITY:[
-"Taste",
-"Freshness",
-"Undercooked",
-"Overcooked",
-"Bad Smell",
-"Wrong Ingredients",
-"Other"
-],
+    const photoPreview =
+        document.getElementById(
+            "photoPreview"
+        );
 
-DELIVERED_FOOD:[
-"Packaging Damaged",
-"Food Spilled",
-"Missing Items",
-"Wrong Order",
-"Seal Broken",
-"Other"
-],
+    const photoPreviewImage =
+        document.getElementById(
+            "photoPreviewImage"
+        );
 
-DELIVERY_SERVICE:[
-"Late Delivery",
-"Delivery Partner Behaviour",
-"Couldn't Contact Rider",
-"Wrong Address Attempt",
-"Other"
-]
 
-};
+    const options = {
 
-function refreshSubCategory(){
+        PORTAL: [
+            ["Payment Issue", "Payment Issue"],
+            ["Coupon Issue", "Coupon Issue"],
+            ["App Crash", "App Crash"],
+            ["Login Issue", "Login Issue"],
+            ["Wrong Price", "Wrong Price"],
+            ["Other", "Other"]
+        ],
 
-const cat=category.value;
+        FOOD_QUALITY: [
+            ["Taste", "Taste"],
+            ["Freshness", "Freshness"],
+            ["Undercooked", "Undercooked"],
+            ["Overcooked", "Overcooked"],
+            ["Bad Smell", "Bad Smell"],
+            ["Foreign Object", "Foreign Object"],
+            ["Other", "Other"]
+        ],
 
-subcategory.innerHTML="";
+        DELIVERED_FOOD: [
+            ["Packaging Damaged", "Packaging Damaged"],
+            ["Food Spilled", "Food Spilled"],
+            ["Missing Items", "Missing Items"],
+            ["Wrong Order", "Wrong Order"],
+            ["Seal Broken", "Seal Broken"],
+            ["Quantity Less", "Quantity Less"],
+            ["Other", "Other"]
+        ],
 
-(options[cat]||[]).forEach(function(item){
+        DELIVERY_SERVICE: [
+            ["Late Delivery", "Late Delivery"],
+            ["Delivery Partner Behaviour", "Delivery Partner Behaviour"],
+            ["Couldn't Contact Rider", "Couldn't Contact Rider"],
+            ["Wrong Address Attempt", "Wrong Address Attempt"],
+            ["Other", "Other"]
+        ]
 
-const opt=document.createElement("option");
+    };
 
-opt.value=item;
 
-opt.innerHTML=item;
+    function refreshComplaintOptions() {
 
-subcategory.appendChild(opt);
+        const selected =
+            document.querySelector(
+                'input[name="category"]:checked'
+            );
+
+        if (!selected) {
+
+            subcategory.innerHTML =
+                '<option value="">Select an issue</option>';
+
+            photoCard.style.display = "none";
+
+            return;
+        }
+
+
+        const category =
+            selected.value;
+
+
+        subcategory.innerHTML =
+            '<option value="">Select an issue</option>';
+
+
+        if (options[category]) {
+
+            options[category].forEach(function (item) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    item[0];
+
+                option.textContent =
+                    item[1];
+
+                subcategory.appendChild(
+                    option
+                );
+
+            });
+
+        }
+
+
+        if (
+            category === "FOOD_QUALITY" ||
+            category === "DELIVERED_FOOD"
+        ) {
+
+            photoCard.style.display =
+                "block";
+
+        } else {
+
+            photoCard.style.display =
+                "none";
+
+            photoInput.value = "";
+
+            photoPreview.style.display =
+                "none";
+
+            photoPreviewImage.src = "";
+
+        }
+
+    }
+
+
+    categoryInputs.forEach(function (input) {
+
+        input.addEventListener(
+            "change",
+            refreshComplaintOptions
+        );
+
+    });
+
+
+    photoInput.addEventListener(
+        "change",
+        function () {
+
+            const file =
+                this.files[0];
+
+            if (!file) {
+
+                photoPreview.style.display =
+                    "none";
+
+                return;
+            }
+
+
+            if (file.size > 5 * 1024 * 1024) {
+
+                alert(
+                    "Photo must be smaller than 5 MB."
+                );
+
+                this.value = "";
+
+                photoPreview.style.display =
+                    "none";
+
+                return;
+            }
+
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                function (event) {
+
+                    photoPreviewImage.src =
+                        event.target.result;
+
+                    photoPreview.style.display =
+                        "block";
+
+                };
+
+            reader.readAsDataURL(file);
+
+        }
+    );
+
+
+    refreshComplaintOptions();
 
 });
 
-if(cat==="FOOD_QUALITY" || cat==="DELIVERED_FOOD"){
-
-photoCard.style.display="block";
-
-}else{
-
-photoCard.style.display="none";
-
-}
-
-}
-
-category.addEventListener("change",refreshSubCategory);
-
-refreshSubCategory();
-
 </script>
+
+{% endblock %}

@@ -269,33 +269,56 @@
                         submit a complaint and our support team will review it as quickly as possible.
                     </div>
 
+                    <div style="
+                        display:inline-flex;
+                        align-items:center;
+                        gap:6px;
+                        background:#EEF8EE;
+                        color:#2D6B27;
+                        padding:6px 12px;
+                        border-radius:30px;
+                        font-size:12px;
+                        font-weight:500;
+                        margin-bottom:14px;
+                        margin-top:10px;">
+
+                        <i class="ti ti-clock"></i>
+
+                        Usually reviewed within 24 hours
+
+                    </div>
+
                 </div>
 
             </div>
 
             {% if order.complaint %}
 
-                <a href="{% url 'complaint_detail' order.complaint.id %}"
+              <a
+                  href="{% url 'complaint_success' order.complaint.id %}"
                   class="ot-btn green"
                   style="width:100%;margin-bottom:16px;">
 
-                    <i class="ti ti-eye"></i>
-                    View Complaint
+                  <i class="ti ti-eye"></i>
 
-                </a>
+                  View Complaint
 
-            {% else %}
+              </a>
 
-                <a href="{% url 'file_complaint' order.id %}"
-                  class="ot-btn orange"
+          {% else %}
+
+              <a
+                  href="{% url 'file_complaint' order.id %}"
+                  class="ot-btn green"
                   style="width:100%;margin-bottom:16px;">
 
-                    <i class="ti ti-alert-circle"></i>
-                    File Complaint
+                  <i class="ti ti-alert-circle"></i>
 
-                </a>
+                  File Complaint
 
-            {% endif %}
+              </a>
+
+          {% endif %}
 
             <div style="
                 border-top:1px dashed #E6E6E6;

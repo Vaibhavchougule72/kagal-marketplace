@@ -6143,8 +6143,8 @@ def delete_notification_view(request, pk):
             "success": False
         }, status=500)
 
-
 from django.contrib import messages
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import ComplaintForm
@@ -6153,54 +6153,115 @@ from .models import Complaint, ComplaintPhoto, Order
 
 def file_complaint(request, order_id):
 
-    order = get_object_or_404(Order, id=order_id)
+    order = get_object_or_404(
+        Order,
+        id=order_id
+    )
+
+    # -----------------------------------------
+    # Complaint only after delivery
+    # -----------------------------------------
 
     if order.status != "DELIVERED":
+
         messages.error(
             request,
-            "Complaints can only be filed after delivery."
+            "You can file a complaint only after your order is delivered."
         )
-        return redirect("order_tracking", order.id)
 
-    if hasattr(order, "complaint"):
+        return redirect(
+            "order_tracking",
+            order.id
+        )
+
+    # -----------------------------------------
+    # One complaint per order
+    # -----------------------------------------
+
+    existing_complaint = Complaint.objects.filter(
+        order=order
+    ).first()
+
+    if existing_complaint:
+
         return redirect(
             "complaint_success",
-            order.complaint.id
+            complaint_id=existing_complaint.id
         )
+
+    # -----------------------------------------
+    # POST
+    # -----------------------------------------
 
     if request.method == "POST":
 
-        form = ComplaintForm(request.POST)
+        form = ComplaintForm(
+            request.POST,
+            request.FILES
+        )
 
         if form.is_valid():
 
-            complaint = form.save(commit=False)
+            try:
 
-            complaint.order = order
-            complaint.store = order.store
-            complaint.customer_name = order.customer_name
-            complaint.phone = order.phone
-            complaint.delivery_partner = order.assigned_delivery
-
-            complaint.save()
-
-            photo = request.FILES.get("photo")
-
-            if photo:
-                ComplaintPhoto.objects.create(
-                    complaint=complaint,
-                    image=photo
+                complaint = form.save(
+                    commit=False
                 )
 
-            messages.success(
-                request,
-                "Complaint submitted successfully."
-            )
+                # These values come from the order.
+                # Customer does NOT enter them manually.
 
-            return redirect(
-                "complaint_success",
-                complaint.id
-            )
+                complaint.order = order
+                complaint.store = order.store
+                complaint.customer_name = order.customer_name
+                complaint.phone = order.phone
+                complaint.delivery_partner = order.assigned_delivery
+
+                complaint.save()
+
+                # -----------------------------------------
+                # Save optional photo
+                # -----------------------------------------
+
+                photo = form.cleaned_data.get("photo")
+
+                if photo:
+
+                    ComplaintPhoto.objects.create(
+                        complaint=complaint,
+                        image=photo
+                    )
+
+                messages.success(
+                    request,
+                    "Your complaint has been submitted successfully."
+                )
+
+                return redirect(
+                    "complaint_success",
+                    complaint_id=complaint.id
+                )
+
+            except IntegrityError:
+
+                # Protect against two submissions happening
+                # at almost exactly the same time.
+
+                existing_complaint = Complaint.objects.filter(
+                    order=order
+                ).first()
+
+                if existing_complaint:
+
+                    return redirect(
+                        "complaint_success",
+                        complaint_id=existing_complaint.id
+                    )
+
+                messages.error(
+                    request,
+                    "We could not submit your complaint. Please try again."
+                )
 
     else:
 
