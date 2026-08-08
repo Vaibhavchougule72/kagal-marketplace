@@ -487,7 +487,12 @@ body,
 
   <!-- STICKY NAV -->
   <div class="ot-nav">
-    <a href="javascript:history.back()" class="ot-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <a
+        href="{% url 'my_orders' %}"
+        class="ot-nav-back"
+        aria-label="{% trans 'Go back' %}">
+        &#8249;
+    </a>
     <span class="ot-nav-title">{% trans "Order Tracking" %}</span>
     <span class="ot-nav-id">#{{ order.id }}</span>
   </div>

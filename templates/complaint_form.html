@@ -18,37 +18,53 @@
    TOP
 -------------------------------- */
 
-.complaint-top {
+/* ── STICKY NAV ── */
+.ot-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1A3A16;
+    padding: 11px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.complaint-back {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #fff;
-    border: 1px solid #E0E8DF;
+.ot-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2D5A27;
+    color: #fff;
     text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.complaint-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1A2E19;
-    margin: 0;
+.ot-nav-back:active {
+    transform: scale(0.88);
+    background: rgba(255,255,255,0.25);
 }
 
-.complaint-subtitle {
-    font-size: 13px;
-    color: #8B978A;
-    margin: 3px 0 0;
+.ot-nav-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+}
+
+.ot-nav-id {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    flex-shrink: 0;
 }
 
 /* --------------------------------
@@ -386,28 +402,22 @@
 
     <!-- TOP -->
 
-    <div class="complaint-top">
-
+    <!-- STICKY NAV -->
+    <div class="ot-nav">
         <a
             href="{% url 'order_tracking' order.id %}"
-            class="complaint-back">
-
-            <i class="ti ti-arrow-left"></i>
-
+            class="ot-nav-back"
+            aria-label="{% trans 'Go back' %}">
+            &#8249;
         </a>
 
-        <div>
+        <span class="ot-nav-title">
+            {% trans "Report an Issue" %}
+        </span>
 
-            <h1 class="complaint-title">
-                Report an Issue
-            </h1>
-
-            <p class="complaint-subtitle">
-                Tell us what went wrong with your order
-            </p>
-
-        </div>
-
+        <span class="ot-nav-id">
+            #{{ order.id }}
+        </span>
     </div>
 
 
