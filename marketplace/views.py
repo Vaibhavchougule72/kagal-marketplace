@@ -2506,8 +2506,8 @@ def my_orders(request):
     return render(request, "my_orders.html", {
         "orders": orders,
         "phone": phone,
-        "show_navbar": True,
-        "simple_navbar": True,
+        "show_navbar": False,
+        "simple_navbar": False,
         "show_floating_cart": False,
     })
 
@@ -6284,6 +6284,7 @@ def file_complaint(request, order_id):
             "order": order,
             "show_navbar": False,
             "simple_navbar": False,
+            "show_floating_cart": False,
         }
     )
 
@@ -6302,6 +6303,7 @@ def complaint_success(request, complaint_id):
             "complaint": complaint,
             "show_navbar": False,
             "simple_navbar": False,
+            "show_floating_cart": False,
         }
     )
 
@@ -6411,5 +6413,6 @@ def complaint_detail(request, complaint_id):
             "current_position": current_position,
             "show_navbar": False,
             "simple_navbar": False,
+            "show_floating_cart": False,
         }
     )
