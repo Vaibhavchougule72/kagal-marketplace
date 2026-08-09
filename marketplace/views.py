@@ -2487,19 +2487,28 @@ def order_tracking_partial(request, order_id):
 
 def my_orders(request):
 
-    phone = request.GET.get('phone', '').strip()
+    phone = request.GET.get("phone", "").strip()
+
+    if not phone:
+        phone = str(
+            request.session.get("customer_phone", "")
+        ).strip()
 
     orders = None
 
     if phone:
-        orders = Order.objects.filter(phone=phone).order_by('-created_at')
+        orders = (
+            Order.objects
+            .filter(phone=phone)
+            .order_by("-created_at")
+        )
 
-    return render(request, 'my_orders.html', {
-        'orders': orders,
-        'phone': phone,
-        'show_navbar': False,
-        'simple_navbar': False,
-        "show_floating_cart": False
+    return render(request, "my_orders.html", {
+        "orders": orders,
+        "phone": phone,
+        "show_navbar": True,
+        "simple_navbar": True,
+        "show_floating_cart": False,
     })
 
 
