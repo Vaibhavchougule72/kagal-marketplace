@@ -220,6 +220,12 @@ urlpatterns = [
         views.complaint_detail,
         name="complaint_detail",
     ),
+
+    path(
+        "save-customer-note/",
+        views.save_customer_note,
+        name="save_customer_note"
+    ),
 ]
 
 

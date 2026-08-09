@@ -995,6 +995,8 @@ def view_cart(request):
                     .order_by("price")[:6]
                 )
 
+        customer_note = cart.get("customer_note", "")
+
         # =========================
         # RESPONSE
         # =========================
@@ -1013,6 +1015,7 @@ def view_cart(request):
             "cross_sell_progress": cross_sell_progress,
             "recommended_products": recommended_products,
             "remaining_for_min_order": remaining_for_min_order,
+            'customer_note': customer_note,
         })
     except Exception as e:
 
@@ -1260,6 +1263,8 @@ def checkout(request):
             latitude = request.POST.get("latitude")
             longitude = request.POST.get("longitude")
             coupon_code = request.POST.get("coupon_code")
+            customer_note = cart.get("customer_note", "").strip()
+            customer_note = customer_note[:500]
 
             # -------------------------
             # VALIDATIONS
@@ -1503,6 +1508,7 @@ def checkout(request):
                         customer_name=name,
                         phone=phone,
                         address=address,
+                        customer_note=customer_note,
                         latitude=latitude,
                         longitude=longitude,
                         subtotal=subtotal,
@@ -1626,6 +1632,8 @@ def checkout(request):
                     customer_name=name,
                     phone=phone,
                     address=address,
+
+                    customer_note=customer_note,
 
                     latitude=latitude,
                     longitude=longitude,
@@ -1904,6 +1912,7 @@ def razorpay_webhook(request):
                 customer_name=pending.customer_name,
                 phone=pending.phone,
                 address=pending.address,
+                customer_note=pending.customer_note,
                 latitude=pending.latitude,
                 longitude=pending.longitude,
                 subtotal=pending.subtotal,
@@ -2157,6 +2166,7 @@ logger = logging.getLogger(__name__)
                         customer_name=pending.customer_name,
                         phone=pending.phone,
                         address=pending.address,
+                        customer_note=pending.customer_note,
                         latitude=pending.latitude,
                         longitude=pending.longitude,
                         subtotal=pending.subtotal,
@@ -3490,7 +3500,23 @@ def generate_delivery_pdf(request, order_id):
             styles['Normal']
         ))
 
-    elements.append(Spacer(1, 0.3 * inch))
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # 📝 CUSTOMER NOTE
+    if order.customer_note:
+
+        safe_note = escape(order.customer_note)
+
+        elements.append(
+            Paragraph(
+                f"<b>Customer Note:</b><br/>{safe_note}",
+                styles['Normal']
+            )
+        )
+
+        elements.append(
+            Spacer(1, 0.3 * inch)
+        )
 
     data = [["Product", "Qty", "Price", "Subtotal"]]
 
@@ -3538,6 +3564,7 @@ def generate_delivery_pdf(request, order_id):
 
     return HttpResponse(buffer, content_type='application/pdf')
 
+from xml.sax.saxutils import escape
 def generate_store_pdf(request, order_id):
 
     order = Order.objects.get(id=order_id)
@@ -3552,7 +3579,29 @@ def generate_store_pdf(request, order_id):
 
     elements.append(Paragraph("<b>Store Order Slip</b>", styles['Title']))
     elements.append(Spacer(1, 0.3 * inch))
-    elements.append(Paragraph(f"<b>Store:</b> {order.store.name}", styles['Normal']))
+    elements.append(
+        Paragraph(
+            f"<b>Store:</b> {order.store.name}",
+            styles['Normal']
+        )
+    )
+
+    # 📝 CUSTOMER NOTE
+    if order.customer_note:
+
+        safe_note = escape(order.customer_note)
+
+        elements.append(
+            Paragraph(
+                f"<b>Customer Note:</b><br/>{safe_note}",
+                styles['Normal']
+            )
+        )
+
+        elements.append(
+            Spacer(1, 0.2 * inch)
+        )
+
     elements.append(Spacer(1, 0.3 * inch))
 
     data = [["Product", "Qty", "Price"]]
@@ -6416,3 +6465,29 @@ def complaint_detail(request, complaint_id):
             "show_floating_cart": False,
         }
     )
+
+
+@require_POST
+def save_customer_note(request):
+
+    note = request.POST.get("note", "").strip()
+
+    # Limit note length for safety
+    note = note[:500]
+
+    cart = request.session.get(
+        "cart",
+        {
+            "store_id": None,
+            "items": {}
+        }
+    )
+
+    cart["customer_note"] = note
+
+    request.session["cart"] = cart
+    request.session.modified = True
+
+    return JsonResponse({
+        "success": True
+    })

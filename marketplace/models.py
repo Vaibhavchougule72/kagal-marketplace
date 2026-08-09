@@ -192,6 +192,12 @@ class Order(models.Model):
     phone = models.CharField(max_length=10, db_index=True)
     address = models.TextField()
 
+    customer_note = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500
+    )
+
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
 
@@ -518,6 +524,12 @@ class PendingOrder(models.Model):
     customer_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=10, db_index=True)
     address = models.TextField()
+
+    customer_note = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500
+    )
 
     latitude = models.FloatField()
     longitude = models.FloatField()

@@ -2107,4 +2107,36 @@ CATEGORY COVER
 
 }
 
+.customer-note-box {
+    background: #fff;
+    border: 1px solid #E0E8DF;
+    border-radius: 12px;
+    padding: 12px;
+}
 
+.customer-note-box label {
+    display: block;
+    font-size: 13px;
+    color: #1A3A16;
+    margin-bottom: 7px;
+}
+
+.customer-note-box textarea {
+    width: 100%;
+    border: 1px solid #DDE5DA;
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 13px;
+    resize: none;
+    outline: none;
+    background: #FAFAF8;
+}
+
+.customer-note-box textarea:focus {
+    border-color: #2D5A27;
+    background: #fff;
+}
+
+#customerNoteStatus {
+    font-size: 11px;
+}
