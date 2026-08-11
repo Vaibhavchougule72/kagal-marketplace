@@ -128,41 +128,51 @@ class Product(models.Model):
         help_text="If enabled, this product allows only UPI payment"
     )
 
-    unavailable_morning = models.BooleanField(
+    unavailable_10_12 = models.BooleanField(
         default=False,
-        help_text="Hide product from 10 AM - 1 PM"
+        help_text="Hide product from 10 AM - 12 PM"
     )
 
-    unavailable_afternoon = models.BooleanField(
+    unavailable_12_3 = models.BooleanField(
         default=False,
-        help_text="Hide product from 1 PM - 5 PM"
+        help_text="Hide product from 12 PM - 3 PM"
     )
 
-    unavailable_evening = models.BooleanField(
+    unavailable_3_630 = models.BooleanField(
         default=False,
-        help_text="Hide product from 5 PM - 9 PM"
+        help_text="Hide product from 3 PM - 6:30 PM"
+    )
+
+    unavailable_630_9 = models.BooleanField(
+        default=False,
+        help_text="Hide product from 6:30 PM - 9 PM"
     )
 
     from django.utils import timezone
 
+    from django.utils import timezone
+
     def is_available_now(self):
-
         now = timezone.localtime()
+        current_minutes = now.hour * 60 + now.minute
 
-        hour = now.hour
+        # 10:00 AM - 12:00 PM
+        if 10 * 60 <= current_minutes < 12 * 60:
+            return not self.unavailable_10_12
 
-        # Morning
-        if 10 <= hour < 12:
-            return not self.unavailable_morning
+        # 12:00 PM - 3:00 PM
+        if 12 * 60 <= current_minutes < 15 * 60:
+            return not self.unavailable_12_3
 
-        # Afternoon
-        if 12 <= hour < 17:
-            return not self.unavailable_afternoon
+        # 3:00 PM - 6:30 PM
+        if 15 * 60 <= current_minutes < 18 * 60 + 30:
+            return not self.unavailable_3_630
 
-        # Evening
-        if 17 <= hour < 21:
-            return not self.unavailable_evening
+        # 6:30 PM - 9:00 PM
+        if 18 * 60 + 30 <= current_minutes < 21 * 60:
+            return not self.unavailable_630_9
 
+        # Outside product availability schedule
         return True
 
     def __str__(self):
