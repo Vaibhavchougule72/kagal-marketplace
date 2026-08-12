@@ -1508,6 +1508,115 @@ document.addEventListener("DOMContentLoaded", function(){
     </div>
 
 </div>
+
+<script>
+(function () {
+
+    let customerNoteTimer = null;
+
+    document.addEventListener("input", function (e) {
+
+        if (!e.target.matches("#customerNote")) {
+            return;
+        }
+
+        const note = e.target.value;
+        const status = document.getElementById("customerNoteStatus");
+
+        if (!status) {
+            return;
+        }
+
+        if (customerNoteTimer) {
+            clearTimeout(customerNoteTimer);
+        }
+
+        status.style.display = "block";
+        status.style.color = "#888";
+        status.textContent = "Saving...";
+
+        customerNoteTimer = setTimeout(function () {
+
+            fetch("{% url 'save_customer_note' %}", {
+                method: "POST",
+
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+
+                body: new URLSearchParams({
+                    note: note
+                })
+            })
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error("Server error: " + response.status);
+                }
+
+                return response.json();
+            })
+            .then(data => {
+
+                if (data.success) {
+                    status.style.color = "#2D6B27";
+                    status.textContent = "✓ Note saved";
+
+                    setTimeout(function () {
+                        status.style.display = "none";
+                    }, 1500);
+
+                } else {
+                    status.style.color = "#C05018";
+                    status.textContent = "Could not save note";
+                }
+
+            })
+            .catch(error => {
+
+                console.error("Customer note error:", error);
+
+                status.style.color = "#C05018";
+                status.textContent = "Could not save note";
+
+            });
+
+        }, 500);
+    });
+
+
+    function getCookie(name) {
+
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+
+                cookie = cookie.trim();
+
+                if (
+                    cookie.substring(0, name.length + 1)
+                    === name + "="
+                ) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+})();
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

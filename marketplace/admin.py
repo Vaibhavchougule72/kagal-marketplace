@@ -364,6 +364,7 @@ class OrderAdmin(admin.ModelAdmin):
                 "customer_name",
                 "phone",
                 "address",
+                "customer_note",
                 "latitude",
                 "longitude",
             )
