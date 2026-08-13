@@ -368,7 +368,7 @@ class Order(models.Model):
 
                 body = (
                     f"Your order #{self.id} "
-                    f"has been picked up."
+                    f"is being prepared."
                 )
 
             # -----------------------------------
