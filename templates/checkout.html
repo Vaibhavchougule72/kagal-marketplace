@@ -925,6 +925,28 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('user_phone'))   phoneInput.value   = localStorage.getItem('user_phone');
   if (localStorage.getItem('user_address')) addressInput.value = localStorage.getItem('user_address');
 
+  // =====================================================
+  // LINK SAVED PHONE WITH FCM TOKEN
+  // =====================================================
+
+  var savedPhone =
+      localStorage.getItem('user_phone');
+
+  if (
+      savedPhone &&
+      /^[6-9]\d{9}$/.test(savedPhone) &&
+      window.LokaAndroid
+  ) {
+
+      window.LokaAndroid.linkPhone(
+          savedPhone
+      );
+
+      console.log(
+          "Saved phone linked with FCM token"
+      );
+  }
+
   nameInput.addEventListener('input',    function() { localStorage.setItem('user_name',    nameInput.value); });
   phoneInput.addEventListener('input',   function() { localStorage.setItem('user_phone',   phoneInput.value); });
   addressInput.addEventListener('input', function() { localStorage.setItem('user_address', addressInput.value); });
@@ -959,10 +981,47 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   phoneInput.addEventListener('input', function() {
-    checkFreeDelivery(this.value);
-    var lat = document.getElementById('latitude').value;
-    var lng = document.getElementById('longitude').value;
-    if (lat && lng && this.value.length === 10) updateDelivery(lat, lng);
+
+      var phone = this.value.trim();
+
+      // Save phone locally
+      localStorage.setItem(
+          'user_phone',
+          phone
+      );
+
+      // Existing free-delivery logic
+      checkFreeDelivery(phone);
+
+      var lat =
+          document.getElementById('latitude').value;
+
+      var lng =
+          document.getElementById('longitude').value;
+
+      if (
+          lat &&
+          lng &&
+          phone.length === 10
+      ) {
+          updateDelivery(lat, lng);
+      }
+
+      // =====================================================
+      // LOKA ANDROID → LINK PHONE WITH FCM TOKEN
+      // =====================================================
+
+      if (
+          window.LokaAndroid &&
+          /^[6-9]\d{9}$/.test(phone)
+      ) {
+
+          window.LokaAndroid.linkPhone(phone);
+
+          console.log(
+              "FCM phone linking requested"
+          );
+      }
   });
 
   /* Auto locate on load */
