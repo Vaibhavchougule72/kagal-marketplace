@@ -4575,19 +4575,26 @@ def submit_rating(request, order_id):
         "success": True
     })
 
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import DeviceToken
+
+
 @api_view(["POST"])
 def save_fcm_token(request):
 
     try:
+        # =========================
+        # GET TOKEN
+        # =========================
         token = str(
             request.data.get("token", "")
         ).strip()
 
+        # =========================
+        # GET PHONE (OPTIONAL)
+        # =========================
         phone = str(
             request.data.get("phone", "")
         ).strip()
@@ -4606,50 +4613,79 @@ def save_fcm_token(request):
             )
 
         # =========================
-        # VALIDATE PHONE
+        # VALIDATE PHONE IF PROVIDED
         # =========================
-        if not phone:
+        if phone:
+
+            if not re.match(r"^[6-9]\d{9}$", phone):
+
+                return Response(
+                    {
+                        "success": False,
+                        "error": "Invalid phone number"
+                    },
+                    status=400
+                )
+
+        # =========================
+        # FIND EXISTING DEVICE
+        # =========================
+        device = DeviceToken.objects.filter(
+            token=token
+        ).first()
+
+        # =========================
+        # EXISTING DEVICE
+        # =========================
+        if device:
+
+            # Only update phone when a valid phone
+            # is actually provided.
+            if phone:
+                device.phone = phone
+                device.save(update_fields=["phone"])
+
+                print(
+                    "✅ FCM TOKEN UPDATED:",
+                    "TOKEN =", token,
+                    "PHONE =", phone
+                )
+
+            else:
+                print(
+                    "✅ FCM TOKEN ALREADY EXISTS:",
+                    "TOKEN =", token,
+                    "PHONE =", device.phone
+                )
 
             return Response(
                 {
-                    "success": False,
-                    "error": "Phone missing"
+                    "success": True,
+                    "message": "Token updated successfully",
+                    "created": False
                 },
-                status=400
-            )
-
-        if not re.match(r"^[6-9]\d{9}$", phone):
-
-            return Response(
-                {
-                    "success": False,
-                    "error": "Invalid phone number"
-                },
-                status=400
+                status=200
             )
 
         # =========================
-        # SAVE OR UPDATE TOKEN
+        # NEW DEVICE
         # =========================
-        device, created = DeviceToken.objects.update_or_create(
+        device = DeviceToken.objects.create(
             token=token,
-            defaults={
-                "phone": phone
-            }
+            phone=phone if phone else None
         )
 
         print(
             "✅ FCM TOKEN SAVED:",
-            "PHONE =", phone,
-            "NEW =" if created else "UPDATED =",
-            created
+            "TOKEN =", token,
+            "PHONE =", phone if phone else "NULL"
         )
 
         return Response(
             {
                 "success": True,
                 "message": "Token saved successfully",
-                "created": created
+                "created": True
             },
             status=200
         )
