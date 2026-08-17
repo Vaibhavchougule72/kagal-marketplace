@@ -17,14 +17,11 @@ from .models import (
 # =====================================================
 
 def get_all_customers():
-    phones = (
-        Order.objects
-        .values_list("phone", flat=True)
-        .distinct()
+    return DeviceToken.objects.filter(
+        token__isnull=False
+    ).exclude(
+        token=""
     )
-
-    return DeviceToken.objects.filter(phone__in=phones)
-
 
 def get_new_customers():
     phones = (
