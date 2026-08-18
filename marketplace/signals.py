@@ -38,22 +38,22 @@ def order_status_changed(sender, instance, **kwargs):
         order_id = instance.id
 
         if instance.status == "ACCEPTED":
-            message = f"Order #{order_id} has been accepted."
+            message = "Order has been accepted."
 
         elif instance.status == "IN_PROGRESS":
-            message = f"Your order #{order_id} is being prepared."
+            message = "Your order is being prepared."
 
         elif instance.status == "OUT_FOR_DELIVERY":
-            message = f"Order #{order_id} is out for delivery."
+            message = "Order is out for delivery."
 
         elif instance.status == "DELIVERED":
-            message = f"Order #{order_id} delivered successfully."
+            message = "Order delivered successfully."
 
         elif instance.status == "CANCELLED":
-            message = f"Order #{order_id} has been cancelled."
+            message = "Order has been cancelled."
 
         else:
-            message = f"Order #{order_id} status updated."
+            message = "Order status updated."
 
         print("NOTIFICATION →", phone, message)
 
