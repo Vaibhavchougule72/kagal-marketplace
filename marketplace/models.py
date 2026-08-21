@@ -355,8 +355,7 @@ class Order(models.Model):
                 title = "Order Accepted ✅"
 
                 body = (
-                    f"Your order #{self.id} "
-                    f"has been accepted by restaurant."
+                    f"Your order has been accepted by restaurant."
                 )
 
             # -----------------------------------
@@ -367,8 +366,7 @@ class Order(models.Model):
                 title = "Order In Progress 🛵"
 
                 body = (
-                    f"Your order #{self.id} "
-                    f"is being prepared."
+                    f"Your order is being prepared."
                 )
 
             # -----------------------------------
@@ -379,8 +377,7 @@ class Order(models.Model):
                 title = "Out for Delivery 🚚"
 
                 body = (
-                    f"Rider is on the way with "
-                    f"your order #{self.id}."
+                    f"Rider is on the way with your order."
                 )
 
             # -----------------------------------
@@ -391,8 +388,7 @@ class Order(models.Model):
                 title = "Order Delivered 🎉"
 
                 body = (
-                    f"Your order #{self.id} "
-                    f"was delivered successfully."
+                    f"Your order was delivered successfully."
                 )
 
             # -----------------------------------

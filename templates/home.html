@@ -3,76 +3,379 @@
 {% load static %}
 {% block content %}
 
-<!-- STICKY HOME SEARCH -->
+<!-- LOKA TOP HERO / HEADER -->
+<style>
+    /* Hide the old Bootstrap/navigation bar coming from base.html */
+    nav.navbar,
+    .navbar {
+        display: none !important;
+    }
 
-<section class="home-search-sticky">
+    .loka-home-hero {
+        background: #075c36;
+        color: #fff;
+        padding: 22px 0 34px;
+        border-radius: 0 0 34px 34px;
+        position: relative;
+        overflow: visible;
+    }
 
-<div class="container">
+    .loka-home-hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: .08;
+        pointer-events: none;
+        background-image:
+            radial-gradient(circle at 10% 20%, #fff 1px, transparent 2px),
+            radial-gradient(circle at 80% 30%, #fff 1px, transparent 2px);
+        background-size: 90px 90px, 120px 120px;
+    }
 
-<form method="GET"
-      action="{% url 'search_products' %}"
-      class="position-relative">
+    .loka-hero-inner {
+        position: relative;
+        z-index: 2;
+    }
 
-    <input
-        class="home-search-input"
-        type="search"
-        id="homeSearchInput"
-        name="q"
-        placeholder="Search for food, snacks..."
-        autocomplete="off">
+    .loka-topbar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
 
-    <div id="homeSuggestionBox"
-         class="home-suggestion-box">
-    </div>
+    .loka-brand {
+        text-decoration: none;
+        color: #fff;
+        display: inline-flex;
+        flex-direction: column;
+        line-height: 1;
+    }
 
-</form>
+    .loka-brand-name {
+        font-size: clamp(38px, 6vw, 58px);
+        font-weight: 900;
+        letter-spacing: 2px;
+        line-height: .9;
+    }
 
-</div>
+    .loka-brand-name span {
+        color: #ffb51b;
+    }
 
-</section>
+    .loka-brand-tagline {
+        margin-top: 9px;
+        font-size: 14px;
+        font-weight: 500;
+        opacity: .95;
+    }
 
- <!-- OFFER SLIDER -->
+    .loka-menu-btn {
+        border: 1px solid rgba(255,255,255,.65);
+        background: rgba(255,255,255,.08);
+        color: #fff;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+        transition: .2s ease;
+        flex-shrink: 0;
+    }
 
-{% if offer_sliders %}
+    .loka-menu-btn:hover {
+        background: rgba(255,255,255,.16);
+        transform: translateY(-1px);
+    }
 
-<section class="offer-slider-section">
+    .loka-menu-line {
+        width: 25px;
+        height: 3px;
+        background: #fff;
+        border-radius: 5px;
+    }
 
-<div class="container">
+    .loka-menu-label {
+        font-size: 11px;
+        margin-top: 1px;
+        font-weight: 600;
+    }
 
-<div id="lokaOfferCarousel"
-     class="carousel slide"
-     data-bs-ride="carousel"
-     data-bs-interval="2000">
+    .loka-search-wrap {
+        position: sticky;
+        top: 8px;
+        z-index: 1000;
+        margin-bottom: 28px;
+    }
 
-    <div class="carousel-inner">
+    .loka-search-form {
+        position: relative;
+    }
 
-        {% for offer in offer_sliders %}
+    .loka-search-box {
+        width: 100%;
+        height: 64px;
+        border: 0;
+        border-radius: 18px;
+        padding: 0 70px 0 58px;
+        font-size: 17px;
+        color: #173c2b;
+        background: #fff;
+        box-shadow: 0 8px 25px rgba(0,0,0,.15);
+        outline: none;
+    }
 
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+    .loka-search-box::placeholder {
+        color: #858585;
+    }
 
-            <div class="offer-card-wrapper">
+    .loka-search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 25px;
+        color: #075c36;
+        pointer-events: none;
+    }
 
-                {% if offer.image %}
-                <img src="{{ offer.image.url }}"
-                     class="offer-slider-image"
-                     alt="{{ offer.title }}">
-                {% endif %}
+    .loka-search-filter {
+        position: absolute;
+        right: 19px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #075c36;
+        font-size: 22px;
+        pointer-events: none;
+    }
 
-            </div>
+    .loka-offer-carousel {
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 8px 28px rgba(0,0,0,.22);
+    }
 
+    .loka-offer-slide {
+        position: relative;
+        min-height: 250px;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #06492c;
+    }
+
+    .loka-offer-slide img {
+        width: 100%;
+        height: 100%;
+        min-height: 250px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .loka-offer-dots {
+        margin-top: 13px;
+        text-align: center;
+    }
+
+    .loka-offer-dots .carousel-indicators {
+        position: static;
+        margin: 0;
+        gap: 6px;
+    }
+
+    .loka-offer-dots button {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: 0;
+        margin: 0 3px;
+        background: rgba(255,255,255,.45);
+    }
+
+    .loka-offer-dots button.active {
+        background: #fff;
+    }
+
+    .loka-carousel-control {
+        width: 42px;
+        height: 42px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin: 0 10px;
+        border-radius: 50%;
+        background: rgba(0,0,0,.35);
+        opacity: .9;
+    }
+
+    @media (max-width: 576px) {
+        .loka-home-hero {
+            padding: 17px 0 25px;
+            border-radius: 0 0 25px 25px;
+        }
+
+        .loka-topbar {
+            margin-bottom: 18px;
+        }
+
+        .loka-brand-name {
+            font-size: 38px;
+        }
+
+        .loka-brand-tagline {
+            font-size: 11px;
+        }
+
+        .loka-menu-btn {
+            width: 52px;
+            height: 52px;
+        }
+
+        .loka-menu-line {
+            width: 21px;
+            height: 2.5px;
+        }
+
+        .loka-search-wrap {
+            margin-bottom: 20px;
+        }
+
+        .loka-search-box {
+            height: 55px;
+            border-radius: 15px;
+            font-size: 14px;
+            padding-left: 50px;
+            padding-right: 55px;
+        }
+
+        .loka-search-icon {
+            left: 17px;
+            font-size: 22px;
+        }
+
+        .loka-search-filter {
+            right: 16px;
+            font-size: 19px;
+        }
+
+        .loka-offer-slide,
+        .loka-offer-slide img {
+            min-height: 175px;
+        }
+
+        .loka-carousel-control {
+            width: 34px;
+            height: 34px;
+            margin: 0 5px;
+        }
+    }
+</style>
+
+<section class="loka-home-hero">
+    <div class="container loka-hero-inner">
+
+        <!-- LOGO + MENU -->
+        <div class="loka-topbar">
+            <a href="{% url 'home' %}" class="loka-brand" aria-label="LOKA Home">
+                <div class="loka-brand-name">L<span>O</span>KA</div>
+                <div class="loka-brand-tagline">
+                    Kagalchi Apli Food Delivery Service ❤️
+                </div>
+            </a>
+
+            <button type="button"
+                    class="loka-menu-btn"
+                    id="lokaMenuBtn"
+                    aria-label="Open menu">
+                <span class="loka-menu-line"></span>
+                <span class="loka-menu-line"></span>
+                <span class="loka-menu-line"></span>
+                <span class="loka-menu-label">Menu</span>
+            </button>
         </div>
 
-        {% endfor %}
+        <!-- STICKY SEARCH -->
+        <div class="loka-search-wrap">
+            <form method="GET"
+                  action="{% url 'search_products' %}"
+                  class="loka-search-form">
+
+                <span class="loka-search-icon">⌕</span>
+
+                <input
+                    class="loka-search-box"
+                    type="search"
+                    id="homeSearchInput"
+                    name="q"
+                    placeholder="Search for food, restaurants, snacks..."
+                    autocomplete="off">
+
+                <span class="loka-search-filter">☷</span>
+
+                <div id="homeSuggestionBox"
+                     class="home-suggestion-box">
+                </div>
+            </form>
+        </div>
+
+        <!-- OFFER SLIDER -->
+        {% if offer_sliders %}
+        <div id="lokaOfferCarousel"
+             class="carousel slide loka-offer-carousel"
+             data-bs-ride="carousel"
+             data-bs-interval="3000">
+
+            <div class="carousel-inner">
+                {% for offer in offer_sliders %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="loka-offer-slide">
+                        {% if offer.image %}
+                        <img src="{{ offer.image.url }}"
+                             alt="{{ offer.title }}"
+                             loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if offer_sliders|length > 1 %}
+            <button class="carousel-control-prev loka-carousel-control"
+                    type="button"
+                    data-bs-target="#lokaOfferCarousel"
+                    data-bs-slide="prev"
+                    aria-label="Previous offer">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+
+            <button class="carousel-control-next loka-carousel-control"
+                    type="button"
+                    data-bs-target="#lokaOfferCarousel"
+                    data-bs-slide="next"
+                    aria-label="Next offer">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+
+            <div class="loka-offer-dots">
+                <div class="carousel-indicators">
+                    {% for offer in offer_sliders %}
+                    <button type="button"
+                            data-bs-target="#lokaOfferCarousel"
+                            data-bs-slide-to="{{ forloop.counter0 }}"
+                            class="{% if forloop.first %}active{% endif %}"
+                            aria-label="Offer {{ forloop.counter }}"></button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
     </div>
-
-</div>
-
-</div>
-
 </section>
-
-{% endif %}
 
 <!-- DOWNLOAD APP SECTION -->
 <section class="py-2">
@@ -873,4 +1176,3 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 
 {% endblock %}
-
