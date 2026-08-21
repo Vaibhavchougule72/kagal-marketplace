@@ -74,6 +74,86 @@
         opacity: .95;
     }
 
+    .loka-menu-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .loka-menu-dropdown {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 190px;
+        margin: 0;
+        padding: 8px;
+        list-style: none;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 35px rgba(0,0,0,.22);
+        z-index: 3000;
+        display: none;
+    }
+
+    .loka-menu-dropdown.show {
+        display: block;
+        animation: lokaMenuIn .16s ease-out;
+    }
+
+    .loka-menu-dropdown li {
+        margin: 0;
+        padding: 0;
+    }
+
+    .loka-menu-dropdown a,
+    .loka-menu-dropdown li > button {
+        width: 100%;
+        min-height: 45px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 11px;
+        background: transparent;
+        color: #173c2b;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .loka-menu-dropdown a:hover,
+    .loka-menu-dropdown li > button:hover {
+        background: #eef7f1;
+    }
+
+    .loka-menu-cart-badge {
+        margin-left: auto;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50px;
+        background: #dc3545;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    @keyframes lokaMenuIn {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .loka-menu-btn {
         border: 1px solid rgba(255,255,255,.65);
         background: rgba(255,255,255,.08);
@@ -290,15 +370,54 @@
                 </div>
             </a>
 
-            <button type="button"
-                    class="loka-menu-btn"
-                    id="lokaMenuBtn"
-                    aria-label="Open menu">
-                <span class="loka-menu-line"></span>
-                <span class="loka-menu-line"></span>
-                <span class="loka-menu-line"></span>
-                <span class="loka-menu-label">Menu</span>
-            </button>
+            <div class="loka-menu-wrap">
+                <button type="button"
+                        class="loka-menu-btn"
+                        id="lokaMenuBtn"
+                        aria-label="Open menu"
+                        aria-expanded="false"
+                        aria-controls="lokaMenuDropdown">
+                    <span class="loka-menu-line"></span>
+                    <span class="loka-menu-line"></span>
+                    <span class="loka-menu-line"></span>
+                    <span class="loka-menu-label">Menu</span>
+                </button>
+
+                <ul class="loka-menu-dropdown"
+                    id="lokaMenuDropdown"
+                    aria-hidden="true">
+
+                    <!-- HOME ALWAYS -->
+                    <li>
+                        <a href="/">
+                            <span>⬅</span>
+                            <span>{% trans "Home" %}</span>
+                        </a>
+                    </li>
+
+                    {% if not simple_navbar %}
+                    <!-- HIDDEN IN CHECKOUT/OTP -->
+                    <li>
+                        <a href="{% url 'my_orders' %}">
+                            <span>📦</span>
+                            <span>{% trans "My Orders" %}</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <button type="button"
+                                id="lokaCartMenuBtn">
+                            <span>🛒</span>
+                            <span>{% trans "Cart" %}</span>
+                            <span class="loka-menu-cart-badge cart-badge"
+                                  id="lokaMenuCartBadge">
+                                {{ cart_item_count }}
+                            </span>
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
 
         <!-- STICKY SEARCH -->
@@ -380,6 +499,85 @@
 
     </div>
 </section>
+
+<!-- LOKA MENU DROPDOWN -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const menuBtn = document.getElementById("lokaMenuBtn");
+    const menuDropdown = document.getElementById("lokaMenuDropdown");
+    const cartMenuBtn = document.getElementById("lokaCartMenuBtn");
+
+    if (!menuBtn || !menuDropdown) return;
+
+    function closeLokaMenu() {
+        menuDropdown.classList.remove("show");
+        menuBtn.setAttribute("aria-expanded", "false");
+        menuDropdown.setAttribute("aria-hidden", "true");
+    }
+
+    menuBtn.addEventListener("click", function (event) {
+        event.stopPropagation();
+
+        const isOpen = menuDropdown.classList.toggle("show");
+
+        menuBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        menuDropdown.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    });
+
+    // CART option uses the existing cart panel from your base/home page.
+    cartMenuBtn?.addEventListener("click", function () {
+
+        closeLokaMenu();
+
+        const cartPanel = document.getElementById("cartPanel");
+        const cartOverlay = document.getElementById("cartOverlay");
+
+        if (cartPanel) {
+            cartPanel.classList.add("open");
+        }
+
+        if (cartOverlay) {
+            cartOverlay.classList.add("active");
+        }
+
+        document.body.style.overflow = "hidden";
+
+        // Keep the cart content fresh.
+        const cartContent = document.getElementById("cartContent");
+
+        if (cartContent) {
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+                cartContent.innerHTML = html;
+            })
+            .catch(err => {
+                console.error("LOKA menu cart error:", err);
+            });
+        }
+    });
+
+    // Close when clicking outside the menu.
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest(".loka-menu-wrap")) {
+            closeLokaMenu();
+        }
+    });
+
+    // Close with Escape.
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeLokaMenu();
+        }
+    });
+
+});
+</script>
 
 <!-- DOWNLOAD APP SECTION -->
 <section class="py-2">
