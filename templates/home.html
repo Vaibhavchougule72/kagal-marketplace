@@ -12,7 +12,9 @@
         display: none !important;
     }
 
+    /* Remove the reserved space that base.html may leave for its old navbar */
     .loka-home-hero {
+        margin-top: -70px;
         background: #075c36;
         color: #fff;
         padding: 22px 0 34px;
@@ -214,6 +216,7 @@
 
     @media (max-width: 576px) {
         .loka-home-hero {
+            margin-top: -60px;
             padding: 17px 0 25px;
             border-radius: 0 0 25px 25px;
         }
