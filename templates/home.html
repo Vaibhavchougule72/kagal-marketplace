@@ -1365,4 +1365,146 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("homeSearchInput");
+    const suggestionBox = document.getElementById("homeSuggestionBox");
+
+    if (!searchInput || !suggestionBox) return;
+
+    let debounceTimer;
+
+    searchInput.addEventListener("input", function () {
+
+        clearTimeout(debounceTimer);
+
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            suggestionBox.innerHTML = "";
+            suggestionBox.style.display = "none";
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+
+            suggestionBox.innerHTML = `
+                <div class="list-group-item">
+                    Searching...
+                </div>
+            `;
+
+            suggestionBox.style.display = "block";
+
+            fetch(`/search-suggestions/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    suggestionBox.innerHTML = "";
+
+                    if (!data.results || data.results.length === 0) {
+
+                        suggestionBox.innerHTML = `
+                            <div class="list-group-item text-muted">
+                                No results found
+                            </div>
+                        `;
+
+                        suggestionBox.style.display = "block";
+                        return;
+                    }
+
+                    data.results.forEach(item => {
+
+                        const option = document.createElement("div");
+
+                        option.classList.add(
+                            "list-group-item",
+                            "list-group-item-action"
+                        );
+
+                        option.style.cursor = "pointer";
+
+                        if (item.type === "product") {
+
+                            option.innerHTML = `
+                                <div>
+                                    <strong>${item.name}</strong>
+                                    <br>
+                                    <small style="color:#777;">
+                                        ${item.store_name}
+                                    </small>
+                                </div>
+                            `;
+
+                        } else {
+
+                            option.innerHTML = `
+                                <div>
+                                    <strong>${item.name}</strong>
+                                    <br>
+                                    <small style="color:#777;">
+                                        Store
+                                    </small>
+                                </div>
+                            `;
+                        }
+
+                        option.addEventListener("click", function () {
+
+                            if (item.type === "store") {
+
+                                window.location.href =
+                                    `/store/${item.id}/`;
+
+                            } else {
+
+                                window.location.href =
+                                    `/search/?q=${encodeURIComponent(item.name)}&highlight=${item.id}`;
+
+                            }
+
+                        });
+
+                        suggestionBox.appendChild(option);
+                    });
+
+                    suggestionBox.style.display = "block";
+
+                })
+                .catch(error => {
+
+                    console.error("Search suggestion error:", error);
+
+                    suggestionBox.innerHTML = `
+                        <div class="list-group-item text-danger">
+                            Something went wrong
+                        </div>
+                    `;
+
+                    suggestionBox.style.display = "block";
+                });
+
+        }, 300);
+
+    });
+
+
+    // Hide suggestions when clicking outside
+
+    document.addEventListener("click", function (event) {
+
+        if (
+            !searchInput.contains(event.target) &&
+            !suggestionBox.contains(event.target)
+        ) {
+            suggestionBox.style.display = "none";
+        }
+
+    });
+
+});
+</script>
+
 {% endblock %}
