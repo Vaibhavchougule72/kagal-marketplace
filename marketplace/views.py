@@ -2754,95 +2754,75 @@ def search_products(request):
             status=500
         )
 
-from django.db.models import Q
-
-
 def search_suggestions(request):
 
     query = request.GET.get('q', '').strip()
 
     suggestions = []
 
-    if not query:
-        return JsonResponse({
-            'results': []
-        })
+    if query:
 
-    # ==========================================
-    # PRODUCTS
-    # Search by PRODUCT name OR STORE name
-    # ==========================================
-
-    products = (
-        Product.objects
-        .select_related('store')
-        .filter(
-            Q(name__icontains=query) |
-            Q(store__name__icontains=query)
-        )
-        .distinct()
-        [:8]
-    )
-
-    for product in products:
-
-        suggestions.append({
-            'type': 'product',
-            'id': product.id,
-            'name': product.name,
-            'store_id': product.store.id,
-            'store_name': product.store.name,
-
-            'image': (
-                product.image.url
-                if product.image
-                else ''
-            ),
-
-            'price': str(
-                product.discount_price
-                if product.discount_price
-                else product.price
+        # =========================
+        # PRODUCTS
+        # =========================
+        products = (
+            Product.objects
+            .select_related('store')
+            .filter(
+                Q(name__icontains=query) |
+                Q(store__name__icontains=query)
             )
-        })
-
-
-    # ==========================================
-    # STORES
-    # Only add store results if needed
-    # ==========================================
-
-    if len(suggestions) < 8:
-
-        remaining = 8 - len(suggestions)
-
-        stores = (
-            Store.objects
-            .filter(name__icontains=query)
-            .exclude(
-                id__in=[
-                    item['store_id']
-                    for item in suggestions
-                    if item['type'] == 'product'
-                ]
-            )
-            [:remaining]
+            .distinct()[:8]
         )
+        for product in products:
+
+            suggestions.append({
+
+                'type': 'product',
+
+                'id': product.id,
+
+                'name': product.name,
+
+                'store_id': product.store.id,
+
+                'store_name': product.store.name,
+
+                'image': (
+                    product.image.url
+                    if product.image else ''
+                ),
+
+                'price': str(
+                    product.discount_price or product.price
+                )
+
+            })
+
+        # =========================
+        # STORES
+        # =========================
+        stores = Store.objects.filter(
+            name__icontains=query
+        )[:4]
 
         for store in stores:
 
             suggestions.append({
-                'type': 'store',
-                'id': store.id,
-                'name': store.name,
-                'store_name': store.name,
-            })
 
+                'type': 'store',
+
+                'id': store.id,
+
+                'name': store.name,
+
+                'store_name': store.name,
+
+            })
 
     return JsonResponse({
         'results': suggestions
     })
-
 
 # =====================================================
 # AJAX DELIVERY CALCULATION
