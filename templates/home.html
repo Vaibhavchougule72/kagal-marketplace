@@ -3,565 +3,76 @@
 {% load static %}
 {% block content %}
 
-<!-- LOKA TOP HERO / HEADER -->
-<style>
+<!-- STICKY HOME SEARCH -->
 
-    /* Hide the old Bootstrap/navigation bar coming from base.html */
-    nav.navbar,
-    .navbar {
-        display: none !important;
-    }
+<section class="home-search-sticky">
 
-    /* Remove the reserved space that base.html may leave for its old navbar */
-    .loka-home-hero {
-        margin-top: -70px;
-        background: #075c36;
-        color: #fff;
-        padding: 22px 0 34px;
-        border-radius: 0 0 34px 34px;
-        position: relative;
-        overflow: visible;
-    }
+<div class="container">
 
-    .loka-home-hero::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        opacity: .08;
-        pointer-events: none;
-        background-image:
-            radial-gradient(circle at 10% 20%, #fff 1px, transparent 2px),
-            radial-gradient(circle at 80% 30%, #fff 1px, transparent 2px);
-        background-size: 90px 90px, 120px 120px;
-    }
+<form method="GET"
+      action="{% url 'search_products' %}"
+      class="position-relative">
 
-    .loka-hero-inner {
-        position: relative;
-        z-index: 2;
-    }
+    <input
+        class="home-search-input"
+        type="search"
+        id="homeSearchInput"
+        name="q"
+        placeholder="Search for food, snacks..."
+        autocomplete="off">
 
-    .loka-topbar {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 24px;
-    }
-
-    .loka-brand {
-        text-decoration: none;
-        color: #fff;
-        display: inline-flex;
-        flex-direction: column;
-        line-height: 1;
-    }
-
-    .loka-brand-name {
-        font-size: clamp(38px, 6vw, 58px);
-        font-weight: 900;
-        letter-spacing: 2px;
-        line-height: .9;
-    }
-
-    .loka-brand-name span {
-        color: #ffb51b;
-    }
-
-    .loka-brand-tagline {
-        margin-top: 9px;
-        font-size: 14px;
-        font-weight: 500;
-        opacity: .95;
-    }
-
-    .loka-menu-wrap {
-        position: relative;
-        flex-shrink: 0;
-    }
-
-    .loka-menu-dropdown {
-        position: absolute;
-        top: calc(100% + 12px);
-        right: 0;
-        width: 190px;
-        margin: 0;
-        padding: 8px;
-        list-style: none;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 12px 35px rgba(0,0,0,.22);
-        z-index: 3000;
-        display: none;
-    }
-
-    .loka-menu-dropdown.show {
-        display: block;
-        animation: lokaMenuIn .16s ease-out;
-    }
-
-    .loka-menu-dropdown li {
-        margin: 0;
-        padding: 0;
-    }
-
-    .loka-menu-dropdown a,
-    .loka-menu-dropdown li > button {
-        width: 100%;
-        min-height: 45px;
-        display: flex;
-        align-items: center;
-        gap: 11px;
-        padding: 10px 12px;
-        border: 0;
-        border-radius: 11px;
-        background: transparent;
-        color: #173c2b;
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: 600;
-        text-align: left;
-        cursor: pointer;
-    }
-
-    .loka-menu-dropdown a:hover,
-    .loka-menu-dropdown li > button:hover {
-        background: #eef7f1;
-    }
-
-    .loka-menu-cart-badge {
-        margin-left: auto;
-        min-width: 22px;
-        height: 22px;
-        padding: 0 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50px;
-        background: #dc3545;
-        color: #fff;
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-    @keyframes lokaMenuIn {
-        from {
-            opacity: 0;
-            transform: translateY(-5px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .loka-menu-btn {
-        border: 1px solid rgba(255,255,255,.65);
-        background: rgba(255,255,255,.08);
-        color: #fff;
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        cursor: pointer;
-        transition: .2s ease;
-        flex-shrink: 0;
-    }
-
-    .loka-menu-btn:hover {
-        background: rgba(255,255,255,.16);
-        transform: translateY(-1px);
-    }
-
-    .loka-menu-line {
-        width: 25px;
-        height: 3px;
-        background: #fff;
-        border-radius: 5px;
-    }
-
-    .loka-menu-label {
-        font-size: 11px;
-        margin-top: 1px;
-        font-weight: 600;
-    }
-
-    .loka-search-wrap {
-        position: sticky;
-        top: 8px;
-        z-index: 1000;
-        margin-bottom: 28px;
-    }
-
-    .loka-search-form {
-        position: relative;
-    }
-
-    .loka-search-box {
-        width: 100%;
-        height: 64px;
-        border: 0;
-        border-radius: 18px;
-        padding: 0 70px 0 58px;
-        font-size: 17px;
-        color: #173c2b;
-        background: #fff;
-        box-shadow: 0 8px 25px rgba(0,0,0,.15);
-        outline: none;
-    }
-
-    .loka-search-box::placeholder {
-        color: #858585;
-    }
-
-    .loka-search-icon {
-        position: absolute;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 25px;
-        color: #075c36;
-        pointer-events: none;
-    }
-
-    .loka-search-filter {
-        position: absolute;
-        right: 19px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #075c36;
-        font-size: 22px;
-        pointer-events: none;
-    }
-
-    .loka-offer-carousel {
-        border-radius: 24px;
-        overflow: hidden;
-        box-shadow: 0 8px 28px rgba(0,0,0,.22);
-    }
-
-    .loka-offer-slide {
-        position: relative;
-        min-height: 250px;
-        border-radius: 24px;
-        overflow: hidden;
-        background: #06492c;
-    }
-
-    .loka-offer-slide img {
-        width: 100%;
-        height: 100%;
-        min-height: 250px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .loka-offer-dots {
-        margin-top: 13px;
-        text-align: center;
-    }
-
-    .loka-offer-dots .carousel-indicators {
-        position: static;
-        margin: 0;
-        gap: 6px;
-    }
-
-    .loka-offer-dots button {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        border: 0;
-        margin: 0 3px;
-        background: rgba(255,255,255,.45);
-    }
-
-    .loka-offer-dots button.active {
-        background: #fff;
-    }
-
-    .loka-carousel-control {
-        width: 42px;
-        height: 42px;
-        top: 50%;
-        transform: translateY(-50%);
-        margin: 0 10px;
-        border-radius: 50%;
-        background: rgba(0,0,0,.35);
-        opacity: .9;
-    }
-
-    @media (max-width: 576px) {
-        .loka-home-hero {
-            margin-top: -60px;
-            padding: 17px 0 25px;
-            border-radius: 0 0 25px 25px;
-        }
-
-        .loka-topbar {
-            margin-bottom: 18px;
-        }
-
-        .loka-brand-name {
-            font-size: 38px;
-        }
-
-        .loka-brand-tagline {
-            font-size: 11px;
-        }
-
-        .loka-menu-btn {
-            width: 52px;
-            height: 52px;
-        }
-
-        .loka-menu-line {
-            width: 21px;
-            height: 2.5px;
-        }
-
-        .loka-search-wrap {
-            margin-bottom: 20px;
-        }
-
-        .loka-search-box {
-            height: 55px;
-            border-radius: 15px;
-            font-size: 14px;
-            padding-left: 50px;
-            padding-right: 55px;
-        }
-
-        .loka-search-icon {
-            left: 17px;
-            font-size: 22px;
-        }
-
-        .loka-search-filter {
-            right: 16px;
-            font-size: 19px;
-        }
-
-        .loka-offer-slide,
-        .loka-offer-slide img {
-            min-height: 175px;
-        }
-
-        .loka-carousel-control {
-            width: 34px;
-            height: 34px;
-            margin: 0 5px;
-        }
-    }
-</style>
-
-<section class="loka-home-hero">
-    <div class="container loka-hero-inner">
-
-        <!-- LOGO + MENU -->
-        <div class="loka-topbar">
-            <a href="{% url 'home' %}" class="loka-brand" aria-label="LOKA Home">
-                <div class="loka-brand-name">L<span>O</span>KA</div>
-            </a>
-
-            <div class="loka-menu-wrap">
-                <button type="button"
-                        class="loka-menu-btn"
-                        id="lokaMenuBtn"
-                        aria-label="Open menu"
-                        aria-expanded="false"
-                        aria-controls="lokaMenuDropdown">
-                    <span class="loka-menu-line"></span>
-                    <span class="loka-menu-line"></span>
-                    <span class="loka-menu-line"></span>
-                </button>
-
-                <ul class="loka-menu-dropdown"
-                    id="lokaMenuDropdown"
-                    aria-hidden="true">
-
-                    <!-- HOME ALWAYS -->
-                    <li>
-                        <a href="/">
-                            <span>⬅</span>
-                            <span>{% trans "Home" %}</span>
-                        </a>
-                    </li>
-
-                    {% if not simple_navbar %}
-                    <!-- HIDDEN IN CHECKOUT/OTP -->
-                    <li>
-                        <a href="{% url 'my_orders' %}">
-                            <span>📦</span>
-                            <span>{% trans "My Orders" %}</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <button type="button"
-                                id="lokaCartMenuBtn">
-                            <span>🛒</span>
-                            <span>{% trans "Cart" %}</span>
-                            <span class="loka-menu-cart-badge cart-badge"
-                                  id="lokaMenuCartBadge">
-                                {{ cart_item_count }}
-                            </span>
-                        </button>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-
-        <!-- STICKY SEARCH -->
-        <div class="loka-search-wrap">
-            <form method="GET"
-                  action="{% url 'search_products' %}"
-                  class="loka-search-form">
-
-                <span class="loka-search-icon">⌕</span>
-
-                <input
-                    class="loka-search-box"
-                    type="search"
-                    id="homeSearchInput"
-                    name="q"
-                    placeholder="Search for food, restaurants, snacks..."
-                    autocomplete="off">
-
-                <span class="loka-search-filter">☷</span>
-
-                <div id="homeSuggestionBox"
-                     class="home-suggestion-box">
-                </div>
-            </form>
-        </div>
-
-        <!-- OFFER SLIDER -->
-        {% if offer_sliders %}
-        <div id="lokaOfferCarousel"
-             class="carousel slide loka-offer-carousel"
-             data-bs-ride="carousel"
-             data-bs-interval="3000">
-
-            <div class="carousel-inner">
-                {% for offer in offer_sliders %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <div class="loka-offer-slide">
-                        {% if offer.image %}
-                        <img src="{{ offer.image.url }}"
-                             alt="{{ offer.title }}"
-                             loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            {% if offer_sliders|length > 1 %}
-            <button class="carousel-control-prev loka-carousel-control"
-                    type="button"
-                    data-bs-target="#lokaOfferCarousel"
-                    data-bs-slide="prev"
-                    aria-label="Previous offer">
-                <span class="carousel-control-prev-icon"></span>
-            </button>
-
-            <button class="carousel-control-next loka-carousel-control"
-                    type="button"
-                    data-bs-target="#lokaOfferCarousel"
-                    data-bs-slide="next"
-                    aria-label="Next offer">
-                <span class="carousel-control-next-icon"></span>
-            </button>
-            {% endif %}
-        </div>
-        {% endif %}
-
+    <div id="homeSuggestionBox"
+         class="home-suggestion-box">
     </div>
+
+</form>
+
+</div>
+
 </section>
 
-<!-- LOKA MENU DROPDOWN -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
+ <!-- OFFER SLIDER -->
 
-    const menuBtn = document.getElementById("lokaMenuBtn");
-    const menuDropdown = document.getElementById("lokaMenuDropdown");
-    const cartMenuBtn = document.getElementById("lokaCartMenuBtn");
+{% if offer_sliders %}
 
-    if (!menuBtn || !menuDropdown) return;
+<section class="offer-slider-section">
 
-    function closeLokaMenu() {
-        menuDropdown.classList.remove("show");
-        menuBtn.setAttribute("aria-expanded", "false");
-        menuDropdown.setAttribute("aria-hidden", "true");
-    }
+<div class="container">
 
-    menuBtn.addEventListener("click", function (event) {
-        event.stopPropagation();
+<div id="lokaOfferCarousel"
+     class="carousel slide"
+     data-bs-ride="carousel"
+     data-bs-interval="2000">
 
-        const isOpen = menuDropdown.classList.toggle("show");
+    <div class="carousel-inner">
 
-        menuBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-        menuDropdown.setAttribute("aria-hidden", isOpen ? "false" : "true");
-    });
+        {% for offer in offer_sliders %}
 
-    // CART option uses the existing cart panel from your base/home page.
-    cartMenuBtn?.addEventListener("click", function () {
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
 
-        closeLokaMenu();
+            <div class="offer-card-wrapper">
 
-        const cartPanel = document.getElementById("cartPanel");
-        const cartOverlay = document.getElementById("cartOverlay");
+                {% if offer.image %}
+                <img src="{{ offer.image.url }}"
+                     class="offer-slider-image"
+                     alt="{{ offer.title }}">
+                {% endif %}
 
-        if (cartPanel) {
-            cartPanel.classList.add("open");
-        }
+            </div>
 
-        if (cartOverlay) {
-            cartOverlay.classList.add("active");
-        }
+        </div>
 
-        document.body.style.overflow = "hidden";
+        {% endfor %}
 
-        // Keep the cart content fresh.
-        const cartContent = document.getElementById("cartContent");
+    </div>
 
-        if (cartContent) {
-            fetch("/cart/", {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-            .then(res => res.text())
-            .then(html => {
-                cartContent.innerHTML = html;
-            })
-            .catch(err => {
-                console.error("LOKA menu cart error:", err);
-            });
-        }
-    });
+</div>
 
-    // Close when clicking outside the menu.
-    document.addEventListener("click", function (event) {
-        if (!event.target.closest(".loka-menu-wrap")) {
-            closeLokaMenu();
-        }
-    });
+</div>
 
-    // Close with Escape.
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") {
-            closeLokaMenu();
-        }
-    });
+</section>
 
-});
-</script>
+{% endif %}
 
 <!-- DOWNLOAD APP SECTION -->
 <section class="py-2">
@@ -1360,4 +871,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
+
 {% endblock %}
+

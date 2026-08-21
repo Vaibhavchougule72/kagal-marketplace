@@ -326,8 +326,6 @@ def home(request):
         "offer_sliders": offer_sliders,
         "featured_stores": featured_stores,
         "show_floating_cart": True,
-        "show_navbar": False,
-        "simple_navbar": False,
     })
 # =====================================================
 # STORES
@@ -2765,15 +2763,9 @@ def search_suggestions(request):
         # =========================
         # PRODUCTS
         # =========================
-        products = (
-            Product.objects
-            .select_related('store')
-            .filter(
-                Q(name__icontains=query) |
-                Q(store__name__icontains=query)
-            )
-            .distinct()[:8]
-        )
+        products = Product.objects.select_related('store')\
+            .filter(name__icontains=query)[:6]
+
         for product in products:
 
             suggestions.append({
