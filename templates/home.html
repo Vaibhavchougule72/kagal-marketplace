@@ -481,18 +481,6 @@
                     aria-label="Next offer">
                 <span class="carousel-control-next-icon"></span>
             </button>
-
-            <div class="loka-offer-dots">
-                <div class="carousel-indicators">
-                    {% for offer in offer_sliders %}
-                    <button type="button"
-                            data-bs-target="#lokaOfferCarousel"
-                            data-bs-slide-to="{{ forloop.counter0 }}"
-                            class="{% if forloop.first %}active{% endif %}"
-                            aria-label="Offer {{ forloop.counter }}"></button>
-                    {% endfor %}
-                </div>
-            </div>
             {% endif %}
         </div>
         {% endif %}
