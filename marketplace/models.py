@@ -1187,3 +1187,97 @@ class ComplaintPhoto(models.Model):
     def __str__(self):
         return f"{self.complaint.complaint_number}"
 
+from django.db import models
+from django.utils import timezone
+
+
+class Customer(models.Model):
+    phone = models.CharField(
+        max_length=10,
+        unique=True,
+        db_index=True
+    )
+
+    name = models.CharField(
+        max_length=150,
+        blank=True,
+        default=""
+    )
+
+    email = models.EmailField(
+        blank=True,
+        default=""
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    is_verified = models.BooleanField(
+        default=False
+    )
+
+    last_login_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return f"{self.name or 'Customer'} - {self.phone}"
+
+class CustomerOTP(models.Model):
+    phone = models.CharField(
+        max_length=10,
+        db_index=True
+    )
+
+    otp = models.CharField(
+        max_length=128
+    )
+
+    purpose = models.CharField(
+        max_length=30,
+        choices=[
+            ("LOGIN", "Login"),
+            ("REGISTER", "Register"),
+            ("RESET", "Reset"),
+        ],
+        default="LOGIN"
+    )
+
+    attempts = models.PositiveIntegerField(
+        default=0
+    )
+
+    resend_count = models.PositiveIntegerField(
+        default=0
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    expires_at = models.DateTimeField()
+
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    is_used = models.BooleanField(
+        default=False
+    )
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def __str__(self):
+        return f"{self.phone} - {self.purpose}"

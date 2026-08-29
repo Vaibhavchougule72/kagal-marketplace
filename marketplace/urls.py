@@ -226,6 +226,51 @@ urlpatterns = [
         views.save_customer_note,
         name="save_customer_note"
     ),
+
+    # =========================================================
+    # CUSTOMER AUTHENTICATION
+    # =========================================================
+
+    path(
+        "login/",
+        views.customer_login,
+        name="customer_login"
+    ),
+
+    path(
+        "send-login-otp/",
+        views.send_login_otp,
+        name="send_login_otp"
+    ),
+
+    path(
+        "verify-login-otp/",
+        views.customer_otp_page,
+        name="verify_login_otp"
+    ),
+
+    path(
+        "verify-login-otp-submit/",
+        views.verify_login_otp,
+        name="verify_login_otp_submit"
+    ),
+
+    path(
+        "register/",
+        views.customer_register,
+        name="customer_register"
+    ),
+
+    path(
+        "logout/",
+        views.customer_logout,
+        name="customer_logout"
+    ),
+    path(
+        "resend-login-otp/",
+        views.resend_login_otp,
+        name="resend_login_otp"
+    ),
 ]
 
 

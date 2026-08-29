@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LOKA Login</title>
+</head>
+
+<body>
+
+<div>
+
+    <h1>LOKA LOGIN</h1>
+
+    <p>Login using your mobile number</p>
+
+    <form id="loginForm">
+
+        {% csrf_token %}
+
+        <label>
+            Mobile Number
+        </label>
+
+        <input
+            type="tel"
+            id="phone"
+            name="phone"
+            maxlength="10"
+            inputmode="numeric"
+            placeholder="Enter mobile number"
+            required
+        >
+
+        <button type="submit">
+            Continue
+        </button>
+
+    </form>
+
+    <div id="message"></div>
+
+</div>
+
+
+<script>
+
+const form = document.getElementById("loginForm");
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const phone =
+        document.getElementById("phone").value.trim();
+
+    const csrfToken =
+        document.querySelector(
+            "[name=csrfmiddlewaretoken]"
+        ).value;
+
+    const message =
+        document.getElementById("message");
+
+    message.innerText = "Sending OTP...";
+
+    const formData = new FormData();
+
+    formData.append("phone", phone);
+
+    try {
+
+        const response = await fetch(
+            "{% url 'send_login_otp' %}",
+            {
+                method: "POST",
+
+                headers: {
+                    "X-CSRFToken": csrfToken
+                },
+
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+
+            window.location.href =
+                "{% url 'verify_login_otp' %}"
+                + "?phone="
+                + encodeURIComponent(data.phone);
+
+        } else {
+
+            message.innerText =
+                data.message || "Something went wrong.";
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.innerText =
+            "Unable to connect. Please try again.";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

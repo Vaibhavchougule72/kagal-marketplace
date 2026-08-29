@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Verify OTP - LOKA</title>
+
+</head>
+
+<body>
+
+<div>
+
+    <h1>VERIFY OTP</h1>
+
+    <p>
+        Enter the 6-digit OTP sent to your WhatsApp.
+    </p>
+
+    <form id="otpForm">
+
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            id="phone"
+            value="{{ phone }}"
+        >
+
+        <input 
+            type="tel" 
+            id="otp" 
+            maxlength="6" 
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9]{6}"
+            placeholder="Enter OTP" 
+            required 
+        >
+
+        <button type="submit">
+            Verify OTP
+        </button>
+
+    </form>
+
+    <div id="message"></div>
+
+    <button
+        type="button"
+        id="resendButton"
+        disabled
+    >
+        Resend OTP
+    </button>
+
+    <p id="resendMessage"></p>
+
+</div>
+
+
+<script>
+
+const form =
+    document.getElementById("otpForm");
+
+form.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const phone =
+            document.getElementById("phone").value;
+
+        const otp =
+            document.getElementById("otp").value.trim();
+
+        const csrfToken =
+            document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+            ).value;
+
+        const message =
+            document.getElementById("message");
+
+        message.innerText =
+            "Verifying...";
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "phone",
+            phone
+        );
+
+        formData.append(
+            "otp",
+            otp
+        );
+
+        try {
+
+            const response =
+                await fetch(
+                    "{% url 'verify_login_otp_submit' %}",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "X-CSRFToken":
+                                csrfToken
+                        },
+
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (data.success) {
+
+                window.location.href =
+                    data.redirect_url;
+
+            } else {
+
+                message.innerText =
+                    data.message ||
+                    "Invalid OTP.";
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.innerText =
+                "Something went wrong.";
+
+        }
+
+    }
+);
+
+const resendButton =
+    document.getElementById("resendButton");
+
+const resendMessage =
+    document.getElementById("resendMessage");
+
+let countdownTimer = null;
+let countdown = 30;
+
+
+// ============================================================
+// RESEND COUNTDOWN
+// ============================================================
+
+function startResendCountdown(seconds = 30) {
+
+    // Clear any existing timer
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+    }
+
+    countdown = seconds;
+
+    resendButton.disabled = true;
+
+    resendButton.innerText =
+        `Resend OTP (${countdown}s)`;
+
+    countdownTimer = setInterval(() => {
+
+        countdown--;
+
+        if (countdown <= 0) {
+
+            clearInterval(countdownTimer);
+
+            countdownTimer = null;
+
+            resendButton.disabled = false;
+
+            resendButton.innerText =
+                "Resend OTP";
+
+            return;
+        }
+
+        resendButton.innerText =
+            `Resend OTP (${countdown}s)`;
+
+    }, 1000);
+}
+
+
+// ============================================================
+// START INITIAL 30 SECOND COUNTDOWN
+// ============================================================
+
+startResendCountdown(30);
+
+
+// ============================================================
+// RESEND OTP
+// ============================================================
+
+resendButton.addEventListener(
+    "click",
+    async function() {
+
+        resendButton.disabled = true;
+
+        resendMessage.innerText =
+            "Sending new OTP...";
+
+        const phone =
+            document.getElementById("phone").value;
+
+        const csrfToken =
+            document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+            ).value;
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "phone",
+            phone
+        );
+
+        try {
+
+            const response =
+                await fetch(
+                    "{% url 'resend_login_otp' %}",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "X-CSRFToken":
+                                csrfToken
+                        },
+
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            resendMessage.innerText =
+                data.message || "";
+
+            if (data.success) {
+
+                // Start a fresh 30-second cooldown
+                startResendCountdown(30);
+
+            } else {
+
+                resendButton.disabled = false;
+
+                resendButton.innerText =
+                    "Resend OTP";
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            resendMessage.innerText =
+                "Unable to resend OTP. Please try again.";
+
+            resendButton.disabled = false;
+
+            resendButton.innerText =
+                "Resend OTP";
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>

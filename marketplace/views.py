@@ -45,6 +45,10 @@ from django.db.models import Sum
 from datetime import datetime
 import traceback
 from .models import OfferSlider
+from .models import Customer, CustomerOTP
+from django.db import IntegrityError, transaction
+from django.contrib.auth.hashers import make_password, check_password
+from .services.whatsapp_service import send_login_otp as send_whatsapp_login_otp
 
 MAX_CART_QTY = 50
 
@@ -6527,3 +6531,884 @@ def save_customer_note(request):
     return JsonResponse({
         "success": True
     })
+
+
+# ============================================================
+# CUSTOMER AUTHENTICATION
+# ============================================================
+
+logger = logging.getLogger(__name__)
+
+
+def normalize_customer_phone(phone):
+    """
+    Convert a customer phone number into the format:
+    10-digit Indian mobile number.
+    """
+    phone = (phone or "").strip()
+
+    # Remove spaces, hyphens, etc.
+    phone = "".join(ch for ch in phone if ch.isdigit())
+
+    # Convert +91XXXXXXXXXX / 91XXXXXXXXXX to XXXXXXXXXX
+    if phone.startswith("91") and len(phone) == 12:
+        phone = phone[2:]
+
+    return phone
+
+
+def get_logged_in_customer(request):
+    """
+    Return the currently logged-in LOKA customer.
+    """
+    customer_id = request.session.get("customer_id")
+
+    if not customer_id:
+        return None
+
+    return Customer.objects.filter(
+        id=customer_id,
+        is_active=True
+    ).first()
+
+
+def customer_login(request):
+    """
+    Display the LOKA customer login page.
+    """
+
+    # Already logged in?
+    customer = get_logged_in_customer(request)
+
+    if customer:
+        return redirect("home")
+
+    return render(
+        request,
+        "customer_login.html"
+    )
+
+
+def send_login_otp(request):
+    """
+    Generate and send LOKA customer login OTP
+    through FAST2SMS WhatsApp API.
+    """
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid request."
+            },
+            status=405
+        )
+
+    phone = normalize_customer_phone(
+        request.POST.get("phone")
+    )
+
+    # --------------------------------------------------------
+    # Validate Indian mobile number
+    # --------------------------------------------------------
+
+    if not phone or len(phone) != 10:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Please enter a valid "
+                    "10-digit mobile number."
+                )
+            },
+            status=400
+        )
+
+    if phone[0] not in "6789":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Please enter a valid "
+                    "Indian mobile number."
+                )
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # Check recent OTP
+    # --------------------------------------------------------
+
+    latest_otp = (
+        CustomerOTP.objects
+        .filter(
+            phone=phone,
+            purpose="LOGIN"
+        )
+        .order_by("-created_at")
+        .first()
+    )
+
+    # --------------------------------------------------------
+    # 30-second cooldown
+    # --------------------------------------------------------
+
+    if latest_otp:
+        seconds_since_creation = (
+            timezone.now() -
+            latest_otp.created_at
+        ).total_seconds()
+
+        if seconds_since_creation < 30:
+            remaining = max(
+                1,
+                int(30 - seconds_since_creation)
+            )
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        f"Please wait {remaining} "
+                        f"seconds before requesting "
+                        f"another OTP."
+                    )
+                },
+                status=429
+            )
+
+    # --------------------------------------------------------
+    # Maximum OTP sends/resends
+    # --------------------------------------------------------
+
+    if latest_otp and latest_otp.resend_count >= 3:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Maximum OTP limit reached. "
+                    "Please try again later."
+                )
+            },
+            status=429
+        )
+
+    # --------------------------------------------------------
+    # Generate OTP
+    # --------------------------------------------------------
+
+    otp = str(
+        random.randint(100000, 999999)
+    )
+
+    expires_at = (
+        timezone.now() +
+        timedelta(minutes=5)
+    )
+
+    # --------------------------------------------------------
+    # Determine send count
+    # --------------------------------------------------------
+
+    send_count = 0
+
+    if latest_otp:
+        send_count = latest_otp.resend_count + 1
+
+    # --------------------------------------------------------
+    # Create new OTP
+    # --------------------------------------------------------
+
+    new_otp = CustomerOTP.objects.create(
+        phone=phone,
+        otp=make_password(otp),
+        purpose="LOGIN",
+        expires_at=expires_at,
+        resend_count=send_count
+    )
+
+    # --------------------------------------------------------
+    # Send OTP through WhatsApp
+    # --------------------------------------------------------
+
+    whatsapp_response = send_whatsapp_login_otp(
+        phone,
+        otp
+    )
+
+    # --------------------------------------------------------
+    # WhatsApp failure
+    # --------------------------------------------------------
+
+    if whatsapp_response is None:
+        logger.error(
+            "WhatsApp OTP request failed for %s",
+            phone
+        )
+
+        new_otp.delete()
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Unable to send OTP right now. "
+                    "Please try again."
+                )
+            },
+            status=500
+        )
+
+    if not whatsapp_response.ok:
+        logger.error(
+            "WhatsApp OTP failed | Status=%s | Response=%s",
+            whatsapp_response.status_code,
+            whatsapp_response.text
+        )
+
+        new_otp.delete()
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Unable to send OTP right now. "
+                    "Please try again."
+                )
+            },
+            status=502
+        )
+
+    # --------------------------------------------------------
+    # Invalidate previous unused OTP
+    # --------------------------------------------------------
+
+    CustomerOTP.objects.filter(
+        phone=phone,
+        purpose="LOGIN",
+        is_used=False
+    ).exclude(
+        id=new_otp.id
+    ).update(
+        is_used=True
+    )
+
+    # --------------------------------------------------------
+    # Store phone in session
+    # --------------------------------------------------------
+
+    request.session["pending_login_phone"] = phone
+    request.session.modified = True
+
+    # --------------------------------------------------------
+    # SUCCESS
+    # --------------------------------------------------------
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "OTP sent successfully.",
+            "phone": phone
+        }
+    )
+
+def verify_login_otp(request):
+    """
+    Verify customer's login OTP.
+    """
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid request."
+            },
+            status=405
+        )
+
+    # --------------------------------------------------------
+    # Get phone from server-side session
+    # --------------------------------------------------------
+    phone = request.session.get("pending_login_phone")
+
+    if not phone:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Your login session has expired. "
+                    "Please request a new OTP."
+                )
+            },
+            status=400
+        )
+
+    phone = normalize_customer_phone(phone)
+
+    entered_otp = (
+        request.POST.get("otp") or ""
+    ).strip()
+
+    # --------------------------------------------------------
+    # Basic validation
+    # --------------------------------------------------------
+
+    if len(phone) != 10:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid mobile number."
+            },
+            status=400
+        )
+
+    if not entered_otp.isdigit() or len(entered_otp) != 6:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please enter the 6-digit OTP."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # Get latest OTP
+    # --------------------------------------------------------
+
+    otp_record = (
+        CustomerOTP.objects
+        .filter(
+            phone=phone,
+            purpose="LOGIN",
+            is_used=False
+        )
+        .order_by("-created_at")
+        .first()
+    )
+
+    if not otp_record:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "OTP not found. Please request a new OTP."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # Check expiry
+    # --------------------------------------------------------
+
+    if otp_record.is_expired():
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "OTP has expired. Please request a new OTP."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # Maximum 3 attempts
+    # --------------------------------------------------------
+
+    if otp_record.attempts >= 3:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Too many attempts. Please request a new OTP."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # Check OTP
+    # --------------------------------------------------------
+
+    if not check_password(
+        entered_otp,
+        otp_record.otp
+    ):
+
+        otp_record.attempts += 1
+        otp_record.save(
+            update_fields=["attempts"]
+        )
+
+        attempts_left = 3 - otp_record.attempts
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    f"Invalid OTP. "
+                    f"{attempts_left} attempt(s) remaining."
+                )
+            },
+            status=400
+        )
+
+    # ========================================================
+    # OTP CORRECT
+    # ========================================================
+
+    otp_record.is_used = True
+    otp_record.verified_at = timezone.now()
+    otp_record.save(
+        update_fields=[
+            "is_used",
+            "verified_at"
+        ]
+    )
+
+    # --------------------------------------------------------
+    # Find existing customer
+    # --------------------------------------------------------
+
+    customer = (
+        Customer.objects
+        .filter(phone=phone)
+        .first()
+    )
+
+    # --------------------------------------------------------
+    # Existing customer
+    # --------------------------------------------------------
+
+    if customer:
+
+        if not customer.is_active:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Your LOKA account is currently inactive."
+                    )
+                },
+                status=403
+            )
+
+        customer.is_verified = True
+        customer.last_login_at = timezone.now()
+
+        customer.save(
+            update_fields=[
+                "is_verified",
+                "last_login_at"
+            ]
+        )
+
+        # Create customer session
+        request.session["customer_id"] = customer.id
+        request.session["customer_phone"] = customer.phone
+
+        # Remove temporary login phone
+        request.session.pop(
+            "pending_login_phone",
+            None
+        )
+
+        request.session.modified = True
+
+        return JsonResponse(
+            {
+                "success": True,
+                "existing_customer": True,
+                "needs_registration": False,
+                "message": "Login successful.",
+                "redirect_url": "/"
+            }
+        )
+
+    # --------------------------------------------------------
+    # New customer
+    # --------------------------------------------------------
+
+    request.session["verified_customer_phone"] = phone
+
+    request.session.pop(
+        "pending_login_phone",
+        None
+    )
+
+    request.session.modified = True
+
+    return JsonResponse(
+        {
+            "success": True,
+            "existing_customer": False,
+            "needs_registration": True,
+            "message": "Mobile number verified.",
+            "redirect_url": "/register/"
+        }
+    )
+
+
+def customer_logout(request):
+    """
+    Log out the LOKA customer.
+    """
+
+    # Remove only customer authentication data.
+    request.session.pop("customer_id", None)
+    request.session.pop("customer_phone", None)
+    request.session.pop("verified_customer_phone", None)
+    request.session.pop("pending_login_phone", None)
+
+    request.session.modified = True
+
+    return redirect("customer_login")
+
+def customer_register(request):
+    """
+    Create a new LOKA customer after successful OTP verification.
+    """
+
+    verified_phone = request.session.get(
+        "verified_customer_phone"
+    )
+
+    if not verified_phone:
+        return redirect("customer_login")
+
+    # Already logged in
+    customer = get_logged_in_customer(request)
+
+    if customer:
+        return redirect("home")
+
+    # --------------------------------------------------------
+    # GET
+    # --------------------------------------------------------
+
+    if request.method == "GET":
+        return render(
+            request,
+            "customer_register.html",
+            {
+                "phone": verified_phone
+            }
+        )
+
+    # --------------------------------------------------------
+    # POST
+    # --------------------------------------------------------
+
+    name = (
+        request.POST.get("name") or ""
+    ).strip()
+
+    email = (
+        request.POST.get("email") or ""
+    ).strip()
+
+    if not name:
+        return render(
+            request,
+            "customer_register.html",
+            {
+                "phone": verified_phone,
+                "error": "Please enter your name."
+            }
+        )
+
+    if len(name) > 150:
+        return render(
+            request,
+            "customer_register.html",
+            {
+                "phone": verified_phone,
+                "error": "Name is too long."
+            }
+        )
+
+    # --------------------------------------------------------
+    # Create / retrieve customer safely
+    # --------------------------------------------------------
+
+    try:
+        with transaction.atomic():
+
+            customer, created = Customer.objects.get_or_create(
+                phone=verified_phone,
+                defaults={
+                    "name": name,
+                    "email": email,
+                    "is_active": True,
+                    "is_verified": True,
+                    "last_login_at": timezone.now()
+                }
+            )
+
+    except IntegrityError:
+
+        customer = Customer.objects.filter(
+            phone=verified_phone
+        ).first()
+
+        if not customer:
+            return render(
+                request,
+                "customer_register.html",
+                {
+                    "phone": verified_phone,
+                    "error": (
+                        "Unable to create your account. "
+                        "Please try again."
+                    )
+                }
+            )
+
+    # --------------------------------------------------------
+    # Login customer immediately
+    # --------------------------------------------------------
+
+    request.session["customer_id"] = customer.id
+    request.session["customer_phone"] = customer.phone
+
+    request.session.pop(
+        "verified_customer_phone",
+        None
+    )
+
+    request.session.modified = True
+
+    return redirect("home")
+
+def customer_otp_page(request):
+    """
+    Display OTP verification page for the
+    phone number stored in the login session.
+    """
+
+    phone = request.session.get(
+        "pending_login_phone"
+    )
+
+    if not phone:
+        return redirect("customer_login")
+
+    phone = normalize_customer_phone(phone)
+
+    return render(
+        request,
+        "customer_otp.html",
+        {
+            "phone": phone
+        }
+    )
+
+def resend_login_otp(request):
+    """
+    Resend LOKA customer login OTP.
+    """
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid request."
+            },
+            status=405
+        )
+
+    # --------------------------------------------------------
+    # Get phone from session
+    # --------------------------------------------------------
+
+    phone = request.session.get(
+        "pending_login_phone"
+    )
+
+    if not phone:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Your login session has expired. "
+                    "Please start again."
+                )
+            },
+            status=400
+        )
+
+    phone = normalize_customer_phone(phone)
+
+    if len(phone) != 10:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid mobile number."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # Get latest OTP
+    # --------------------------------------------------------
+
+    latest_otp = (
+        CustomerOTP.objects
+        .filter(
+            phone=phone,
+            purpose="LOGIN"
+        )
+        .order_by("-created_at")
+        .first()
+    )
+
+    # --------------------------------------------------------
+    # Maximum resend limit
+    # --------------------------------------------------------
+
+    if latest_otp and latest_otp.resend_count >= 3:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Maximum resend limit reached. "
+                    "Please try again later."
+                )
+            },
+            status=429
+        )
+
+    # --------------------------------------------------------
+    # 30-second cooldown
+    # --------------------------------------------------------
+
+    if latest_otp:
+
+        seconds_since_creation = (
+            timezone.now() -
+            latest_otp.created_at
+        ).total_seconds()
+
+        if seconds_since_creation < 30:
+
+            remaining = max(
+                1,
+                int(30 - seconds_since_creation)
+            )
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        f"Please wait {remaining} "
+                        f"seconds before requesting "
+                        f"another OTP."
+                    )
+                },
+                status=429
+            )
+
+    # --------------------------------------------------------
+    # Generate new OTP
+    # --------------------------------------------------------
+
+    otp = str(
+        random.randint(100000, 999999)
+    )
+
+    expires_at = (
+        timezone.now() +
+        timedelta(minutes=5)
+    )
+
+    previous_resend_count = 0
+
+    if latest_otp:
+        previous_resend_count = (
+            latest_otp.resend_count
+        )
+
+    new_otp = CustomerOTP.objects.create(
+        phone=phone,
+        otp=make_password(otp),
+        purpose="LOGIN",
+        expires_at=expires_at,
+        resend_count=previous_resend_count + 1
+    )
+
+    # --------------------------------------------------------
+    # Send new OTP FIRST
+    # --------------------------------------------------------
+
+    whatsapp_response = send_whatsapp_login_otp(
+        phone,
+        otp
+    )
+
+    # --------------------------------------------------------
+    # WhatsApp failed
+    # --------------------------------------------------------
+
+    if whatsapp_response is None:
+
+        logger.error(
+            "WhatsApp resend OTP failed for %s",
+            phone
+        )
+
+        new_otp.delete()
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Unable to resend OTP right now. "
+                    "Please try again."
+                )
+            },
+            status=500
+        )
+
+    if not whatsapp_response.ok:
+
+        logger.error(
+            "WhatsApp resend OTP failed | "
+            "Status=%s | Response=%s",
+            whatsapp_response.status_code,
+            whatsapp_response.text
+        )
+
+        new_otp.delete()
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Unable to resend OTP right now. "
+                    "Please try again."
+                )
+            },
+            status=502
+        )
+
+    # --------------------------------------------------------
+    # WhatsApp SUCCESS
+    # Now invalidate previous OTPs
+    # --------------------------------------------------------
+
+    CustomerOTP.objects.filter(
+        phone=phone,
+        purpose="LOGIN",
+        is_used=False
+    ).exclude(
+        id=new_otp.id
+    ).update(
+        is_used=True
+    )
+
+    # --------------------------------------------------------
+    # SUCCESS
+    # --------------------------------------------------------
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "OTP resent successfully."
+        }
+    )
