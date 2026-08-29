@@ -553,7 +553,7 @@ class PendingOrder(models.Model):
 
     items_snapshot = models.JSONField(default=dict)
 
-    otp = models.CharField(max_length=6)
+    otp = models.CharField(max_length=128)
     otp_expiry = models.DateTimeField()
     otp_attempts = models.IntegerField(default=0)
 
