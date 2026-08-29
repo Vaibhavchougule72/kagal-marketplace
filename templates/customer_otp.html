@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
     <meta charset="UTF-8">
@@ -11,64 +12,1842 @@
 
     <title>Verify OTP - LOKA</title>
 
+
+    <style>
+
+        /* =====================================================
+           RESET
+        ====================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* =====================================================
+           BODY
+        ====================================================== */
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            color: #202522;
+
+            background:
+                radial-gradient(
+                    circle at 8% 8%,
+                    rgba(23, 107, 77, 0.055),
+                    transparent 23%
+                ),
+                radial-gradient(
+                    circle at 92% 18%,
+                    rgba(245, 166, 35, 0.065),
+                    transparent 23%
+                ),
+                #fafcf9;
+
+            display: flex;
+
+            justify-content: center;
+
+            padding:
+                28px 18px 35px;
+
+            overflow-x: hidden;
+
+            position: relative;
+        }
+
+
+        /* =====================================================
+           BACKGROUND DECORATIONS
+        ====================================================== */
+
+        body::before {
+
+            content: "";
+
+            position: fixed;
+
+            width: 360px;
+            height: 360px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(23, 107, 77, 0.035);
+
+            top: -180px;
+            left: -180px;
+
+            pointer-events: none;
+        }
+
+
+        body::after {
+
+            content: "";
+
+            position: fixed;
+
+            width: 320px;
+            height: 320px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(245, 166, 35, 0.035);
+
+            right: -160px;
+            bottom: -160px;
+
+            pointer-events: none;
+        }
+
+
+        /* =====================================================
+           MAIN CONTAINER
+        ====================================================== */
+
+        body > div {
+
+            width: 100%;
+
+            max-width: 470px;
+
+            position: relative;
+
+            z-index: 2;
+
+            text-align: center;
+        }
+
+
+        /* =====================================================
+           LOGO
+        ====================================================== */
+
+        .loka-logo {
+
+            display: block;
+
+            width: 205px;
+
+            max-width: 68%;
+
+            height: auto;
+
+            object-fit: contain;
+
+            margin:
+                0 auto 7px;
+        }
+
+
+        /* =====================================================
+           TAGLINE
+        ====================================================== */
+
+        .tagline {
+
+            font-size: 18px;
+
+            font-weight: 500;
+
+            color: #292929;
+
+            margin-bottom: 12px;
+
+            line-height: 1.4;
+        }
+
+
+        .tagline-line {
+
+            width: 105px;
+
+            height: 3px;
+
+            margin:
+                0 auto 24px;
+
+            background: #f5a623;
+
+            border-radius: 10px;
+
+            position: relative;
+        }
+
+
+        .tagline-line::after {
+
+            content: "♥";
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            background: #fafcf9;
+
+            color: #f5a623;
+
+            font-size: 17px;
+
+            line-height: 1;
+
+            padding:
+                0 7px;
+        }
+
+
+        /* =====================================================
+           LOGIN / OTP CARD
+        ====================================================== */
+
+        .otp-card {
+
+            width: 100%;
+
+            background: #ffffff;
+
+            border-radius: 28px;
+
+            padding:
+                34px 34px 31px;
+
+            text-align: left;
+
+            border:
+                1px solid rgba(
+                    23,
+                    107,
+                    77,
+                    0.06
+                );
+
+            box-shadow:
+                0 20px 55px
+                rgba(23, 107, 77, 0.10),
+
+                0 5px 18px
+                rgba(0, 0, 0, 0.035);
+        }
+
+
+        /* =====================================================
+           SECURITY ICON
+        ====================================================== */
+
+        .security-icon-large {
+
+            width: 78px;
+            height: 78px;
+
+            margin:
+                0 auto 19px;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #eef7f0,
+                    #f7faf7
+                );
+
+            border:
+                1px solid #e3eee6;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            position: relative;
+
+            font-size: 36px;
+
+            color: #176b4d;
+        }
+
+
+        .security-check {
+
+            position: absolute;
+
+            right: 5px;
+            bottom: 4px;
+
+            width: 28px;
+            height: 28px;
+
+            border-radius: 50%;
+
+            background: #f5a623;
+
+            color: #ffffff;
+
+            border:
+                3px solid #ffffff;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+
+            font-weight: 800;
+        }
+
+
+        /* =====================================================
+           HEADING
+        ====================================================== */
+
+        h1 {
+
+            text-align: center;
+
+            color: #176b4d;
+
+            font-size: 31px;
+
+            font-weight: 750;
+
+            letter-spacing: -0.6px;
+
+            line-height: 1.2;
+
+            margin-bottom: 8px;
+        }
+
+
+        /* =====================================================
+           SUBTITLE
+        ====================================================== */
+
+        .subtitle {
+
+            text-align: center;
+
+            color: #707873;
+
+            font-size: 16px;
+
+            line-height: 1.5;
+
+            margin-bottom: 23px;
+        }
+
+
+        /* =====================================================
+           ORANGE DIVIDER
+        ====================================================== */
+
+        .section-divider {
+
+            height: 1px;
+
+            background:
+                linear-gradient(
+                    to right,
+                    transparent,
+                    #e3e9e5,
+                    transparent
+                );
+
+            position: relative;
+
+            margin:
+                0 0 23px;
+        }
+
+
+        .section-divider::after {
+
+            content: "";
+
+            width: 8px;
+            height: 8px;
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            border-radius: 50%;
+
+            background: #f5a623;
+
+            border:
+                3px solid #ffffff;
+
+            box-sizing:
+                content-box;
+        }
+
+
+        /* =====================================================
+           WHATSAPP MESSAGE BOX
+        ====================================================== */
+
+        .whatsapp-box {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f1f8f2,
+                    #f7faf7
+                );
+
+            border-radius: 15px;
+
+            padding:
+                14px 16px;
+
+            margin-bottom: 25px;
+
+            border:
+                1px solid #e5eee7;
+        }
+
+
+        .whatsapp-icon {
+
+            width: 43px;
+            height: 43px;
+
+            min-width: 43px;
+
+            border-radius: 50%;
+
+            background: #25d366;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #ffffff;
+
+            font-size: 23px;
+
+            font-weight: 700;
+        }
+
+
+        .whatsapp-text {
+
+            font-size: 14px;
+
+            color: #555e59;
+
+            line-height: 1.45;
+        }
+
+
+        .whatsapp-text strong {
+
+            display: block;
+
+            color: #176b4d;
+
+            font-size: 16px;
+
+            margin-top: 1px;
+        }
+
+
+        /* =====================================================
+           OTP LABEL
+        ====================================================== */
+
+        .otp-label {
+
+            display: block;
+
+            font-size: 15px;
+
+            font-weight: 650;
+
+            color: #252a27;
+
+            margin-bottom: 10px;
+        }
+
+
+        /* =====================================================
+           OTP INPUT AREA
+        ====================================================== */
+
+        .otp-input-container {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 70px;
+        }
+
+
+        /*
+            Visual six-box design.
+            The actual #otp input is still one input,
+            so your existing JavaScript continues to work.
+        */
+
+        .otp-boxes {
+
+            position: absolute;
+
+            inset: 0;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(6, 1fr);
+
+            gap: 9px;
+
+            pointer-events: none;
+
+            z-index: 1;
+        }
+
+
+        .otp-box {
+
+            height: 70px;
+
+            border:
+                1.5px solid #d8e1dc;
+
+            border-radius: 14px;
+
+            background: #ffffff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 25px;
+
+            font-weight: 600;
+
+            color: #176b4d;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        /* =====================================================
+           ACTUAL OTP INPUT
+        ====================================================== */
+
+        #otp {
+
+            position: absolute;
+
+            inset: 0;
+
+            z-index: 2;
+
+            width: 100%;
+            height: 100%;
+
+            border: none;
+
+            outline: none;
+
+            background: transparent;
+
+            color: transparent;
+
+            caret-color: #176b4d;
+
+            font-size: 30px;
+
+            letter-spacing: 26px;
+
+            padding-left: 15px;
+
+            text-align: left;
+
+            opacity: 0;
+
+            cursor: text;
+        }
+
+
+        /*
+            Keep the real input clickable
+            while the visual boxes remain visible.
+        */
+
+        #otp:focus {
+
+            opacity: 1;
+        }
+
+
+        .otp-input-container:focus-within
+        .otp-box {
+
+            border-color: #176b4d;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(23, 107, 77, 0.07);
+        }
+
+
+        /* =====================================================
+           VERIFY BUTTON
+        ====================================================== */
+
+        #verifyButton {
+
+            width: 100%;
+
+            height: 58px;
+
+            border: none;
+
+            border-radius: 15px;
+
+            margin-top: 21px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #176b4d,
+                    #0e7952
+                );
+
+            color: #ffffff;
+
+            font-size: 17px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 13px;
+
+            box-shadow:
+                0 9px 21px
+                rgba(23, 107, 77, 0.18);
+
+            transition:
+                transform 0.15s ease,
+                box-shadow 0.15s ease,
+                opacity 0.15s ease;
+        }
+
+
+        #verifyButton:hover {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 12px 25px
+                rgba(23, 107, 77, 0.22);
+        }
+
+
+        #verifyButton:active {
+
+            transform:
+                translateY(1px);
+        }
+
+
+        #verifyButton:disabled {
+
+            opacity: 0.75;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        .button-arrow {
+
+            font-size: 25px;
+
+            line-height: 1;
+
+            margin-top: -2px;
+        }
+
+
+        /* =====================================================
+           MAIN MESSAGE
+        ====================================================== */
+
+        #message {
+
+            min-height: 22px;
+
+            margin-top: 15px;
+
+            text-align: center;
+
+            font-size: 14px;
+
+            font-weight: 500;
+
+            line-height: 1.4;
+
+            color: #707873;
+        }
+
+
+        #message.error {
+
+            color: #c0392b;
+        }
+
+
+        #message.success {
+
+            color: #176b4d;
+        }
+
+
+        /* =====================================================
+           SECURE VERIFICATION
+        ====================================================== */
+
+        .secure-verification {
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            gap: 8px;
+
+            margin-top: 17px;
+
+            color: #7b847f;
+
+            font-size: 13px;
+        }
+
+
+        .small-lock {
+
+            width: 23px;
+            height: 23px;
+
+            border-radius: 50%;
+
+            background: #e9f4ed;
+
+            color: #176b4d;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 12px;
+
+            font-weight: 800;
+        }
+
+
+        /* =====================================================
+           SEPARATOR
+        ====================================================== */
+
+        .resend-separator {
+
+            border: none;
+
+            border-top:
+                1px dashed #dce4df;
+
+            margin:
+                23px 0 20px;
+        }
+
+
+        /* =====================================================
+           RESEND INFORMATION
+        ====================================================== */
+
+        .resend-info {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .resend-icon {
+
+            width: 48px;
+            height: 48px;
+
+            min-width: 48px;
+
+            border-radius: 50%;
+
+            background: #eef6f0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #176b4d;
+
+            font-size: 23px;
+        }
+
+
+        .resend-title {
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            color: #292d2a;
+
+            margin-bottom: 2px;
+        }
+
+
+        .resend-description {
+
+            color: #7a827e;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+        }
+
+
+        /* =====================================================
+           RESEND BUTTON
+        ====================================================== */
+
+        #resendButton {
+
+            width: 100%;
+
+            height: 55px;
+
+            border-radius: 14px;
+
+            border:
+                1.5px solid #176b4d;
+
+            background: #ffffff;
+
+            color: #176b4d;
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                background 0.15s ease,
+                color 0.15s ease,
+                transform 0.15s ease;
+        }
+
+
+        #resendButton:hover:not(:disabled) {
+
+            background: #176b4d;
+
+            color: #ffffff;
+
+            transform:
+                translateY(-1px);
+        }
+
+
+        #resendButton:disabled {
+
+            border-color: #a9c1b2;
+
+            color: #a1b4a8;
+
+            background: #ffffff;
+
+            cursor: not-allowed;
+        }
+
+
+        /* =====================================================
+           RESEND MESSAGE
+        ====================================================== */
+
+        #resendMessage {
+
+            min-height: 20px;
+
+            margin-top: 10px;
+
+            text-align: center;
+
+            color: #707873;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+        }
+
+
+        /* =====================================================
+           OTP VALIDITY
+        ====================================================== */
+
+        .otp-validity {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+            margin-top: 15px;
+
+            color: #176b4d;
+
+            font-size: 13px;
+
+            font-weight: 500;
+        }
+
+
+        .validity-lock {
+
+            font-size: 15px;
+        }
+
+
+        /* =====================================================
+           BENEFITS
+        ====================================================== */
+
+        .benefits {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 10px;
+
+            margin-top: 31px;
+        }
+
+
+        .benefit {
+
+            text-align: center;
+
+            position: relative;
+        }
+
+
+        .benefit:not(:last-child)::after {
+
+            content: "";
+
+            position: absolute;
+
+            right: -5px;
+
+            top: 10px;
+
+            width: 1px;
+
+            height: 48px;
+
+            background: #dce5df;
+        }
+
+
+        .benefit-icon {
+
+            width: 52px;
+            height: 52px;
+
+            margin:
+                0 auto 9px;
+
+            border-radius: 50%;
+
+            background: #eef6f0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 24px;
+        }
+
+
+        .benefit-title {
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            color: #252a27;
+
+            margin-bottom: 3px;
+        }
+
+
+        .benefit-text {
+
+            font-size: 11px;
+
+            color: #858d88;
+
+            line-height: 1.3;
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .footer {
+
+            margin-top: 29px;
+
+            padding-top: 18px;
+
+            border-top:
+                1px solid #e4ebe6;
+
+            text-align: center;
+        }
+
+
+        .footer-text {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #176b4d;
+
+            line-height: 1.5;
+        }
+
+
+        .footer-heart {
+
+            color: #f5a623;
+
+            font-size: 16px;
+
+            margin-left: 3px;
+        }
+
+
+        /* =====================================================
+           LOADING SPINNER
+        ====================================================== */
+
+        .spinner {
+
+            width: 18px;
+            height: 18px;
+
+            border:
+                2px solid
+                rgba(255,255,255,0.35);
+
+            border-top-color: #ffffff;
+
+            border-radius: 50%;
+
+            animation:
+                spin 0.7s linear infinite;
+        }
+
+
+        @keyframes spin {
+
+            to {
+                transform:
+                    rotate(360deg);
+            }
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @media (max-width: 480px) {
+
+            body {
+
+                padding:
+                    21px 14px 28px;
+
+                align-items:
+                    flex-start;
+            }
+
+
+            .loka-logo {
+
+                width: 175px;
+
+                margin-top: 3px;
+            }
+
+
+            .tagline {
+
+                font-size: 16px;
+
+                margin-bottom: 10px;
+            }
+
+
+            .tagline-line {
+
+                margin-bottom: 20px;
+            }
+
+
+            .otp-card {
+
+                border-radius: 23px;
+
+                padding:
+                    28px 21px 25px;
+            }
+
+
+            .security-icon-large {
+
+                width: 68px;
+                height: 68px;
+
+                font-size: 31px;
+
+                margin-bottom: 16px;
+            }
+
+
+            .security-check {
+
+                width: 25px;
+                height: 25px;
+
+                font-size: 12px;
+
+                right: 3px;
+                bottom: 3px;
+            }
+
+
+            h1 {
+
+                font-size: 27px;
+            }
+
+
+            .subtitle {
+
+                font-size: 15px;
+
+                margin-bottom: 20px;
+            }
+
+
+            .whatsapp-box {
+
+                padding:
+                    12px 13px;
+
+                gap: 10px;
+
+                margin-bottom: 21px;
+            }
+
+
+            .whatsapp-icon {
+
+                width: 40px;
+                height: 40px;
+
+                min-width: 40px;
+            }
+
+
+            .whatsapp-text {
+
+                font-size: 13px;
+            }
+
+
+            .whatsapp-text strong {
+
+                font-size: 14px;
+            }
+
+
+            .otp-input-container {
+
+                height: 58px;
+            }
+
+
+            .otp-box {
+
+                height: 58px;
+
+                border-radius: 11px;
+
+                font-size: 21px;
+            }
+
+
+            .otp-boxes {
+
+                gap: 6px;
+            }
+
+
+            #otp {
+
+                padding-left: 10px;
+
+                letter-spacing: 19px;
+            }
+
+
+            #verifyButton {
+
+                height: 55px;
+
+                font-size: 16px;
+            }
+
+
+            #resendButton {
+
+                height: 53px;
+
+                font-size: 15px;
+            }
+
+
+            .benefits {
+
+                margin-top: 26px;
+
+                gap: 5px;
+            }
+
+
+            .benefit-icon {
+
+                width: 46px;
+                height: 46px;
+
+                font-size: 21px;
+            }
+
+
+            .benefit-title {
+
+                font-size: 12px;
+            }
+
+
+            .benefit-text {
+
+                font-size: 10px;
+            }
+
+
+            .footer {
+
+                margin-top: 24px;
+            }
+        }
+
+
+        /* =====================================================
+           VERY SMALL MOBILE
+        ====================================================== */
+
+        @media (max-width: 350px) {
+
+            body {
+
+                padding-left: 10px;
+
+                padding-right: 10px;
+            }
+
+
+            .otp-card {
+
+                padding-left: 16px;
+
+                padding-right: 16px;
+            }
+
+
+            .otp-boxes {
+
+                gap: 4px;
+            }
+
+
+            .otp-box {
+
+                border-radius: 9px;
+            }
+
+
+            #otp {
+
+                letter-spacing: 15px;
+
+                padding-left: 7px;
+            }
+
+
+            .benefit-text {
+
+                display: none;
+            }
+
+
+            .benefit-title {
+
+                font-size: 11px;
+            }
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
+
 <div>
 
-    <h1>VERIFY OTP</h1>
 
-    <p>
-        Enter the 6-digit OTP sent to your WhatsApp.
+    <!-- =====================================================
+         LOKA BRAND
+    ====================================================== -->
+
+    <img
+        src="/static/images/loka-logo.png"
+        alt="LOKA"
+        class="loka-logo"
+    >
+
+
+    <p class="tagline">
+        आपल्यासाठी, आपल्या लोकांसाठी
     </p>
 
-    <form id="otpForm">
 
-        {% csrf_token %}
+    <div class="tagline-line"></div>
 
-        <input
-            type="hidden"
-            id="phone"
-            value="{{ phone }}"
+
+
+    <!-- =====================================================
+         OTP CARD
+    ====================================================== -->
+
+    <div class="otp-card">
+
+
+        <!-- SECURITY ICON -->
+
+        <div class="security-icon-large">
+
+            🔐
+
+            <span class="security-check">
+                ✓
+            </span>
+
+        </div>
+
+
+
+        <!-- HEADING -->
+
+        <h1>
+            VERIFY OTP
+        </h1>
+
+
+        <p class="subtitle">
+            Enter the 6-digit OTP sent to your WhatsApp.
+        </p>
+
+
+
+        <div class="section-divider"></div>
+
+
+
+        <!-- =================================================
+             WHATSAPP MESSAGE
+        ================================================== -->
+
+        <div class="whatsapp-box">
+
+            <div class="whatsapp-icon">
+                ☎
+            </div>
+
+
+            <div class="whatsapp-text">
+
+                We have sent a 6-digit OTP to
+
+                <strong>
+                    +91 {{ phone }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             OTP FORM
+        ================================================== -->
+
+        <form id="otpForm">
+
+            {% csrf_token %}
+
+
+            <input
+                type="hidden"
+                id="phone"
+                value="{{ phone }}"
+            >
+
+
+            <label class="otp-label">
+                Enter OTP
+            </label>
+
+
+            <!--
+                The original single OTP input is preserved.
+                The six boxes are only the visual layer.
+            -->
+
+            <div class="otp-input-container">
+
+
+                <div class="otp-boxes">
+
+                    <div class="otp-box" id="box1"></div>
+
+                    <div class="otp-box" id="box2"></div>
+
+                    <div class="otp-box" id="box3"></div>
+
+                    <div class="otp-box" id="box4"></div>
+
+                    <div class="otp-box" id="box5"></div>
+
+                    <div class="otp-box" id="box6"></div>
+
+                </div>
+
+
+                <input
+                    type="tel"
+                    id="otp"
+                    maxlength="6"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    placeholder="Enter OTP"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- VERIFY BUTTON -->
+
+            <button
+                type="submit"
+                id="verifyButton"
+            >
+
+                <span id="verifyButtonText">
+                    Verify OTP
+                </span>
+
+                <span
+                    class="button-arrow"
+                    id="verifyArrow"
+                >
+                    →
+                </span>
+
+            </button>
+
+
+        </form>
+
+
+
+        <!-- =================================================
+             MESSAGE
+        ================================================== -->
+
+        <div id="message"></div>
+
+
+
+        <!-- SECURE MESSAGE -->
+
+        <div class="secure-verification">
+
+            <span class="small-lock">
+                ✓
+            </span>
+
+            <span>
+                Your verification is secure
+            </span>
+
+        </div>
+
+
+
+        <hr class="resend-separator">
+
+
+
+        <!-- =================================================
+             RESEND SECTION
+        ================================================== -->
+
+        <div class="resend-info">
+
+
+            <div class="resend-icon">
+                ↻
+            </div>
+
+
+            <div>
+
+                <div class="resend-title">
+                    Didn't receive the OTP?
+                </div>
+
+                <div class="resend-description">
+                    You can request a new OTP after the timer ends.
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- RESEND BUTTON -->
+
+        <button
+            type="button"
+            id="resendButton"
+            disabled
         >
-
-        <input 
-            type="tel" 
-            id="otp" 
-            maxlength="6" 
-            inputmode="numeric"
-            autocomplete="one-time-code"
-            pattern="[0-9]{6}"
-            placeholder="Enter OTP" 
-            required 
-        >
-
-        <button type="submit">
-            Verify OTP
+            Resend OTP
         </button>
 
-    </form>
 
-    <div id="message"></div>
+        <p id="resendMessage"></p>
 
-    <button
-        type="button"
-        id="resendButton"
-        disabled
-    >
-        Resend OTP
-    </button>
 
-    <p id="resendMessage"></p>
+
+        <!-- OTP VALIDITY -->
+
+        <div class="otp-validity">
+
+            <span class="validity-lock">
+                🔒
+            </span>
+
+            <span>
+                OTP is valid for 2 minutes
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         BENEFITS
+    ====================================================== -->
+
+    <div class="benefits">
+
+
+        <div class="benefit">
+
+            <div class="benefit-icon">
+                🛵
+            </div>
+
+            <div class="benefit-title">
+                Fast Delivery
+            </div>
+
+            <div class="benefit-text">
+                At your doorstep
+            </div>
+
+        </div>
+
+
+
+        <div class="benefit">
+
+            <div class="benefit-icon">
+                🍽️
+            </div>
+
+            <div class="benefit-title">
+                Best Food
+            </div>
+
+            <div class="benefit-text">
+                From local stores
+            </div>
+
+        </div>
+
+
+
+        <div class="benefit">
+
+            <div class="benefit-icon">
+                👥
+            </div>
+
+            <div class="benefit-title">
+                For Our People
+            </div>
+
+            <div class="benefit-text">
+                By our community
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="footer">
+
+        <div class="footer-text">
+
+            LOKA आहे आपलं, सेवा आहे आपल्यासाठी
+
+            <span class="footer-heart">
+                ♥
+            </span>
+
+        </div>
+
+    </div>
+
 
 </div>
 
 
+
 <script>
+
+
+/* ============================================================
+   ELEMENTS
+============================================================ */
 
 const form =
     document.getElementById("otpForm");
+
+
+const otpInput =
+    document.getElementById("otp");
+
+
+const verifyButton =
+    document.getElementById("verifyButton");
+
+
+const verifyButtonText =
+    document.getElementById("verifyButtonText");
+
+
+const verifyArrow =
+    document.getElementById("verifyArrow");
+
+
+const message =
+    document.getElementById("message");
+
+
+const resendButton =
+    document.getElementById("resendButton");
+
+
+const resendMessage =
+    document.getElementById("resendMessage");
+
+
+
+/* ============================================================
+   OTP VISUAL BOXES
+============================================================ */
+
+const otpBoxes = [
+
+    document.getElementById("box1"),
+
+    document.getElementById("box2"),
+
+    document.getElementById("box3"),
+
+    document.getElementById("box4"),
+
+    document.getElementById("box5"),
+
+    document.getElementById("box6")
+
+];
+
+
+function updateOtpBoxes() {
+
+    const value =
+        otpInput.value
+            .replace(/\D/g, "")
+            .slice(0, 6);
+
+
+    otpInput.value = value;
+
+
+    otpBoxes.forEach(
+        (box, index) => {
+
+            box.innerText =
+                value[index] || "";
+
+        }
+    );
+
+}
+
+
+otpInput.addEventListener(
+    "input",
+    updateOtpBoxes
+);
+
+
+otpInput.addEventListener(
+    "focus",
+    updateOtpBoxes
+);
+
+
+
+/* ============================================================
+   OTP FORM SUBMIT
+============================================================ */
 
 form.addEventListener(
     "submit",
@@ -76,37 +1855,94 @@ form.addEventListener(
 
         event.preventDefault();
 
+
         const phone =
-            document.getElementById("phone").value;
+            document.getElementById(
+                "phone"
+            ).value;
+
 
         const otp =
-            document.getElementById("otp").value.trim();
+            otpInput.value.trim();
+
 
         const csrfToken =
             document.querySelector(
                 "[name=csrfmiddlewaretoken]"
             ).value;
 
-        const message =
-            document.getElementById("message");
+
+
+        /* ============================================
+           VALIDATE OTP
+        ============================================= */
+
+        if (!/^\d{6}$/.test(otp)) {
+
+            message.innerText =
+                "Please enter the 6-digit OTP.";
+
+            message.className =
+                "error";
+
+            otpInput.focus();
+
+            return;
+        }
+
+
+
+        /* ============================================
+           LOADING STATE
+        ============================================= */
 
         message.innerText =
             "Verifying...";
 
+        message.className =
+            "";
+
+
+        verifyButton.disabled =
+            true;
+
+
+        verifyButtonText.innerText =
+            "Verifying...";
+
+
+        verifyArrow.innerHTML =
+            '<span class="spinner"></span>';
+
+
+
+        /* ============================================
+           FORM DATA
+        ============================================= */
+
         const formData =
             new FormData();
+
 
         formData.append(
             "phone",
             phone
         );
 
+
         formData.append(
             "otp",
             otp
         );
 
+
+
         try {
+
+
+            /* ========================================
+               VERIFY OTP REQUEST
+            ========================================= */
 
             const response =
                 await fetch(
@@ -123,124 +1959,244 @@ form.addEventListener(
                     }
                 );
 
+
             const data =
                 await response.json();
 
+
+
+            /* ========================================
+               SUCCESS
+            ========================================= */
+
             if (data.success) {
+
+
+                message.innerText =
+                    "OTP verified successfully.";
+
+                message.className =
+                    "success";
+
 
                 window.location.href =
                     data.redirect_url;
 
-            } else {
+
+            }
+
+
+            /* ========================================
+               INVALID OTP
+            ========================================= */
+
+            else {
+
 
                 message.innerText =
                     data.message ||
                     "Invalid OTP.";
 
+                message.className =
+                    "error";
+
+
+                verifyButton.disabled =
+                    false;
+
+
+                verifyButtonText.innerText =
+                    "Verify OTP";
+
+
+                verifyArrow.innerText =
+                    "→";
+
             }
 
-        } catch (error) {
+
+        }
+
+
+        /* ============================================
+           NETWORK ERROR
+        ============================================= */
+
+        catch (error) {
+
 
             console.error(error);
 
+
             message.innerText =
-                "Something went wrong.";
+                "Something went wrong. Please try again.";
+
+            message.className =
+                "error";
+
+
+            verifyButton.disabled =
+                false;
+
+
+            verifyButtonText.innerText =
+                "Verify OTP";
+
+
+            verifyArrow.innerText =
+                "→";
 
         }
 
     }
 );
 
-const resendButton =
-    document.getElementById("resendButton");
 
-const resendMessage =
-    document.getElementById("resendMessage");
+
+/* ============================================================
+   RESEND VARIABLES
+============================================================ */
 
 let countdownTimer = null;
+
 let countdown = 30;
 
 
-// ============================================================
-// RESEND COUNTDOWN
-// ============================================================
 
-function startResendCountdown(seconds = 30) {
+/* ============================================================
+   RESEND COUNTDOWN
+============================================================ */
 
-    // Clear any existing timer
+function startResendCountdown(
+    seconds = 30
+) {
+
+
+    /* Clear existing timer */
+
     if (countdownTimer) {
-        clearInterval(countdownTimer);
+
+        clearInterval(
+            countdownTimer
+        );
+
     }
+
 
     countdown = seconds;
 
-    resendButton.disabled = true;
+
+    resendButton.disabled =
+        true;
+
 
     resendButton.innerText =
         `Resend OTP (${countdown}s)`;
 
-    countdownTimer = setInterval(() => {
 
-        countdown--;
+    countdownTimer =
+        setInterval(
+            () => {
 
-        if (countdown <= 0) {
 
-            clearInterval(countdownTimer);
+                countdown--;
 
-            countdownTimer = null;
 
-            resendButton.disabled = false;
+                if (countdown <= 0) {
 
-            resendButton.innerText =
-                "Resend OTP";
 
-            return;
-        }
+                    clearInterval(
+                        countdownTimer
+                    );
 
-        resendButton.innerText =
-            `Resend OTP (${countdown}s)`;
 
-    }, 1000);
+                    countdownTimer =
+                        null;
+
+
+                    resendButton.disabled =
+                        false;
+
+
+                    resendButton.innerText =
+                        "Resend OTP";
+
+
+                    return;
+
+                }
+
+
+                resendButton.innerText =
+                    `Resend OTP (${countdown}s)`;
+
+
+            },
+            1000
+        );
+
 }
 
 
-// ============================================================
-// START INITIAL 30 SECOND COUNTDOWN
-// ============================================================
+
+/* ============================================================
+   START INITIAL COUNTDOWN
+============================================================ */
 
 startResendCountdown(30);
 
 
-// ============================================================
-// RESEND OTP
-// ============================================================
+
+/* ============================================================
+   RESEND OTP
+============================================================ */
 
 resendButton.addEventListener(
     "click",
     async function() {
 
-        resendButton.disabled = true;
+
+        resendButton.disabled =
+            true;
+
+
+        resendButton.innerText =
+            "Sending...";
+
 
         resendMessage.innerText =
             "Sending new OTP...";
 
+
         const phone =
-            document.getElementById("phone").value;
+            document.getElementById(
+                "phone"
+            ).value;
+
 
         const csrfToken =
             document.querySelector(
                 "[name=csrfmiddlewaretoken]"
             ).value;
 
+
         const formData =
             new FormData();
+
 
         formData.append(
             "phone",
             phone
         );
 
+
+
         try {
+
+
+            /* ========================================
+               RESEND REQUEST
+            ========================================= */
 
             const response =
                 await fetch(
@@ -257,41 +2213,89 @@ resendButton.addEventListener(
                     }
                 );
 
+
             const data =
                 await response.json();
+
 
             resendMessage.innerText =
                 data.message || "";
 
+
+
+            /* ========================================
+               SUCCESS
+            ========================================= */
+
             if (data.success) {
 
-                // Start a fresh 30-second cooldown
-                startResendCountdown(30);
 
-            } else {
+                startResendCountdown(
+                    30
+                );
 
-                resendButton.disabled = false;
+
+                message.innerText =
+                    "New OTP sent successfully.";
+
+                message.className =
+                    "success";
+
+
+            }
+
+
+            /* ========================================
+               FAILED
+            ========================================= */
+
+            else {
+
+
+                resendButton.disabled =
+                    false;
+
 
                 resendButton.innerText =
                     "Resend OTP";
+
+
             }
 
-        } catch (error) {
+
+        }
+
+
+        /* ============================================
+           RESEND ERROR
+        ============================================= */
+
+        catch (error) {
+
 
             console.error(error);
+
 
             resendMessage.innerText =
                 "Unable to resend OTP. Please try again.";
 
-            resendButton.disabled = false;
+
+            resendButton.disabled =
+                false;
+
 
             resendButton.innerText =
                 "Resend OTP";
+
         }
+
     }
 );
 
+
 </script>
 
+
 </body>
+
 </html>

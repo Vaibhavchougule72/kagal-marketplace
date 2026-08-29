@@ -12,59 +12,1341 @@
 
     <title>Create LOKA Account</title>
 
+
+    <style>
+
+        /* =====================================================
+           RESET
+        ====================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* =====================================================
+           BODY
+        ====================================================== */
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            color: #202522;
+
+            background:
+                radial-gradient(
+                    circle at 8% 8%,
+                    rgba(23, 107, 77, 0.055),
+                    transparent 23%
+                ),
+                radial-gradient(
+                    circle at 92% 18%,
+                    rgba(245, 166, 35, 0.065),
+                    transparent 23%
+                ),
+                #fafcf9;
+
+            display: flex;
+
+            justify-content: center;
+
+            padding:
+                28px 18px 35px;
+
+            overflow-x: hidden;
+
+            position: relative;
+        }
+
+
+        /* =====================================================
+           BACKGROUND CIRCLES
+        ====================================================== */
+
+        body::before {
+
+            content: "";
+
+            position: fixed;
+
+            width: 360px;
+            height: 360px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(23, 107, 77, 0.035);
+
+            top: -180px;
+            left: -180px;
+
+            pointer-events: none;
+        }
+
+
+        body::after {
+
+            content: "";
+
+            position: fixed;
+
+            width: 320px;
+            height: 320px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(245, 166, 35, 0.035);
+
+            right: -160px;
+            bottom: -160px;
+
+            pointer-events: none;
+        }
+
+
+        /* =====================================================
+           MAIN CONTAINER
+        ====================================================== */
+
+        body > div {
+
+            width: 100%;
+
+            max-width: 470px;
+
+            position: relative;
+
+            z-index: 2;
+
+            text-align: center;
+        }
+
+
+        /* =====================================================
+           LOKA LOGO
+        ====================================================== */
+
+        .loka-logo {
+
+            display: block;
+
+            width: 205px;
+
+            max-width: 68%;
+
+            height: auto;
+
+            object-fit: contain;
+
+            margin:
+                0 auto 7px;
+        }
+
+
+        /* =====================================================
+           TAGLINE
+        ====================================================== */
+
+        .tagline {
+
+            font-size: 18px;
+
+            font-weight: 500;
+
+            color: #292929;
+
+            margin-bottom: 12px;
+
+            line-height: 1.4;
+        }
+
+
+        .tagline-line {
+
+            width: 105px;
+
+            height: 3px;
+
+            margin:
+                0 auto 24px;
+
+            background: #f5a623;
+
+            border-radius: 10px;
+
+            position: relative;
+        }
+
+
+        .tagline-line::after {
+
+            content: "♥";
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            background: #fafcf9;
+
+            color: #f5a623;
+
+            font-size: 17px;
+
+            line-height: 1;
+
+            padding:
+                0 7px;
+        }
+
+
+        /* =====================================================
+           ACCOUNT CARD
+        ====================================================== */
+
+        .account-card {
+
+            width: 100%;
+
+            background: #ffffff;
+
+            border-radius: 28px;
+
+            padding:
+                34px 34px 31px;
+
+            text-align: left;
+
+            border:
+                1px solid
+                rgba(23, 107, 77, 0.06);
+
+            box-shadow:
+                0 20px 55px
+                rgba(23, 107, 77, 0.10),
+
+                0 5px 18px
+                rgba(0, 0, 0, 0.035);
+        }
+
+
+        /* =====================================================
+           ACCOUNT ICON
+        ====================================================== */
+
+        .account-icon {
+
+            width: 78px;
+            height: 78px;
+
+            margin:
+                0 auto 19px;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #eef7f0,
+                    #f7faf7
+                );
+
+            border:
+                1px solid #e3eee6;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            position: relative;
+
+            font-size: 36px;
+
+            color: #176b4d;
+        }
+
+
+        .plus-icon {
+
+            position: absolute;
+
+            right: 4px;
+            bottom: 4px;
+
+            width: 29px;
+            height: 29px;
+
+            border-radius: 50%;
+
+            background: #f5a623;
+
+            color: #ffffff;
+
+            border:
+                3px solid #ffffff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 18px;
+
+            font-weight: 700;
+        }
+
+
+        /* =====================================================
+           HEADING
+        ====================================================== */
+
+        h1 {
+
+            text-align: center;
+
+            color: #176b4d;
+
+            font-size: 30px;
+
+            font-weight: 750;
+
+            letter-spacing: -0.6px;
+
+            line-height: 1.2;
+
+            margin-bottom: 8px;
+        }
+
+
+        /* =====================================================
+           DIVIDER
+        ====================================================== */
+
+        .section-divider {
+
+            height: 1px;
+
+            background:
+                linear-gradient(
+                    to right,
+                    transparent,
+                    #e3e9e5,
+                    transparent
+                );
+
+            position: relative;
+
+            margin:
+                0 0 22px;
+        }
+
+
+        .section-divider::after {
+
+            content: "";
+
+            width: 8px;
+            height: 8px;
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            border-radius: 50%;
+
+            background: #f5a623;
+
+            border:
+                3px solid #ffffff;
+
+            box-sizing:
+                content-box;
+        }
+
+
+        /* =====================================================
+           MOBILE NUMBER BOX
+        ====================================================== */
+
+        .mobile-box {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f1f8f2,
+                    #f7faf7
+                );
+
+            border-radius: 15px;
+
+            padding:
+                14px 16px;
+
+            margin-bottom: 25px;
+
+            border:
+                1px solid #e5eee7;
+        }
+
+
+        .mobile-icon {
+
+            width: 43px;
+            height: 43px;
+
+            min-width: 43px;
+
+            border-radius: 50%;
+
+            background: #176b4d;
+
+            color: #ffffff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 20px;
+        }
+
+
+        .mobile-label {
+
+            font-size: 13px;
+
+            color: #707873;
+
+            margin-bottom: 2px;
+        }
+
+
+        .mobile-number {
+
+            color: #176b4d;
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            word-break: break-word;
+        }
+
+
+        /* =====================================================
+           FORM
+        ====================================================== */
+
+        form {
+            width: 100%;
+        }
+
+
+        /* =====================================================
+           LABELS
+        ====================================================== */
+
+        label {
+
+            display: block;
+
+            font-size: 15px;
+
+            font-weight: 650;
+
+            color: #252a27;
+
+            margin-bottom: 9px;
+        }
+
+
+        label .optional {
+
+            color: #8a928d;
+
+            font-size: 13px;
+
+            font-weight: 500;
+        }
+
+
+        /* =====================================================
+           INPUT GROUP
+        ====================================================== */
+
+        .input-group {
+
+            position: relative;
+
+            width: 100%;
+
+            margin-bottom: 19px;
+        }
+
+
+        .input-icon {
+
+            position: absolute;
+
+            left: 16px;
+
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color: #176b4d;
+
+            font-size: 19px;
+
+            z-index: 2;
+        }
+
+
+        input {
+
+            width: 100%;
+
+            height: 58px;
+
+            border:
+                1.5px solid #d7e2dc;
+
+            border-radius: 15px;
+
+            background: #ffffff;
+
+            outline: none;
+
+            padding:
+                0 16px 0 48px;
+
+            color: #202522;
+
+            font-size: 16px;
+
+            font-family: inherit;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        input::placeholder {
+
+            color: #a1aaa5;
+        }
+
+
+        input:focus {
+
+            border-color: #176b4d;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(23, 107, 77, 0.08);
+        }
+
+
+        /* =====================================================
+           ERROR MESSAGE
+        ====================================================== */
+
+        .error-message {
+
+            margin-bottom: 18px;
+
+            padding:
+                11px 13px;
+
+            border-radius: 12px;
+
+            background: #fff2f0;
+
+            border:
+                1px solid #f4d1cc;
+
+            color: #c0392b;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+
+            text-align: left;
+        }
+
+
+        /* =====================================================
+           CREATE ACCOUNT BUTTON
+        ====================================================== */
+
+        .create-button {
+
+            width: 100%;
+
+            height: 58px;
+
+            margin-top: 2px;
+
+            border: none;
+
+            border-radius: 15px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #176b4d,
+                    #0e7952
+                );
+
+            color: #ffffff;
+
+            font-size: 17px;
+
+            font-weight: 700;
+
+            font-family: inherit;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 13px;
+
+            box-shadow:
+                0 9px 21px
+                rgba(23, 107, 77, 0.18);
+
+            transition:
+                transform 0.15s ease,
+                box-shadow 0.15s ease;
+        }
+
+
+        .create-button:hover {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 12px 25px
+                rgba(23, 107, 77, 0.22);
+        }
+
+
+        .create-button:active {
+
+            transform:
+                translateY(1px);
+        }
+
+
+        .button-arrow {
+
+            font-size: 25px;
+
+            line-height: 1;
+
+            margin-top: -2px;
+        }
+
+
+        /* =====================================================
+           SECURITY MESSAGE
+        ====================================================== */
+
+        .security-note {
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            gap: 8px;
+
+            margin-top: 19px;
+
+            color: #7b847f;
+
+            font-size: 13px;
+        }
+
+
+        .security-icon {
+
+            width: 23px;
+            height: 23px;
+
+            border-radius: 50%;
+
+            background: #e9f4ed;
+
+            color: #176b4d;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 12px;
+
+            font-weight: 800;
+        }
+
+
+        /* =====================================================
+           BENEFITS
+        ====================================================== */
+
+        .benefits {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 10px;
+
+            margin-top: 31px;
+        }
+
+
+        .benefit {
+
+            text-align: center;
+
+            position: relative;
+        }
+
+
+        .benefit:not(:last-child)::after {
+
+            content: "";
+
+            position: absolute;
+
+            right: -5px;
+
+            top: 10px;
+
+            width: 1px;
+
+            height: 48px;
+
+            background: #dce5df;
+        }
+
+
+        .benefit-icon {
+
+            width: 52px;
+            height: 52px;
+
+            margin:
+                0 auto 9px;
+
+            border-radius: 50%;
+
+            background: #eef6f0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 24px;
+        }
+
+
+        .benefit-title {
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            color: #252a27;
+
+            margin-bottom: 3px;
+        }
+
+
+        .benefit-text {
+
+            font-size: 11px;
+
+            color: #858d88;
+
+            line-height: 1.3;
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .footer {
+
+            margin-top: 29px;
+
+            padding-top: 18px;
+
+            border-top:
+                1px solid #e4ebe6;
+
+            text-align: center;
+        }
+
+
+        .footer-text {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #176b4d;
+
+            line-height: 1.5;
+        }
+
+
+        .footer-heart {
+
+            color: #f5a623;
+
+            font-size: 16px;
+
+            margin-left: 3px;
+        }
+
+
+        /* =====================================================
+           MOBILE RESPONSIVE
+        ====================================================== */
+
+        @media (max-width: 480px) {
+
+            body {
+
+                padding:
+                    21px 14px 28px;
+
+                align-items:
+                    flex-start;
+            }
+
+
+            .loka-logo {
+
+                width: 175px;
+
+                margin-top: 3px;
+            }
+
+
+            .tagline {
+
+                font-size: 16px;
+
+                margin-bottom: 10px;
+            }
+
+
+            .tagline-line {
+
+                margin-bottom: 20px;
+            }
+
+
+            .account-card {
+
+                border-radius: 23px;
+
+                padding:
+                    28px 21px 25px;
+            }
+
+
+            .account-icon {
+
+                width: 68px;
+                height: 68px;
+
+                font-size: 31px;
+
+                margin-bottom: 16px;
+            }
+
+
+            .plus-icon {
+
+                width: 25px;
+                height: 25px;
+
+                font-size: 15px;
+            }
+
+
+            h1 {
+
+                font-size: 27px;
+            }
+
+
+            .mobile-box {
+
+                padding:
+                    12px 13px;
+
+                gap: 10px;
+
+                margin-bottom: 21px;
+            }
+
+
+            .mobile-icon {
+
+                width: 40px;
+                height: 40px;
+
+                min-width: 40px;
+            }
+
+
+            .mobile-number {
+
+                font-size: 14px;
+            }
+
+
+            input {
+
+                height: 55px;
+
+                font-size: 15px;
+            }
+
+
+            .create-button {
+
+                height: 55px;
+
+                font-size: 16px;
+            }
+
+
+            .benefits {
+
+                margin-top: 26px;
+
+                gap: 5px;
+            }
+
+
+            .benefit-icon {
+
+                width: 46px;
+                height: 46px;
+
+                font-size: 21px;
+            }
+
+
+            .benefit-title {
+
+                font-size: 12px;
+            }
+
+
+            .benefit-text {
+
+                font-size: 10px;
+            }
+
+
+            .footer {
+
+                margin-top: 24px;
+            }
+
+        }
+
+
+        /* =====================================================
+           VERY SMALL DEVICES
+        ====================================================== */
+
+        @media (max-width: 350px) {
+
+            body {
+
+                padding-left: 10px;
+
+                padding-right: 10px;
+            }
+
+
+            .account-card {
+
+                padding-left: 16px;
+
+                padding-right: 16px;
+            }
+
+
+            .benefit-text {
+
+                display: none;
+            }
+
+
+            .benefit-title {
+
+                font-size: 11px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
+
 <div>
 
-    <h1>CREATE YOUR LOKA ACCOUNT</h1>
 
-    <p>
-        Mobile:
-        <strong>{{ phone }}</strong>
+    <!-- =====================================================
+         LOKA BRAND
+    ====================================================== -->
+
+    <img
+        src="/static/images/loka-logo.png"
+        alt="LOKA"
+        class="loka-logo"
+    >
+
+
+    <p class="tagline">
+        आपल्यासाठी, आपल्या लोकांसाठी
     </p>
 
-    {% if error %}
-        <p>{{ error }}</p>
-    {% endif %}
 
-    <form method="POST">
+    <div class="tagline-line"></div>
 
-        {% csrf_token %}
 
-        <label>
-            Your Name
-        </label>
 
-        <input
-            type="text"
-            name="name"
-            maxlength="150"
-            placeholder="Enter your name"
-            required
-        >
+    <!-- =====================================================
+         ACCOUNT CARD
+    ====================================================== -->
 
-        <br><br>
+    <div class="account-card">
 
-        <label>
-            Email
-            <small>(Optional)</small>
-        </label>
 
-        <input
-            type="email"
-            name="email"
-            placeholder="Enter email"
-        >
+        <!-- ACCOUNT ICON -->
 
-        <br><br>
+        <div class="account-icon">
 
-        <button type="submit">
-            Create Account
-        </button>
+            👤
 
-    </form>
+            <span class="plus-icon">
+                +
+            </span>
+
+        </div>
+
+
+
+        <!-- HEADING -->
+
+        <h1>
+            CREATE YOUR<br>
+            LOKA ACCOUNT
+        </h1>
+
+
+
+        <div class="section-divider"></div>
+
+
+
+        <!-- =================================================
+             MOBILE NUMBER
+        ================================================== -->
+
+        <div class="mobile-box">
+
+
+            <div class="mobile-icon">
+                ☎
+            </div>
+
+
+            <div>
+
+                <div class="mobile-label">
+                    Mobile Number
+                </div>
+
+                <div class="mobile-number">
+                    +91 {{ phone }}
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             ERROR
+        ================================================== -->
+
+        {% if error %}
+
+            <div class="error-message">
+
+                {{ error }}
+
+            </div>
+
+        {% endif %}
+
+
+
+        <!-- =================================================
+             ACCOUNT FORM
+        ================================================== -->
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+
+
+            <!-- NAME -->
+
+            <label for="name">
+                Your Name
+            </label>
+
+
+            <div class="input-group">
+
+                <span class="input-icon">
+                    ♙
+                </span>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    maxlength="150"
+                    placeholder="Enter your name"
+                    autocomplete="name"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- EMAIL -->
+
+            <label for="email">
+
+                Email
+
+                <span class="optional">
+                    (Optional)
+                </span>
+
+            </label>
+
+
+            <div class="input-group">
+
+                <span class="input-icon">
+                    ✉
+                </span>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter email"
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+
+            <!-- CREATE ACCOUNT -->
+
+            <button
+                type="submit"
+                class="create-button"
+            >
+
+                <span>
+                    Create Account
+                </span>
+
+                <span class="button-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+        </form>
+
+
+
+        <!-- =================================================
+             SECURITY
+        ================================================== -->
+
+        <div class="security-note">
+
+            <span class="security-icon">
+                ✓
+            </span>
+
+            <span>
+                Your data is safe with us
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         BENEFITS
+    ====================================================== -->
+
+    <div class="benefits">
+
+
+        <div class="benefit">
+
+            <div class="benefit-icon">
+                🛵
+            </div>
+
+            <div class="benefit-title">
+                Fast Delivery
+            </div>
+
+            <div class="benefit-text">
+                At your doorstep
+            </div>
+
+        </div>
+
+
+
+        <div class="benefit">
+
+            <div class="benefit-icon">
+                🍽️
+            </div>
+
+            <div class="benefit-title">
+                Best Food
+            </div>
+
+            <div class="benefit-text">
+                From local stores
+            </div>
+
+        </div>
+
+
+
+        <div class="benefit">
+
+            <div class="benefit-icon">
+                👥
+            </div>
+
+            <div class="benefit-title">
+                For Our People
+            </div>
+
+            <div class="benefit-text">
+                By our community
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="footer">
+
+        <div class="footer-text">
+
+            LOKA आहे आपलं, सेवा आहे आपल्यासाठी
+
+            <span class="footer-heart">
+                ♥
+            </span>
+
+        </div>
+
+    </div>
+
 
 </div>
 
