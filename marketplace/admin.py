@@ -12,7 +12,7 @@ from .models import CheckoutLead
 admin.site.register(CheckoutLead)
 from .models import OfferSlider
 import csv
-
+from .models import Customer
 from django.http import HttpResponse
 from .models import Order
 from .models import Complaint, ComplaintPhoto
@@ -872,3 +872,28 @@ class ComplaintAdmin(admin.ModelAdmin):
             obj.resolved_at = timezone.now()
 
         super().save_model(request, obj, form, change)
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "name",
+        "phone",
+        "email",
+    )
+
+    search_fields = (
+        "name",
+        "phone",
+        "email",
+    )
+
+    list_filter = (
+        "is_active",
+        "is_verified",
+    )
+
+    ordering = (
+        "-created_at",
+    )
