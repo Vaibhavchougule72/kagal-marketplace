@@ -28,9 +28,6 @@ from django.shortcuts import redirect
 
 
 class CustomerAuthenticationMiddleware:
-    """
-    Require LOKA customer login for customer-facing pages.
-    """
 
     EXEMPT_PATHS = [
         "/login/",
@@ -40,14 +37,10 @@ class CustomerAuthenticationMiddleware:
         "/register/",
         "/logout/",
         "/resend-login-otp/",
-
-        # Django/system paths
         "/admin/",
         "/static/",
         "/media/",
         "/.well-known/",
-
-        # Payment webhook must remain publicly accessible
         "/razorpay-webhook/",
     ]
 
@@ -58,21 +51,31 @@ class CustomerAuthenticationMiddleware:
 
         path = request.path
 
-        # Allow login/authentication/system paths
-        if any(
-            path.startswith(exempt)
-            for exempt in self.EXEMPT_PATHS
-        ):
+        if any(path.startswith(path_prefix)
+               for path_prefix in self.EXEMPT_PATHS):
             return self.get_response(request)
 
-        # Check LOKA customer session
-        customer_id = request.session.get(
-            "customer_id"
-        )
+        customer_id = request.session.get("customer_id")
 
-        # Customer is not logged in
         if not customer_id:
             return redirect("customer_login")
 
-        # Customer is logged in
         return self.get_response(request)
+
+
+class CustomerNoCacheMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+
+        response = self.get_response(request)
+
+        response["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, max-age=0"
+        )
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+
+        return response

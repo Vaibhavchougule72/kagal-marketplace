@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.gzip.GZipMiddleware',
+    'marketplace.middleware.CustomerNoCacheMiddleware',
     'marketplace.middleware.CustomerAuthenticationMiddleware',
     
 ]

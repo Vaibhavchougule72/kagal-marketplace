@@ -7057,7 +7057,7 @@ def customer_logout(request):
     request.session.pop("pending_login_phone", None)
 
     request.session.modified = True
-
+    request.session.flush()
     return redirect("customer_login")
 
 def customer_register(request):
