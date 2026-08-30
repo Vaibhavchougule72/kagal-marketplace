@@ -52,6 +52,14 @@ from .services.whatsapp_service import send_login_otp as send_whatsapp_login_otp
 
 MAX_CART_QTY = 50
 
+# =====================================================
+# CUSTOMER LOGIN OTP SECURITY
+# =====================================================
+
+LOGIN_OTP_COOLDOWN_SECONDS = 30
+LOGIN_OTP_MAX_SENDS = 4
+LOGIN_OTP_BLOCK_HOURS = 6
+
 def safe_qty(value):
 
     try:
@@ -6650,20 +6658,80 @@ def send_login_otp(request):
         .first()
     )
 
-    # --------------------------------------------------------
-    # 30-second cooldown
-    # --------------------------------------------------------
+    # ========================================================
+    # 6-HOUR OTP LIMIT
+    # ========================================================
+
+    if latest_otp and latest_otp.resend_count >= LOGIN_OTP_MAX_SENDS - 1:
+
+        block_until = (
+            latest_otp.created_at
+            + timedelta(hours=LOGIN_OTP_BLOCK_HOURS)
+        )
+
+        now = timezone.now()
+
+        if now < block_until:
+
+            remaining_seconds = int(
+                (block_until - now).total_seconds()
+            )
+
+            remaining_hours = remaining_seconds // 3600
+
+            remaining_minutes = (
+                remaining_seconds % 3600
+            ) // 60
+
+            if remaining_hours > 0:
+                wait_message = (
+                    f"{remaining_hours} hour(s) "
+                    f"{remaining_minutes} minute(s)"
+                )
+            else:
+                wait_message = (
+                    f"{remaining_minutes} minute(s)"
+                )
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Maximum OTP limit reached. "
+                        f"Please try again after {wait_message}."
+                    ),
+                    "otp_blocked": True,
+                    "retry_after": remaining_seconds
+                },
+                status=429
+            )
+
+        # ----------------------------------------------------
+        # 6 HOURS PASSED → RESET OTP COUNTER
+        # ----------------------------------------------------
+
+        latest_otp = None
+
+
+    # ========================================================
+    # 30-SECOND COOLDOWN
+    # ========================================================
 
     if latest_otp:
+
         seconds_since_creation = (
             timezone.now() -
             latest_otp.created_at
         ).total_seconds()
 
-        if seconds_since_creation < 30:
+        if seconds_since_creation < LOGIN_OTP_COOLDOWN_SECONDS:
+
             remaining = max(
                 1,
-                int(30 - seconds_since_creation)
+                int(
+                    LOGIN_OTP_COOLDOWN_SECONDS
+                    - seconds_since_creation
+                )
             )
 
             return JsonResponse(
@@ -6671,28 +6739,12 @@ def send_login_otp(request):
                     "success": False,
                     "message": (
                         f"Please wait {remaining} "
-                        f"seconds before requesting "
-                        f"another OTP."
+                        "seconds before requesting "
+                        "another OTP."
                     )
                 },
                 status=429
             )
-
-    # --------------------------------------------------------
-    # Maximum OTP sends/resends
-    # --------------------------------------------------------
-
-    if latest_otp and latest_otp.resend_count >= 3:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": (
-                    "Maximum OTP limit reached. "
-                    "Please try again later."
-                )
-            },
-            status=429
-        )
 
     # --------------------------------------------------------
     # Generate OTP
@@ -7258,21 +7310,59 @@ def resend_login_otp(request):
         .first()
     )
 
+    
     # --------------------------------------------------------
-    # Maximum resend limit
+    # 6-HOUR OTP LIMIT
     # --------------------------------------------------------
 
-    if latest_otp and latest_otp.resend_count >= 3:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": (
-                    "Maximum resend limit reached. "
-                    "Please try again later."
-                )
-            },
-            status=429
+    if latest_otp and latest_otp.resend_count >= LOGIN_OTP_MAX_SENDS - 1:
+
+        block_until = (
+            latest_otp.created_at
+            + timedelta(hours=LOGIN_OTP_BLOCK_HOURS)
         )
+
+        now = timezone.now()
+
+        if now < block_until:
+
+            remaining_seconds = int(
+                (block_until - now).total_seconds()
+            )
+
+            remaining_hours = remaining_seconds // 3600
+            remaining_minutes = (
+                remaining_seconds % 3600
+            ) // 60
+
+            if remaining_hours > 0:
+                wait_message = (
+                    f"{remaining_hours} hour(s) "
+                    f"{remaining_minutes} minute(s)"
+                )
+            else:
+                wait_message = (
+                    f"{remaining_minutes} minute(s)"
+                )
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Maximum OTP limit reached. "
+                        f"Please try again after {wait_message}."
+                    ),
+                    "otp_blocked": True,
+                    "retry_after": remaining_seconds
+                },
+                status=429
+            )
+
+        # ---------------------------------------------
+        # 6 HOURS PASSED → RESET COUNTER
+        # ---------------------------------------------
+
+        latest_otp = None
 
     # --------------------------------------------------------
     # 30-second cooldown
