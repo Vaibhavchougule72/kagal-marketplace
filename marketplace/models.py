@@ -523,6 +523,7 @@ class OrderItem(models.Model):
 
         super().save(*args, **kwargs)
 
+import uuid
 class PendingOrder(models.Model):
 
     store_id = models.IntegerField()
@@ -591,6 +592,18 @@ class PendingOrder(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True,db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    payment_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    payment_token_expires_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
     
 
 
