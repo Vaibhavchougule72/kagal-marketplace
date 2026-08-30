@@ -2029,18 +2029,29 @@ def razorpay_webhook(request):
                 return HttpResponse(status=400)
 
             # -----------------------------------
-            # MARK COMPLETED
+            # LINK PAYMENT + ORDER TO PENDING
             # -----------------------------------
-            
+
+            pending.payment_id = razorpay_payment_id
+            pending.created_order = order
             pending.is_completed = True
             pending.is_payment_processed = True
+            pending.is_payment_processing = False
 
             pending.save(update_fields=[
+                "payment_id",
+                "created_order",
                 "is_completed",
-                "is_payment_processed"
+                "is_payment_processed",
+                "is_payment_processing",
             ])
 
-            logger.info(f"Webhook order created: {order.id}")
+            logger.info(
+                f"Webhook order created successfully: "
+                f"Order #{order.id}, "
+                f"PendingOrder #{pending.id}, "
+                f"Payment {razorpay_payment_id}"
+            )
 
     except Exception as e:
 
@@ -2995,48 +3006,88 @@ def check_payment_status(request):
     order_id = request.GET.get("order_id")
 
     if not order_id:
-
         return JsonResponse({
-            "success": False
+            "success": False,
+            "message": "Missing Razorpay order ID"
         })
+
+    # -----------------------------------
+    # FIND PENDING ORDER
+    # -----------------------------------
 
     pending = PendingOrder.objects.filter(
         razorpay_order_id=order_id
     ).first()
 
     if not pending:
-
         return JsonResponse({
-            "success": False
+            "success": False,
+            "message": "Pending order not found"
         })
 
-    # webhook completed?
+    # -----------------------------------
+    # ORDER ALREADY LINKED
+    # -----------------------------------
+
+    if pending.created_order_id:
+
+        order = pending.created_order
+
+        request.session["cart"] = {
+            "store_id": None,
+            "items": {}
+        }
+
+        request.session.pop("pending_id", None)
+
+        request.session.modified = True
+
+        return JsonResponse({
+            "success": True,
+            "redirect_url": f"/order-success/{order.id}/"
+        })
+
+    # -----------------------------------
+    # PAYMENT COMPLETED BUT ORDER LINK
+    # MAY NOT HAVE BEEN SAVED YET
+    # -----------------------------------
+
     if pending.is_completed:
 
         order = Order.objects.filter(
-            phone=pending.phone,
-            total=pending.total,
-            payment_method="UPI"
-        ).order_by("-id").first()
+            payment_id=pending.payment_id
+        ).first()
 
         if order:
+
+            # Repair the relationship
+            pending.created_order = order
+            pending.save(
+                update_fields=["created_order"]
+            )
 
             request.session["cart"] = {
                 "store_id": None,
                 "items": {}
             }
 
+            request.session.pop("pending_id", None)
+
             request.session.modified = True
 
             return JsonResponse({
                 "success": True,
-                "redirect_url":
-                    f"/order-success/{order.id}/"
+                "redirect_url": f"/order-success/{order.id}/"
             })
+
+    # -----------------------------------
+    # STILL PROCESSING
+    # -----------------------------------
 
     return JsonResponse({
         "success": False
     })
+
 
 def mark_out_for_delivery(request, order_id):
 
