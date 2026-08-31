@@ -41,7 +41,8 @@ class CustomerAuthenticationMiddleware:
         "/static/",
         "/media/",
         "/.well-known/",
-        "/razorpay-webhook/",
+        "/razorpay/webhook/",
+        "/check-payment-status/",
     ]
 
     def __init__(self, get_response):

@@ -60,7 +60,6 @@ urlpatterns = [
         views.delivery_dashboard,
         name="delivery_dashboard"
     ),
-    path("razorpay-webhook/", views.razorpay_webhook),
     path("store-dashboard/", views.store_dashboard, name="store_dashboard"),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path("rider-dashboard/", views.rider_dashboard, name="rider_dashboard"),
