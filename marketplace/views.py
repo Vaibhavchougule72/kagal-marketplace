@@ -7717,3 +7717,21 @@ def resend_login_otp(request):
             "message": "OTP resent successfully."
         }
     )
+
+
+def my_info(request):
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return redirect("customer_login")
+
+    return render(
+        request,
+        "my_info.html",
+        {
+            "customer": customer,
+            "simple_navbar": True,
+            "show_navbar": False,
+            "show_floating_cart": False
+        }
+    )

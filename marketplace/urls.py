@@ -270,6 +270,11 @@ urlpatterns = [
         views.resend_login_otp,
         name="resend_login_otp"
     ),
+    path(
+        "my-info/",
+        views.my_info,
+        name="my_info"
+    ),
 ]
 
 

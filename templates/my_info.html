@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<style>
+    .my-info-page {
+        min-height: 100vh;
+        background: #FAF7F2;
+        padding: 32px 14px 40px;
+    }
+
+    .my-info-wrap {
+        width: min(520px, 100%);
+        margin: 0 auto;
+    }
+
+    .my-info-title {
+        margin: 0 0 6px;
+        color: #1A3A16;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .my-info-subtitle {
+        margin: 0 0 20px;
+        color: #7B887A;
+        font-size: 13px;
+    }
+
+    .my-info-card {
+        background: #fff;
+        border: 1px solid #E0E8DF;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 18px rgba(26,58,22,0.06);
+    }
+
+    .my-info-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 17px 16px;
+        border-bottom: 1px solid #F0F2EF;
+    }
+
+    .my-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .my-info-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        border-radius: 12px;
+        background: #EEF7F0;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+    .my-info-label {
+        display: block;
+        color: #9AA899;
+        font-size: 11px;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+    .my-info-value {
+        display: block;
+        color: #1A2E19;
+        font-size: 15px;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .my-info-back {
+        display: block;
+        width: 100%;
+        margin-top: 14px;
+        padding: 13px 16px;
+        border-radius: 12px;
+        background: #2D5A27;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .my-info-back:hover {
+        color: #fff;
+        background: #1A3A16;
+    }
+</style>
+
+<div class="my-info-page">
+    <div class="my-info-wrap">
+        <h1 class="my-info-title">My Info</h1>
+        <p class="my-info-subtitle">Your LOKA account information</p>
+
+        <div class="my-info-card">
+            <div class="my-info-row">
+                <div class="my-info-icon">👤</div>
+                <div>
+                    <span class="my-info-label">Name</span>
+                    <span class="my-info-value">{{ customer.name|default:"Not provided" }}</span>
+                </div>
+            </div>
+
+            <div class="my-info-row">
+                <div class="my-info-icon">✉</div>
+                <div>
+                    <span class="my-info-label">Email</span>
+                    <span class="my-info-value">{{ customer.email|default:"Not provided" }}</span>
+                </div>
+            </div>
+
+            <div class="my-info-row">
+                <div class="my-info-icon">☎</div>
+                <div>
+                    <span class="my-info-label">Phone Number</span>
+                    <span class="my-info-value">{{ customer.phone|default:"Not provided" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <a href="/" class="my-info-back">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
