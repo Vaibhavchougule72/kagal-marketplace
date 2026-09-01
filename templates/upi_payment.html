@@ -429,7 +429,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function checkPaymentCompleted() {
     var paymentDone = sessionStorage.getItem("payment_done_{{ pending_id }}");
     if (paymentDone) {
-      window.location.replace("/payment-success/?pending_id={{ pending_id }}");
+      window.location.replace(
+          "/payment-success/" +
+          "?pending_id={{ pending_id }}" +
+          "&payment_token={{ payment_token }}"
+      );
       return true;
     }
     return false;
@@ -574,10 +578,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
             attempts++;
 
-            fetch("/check-payment-status/?order_id={{ razorpay_order_id }}", {
-                method: "GET",
-                cache: "no-store"
-            })
+            fetch(
+                "/check-payment-status/" +
+                "?order_id={{ razorpay_order_id }}" +
+                "&payment_token={{ payment_token }}",
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            )
             .then(function (res) {
 
                 if (!res.ok) {

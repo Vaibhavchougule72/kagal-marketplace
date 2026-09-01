@@ -1665,6 +1665,7 @@ def checkout(request):
                     items_snapshot=safe_items,
 
                     otp_expiry=timezone.now() + timedelta(minutes=5),
+                    payment_token_expires_at=timezone.now() + timedelta(minutes=15),
                 )
 
                 # SAVE NEW SESSION
@@ -1732,6 +1733,7 @@ def checkout(request):
                     f"&name={name}"
                     f"&phone={phone}"
                     f"&pending_id={pending.id}"
+                    f"&payment_token={pending.payment_token}"
                     f"&t={int(time.time())}"
                 )
 
@@ -2957,35 +2959,79 @@ from django.views.decorators.csrf import csrf_exempt
 def payment_success(request):
 
     pending_id = request.GET.get("pending_id")
+    payment_token = request.GET.get("payment_token")
 
-    if not pending_id:
-        return render(request, "payment_processing.html")
+    if not pending_id or not payment_token:
+        return render(
+            request,
+            "payment_processing.html"
+        )
+
+    # =====================================================
+    # 🔐 VALIDATE PAYMENT SESSION
+    # =====================================================
 
     pending = PendingOrder.objects.filter(
-        id=pending_id
+        id=pending_id,
+        payment_token=payment_token,
+        payment_method="UPI"
     ).first()
 
     if not pending:
-        return render(request, "payment_processing.html")
+        return render(
+            request,
+            "payment_processing.html"
+        )
 
-    # webhook completed?
+    # =====================================================
+    # TOKEN EXPIRY
+    # =====================================================
+
+    if (
+        pending.payment_token_expires_at
+        and timezone.now() > pending.payment_token_expires_at
+    ):
+        return render(
+            request,
+            "payment_processing.html"
+        )
+
+    # =====================================================
+    # 🔐 RESTORE CUSTOMER SESSION
+    # =====================================================
+
+    request.session["customer_phone"] = pending.phone
+
+    customer = Customer.objects.filter(
+        phone=pending.phone
+    ).first()
+
+    if customer:
+        request.session["customer_id"] = customer.id
+
+    request.session["pending_id"] = pending.id
+
+    request.session.modified = True
+
+    # =====================================================
+    # WEBHOOK COMPLETED?
+    # =====================================================
+
     if pending.is_completed:
 
-        order = Order.objects.filter(
-            phone=pending.phone,
-            total=pending.total,
-            payment_method="UPI"
-        ).order_by("-id").first()
+        order = pending.created_order
 
         if order:
 
-            # CLEAR CART
             request.session["cart"] = {
                 "store_id": None,
                 "items": {}
             }
 
-            request.session.pop("pending_id", None)
+            request.session.pop(
+                "pending_id",
+                None
+            )
 
             request.session.modified = True
 
@@ -3004,26 +3050,35 @@ from django.http import JsonResponse
 def check_payment_status(request):
 
     order_id = request.GET.get("order_id")
+    payment_token = request.GET.get("payment_token")
 
-    if not order_id:
+    if not order_id or not payment_token:
         return JsonResponse({
             "success": False,
-            "message": "Missing Razorpay order ID"
-        })
-
-    # -----------------------------------
-    # FIND PENDING ORDER
-    # -----------------------------------
+            "message": "Invalid payment session"
+        }, status=403)
 
     pending = PendingOrder.objects.filter(
-        razorpay_order_id=order_id
+        razorpay_order_id=order_id,
+        payment_token=payment_token,
+        payment_method="UPI"
     ).first()
 
     if not pending:
         return JsonResponse({
             "success": False,
-            "message": "Pending order not found"
-        })
+            "message": "Invalid payment session"
+        }, status=403)
+
+    # Token expiry
+    if (
+        pending.payment_token_expires_at
+        and timezone.now() > pending.payment_token_expires_at
+    ):
+        return JsonResponse({
+            "success": False,
+            "message": "Payment session expired"
+        }, status=403)
 
     # -----------------------------------
     # ORDER ALREADY LINKED
@@ -4488,24 +4543,133 @@ def get_rider_location(request, order_id):
         "customer_lng": order.longitude,
     })
 
+from django.http import HttpResponseForbidden
+from django.utils import timezone
+
+
 def upi_payment(request):
+
+    pending_id = request.GET.get("pending_id")
+    payment_token = request.GET.get("payment_token")
+
+    # =====================================================
+    # 🔐 PAYMENT SESSION VALIDATION
+    # =====================================================
+
+    if not pending_id or not payment_token:
+        return HttpResponseForbidden(
+            "Invalid payment session."
+        )
+
+    pending = PendingOrder.objects.filter(
+        id=pending_id,
+        payment_token=payment_token,
+        payment_method="UPI"
+    ).first()
+
+    if not pending:
+        return HttpResponseForbidden(
+            "Invalid payment session."
+        )
+
+    # =====================================================
+    # ⏰ PAYMENT TOKEN EXPIRY
+    # =====================================================
+
+    if (
+        pending.payment_token_expires_at
+        and timezone.now() > pending.payment_token_expires_at
+    ):
+        return HttpResponseForbidden(
+            "Payment session expired. Please start checkout again."
+        )
+
+    # =====================================================
+    # 🔥 VERIFY RAZORPAY ORDER
+    # =====================================================
+
+    if not pending.razorpay_order_id:
+        return HttpResponseForbidden(
+            "Invalid Razorpay payment session."
+        )
+
+    # =====================================================
+    # 🔐 CREATE CUSTOMER SESSION IN CHROME
+    # =====================================================
+
+    request.session["customer_phone"] = pending.phone
+
+    # If customer exists, also store customer_id
+    customer = Customer.objects.filter(
+        phone=pending.phone
+    ).first()
+
+    if customer:
+        request.session["customer_id"] = customer.id
+
+    # Keep pending payment available in Chrome session
+    request.session["pending_id"] = pending.id
+
+    request.session.modified = True
+
+    # =====================================================
+    # PAGE CONTEXT
+    # =====================================================
 
     context = {
         "razorpay_key": settings.RAZORPAY_KEY_ID,
-        "amount": request.GET.get("amount"),
-        "razorpay_order_id": request.GET.get("order_id"),
-        "display_amount": request.GET.get("display_amount"),
-        "customer_name": request.GET.get("name"),
-        "phone": request.GET.get("phone"),
-        "pending_id": request.GET.get("pending_id"),
-        "show_floating_cart": False,
-        "show_navbar": False,
-        "simple_navbar": False,
 
+        "amount": str(
+            to_paise(pending.total)
+        ),
+
+        "razorpay_order_id": pending.razorpay_order_id,
+
+        "display_amount": str(
+            pending.total
+        ),
+
+        "customer_name": pending.customer_name,
+
+        "phone": pending.phone,
+
+        "pending_id": pending.id,
+
+        "payment_token": str(
+            pending.payment_token
+        ),
+
+        "show_floating_cart": False,
+
+        "show_navbar": False,
+
+        "simple_navbar": False,
     }
 
-    print("UPI PAYMENT PENDING ID:",
-          context["pending_id"])
+    print(
+        "===================================="
+    )
+    print(
+        "UPI PAYMENT PAGE"
+    )
+    print(
+        "PENDING ID:",
+        pending.id
+    )
+    print(
+        "RAZORPAY ORDER:",
+        pending.razorpay_order_id
+    )
+    print(
+        "CUSTOMER PHONE:",
+        pending.phone
+    )
+    print(
+        "TOKEN VALID: YES"
+    )
+    print(
+        "===================================="
+    )
 
     return render(
         request,

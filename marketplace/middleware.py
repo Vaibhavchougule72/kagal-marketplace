@@ -43,6 +43,8 @@ class CustomerAuthenticationMiddleware:
         "/.well-known/",
         "/razorpay/webhook/",
         "/check-payment-status/",
+        "/upi_payment/",
+        "/payment-success/",
     ]
 
     def __init__(self, get_response):
