@@ -146,6 +146,148 @@
             color: #F39C12 !important; /* Orange hover */
         }
 
+
+        /* =========================================================
+           LOKA ICON NAVBAR
+           ========================================================= */
+        .loka-navbar-actions {
+            display:flex;
+            align-items:center;
+            gap:7px;
+            margin-left:auto;
+        }
+        .loka-nav-icon-btn {
+            position:relative;
+            width:58px;
+            height:48px;
+            border:1px solid rgba(255,255,255,.22);
+            border-radius:10px;
+            background:rgba(255,255,255,.06);
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            padding:0;
+            transition:background .15s ease,transform .12s ease;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .loka-nav-icon-btn:hover { background:rgba(255,255,255,.14); }
+        .loka-nav-icon-btn:active { transform:scale(.94); }
+        .loka-nav-icon-btn svg {
+            width:25px;
+            height:25px;
+            stroke:currentColor;
+            fill:none;
+            stroke-width:1.8;
+            stroke-linecap:round;
+            stroke-linejoin:round;
+        }
+        .loka-nav-cart-badge {
+            position:absolute;
+            top:-5px;
+            right:-5px;
+            min-width:19px;
+            height:19px;
+            padding:0 5px;
+            border-radius:10px;
+            background:#e53935;
+            color:#fff;
+            font-size:10px;
+            font-weight:700;
+            line-height:19px;
+            text-align:center;
+            border:2px solid #0c683f;
+        }
+        .loka-profile-wrap { position:relative; }
+        .loka-profile-menu {
+            position:absolute;
+            top:calc(100% + 9px);
+            right:0;
+            width:190px;
+            background:#fff;
+            border-radius:12px;
+            box-shadow:0 10px 30px rgba(0,0,0,.18);
+            border:1px solid #e7e7e7;
+            padding:7px;
+            display:none;
+            z-index:10001;
+        }
+        .loka-profile-menu.open { display:block; }
+        .loka-profile-menu a {
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            padding:11px 12px;
+            border-radius:8px;
+            text-decoration:none;
+            color:#243424;
+            font-size:14px;
+            font-weight:600;
+        }
+        .loka-profile-menu a:hover { background:#f1f7f2; color:#198754; }
+        .loka-profile-menu a.logout { color:#dc3545; }
+        .loka-profile-menu a.logout:hover { background:#fff1f1; color:#c82333; }
+        .loka-menu-divider { height:1px; background:#eee; margin:4px 7px; }
+        .loka-wallet-modal {
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,.42);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:100000;
+            padding:20px;
+        }
+        .loka-wallet-modal.open { display:flex; }
+        .loka-wallet-card {
+            width:min(340px,100%);
+            background:#fff;
+            border-radius:18px;
+            padding:25px 22px 22px;
+            text-align:center;
+            box-shadow:0 15px 45px rgba(0,0,0,.22);
+        }
+        .loka-wallet-icon {
+            width:58px;
+            height:58px;
+            margin:0 auto 13px;
+            border-radius:50%;
+            background:#eef7f0;
+            color:#198754;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .loka-wallet-icon svg {
+            width:28px;
+            height:28px;
+            stroke:currentColor;
+            fill:none;
+            stroke-width:1.8;
+            stroke-linecap:round;
+            stroke-linejoin:round;
+        }
+        .loka-wallet-card h5 { margin:0 0 7px; color:#183b22; font-weight:700; }
+        .loka-wallet-card p { margin:0 0 18px; color:#777; font-size:13px; }
+        .loka-wallet-close {
+            width:100%;
+            border:0;
+            border-radius:10px;
+            padding:11px 15px;
+            background:#198754;
+            color:#fff;
+            font-weight:600;
+        }
+        @media (max-width:480px) {
+            .premium-navbar { padding-left:10px !important; padding-right:10px !important; }
+            .loka-navbar-actions { gap:5px; }
+            .loka-nav-icon-btn { width:48px; height:44px; }
+            .loka-nav-icon-btn svg { width:23px; height:23px; }
+            .navbar-brand { font-size:1.1rem; }
+        }
+
         /* Smaller navbar on mobile */
         @media (max-width: 991px) {
         
@@ -319,87 +461,64 @@
 </div>
 {% if show_navbar != False %}
 <nav class="navbar navbar-expand-lg fixed-top premium-navbar px-3">
-
     <div class="container-fluid">
 
         <!-- Brand -->
-        <a class="navbar-brand fw-bold" href="/">
-            LOKA
-        </a>
+        <a class="navbar-brand fw-bold" href="/">LOKA</a>
 
-        <!-- Mobile Toggle Button -->
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <!-- Cart, Wallet and Profile -->
+        <div class="loka-navbar-actions">
 
-        <!-- Navbar Content -->
-        <div class="collapse navbar-collapse" id="navbarContent">
+            <button class="loka-nav-icon-btn"
+                    id="cartToggle"
+                    type="button"
+                    aria-label="Cart">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 8H6"/>
+                    <circle cx="10" cy="20" r="1.2"/>
+                    <circle cx="18" cy="20" r="1.2"/>
+                </svg>
+                <span class="loka-nav-cart-badge cart-badge" id="cartBadge">{{ cart_item_count }}</span>
+            </button>
 
-            {% if not simple_navbar %}
-            <!-- 🔍 Search (HIDE in simple mode) -->
-            {% endif %}
+            <button class="loka-nav-icon-btn"
+                    id="lokaWalletBtn"
+                    type="button"
+                    aria-label="LOKA Wallet">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7.5h14a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/>
+                    <path d="M3 8h15"/>
+                    <path d="M16 12h4v3h-4a1.5 1.5 0 0 1 0-3z"/>
+                </svg>
+            </button>
 
-            <!-- 🌐 Language (ALWAYS SHOW) -->
-            <form action="{% url 'set_language' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
+            <div class="loka-profile-wrap">
+                <button class="loka-nav-icon-btn"
+                        id="lokaProfileBtn"
+                        type="button"
+                        aria-label="My Profile"
+                        aria-expanded="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="3.5"/>
+                        <path d="M5 20c.8-3.5 3.2-5.5 7-5.5s6.2 2 7 5.5"/>
+                    </svg>
+                </button>
 
-                <select name="language" onchange="this.form.submit()">
-                    <option value="mr" {% if LANGUAGE_CODE == 'mr' %}selected{% endif %}>
-                        मराठी
-                    </option>
-                    <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>
-                        English
-                    </option>
-                </select>
-            </form>
-
-            <!-- Right Links -->
-            <ul class="navbar-nav ms-lg-auto align-items-lg-center">
-
-                <!-- ✅ HOME ALWAYS -->
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="/">
-                        Home
+                <div class="loka-profile-menu" id="lokaProfileMenu">
+                    <a href="/my-info/">
+                        <span>👤</span><span>My Info</span>
                     </a>
-                </li>
-
-                {% if not simple_navbar %}
-                <!-- ❌ Hide below in checkout/otp -->
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'my_orders' %}">
-                        Orders
+                    <a href="{% url 'my_orders' %}">
+                        <span>📦</span><span>Orders</span>
                     </a>
-                </li>
-
-                <li class="nav-item ms-lg-2">
-                    <a class="nav-link text-danger fw-bold"
-                    href="{% url 'customer_logout' %}">
-                        Logout
+                    <div class="loka-menu-divider"></div>
+                    <a class="logout" href="{% url 'customer_logout' %}">
+                        <span>↪</span><span>Logout</span>
                     </a>
-                </li>
-
-                <li class="nav-item ms-lg-3">
-                    <button class="btn btn-dark position-relative"
-                            id="cartToggle">
-                        Cart
-                        <span class="badge bg-danger cart-badge"
-                              id="cartBadge">
-                            {{ cart_item_count }}
-                        </span>
-                    </button>
-                </li>
-
-                {% endif %}
-
-            </ul>
+                </div>
+            </div>
 
         </div>
-
     </div>
 </nav>
 {% endif %}
@@ -1270,6 +1389,22 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 
+<!-- LOKA Wallet Coming Soon Modal -->
+<div class="loka-wallet-modal" id="lokaWalletModal">
+    <div class="loka-wallet-card">
+        <div class="loka-wallet-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7.5h14a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/>
+                <path d="M3 8h15"/>
+                <path d="M16 12h4v3h-4a1.5 1.5 0 0 1 0-3z"/>
+            </svg>
+        </div>
+        <h5>LOKA Wallet</h5>
+        <p>Wallet feature is coming soon. Stay tuned!</p>
+        <button type="button" class="loka-wallet-close" id="lokaWalletClose">Okay</button>
+    </div>
+</div>
+
 <!-- Product Quick View Modal -->
 
 <div class="modal fade" id="productQuickView" tabindex="-1">
@@ -1622,6 +1757,45 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 })();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const profileBtn = document.getElementById("lokaProfileBtn");
+    const profileMenu = document.getElementById("lokaProfileMenu");
+    const walletBtn = document.getElementById("lokaWalletBtn");
+    const walletModal = document.getElementById("lokaWalletModal");
+    const walletClose = document.getElementById("lokaWalletClose");
+
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const open = profileMenu.classList.toggle("open");
+            profileBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        document.addEventListener("click", function (e) {
+            if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+                profileMenu.classList.remove("open");
+                profileBtn.setAttribute("aria-expanded", "false");
+            }
+        });
+    }
+
+    if (walletBtn && walletModal) {
+        walletBtn.addEventListener("click", function () {
+            walletModal.classList.add("open");
+            document.body.style.overflow = "hidden";
+        });
+        function closeWallet() {
+            walletModal.classList.remove("open");
+            document.body.style.overflow = "";
+        }
+        if (walletClose) walletClose.addEventListener("click", closeWallet);
+        walletModal.addEventListener("click", function (e) {
+            if (e.target === walletModal) closeWallet();
+        });
+    }
+});
 </script>
 
 {% block extra_js %}{% endblock %}

@@ -213,7 +213,7 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
 )
 
-RAZORPAY_WEBHOOK_SECRET = "loka_test"
+RAZORPAY_WEBHOOK_SECRET = "loka_webhook_2026_secret"
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
