@@ -3,132 +3,291 @@
 
 {% block content %}
 <style>
-    .my-info-page {
-        min-height: 100vh;
-        background: #FAF7F2;
-        padding: 32px 14px 40px;
+    .page-wrapper,
+    .main-content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
 
-    .my-info-wrap {
-        width: min(520px, 100%);
-        margin: 0 auto;
+    .mi-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
 
-    .my-info-title {
-        margin: 0 0 6px;
-        color: #1A3A16;
-        font-size: 24px;
-        font-weight: 700;
+    html,
+    body,
+    .mi-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
 
-    .my-info-subtitle {
-        margin: 0 0 20px;
-        color: #7B887A;
-        font-size: 13px;
-    }
+  * { box-sizing: border-box; }
 
-    .my-info-card {
-        background: #fff;
-        border: 1px solid #E0E8DF;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 5px 18px rgba(26,58,22,0.06);
-    }
+  .mi-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+  }
 
-    .my-info-row {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 17px 16px;
-        border-bottom: 1px solid #F0F2EF;
-    }
+  /* ── STICKY NAV ── */
+  .mi-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
 
-    .my-info-row:last-child {
-        border-bottom: none;
-    }
+  .mi-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    .my-info-icon {
-        width: 42px;
-        height: 42px;
-        flex: 0 0 42px;
-        border-radius: 12px;
-        background: #EEF7F0;
-        color: #198754;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 19px;
-    }
+  .mi-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
 
-    .my-info-label {
-        display: block;
-        color: #9AA899;
-        font-size: 11px;
-        margin-bottom: 3px;
-        text-transform: uppercase;
-        letter-spacing: .05em;
-    }
+  .mi-nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+  }
 
-    .my-info-value {
-        display: block;
-        color: #1A2E19;
-        font-size: 15px;
-        font-weight: 600;
-        word-break: break-word;
-    }
+  /* ── SPLIT TWO-TONE HERO ── */
+  .mi-top {
+    background: #1A3A16;
+    height: 90px;
+    position: relative;
+    overflow: visible;
+  }
 
-    .my-info-back {
-        display: block;
-        width: 100%;
-        margin-top: 14px;
-        padding: 13px 16px;
-        border-radius: 12px;
-        background: #2D5A27;
-        color: #fff;
-        text-align: center;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 600;
-    }
+  /* decorative circles */
+  .mi-top::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
 
-    .my-info-back:hover {
-        color: #fff;
-        background: #1A3A16;
-    }
+  .mi-top::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: -20px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(232,98,26,0.07);
+    pointer-events: none;
+  }
+
+  /* avatar overlapping the two sections */
+  .mi-avatar-wrap {
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .mi-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2D5A27, #1A3A16);
+    border: 3px solid #FAF7F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 4px 16px rgba(26,58,22,0.25);
+  }
+
+  /* ── BODY ── */
+  .mi-body {
+    padding: 44px 14px 32px;
+    text-align: center;
+  }
+
+  .mi-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1A2E19;
+    margin-bottom: 3px;
+  }
+
+  .mi-subtitle {
+    font-size: 12px;
+    color: #9AA899;
+    margin-bottom: 20px;
+  }
+
+  /* ── INFO CARD ── */
+  .mi-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+    margin-bottom: 14px;
+    text-align: left;
+    box-shadow: 0 2px 12px rgba(26,58,22,0.06);
+  }
+
+  .mi-row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 14px;
+    border-bottom: 0.5px solid #F0F4EF;
+  }
+
+  .mi-row:last-child { border-bottom: none; }
+
+  /* icon squares */
+  .mi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .mi-icon.green  { background: #EAF2E8; color: #2D5A27; }
+  .mi-icon.orange { background: #FDF1EB; color: #C05018; }
+  .mi-icon.blue   { background: #EEF2FD; color: #3050C0; }
+
+  .mi-row-content { flex: 1; min-width: 0; }
+
+  .mi-label {
+    display: block;
+    font-size: 10px;
+    color: #9AA899;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+    font-weight: 500;
+  }
+
+  .mi-value {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A2E19;
+    word-break: break-word;
+  }
+
+  .mi-value.placeholder { color: #C0D0BE; font-weight: 400; }
+
+  /* ── BACK BUTTON ── */
+  .mi-back {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 13px;
+    background: #2D5A27;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(45,90,39,0.25);
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mi-back:hover { color: #fff; text-decoration: none; background: #1A3A16; }
+  .mi-back:active { transform: scale(0.98); background: #1A3A16; }
 </style>
 
-<div class="my-info-page">
-    <div class="my-info-wrap">
-        <h1 class="my-info-title">My Info</h1>
-        <p class="my-info-subtitle">Your LOKA account information</p>
+<div class="mi-page">
 
-        <div class="my-info-card">
-            <div class="my-info-row">
-                <div class="my-info-icon">👤</div>
-                <div>
-                    <span class="my-info-label">Name</span>
-                    <span class="my-info-value">{{ customer.name|default:"Not provided" }}</span>
-                </div>
-            </div>
+  <!-- STICKY NAV (Design D style back button) -->
+  <div class="mi-nav">
+    <a href="/" class="mi-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <span class="mi-nav-title">{% trans "My Info" %}</span>
+  </div>
 
-            <div class="my-info-row">
-                <div class="my-info-icon">✉</div>
-                <div>
-                    <span class="my-info-label">Email</span>
-                    <span class="my-info-value">{{ customer.email|default:"Not provided" }}</span>
-                </div>
-            </div>
-
-            <div class="my-info-row">
-                <div class="my-info-icon">☎</div>
-                <div>
-                    <span class="my-info-label">Phone Number</span>
-                    <span class="my-info-value">{{ customer.phone|default:"Not provided" }}</span>
-                </div>
-            </div>
-        </div>
-
-        <a href="/" class="my-info-back">Back to Home</a>
+  <!-- SPLIT TWO-TONE TOP (Design E) -->
+  <div class="mi-top">
+    <div class="mi-avatar-wrap">
+      <div class="mi-avatar">👤</div>
     </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="mi-body">
+
+    <!-- Name shown under avatar -->
+    <div class="mi-name">{{ customer.name|default:"LOKA User" }}</div>
+    <div class="mi-subtitle">{% trans "Your LOKA account information" %}</div>
+
+    <!-- INFO CARD -->
+    <div class="mi-card">
+
+      <!-- Name -->
+      <div class="mi-row">
+        <div class="mi-icon green">👤</div>
+        <div class="mi-row-content">
+          <span class="mi-label">{% trans "Name" %}</span>
+          <span class="mi-value {% if not customer.name %}placeholder{% endif %}">
+            {{ customer.name|default:"Not provided" }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="mi-row">
+        <div class="mi-icon orange">✉</div>
+        <div class="mi-row-content">
+          <span class="mi-label">{% trans "Email" %}</span>
+          <span class="mi-value {% if not customer.email %}placeholder{% endif %}">
+            {{ customer.email|default:"Not provided" }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="mi-row">
+        <div class="mi-icon blue">☎</div>
+        <div class="mi-row-content">
+          <span class="mi-label">{% trans "Phone Number" %}</span>
+          <span class="mi-value {% if not customer.phone %}placeholder{% endif %}">
+            {{ customer.phone|default:"Not provided" }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BACK BUTTON -->
+    <a href="/" class="mi-back">{% trans "← Back to Home" %}</a>
+
+  </div>
+
 </div>
+
 {% endblock %}
