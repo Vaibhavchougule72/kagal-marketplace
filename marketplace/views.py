@@ -7779,13 +7779,12 @@ from .models import DeviceToken
 @require_POST
 def link_logged_in_fcm_token(request):
 
-    # ============================================================
-    # GET LOGGED-IN CUSTOMER
-    # ============================================================
-
     customer = get_logged_in_customer(request)
 
     if not customer:
+        print("❌ FCM LINK: CUSTOMER NOT LOGGED IN")
+        print("SESSION:", dict(request.session))
+
         return JsonResponse(
             {
                 "success": False,
@@ -7793,10 +7792,6 @@ def link_logged_in_fcm_token(request):
             },
             status=401
         )
-
-    # ============================================================
-    # GET FCM TOKEN
-    # ============================================================
 
     try:
         import json
@@ -7809,7 +7804,10 @@ def link_logged_in_fcm_token(request):
             data.get("token", "")
         ).strip()
 
-    except Exception:
+    except Exception as e:
+
+        print("❌ FCM LINK JSON ERROR:", e)
+
         return JsonResponse(
             {
                 "success": False,
@@ -7818,11 +7816,8 @@ def link_logged_in_fcm_token(request):
             status=400
         )
 
-    # ============================================================
-    # VALIDATE TOKEN
-    # ============================================================
-
     if not token:
+
         return JsonResponse(
             {
                 "success": False,
@@ -7831,60 +7826,44 @@ def link_logged_in_fcm_token(request):
             status=400
         )
 
-    # ============================================================
-    # FIND DEVICE TOKEN
-    # ============================================================
-
     device = DeviceToken.objects.filter(
         token=token
     ).first()
 
-    # ============================================================
-    # CREATE DEVICE IF IT DOES NOT EXIST
-    # ============================================================
+    if device:
 
-    if not device:
+        device.phone = customer.phone
 
-        device = DeviceToken.objects.create(
-            token=token,
-            phone=customer.phone
+        device.save(
+            update_fields=["phone"]
         )
 
         print(
             "✅ FCM TOKEN LINKED:",
+            "TOKEN =", token,
             "PHONE =", customer.phone
         )
 
-        return JsonResponse(
-            {
-                "success": True,
-                "message": "FCM token linked successfully.",
-                "created": True
-            }
-        )
+        return JsonResponse({
+            "success": True,
+            "created": False
+        })
 
-    # ============================================================
-    # LINK EXISTING DEVICE TO CUSTOMER
-    # ============================================================
-
-    device.phone = customer.phone
-
-    device.save(
-        update_fields=["phone"]
+    device = DeviceToken.objects.create(
+        token=token,
+        phone=customer.phone
     )
 
     print(
-        "✅ FCM TOKEN LINKED:",
+        "✅ FCM TOKEN CREATED + LINKED:",
+        "TOKEN =", token,
         "PHONE =", customer.phone
     )
 
-    return JsonResponse(
-        {
-            "success": True,
-            "message": "FCM token linked successfully.",
-            "created": False
-        }
-    )
+    return JsonResponse({
+        "success": True,
+        "created": True
+    })
 
 def customer_registration_success(request):
 
