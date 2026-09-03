@@ -291,50 +291,93 @@ body,
 
   /* ── SECTION SPACER ── */
   .mo-section { margin-bottom: 6px; }
+
+  /* ── CUSTOMER HEADER ── */
+
+  .mo-customer-wrap {
+      background: #1A3A16;
+      padding: 0 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+  }
+
+  .mo-customer-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+  }
+
+  .mo-customer-label {
+      color: rgba(255,255,255,.55);
+      font-size: 10px;
+      margin-bottom: 2px;
+  }
+
+  .mo-customer-name {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+  }
 </style>
 
 <div class="mo-page">
 
   <!-- STICKY NAV -->
   <div class="mo-nav">
-    <a href="/" class="mo-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
+    <a
+        href="{% url 'customer_profile' %}"
+        class="mo-nav-back"
+        aria-label="{% trans 'Back to profile' %}"
+    >
+        &#8249;
+    </a>
     <span class="mo-nav-title">{% trans "My Orders" %}</span>
   </div>
 
   <!-- SEARCH -->
-  <div class="mo-search-wrap">
-    <form method="GET">
-      <div class="mo-search-inner">
-        <input type="text"
-               name="phone"
-               value="{{ phone }}"
-               class="mo-search-input"
-               placeholder="{% trans 'Enter your mobile number' %}"
-               maxlength="10"
-               required>
-        <button type="submit" class="mo-search-btn">
-          {% trans "Search" %}
-        </button>
-      </div>
-    </form>
-  </div>
+ <!-- CUSTOMER -->
+<div class="mo-customer-wrap">
+
+    <div class="mo-customer-icon">
+        👤
+    </div>
+
+    <div>
+        <div class="mo-customer-label">
+            {% trans "Your Orders" %}
+        </div>
+
+        <div class="mo-customer-name">
+            {{ customer.name|default:"LOKA Customer" }}
+        </div>
+    </div>
+
+</div>
 
   <div class="mo-body">
 
-    {% if not phone %}
-    <!-- NO SEARCH YET -->
-    <div class="mo-prompt">
-      <span class="mo-prompt-icon">🔍</span>
-      <div class="mo-prompt-title">{% trans "Find your orders" %}</div>
-      <div class="mo-prompt-sub">{% trans "Enter your mobile number above to see all your past and active orders." %}</div>
-    </div>
+    {% if not orders %}
 
-    {% elif phone and not orders %}
-    <!-- NO ORDERS FOUND -->
+    <!-- NO ORDERS -->
+
     <div class="mo-empty">
-      <span class="mo-empty-icon">📦</span>
-      <div class="mo-empty-title">{% trans "No orders found" %}</div>
-      <div class="mo-empty-sub">{% trans "We couldn't find any orders for this number. Please check the number and try again." %}</div>
+
+        <span class="mo-empty-icon">📦</span>
+
+        <div class="mo-empty-title">
+            {% trans "No orders yet" %}
+        </div>
+
+        <div class="mo-empty-sub">
+            {% trans "Your LOKA orders will appear here once you place your first order." %}
+        </div>
+
     </div>
 
     {% else %}
