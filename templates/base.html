@@ -1797,7 +1797,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+<!-- 🔥 LINK FCM TOKEN TO LOGGED-IN CUSTOMER -->
+{% if request.session.customer_id %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    if (
+        window.LokaAndroid &&
+        typeof window.LokaAndroid.linkLoggedInFcmToken === "function"
+    ) {
+        console.log("🔗 Logged-in customer detected. Linking FCM token...");
+
+        window.LokaAndroid.linkLoggedInFcmToken();
+    }
+
+});
+</script>
+{% endif %}
 {% block extra_js %}{% endblock %}
 </body>
 </html>

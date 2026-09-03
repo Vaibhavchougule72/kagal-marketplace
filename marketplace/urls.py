@@ -275,6 +275,17 @@ urlpatterns = [
         views.my_info,
         name="my_info"
     ),
+    path(
+        "link-logged-in-fcm-token/",
+        views.link_logged_in_fcm_token,
+        name="link_logged_in_fcm_token"
+    ),
+
+    path(
+        "registration-success/",
+        views.customer_registration_success,
+        name="customer_registration_success"
+    ),
 ]
 
 

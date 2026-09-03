@@ -1964,7 +1964,6 @@ form.addEventListener(
 
             if (data.success) {
 
-
                 message.innerText =
                     "OTP verified successfully.";
 
@@ -1972,10 +1971,37 @@ form.addEventListener(
                     "success";
 
 
-                window.location.href =
-                    data.redirect_url;
+                // =========================================================
+                // EXISTING CUSTOMER
+                // =========================================================
+
+                if (
+                    data.existing_customer === true &&
+                    window.LokaAndroid
+                ) {
+
+                    console.log(
+                        "Linking FCM token to logged-in customer..."
+                    );
+
+                    window.LokaAndroid
+                        .linkLoggedInFcmToken();
+                }
 
 
+                // =========================================================
+                // REDIRECT
+                // =========================================================
+
+                setTimeout(
+                    function() {
+
+                        window.location.href =
+                            data.redirect_url;
+
+                    },
+                    300
+                );
             }
 
 

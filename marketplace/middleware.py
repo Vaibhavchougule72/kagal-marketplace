@@ -37,6 +37,7 @@ class CustomerAuthenticationMiddleware:
         "/register/",
         "/logout/",
         "/resend-login-otp/",
+        "/save-fcm-token/",
         "/admin/",
         "/static/",
         "/media/",

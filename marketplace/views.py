@@ -4020,6 +4020,9 @@ def admin_dashboard(request):
             "labels": json.dumps(labels),
             "revenues": json.dumps(revenues),
             "hourly_orders": json.dumps(hourly_orders),
+            "simple_navbar": True,
+            "show_navbar": False,
+            "show_floating_cart": False
 
         })
 
@@ -4804,6 +4807,7 @@ def submit_rating(request, order_id):
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+import re
 
 from .models import DeviceToken
 
@@ -4812,6 +4816,7 @@ from .models import DeviceToken
 def save_fcm_token(request):
 
     try:
+
         # =========================
         # GET TOKEN
         # =========================
@@ -4866,29 +4871,45 @@ def save_fcm_token(request):
         # =========================
         if device:
 
-            # Only update phone when a valid phone
-            # is actually provided.
+            # ---------------------------------
+            # Phone provided → update phone
+            # ---------------------------------
             if phone:
+
                 device.phone = phone
-                device.save(update_fields=["phone"])
+
+                device.save(
+                    update_fields=["phone"]
+                )
 
                 print(
-                    "✅ FCM TOKEN UPDATED:",
+                    "✅ FCM TOKEN LINKED:",
                     "TOKEN =", token,
                     "PHONE =", phone
                 )
 
-            else:
-                print(
-                    "✅ FCM TOKEN ALREADY EXISTS:",
-                    "TOKEN =", token,
-                    "PHONE =", device.phone
+                return Response(
+                    {
+                        "success": True,
+                        "message": "Token linked with phone",
+                        "created": False
+                    },
+                    status=200
                 )
+
+            # ---------------------------------
+            # No phone → don't modify device
+            # ---------------------------------
+            print(
+                "✅ FCM TOKEN EXISTS:",
+                "TOKEN =", token,
+                "PHONE =", device.phone
+            )
 
             return Response(
                 {
                     "success": True,
-                    "message": "Token updated successfully",
+                    "message": "Token already exists",
                     "created": False
                 },
                 status=200
@@ -4946,7 +4967,10 @@ def pending_orders_dashboard(request):
         request,
         "pending_orders_dashboard.html",
         {
-            "pending_orders": pending_orders
+            "pending_orders": pending_orders,
+            "simple_navbar": False,
+            "show_navbar": False,
+            "show_floating_cart": False
         }
     )
 
@@ -5171,7 +5195,10 @@ def income_expense_dashboard(request):
             "remaining": remaining,
             "expenses": expenses,
             "start_date": start_date,
-            "end_date": end_date
+            "end_date": end_date,
+            "simple_navbar": True,
+            "show_navbar": False,
+            "show_floating_cart": False
 
         }
     )
@@ -5284,7 +5311,10 @@ def store_orders_dashboard(request):
             "commission_percent": commission_percent,
             "platform_fee": platform_fee,
             "store_income": store_income,
-            "orders": all_orders
+            "orders": all_orders,
+            "simple_navbar": False,
+            "show_navbar": False,
+            "show_floating_cart": False
         }
     )
 
@@ -5941,6 +5971,9 @@ def orders_dashboard(request):
         "new_count": new_count,
         "atrisk_count": atrisk_count,
         "lost_count": lost_count,
+        "simple_navbar": False,
+        "show_navbar": False,
+        "show_floating_cart": False
     }
 
     return render(
@@ -7441,7 +7474,7 @@ def customer_register(request):
 
     request.session.modified = True
 
-    return redirect("home")
+    return redirect("customer_registration_success")
 
 def customer_otp_page(request):
     """
@@ -7734,4 +7767,133 @@ def my_info(request):
             "show_navbar": False,
             "show_floating_cart": False
         }
+    )
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+from .models import DeviceToken
+
+@csrf_exempt
+@require_POST
+def link_logged_in_fcm_token(request):
+
+    # ============================================================
+    # GET LOGGED-IN CUSTOMER
+    # ============================================================
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer is not logged in."
+            },
+            status=401
+        )
+
+    # ============================================================
+    # GET FCM TOKEN
+    # ============================================================
+
+    try:
+        import json
+
+        data = json.loads(
+            request.body.decode("utf-8")
+        )
+
+        token = str(
+            data.get("token", "")
+        ).strip()
+
+    except Exception:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid request."
+            },
+            status=400
+        )
+
+    # ============================================================
+    # VALIDATE TOKEN
+    # ============================================================
+
+    if not token:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "FCM token missing."
+            },
+            status=400
+        )
+
+    # ============================================================
+    # FIND DEVICE TOKEN
+    # ============================================================
+
+    device = DeviceToken.objects.filter(
+        token=token
+    ).first()
+
+    # ============================================================
+    # CREATE DEVICE IF IT DOES NOT EXIST
+    # ============================================================
+
+    if not device:
+
+        device = DeviceToken.objects.create(
+            token=token,
+            phone=customer.phone
+        )
+
+        print(
+            "✅ FCM TOKEN LINKED:",
+            "PHONE =", customer.phone
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "FCM token linked successfully.",
+                "created": True
+            }
+        )
+
+    # ============================================================
+    # LINK EXISTING DEVICE TO CUSTOMER
+    # ============================================================
+
+    device.phone = customer.phone
+
+    device.save(
+        update_fields=["phone"]
+    )
+
+    print(
+        "✅ FCM TOKEN LINKED:",
+        "PHONE =", customer.phone
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "FCM token linked successfully.",
+            "created": False
+        }
+    )
+
+def customer_registration_success(request):
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return redirect("customer_login")
+
+    return render(
+        request,
+        "customer_registration_success.html"
     )
