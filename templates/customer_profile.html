@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       LOKA CUSTOMER PROFILE
+       ========================================================= */
+
+    .profile-page {
+        min-height: 100vh;
+        background: #FAF7F2;
+        padding: 25px 16px 40px;
+    }
+
+    .profile-container {
+        width: 100%;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    /* ---------- TOP HEADER ---------- */
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .profile-back-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: none;
+        background: #ffffff;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        transition: .2s ease;
+        flex-shrink: 0;
+    }
+
+    .profile-back-btn:hover {
+        background: #198754;
+        color: white;
+        transform: translateX(-2px);
+    }
+
+    .profile-back-btn svg {
+        width: 21px;
+        height: 21px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .profile-header-title {
+        margin: 0;
+        color: #183b22;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    /* ---------- PROFILE HERO ---------- */
+
+    .profile-hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(
+            135deg,
+            #0c683f,
+            #198754
+        );
+        border-radius: 22px;
+        padding: 27px 22px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(12,104,63,.18);
+        margin-bottom: 18px;
+    }
+
+    .profile-hero::after {
+        content: "";
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.07);
+        right: -65px;
+        top: -70px;
+    }
+
+    .profile-hero::before {
+        content: "";
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(243,156,18,.12);
+        left: -45px;
+        bottom: -45px;
+    }
+
+    .profile-hero-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 17px;
+    }
+
+    .profile-avatar {
+        width: 68px;
+        height: 68px;
+        min-width: 68px;
+        border-radius: 50%;
+        background: white;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+        font-weight: 800;
+        box-shadow: 0 5px 18px rgba(0,0,0,.15);
+    }
+
+    .profile-name {
+        margin: 0 0 5px;
+        font-size: 20px;
+        font-weight: 800;
+        word-break: break-word;
+    }
+
+    .profile-phone {
+        margin: 0;
+        font-size: 14px;
+        opacity: .92;
+    }
+
+    .profile-account-label {
+        margin-top: 7px;
+        font-size: 12px;
+        opacity: .72;
+    }
+
+    /* ---------- MENU CARD ---------- */
+
+    .profile-menu-card {
+        background: #ffffff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,.07);
+        border: 1px solid rgba(0,0,0,.04);
+    }
+
+    .profile-menu-item {
+        width: 100%;
+        min-height: 68px;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: #243424;
+        background: white;
+        border: none;
+        border-bottom: 1px solid #eeeeee;
+        transition: background .18s ease, transform .18s ease;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .profile-menu-item:last-child {
+        border-bottom: none;
+    }
+
+    .profile-menu-item:hover {
+        background: #f5faf6;
+    }
+
+    .profile-menu-item:active {
+        background: #edf6ef;
+        transform: scale(.995);
+    }
+
+    .profile-menu-icon {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 12px;
+        background: #eef7f0;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+    .profile-menu-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .profile-menu-title {
+        display: block;
+        color: #203a26;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .profile-menu-subtitle {
+        display: block;
+        color: #8a8a8a;
+        font-size: 11px;
+    }
+
+    .profile-menu-arrow {
+        color: #aaaaaa;
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    /* ---------- COMING SOON ---------- */
+
+    .coming-soon-badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 3px 7px;
+        border-radius: 20px;
+        background: #fff4df;
+        color: #d98200;
+        font-size: 9px;
+        font-weight: 700;
+        vertical-align: middle;
+    }
+
+    /* ---------- LOGOUT ---------- */
+
+    .profile-logout {
+        color: #dc3545 !important;
+    }
+
+    .profile-logout .profile-menu-icon {
+        background: #fff1f1;
+        color: #dc3545;
+    }
+
+    .profile-logout:hover {
+        background: #fff7f7;
+    }
+
+    /* ---------- FOOTER ---------- */
+
+    .profile-footer {
+        text-align: center;
+        margin-top: 25px;
+        color: #999;
+        font-size: 11px;
+    }
+
+    .profile-footer strong {
+        color: #198754;
+    }
+
+    /* ---------- MOBILE ---------- */
+
+    @media (max-width: 480px) {
+
+        .profile-page {
+            padding: 18px 12px 30px;
+        }
+
+        .profile-header {
+            margin-bottom: 18px;
+        }
+
+        .profile-header-title {
+            font-size: 21px;
+        }
+
+        .profile-hero {
+            border-radius: 19px;
+            padding: 23px 18px;
+        }
+
+        .profile-avatar {
+            width: 61px;
+            height: 61px;
+            min-width: 61px;
+            font-size: 24px;
+        }
+
+        .profile-name {
+            font-size: 18px;
+        }
+
+        .profile-menu-card {
+            border-radius: 18px;
+        }
+
+        .profile-menu-item {
+            min-height: 65px;
+            padding: 10px 14px;
+        }
+
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="profile-page">
+
+    <div class="profile-container">
+
+        <!-- =========================
+             HEADER
+             ========================= -->
+
+        <div class="profile-header">
+
+            <a href="/" class="profile-back-btn" aria-label="Back to home">
+
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+
+            </a>
+
+            <h1 class="profile-header-title">
+                My Profile
+            </h1>
+
+        </div>
+
+
+        <!-- =========================
+             PROFILE HERO
+             ========================= -->
+
+        <div class="profile-hero">
+
+            <div class="profile-hero-content">
+
+                <div class="profile-avatar">
+
+                    {% if customer.name %}
+                        {{ customer.name|first|upper }}
+                    {% else %}
+                        👤
+                    {% endif %}
+
+                </div>
+
+                <div>
+
+                    <h2 class="profile-name">
+                        {% if customer.name %}
+                            {{ customer.name }}
+                        {% else %}
+                            LOKA Customer
+                        {% endif %}
+                    </h2>
+
+                    <p class="profile-phone">
+                        📱 {{ customer.phone }}
+                    </p>
+
+                    <div class="profile-account-label">
+                        Your LOKA account
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PROFILE MENU
+             ========================= -->
+
+        <div class="profile-menu-card">
+
+            <!-- MY INFO -->
+
+            <a href="{% url 'my_info' %}" class="profile-menu-item">
+
+                <div class="profile-menu-icon">
+                    👤
+                </div>
+
+                <div class="profile-menu-text">
+
+                    <span class="profile-menu-title">
+                        My Info
+                    </span>
+
+                    <span class="profile-menu-subtitle">
+                        Manage your personal information
+                    </span>
+
+                </div>
+
+                <div class="profile-menu-arrow">
+                    ›
+                </div>
+
+            </a>
+
+
+            <!-- ORDERS -->
+
+            <a href="{% url 'my_orders' %}" class="profile-menu-item">
+
+                <div class="profile-menu-icon">
+                    📦
+                </div>
+
+                <div class="profile-menu-text">
+
+                    <span class="profile-menu-title">
+                        Orders
+                    </span>
+
+                    <span class="profile-menu-subtitle">
+                        View your LOKA orders
+                    </span>
+
+                </div>
+
+                <div class="profile-menu-arrow">
+                    ›
+                </div>
+
+            </a>
+
+
+            <!-- REFERRAL PROGRAM -->
+
+            <button
+                type="button"
+                class="profile-menu-item"
+                onclick="showProfileComingSoon('Referral Program')"
+            >
+
+                <div class="profile-menu-icon">
+                    🎁
+                </div>
+
+                <div class="profile-menu-text">
+
+                    <span class="profile-menu-title">
+                        Referral Program
+                        <span class="coming-soon-badge">
+                            COMING SOON
+                        </span>
+                    </span>
+
+                    <span class="profile-menu-subtitle">
+                        Invite friends and earn rewards
+                    </span>
+
+                </div>
+
+                <div class="profile-menu-arrow">
+                    ›
+                </div>
+
+            </button>
+
+
+            <!-- COUPONS -->
+
+            <button
+                type="button"
+                class="profile-menu-item"
+                onclick="showProfileComingSoon('Coupons')"
+            >
+
+                <div class="profile-menu-icon">
+                    🏷️
+                </div>
+
+                <div class="profile-menu-text">
+
+                    <span class="profile-menu-title">
+                        Coupons
+                        <span class="coming-soon-badge">
+                            COMING SOON
+                        </span>
+                    </span>
+
+                    <span class="profile-menu-subtitle">
+                        View your available offers
+                    </span>
+
+                </div>
+
+                <div class="profile-menu-arrow">
+                    ›
+                </div>
+
+            </button>
+
+
+            <!-- MY JOURNEY -->
+
+            <button
+                type="button"
+                class="profile-menu-item"
+                onclick="showProfileComingSoon('My Journey')"
+            >
+
+                <div class="profile-menu-icon">
+                    🏆
+                </div>
+
+                <div class="profile-menu-text">
+
+                    <span class="profile-menu-title">
+                        My Journey
+                        <span class="coming-soon-badge">
+                            COMING SOON
+                        </span>
+                    </span>
+
+                    <span class="profile-menu-subtitle">
+                        Your journey with LOKA
+                    </span>
+
+                </div>
+
+                <div class="profile-menu-arrow">
+                    ›
+                </div>
+
+            </button>
+
+
+            <!-- LOGOUT -->
+
+            <a
+                href="{% url 'customer_logout' %}"
+                class="profile-menu-item profile-logout"
+            >
+
+                <div class="profile-menu-icon">
+                    ↪
+                </div>
+
+                <div class="profile-menu-text">
+
+                    <span class="profile-menu-title">
+                        Log out
+                    </span>
+
+                    <span class="profile-menu-subtitle">
+                        Sign out of your LOKA account
+                    </span>
+
+                </div>
+
+                <div class="profile-menu-arrow">
+                    ›
+                </div>
+
+            </a>
+
+        </div>
+
+
+        <!-- =========================
+             FOOTER
+             ========================= -->
+
+        <div class="profile-footer">
+            <strong>LOKA</strong> · Kagal's food delivery service
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     COMING SOON TOAST
+     ========================= -->
+
+<script>
+function showProfileComingSoon(feature) {
+
+    const existing = document.getElementById("profileComingSoonToast");
+
+    if (existing) {
+        existing.remove();
+    }
+
+    const toast = document.createElement("div");
+
+    toast.id = "profileComingSoonToast";
+
+    toast.innerHTML = `
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+            <span style="font-size:18px;">🚀</span>
+
+            <div>
+                <div style="
+                    font-weight:700;
+                    font-size:14px;
+                ">
+                    ${feature}
+                </div>
+
+                <div style="
+                    font-size:11px;
+                    opacity:.8;
+                    margin-top:2px;
+                ">
+                    This feature is coming soon.
+                </div>
+            </div>
+        </div>
+    `;
+
+    toast.style.cssText = `
+        position:fixed;
+        left:50%;
+        bottom:25px;
+        transform:translateX(-50%);
+        width:min(90%,360px);
+        background:#183b22;
+        color:white;
+        padding:13px 16px;
+        border-radius:13px;
+        box-shadow:0 10px 30px rgba(0,0,0,.22);
+        z-index:999999;
+        animation:profileToastIn .25s ease;
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+
+        toast.style.opacity = "0";
+        toast.style.transition = "opacity .25s ease";
+
+        setTimeout(function() {
+            toast.remove();
+        }, 250);
+
+    }, 2200);
+}
+</script>
+
+
+<style>
+@keyframes profileToastIn {
+
+    from {
+        opacity:0;
+        transform:translate(-50%,15px);
+    }
+
+    to {
+        opacity:1;
+        transform:translate(-50%,0);
+    }
+
+}
+</style>
+
+{% endblock %}

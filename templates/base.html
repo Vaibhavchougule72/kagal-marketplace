@@ -1767,17 +1767,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const walletModal = document.getElementById("lokaWalletModal");
     const walletClose = document.getElementById("lokaWalletClose");
 
-    if (profileBtn && profileMenu) {
-        profileBtn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            const open = profileMenu.classList.toggle("open");
-            profileBtn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-        document.addEventListener("click", function (e) {
-            if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
-                profileMenu.classList.remove("open");
-                profileBtn.setAttribute("aria-expanded", "false");
-            }
+    if (profileBtn) {
+        profileBtn.addEventListener("click", function () {
+            window.location.href = "{% url 'customer_profile' %}";
         });
     }
 

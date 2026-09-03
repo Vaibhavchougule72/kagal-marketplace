@@ -1203,8 +1203,15 @@ class ComplaintPhoto(models.Model):
 from django.db import models
 from django.utils import timezone
 
-
 class Customer(models.Model):
+
+    GENDER_CHOICES = [
+        ("MALE", "Male"),
+        ("FEMALE", "Female"),
+        ("OTHER", "Other"),
+        ("PREFER_NOT_TO_SAY", "Prefer not to say"),
+    ]
+
     phone = models.CharField(
         max_length=10,
         unique=True,
@@ -1220,6 +1227,18 @@ class Customer(models.Model):
     email = models.EmailField(
         blank=True,
         default=""
+    )
+
+    gender = models.CharField(
+        max_length=20,
+        choices=GENDER_CHOICES,
+        blank=True,
+        null=True
+    )
+
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True
     )
 
     is_active = models.BooleanField(

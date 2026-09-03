@@ -286,6 +286,7 @@ urlpatterns = [
         views.customer_registration_success,
         name="customer_registration_success"
     ),
+    path("profile/", views.customer_profile, name="customer_profile"),
 ]
 
 

@@ -2521,30 +2521,36 @@ def order_tracking_partial(request, order_id):
 
 
 def my_orders(request):
+    """
+    Display orders belonging only to the currently
+    logged-in LOKA customer.
+    """
 
-    phone = request.GET.get("phone", "").strip()
+    customer = get_logged_in_customer(request)
 
-    if not phone:
-        phone = str(
-            request.session.get("customer_phone", "")
-        ).strip()
+    if not customer:
+        return redirect("customer_login")
 
-    orders = None
+    phone = customer.phone
 
-    if phone:
-        orders = (
-            Order.objects
-            .filter(phone=phone)
-            .order_by("-created_at")
-        )
+    orders = (
+        Order.objects
+        .filter(phone=phone)
+        .order_by("-created_at")
+    )
 
-    return render(request, "my_orders.html", {
-        "orders": orders,
-        "phone": phone,
-        "show_navbar": False,
-        "simple_navbar": False,
-        "show_floating_cart": False,
-    })
+    return render(
+        request,
+        "my_orders.html",
+        {
+            "orders": orders,
+            "phone": phone,
+            "customer": customer,
+            "show_navbar": False,
+            "simple_navbar": False,
+            "show_floating_cart": False,
+        }
+    )
 
 
 # =====================================================
@@ -7752,11 +7758,203 @@ def resend_login_otp(request):
     )
 
 
-def my_info(request):
+def customer_profile(request):
+    """
+    Display the logged-in LOKA customer's profile page.
+    """
+
     customer = get_logged_in_customer(request)
 
     if not customer:
         return redirect("customer_login")
+
+    return render(
+        request,
+        "customer_profile.html",
+        {
+            "customer": customer,
+            "show_navbar": False,
+            "simple_navbar": True,
+            "show_floating_cart": False,
+        }
+    )
+
+
+def my_info(request):
+    """
+    Display and update the logged-in LOKA customer's information.
+    """
+
+    customer = get_logged_in_customer(request)
+
+    # ---------------------------------------------------------
+    # SECURITY: Customer must be logged in
+    # ---------------------------------------------------------
+    if not customer:
+        return redirect("customer_login")
+
+    # ---------------------------------------------------------
+    # UPDATE PROFILE
+    # ---------------------------------------------------------
+    if request.method == "POST":
+
+        name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        gender = (request.POST.get("gender") or "").strip()
+        date_of_birth = (request.POST.get("date_of_birth") or "").strip()
+
+        # -----------------------------------------------------
+        # NAME VALIDATION
+        # -----------------------------------------------------
+        if not name:
+
+            messages.error(
+                request,
+                "Please enter your name."
+            )
+
+            return render(
+                request,
+                "my_info.html",
+                {
+                    "customer": customer,
+                    "simple_navbar": True,
+                    "show_navbar": False,
+                    "show_floating_cart": False,
+                }
+            )
+
+        if len(name) > 150:
+
+            messages.error(
+                request,
+                "Name is too long."
+            )
+
+            return render(
+                request,
+                "my_info.html",
+                {
+                    "customer": customer,
+                    "simple_navbar": True,
+                    "show_navbar": False,
+                    "show_floating_cart": False,
+                }
+            )
+
+        # -----------------------------------------------------
+        # EMAIL VALIDATION
+        # -----------------------------------------------------
+        if email:
+
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+
+            try:
+
+                validate_email(email)
+
+            except ValidationError:
+
+                messages.error(
+                    request,
+                    "Please enter a valid email address."
+                )
+
+                return render(
+                    request,
+                    "my_info.html",
+                    {
+                        "customer": customer,
+                        "simple_navbar": True,
+                        "show_navbar": False,
+                        "show_floating_cart": False,
+                    }
+                )
+
+        # -----------------------------------------------------
+        # GENDER VALIDATION
+        # -----------------------------------------------------
+        valid_genders = {
+            choice[0]
+            for choice in Customer.GENDER_CHOICES
+        }
+
+        if gender and gender not in valid_genders:
+
+            messages.error(
+                request,
+                "Invalid gender selection."
+            )
+
+            return render(
+                request,
+                "my_info.html",
+                {
+                    "customer": customer,
+                    "simple_navbar": True,
+                    "show_navbar": False,
+                    "show_floating_cart": False,
+                }
+            )
+
+        # -----------------------------------------------------
+        # DATE OF BIRTH VALIDATION
+        # -----------------------------------------------------
+        parsed_dob = None
+
+        if date_of_birth:
+
+            try:
+
+                parsed_dob = datetime.strptime(
+                    date_of_birth,
+                    "%Y-%m-%d"
+                ).date()
+
+            except ValueError:
+
+                messages.error(
+                    request,
+                    "Please enter a valid date of birth."
+                )
+
+                return render(
+                    request,
+                    "my_info.html",
+                    {
+                        "customer": customer,
+                        "simple_navbar": True,
+                        "show_navbar": False,
+                        "show_floating_cart": False,
+                    }
+                )
+
+        # -----------------------------------------------------
+        # UPDATE CUSTOMER
+        # -----------------------------------------------------
+
+        customer.name = name
+        customer.email = email
+        customer.gender = gender or None
+        customer.date_of_birth = parsed_dob
+
+        customer.save()
+
+        # Keep session phone synchronized
+        request.session["customer_phone"] = customer.phone
+        request.session.modified = True
+
+        messages.success(
+            request,
+            "Your profile has been updated successfully."
+        )
+
+        return redirect("my_info")
+
+    # ---------------------------------------------------------
+    # DISPLAY PROFILE
+    # ---------------------------------------------------------
 
     return render(
         request,
@@ -7765,7 +7963,7 @@ def my_info(request):
             "customer": customer,
             "simple_navbar": True,
             "show_navbar": False,
-            "show_floating_cart": False
+            "show_floating_cart": False,
         }
     )
 

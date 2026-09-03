@@ -1,292 +1,546 @@
 {% extends "base.html" %}
-{% load i18n %}
+
+{% block extra_css %}
+<style>
+
+    /* =========================================================
+       LOKA MY INFO
+       ========================================================= */
+
+    .my-info-page {
+        min-height: 100vh;
+        background: #FAF7F2;
+        padding: 22px 15px 40px;
+    }
+
+    .my-info-container {
+        width: 100%;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    /* ---------- HEADER ---------- */
+
+    .my-info-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 20px;
+    }
+
+    .my-info-back {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #fff;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        transition: .2s ease;
+    }
+
+    .my-info-back:hover {
+        background: #198754;
+        color: #fff;
+    }
+
+    .my-info-back svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .my-info-title {
+        margin: 0;
+        color: #183b22;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    /* ---------- CARD ---------- */
+
+    .info-card {
+        background: #fff;
+        border-radius: 20px;
+        padding: 22px 18px;
+        box-shadow: 0 5px 20px rgba(0,0,0,.07);
+        border: 1px solid rgba(0,0,0,.04);
+    }
+
+    /* ---------- PROFILE MINI HEADER ---------- */
+
+    .info-profile {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    .info-avatar {
+        width: 58px;
+        height: 58px;
+        min-width: 58px;
+        border-radius: 50%;
+        background: #eef7f0;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .info-profile-name {
+        margin: 0 0 3px;
+        color: #203a26;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .info-profile-phone {
+        margin: 0;
+        color: #888;
+        font-size: 12px;
+    }
+
+    /* ---------- FORM ---------- */
+
+    .info-field {
+        margin-bottom: 18px;
+    }
+
+    .info-field:last-of-type {
+        margin-bottom: 22px;
+    }
+
+    .info-label {
+        display: block;
+        margin-bottom: 7px;
+        color: #304735;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .info-input,
+    .info-select {
+        width: 100%;
+        height: 48px;
+        padding: 0 13px;
+        border: 1px solid #dedede;
+        border-radius: 11px;
+        background: #fff;
+        color: #263b2b;
+        font-size: 14px;
+        outline: none;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .info-input:focus,
+    .info-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 3px rgba(25,135,84,.10);
+    }
+
+    /* ---------- LOCKED PHONE ---------- */
+
+    .locked-field {
+        position: relative;
+    }
+
+    .locked-input {
+        background: #f4f4f4;
+        color: #777;
+        cursor: not-allowed;
+        padding-right: 42px;
+    }
+
+    .lock-icon {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        color: #888;
+        font-size: 15px;
+        pointer-events: none;
+    }
+
+    .locked-note {
+        margin-top: 5px;
+        color: #999;
+        font-size: 10px;
+    }
+
+    /* ---------- SAVE BUTTON ---------- */
+
+    .save-btn {
+        width: 100%;
+        height: 49px;
+        border: none;
+        border-radius: 12px;
+        background: #198754;
+        color: white;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(25,135,84,.20);
+        transition: .2s ease;
+    }
+
+    .save-btn:hover {
+        background: #146c43;
+        transform: translateY(-1px);
+    }
+
+    .save-btn:active {
+        transform: scale(.99);
+    }
+
+    /* ---------- MESSAGES ---------- */
+
+    .profile-message {
+        border-radius: 11px;
+        padding: 11px 13px;
+        margin-bottom: 17px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .profile-message.success {
+        background: #eaf7ee;
+        color: #176b3a;
+        border: 1px solid #ccebd7;
+    }
+
+    .profile-message.error {
+        background: #fff0f0;
+        color: #b42318;
+        border: 1px solid #f2cccc;
+    }
+
+    /* ---------- FOOTER ---------- */
+
+    .my-info-footer {
+        text-align: center;
+        margin-top: 22px;
+        color: #999;
+        font-size: 11px;
+    }
+
+    .my-info-footer strong {
+        color: #198754;
+    }
+
+    /* ---------- MOBILE ---------- */
+
+    @media (max-width: 480px) {
+
+        .my-info-page {
+            padding: 17px 12px 30px;
+        }
+
+        .my-info-title {
+            font-size: 21px;
+        }
+
+        .info-card {
+            border-radius: 18px;
+            padding: 20px 15px;
+        }
+
+    }
+
+</style>
+{% endblock %}
+
 
 {% block content %}
-<style>
-    .page-wrapper,
-    .main-content {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
 
-    .mi-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+<div class="my-info-page">
 
-    html,
-    body,
-    .mi-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+    <div class="my-info-container">
 
-  * { box-sizing: border-box; }
+        <!-- =========================
+             HEADER
+             ========================= -->
 
-  .mi-page {
-    background: #FAF7F2;
-    min-height: 100vh;
-    font-family: inherit;
-  }
+        <div class="my-info-header">
 
-  /* ── STICKY NAV ── */
-  .mi-nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
-    padding: 11px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
+            <a
+                href="{% url 'customer_profile' %}"
+                class="my-info-back"
+                aria-label="Back to profile"
+            >
 
-  .mi-nav-back {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    border: 0.5px solid rgba(255,255,255,0.22);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
 
-  .mi-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
+            </a>
 
-  .mi-nav-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #fff;
-    flex: 1;
-  }
+            <h1 class="my-info-title">
+                My Info
+            </h1>
 
-  /* ── SPLIT TWO-TONE HERO ── */
-  .mi-top {
-    background: #1A3A16;
-    height: 90px;
-    position: relative;
-    overflow: visible;
-  }
+        </div>
 
-  /* decorative circles */
-  .mi-top::before {
-    content: '';
-    position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.04);
-    pointer-events: none;
-  }
 
-  .mi-top::after {
-    content: '';
-    position: absolute;
-    bottom: -20px;
-    left: -20px;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: rgba(232,98,26,0.07);
-    pointer-events: none;
-  }
+        <!-- =========================
+             FORM CARD
+             ========================= -->
 
-  /* avatar overlapping the two sections */
-  .mi-avatar-wrap {
-    position: absolute;
-    bottom: -32px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-  }
+        <div class="info-card">
 
-  .mi-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #2D5A27, #1A3A16);
-    border: 3px solid #FAF7F2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    box-shadow: 0 4px 16px rgba(26,58,22,0.25);
-  }
+            <!-- PROFILE SUMMARY -->
 
-  /* ── BODY ── */
-  .mi-body {
-    padding: 44px 14px 32px;
-    text-align: center;
-  }
+            <div class="info-profile">
 
-  .mi-name {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1A2E19;
-    margin-bottom: 3px;
-  }
+                <div class="info-avatar">
 
-  .mi-subtitle {
-    font-size: 12px;
-    color: #9AA899;
-    margin-bottom: 20px;
-  }
+                    {% if customer.name %}
+                        {{ customer.name|first|upper }}
+                    {% else %}
+                        👤
+                    {% endif %}
 
-  /* ── INFO CARD ── */
-  .mi-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 0.5px solid #E0E8DF;
-    overflow: hidden;
-    margin-bottom: 14px;
-    text-align: left;
-    box-shadow: 0 2px 12px rgba(26,58,22,0.06);
-  }
+                </div>
 
-  .mi-row {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 14px 14px;
-    border-bottom: 0.5px solid #F0F4EF;
-  }
+                <div>
 
-  .mi-row:last-child { border-bottom: none; }
+                    <h2 class="info-profile-name">
 
-  /* icon squares */
-  .mi-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
+                        {% if customer.name %}
+                            {{ customer.name }}
+                        {% else %}
+                            LOKA Customer
+                        {% endif %}
 
-  .mi-icon.green  { background: #EAF2E8; color: #2D5A27; }
-  .mi-icon.orange { background: #FDF1EB; color: #C05018; }
-  .mi-icon.blue   { background: #EEF2FD; color: #3050C0; }
+                    </h2>
 
-  .mi-row-content { flex: 1; min-width: 0; }
+                    <p class="info-profile-phone">
+                        📱 {{ customer.phone }}
+                    </p>
 
-  .mi-label {
-    display: block;
-    font-size: 10px;
-    color: #9AA899;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 3px;
-    font-weight: 500;
-  }
+                </div>
 
-  .mi-value {
-    display: block;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1A2E19;
-    word-break: break-word;
-  }
+            </div>
 
-  .mi-value.placeholder { color: #C0D0BE; font-weight: 400; }
 
-  /* ── BACK BUTTON ── */
-  .mi-back {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    border-radius: 13px;
-    background: #2D5A27;
-    color: #fff;
-    text-align: center;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 4px 14px rgba(45,90,39,0.25);
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
+            <!-- =========================
+                 DJANGO MESSAGES
+                 ========================= -->
 
-  .mi-back:hover { color: #fff; text-decoration: none; background: #1A3A16; }
-  .mi-back:active { transform: scale(0.98); background: #1A3A16; }
-</style>
+            {% if messages %}
 
-<div class="mi-page">
+                {% for message in messages %}
 
-  <!-- STICKY NAV (Design D style back button) -->
-  <div class="mi-nav">
-    <a href="/" class="mi-nav-back" aria-label="{% trans 'Go back' %}">&#8249;</a>
-    <span class="mi-nav-title">{% trans "My Info" %}</span>
-  </div>
+                    <div
+                        class="profile-message
+                        {% if message.tags == 'success' %}
+                            success
+                        {% else %}
+                            error
+                        {% endif %}"
+                    >
+                        {{ message }}
+                    </div>
 
-  <!-- SPLIT TWO-TONE TOP (Design E) -->
-  <div class="mi-top">
-    <div class="mi-avatar-wrap">
-      <div class="mi-avatar">👤</div>
+                {% endfor %}
+
+            {% endif %}
+
+
+            <!-- =========================
+                 EDIT FORM
+                 ========================= -->
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <!-- NAME -->
+
+                <div class="info-field">
+
+                    <label
+                        class="info-label"
+                        for="customerName"
+                    >
+                        Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customerName"
+                        name="name"
+                        class="info-input"
+                        value="{{ customer.name|default:'' }}"
+                        maxlength="150"
+                        placeholder="Enter your name"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="info-field">
+
+                    <label
+                        class="info-label"
+                        for="customerEmail"
+                    >
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="customerEmail"
+                        name="email"
+                        class="info-input"
+                        value="{{ customer.email|default:'' }}"
+                        placeholder="Enter your email"
+                    >
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="info-field locked-field">
+
+                    <label
+                        class="info-label"
+                        for="customerPhone"
+                    >
+                        Phone
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customerPhone"
+                        class="info-input locked-input"
+                        value="{{ customer.phone }}"
+                        readonly
+                        disabled
+                    >
+
+                    <span class="lock-icon">
+                        🔒
+                    </span>
+
+                    <div class="locked-note">
+                        Phone number is linked to your LOKA account and cannot be changed.
+                    </div>
+
+                </div>
+
+
+                <!-- GENDER -->
+
+                <div class="info-field">
+
+                    <label
+                        class="info-label"
+                        for="customerGender"
+                    >
+                        Gender
+                    </label>
+
+                    <select
+                        id="customerGender"
+                        name="gender"
+                        class="info-select"
+                    >
+
+                        <option value="">
+                            Select gender
+                        </option>
+
+                        <option
+                            value="MALE"
+                            {% if customer.gender == "MALE" %}selected{% endif %}
+                        >
+                            Male
+                        </option>
+
+                        <option
+                            value="FEMALE"
+                            {% if customer.gender == "FEMALE" %}selected{% endif %}
+                        >
+                            Female
+                        </option>
+
+                        <option
+                            value="OTHER"
+                            {% if customer.gender == "OTHER" %}selected{% endif %}
+                        >
+                            Other
+                        </option>
+
+                        <option
+                            value="PREFER_NOT_TO_SAY"
+                            {% if customer.gender == "PREFER_NOT_TO_SAY" %}selected{% endif %}
+                        >
+                            Prefer not to say
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- DATE OF BIRTH -->
+
+                <div class="info-field">
+
+                    <label
+                        class="info-label"
+                        for="customerDob"
+                    >
+                        Date of Birth
+                    </label>
+
+                    <input
+                        type="date"
+                        id="customerDob"
+                        name="date_of_birth"
+                        class="info-input"
+                        value="{% if customer.date_of_birth %}{{ customer.date_of_birth|date:'Y-m-d' }}{% endif %}"
+                    >
+
+                </div>
+
+
+                <!-- SAVE -->
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+                    Save Changes
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <div class="my-info-footer">
+            <strong>LOKA</strong> · Your local food delivery service
+        </div>
+
     </div>
-  </div>
-
-  <!-- BODY -->
-  <div class="mi-body">
-
-    <!-- Name shown under avatar -->
-    <div class="mi-name">{{ customer.name|default:"LOKA User" }}</div>
-    <div class="mi-subtitle">{% trans "Your LOKA account information" %}</div>
-
-    <!-- INFO CARD -->
-    <div class="mi-card">
-
-      <!-- Name -->
-      <div class="mi-row">
-        <div class="mi-icon green">👤</div>
-        <div class="mi-row-content">
-          <span class="mi-label">{% trans "Name" %}</span>
-          <span class="mi-value {% if not customer.name %}placeholder{% endif %}">
-            {{ customer.name|default:"Not provided" }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div class="mi-row">
-        <div class="mi-icon orange">✉</div>
-        <div class="mi-row-content">
-          <span class="mi-label">{% trans "Email" %}</span>
-          <span class="mi-value {% if not customer.email %}placeholder{% endif %}">
-            {{ customer.email|default:"Not provided" }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Phone -->
-      <div class="mi-row">
-        <div class="mi-icon blue">☎</div>
-        <div class="mi-row-content">
-          <span class="mi-label">{% trans "Phone Number" %}</span>
-          <span class="mi-value {% if not customer.phone %}placeholder{% endif %}">
-            {{ customer.phone|default:"Not provided" }}
-          </span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- BACK BUTTON -->
-    <a href="/" class="mi-back">{% trans "← Back to Home" %}</a>
-
-  </div>
 
 </div>
 
