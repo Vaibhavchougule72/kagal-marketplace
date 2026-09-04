@@ -4,23 +4,23 @@
 
 <style>
 
-    .page-wrapper,
-.main-content {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
+  .page-wrapper,
+    .main-content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
 
-.mo-page {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
+    .mo-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
 
-html,
-body,
-.mo-page {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
+    html,
+    body,
+    .mo-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
 
   * { box-sizing: border-box; }
 
@@ -30,22 +30,18 @@ body,
     min-height: 100vh;
     font-family: inherit;
     padding-bottom: 32px;
-
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
+  }
 
   /* ── STICKY NAV ── */
   .mo-nav {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: #1A3A16;
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
     padding: 11px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
 
   .mo-nav-back {
@@ -70,69 +66,101 @@ body,
 
   .mo-nav-title {
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: #fff;
     flex: 1;
   }
 
-  /* ── SEARCH SECTION ── */
-  .mo-search-wrap {
-    background: #1A3A16;
-    padding: 0 14px 18px;
-  }
-
-  .mo-search-inner {
+  /* ── CUSTOMER STRIP ── */
+  .mo-customer {
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 0 14px 0;
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 11px;
   }
 
-  .mo-search-input {
-    flex: 1;
-    border: 0.5px solid rgba(255,255,255,0.15);
-    border-radius: 10px;
-    padding: 11px 14px;
-    font-size: 13px;
+  .mo-customer-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .mo-customer-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 2px;
+  }
+
+  .mo-customer-name {
+    font-size: 14px;
+    font-weight: 600;
     color: #fff;
-    background: rgba(255,255,255,0.1);
-    outline: none;
-    font-family: inherit;
-    transition: border-color 0.15s, background 0.15s;
   }
 
-  .mo-search-input::placeholder { color: rgba(255,255,255,0.4); }
-  .mo-search-input:focus {
-    border-color: rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.15);
+  /* ── TAB BAR ── */
+  .mo-tabs-wrap {
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 12px 0 0;
+    position: sticky;
+    top: 54px; /* height of nav */
+    z-index: 99;
   }
 
-  .mo-search-btn {
-    background: #E8621A;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 11px 18px;
-    font-size: 13px;
+  .mo-tabs {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 14px;
+  }
+
+  .mo-tabs::-webkit-scrollbar { display: none; }
+
+  .mo-tab {
+    font-size: 12px;
     font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.5);
+    border-bottom: 2.5px solid transparent;
     white-space: nowrap;
-    transition: transform 0.12s ease, background 0.12s ease;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .mo-search-btn:active { transform: scale(0.96); background: #C05018; }
+  .mo-tab.active {
+    color: #fff;
+    border-bottom: 2.5px solid #E8621A;
+    font-weight: 600;
+  }
+
+  .mo-tab:hover { color: rgba(255,255,255,0.8); }
 
   /* ── BODY ── */
   .mo-body { padding: 16px 14px 0; }
 
+  /* ── SECTION SHOWN/HIDDEN ── */
+  .mo-section { display: none; }
+  .mo-section.visible { display: block; }
+
   /* ── SECTION LABEL ── */
   .mo-section-label {
     font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-weight: 600;
     color: #A8C9A5;
-    padding: 4px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    padding-left: 2px;
   }
 
   /* ── ORDER CARD ── */
@@ -164,11 +192,15 @@ body,
     margin-top: 2px;
   }
 
-  .mo-dot.green  { background: #2D6B27; }
   .mo-dot.orange { background: #E8621A; }
+  .mo-dot.green  { background: #2D6B27; }
   .mo-dot.grey   { background: #C0D0BE; }
-  .mo-dot.red    { background: #C05018; }
   .mo-dot.amber  { background: #B07810; }
+  .mo-dot.red    { background: #C05018; }
+  .mo-dot.pink   { background: #E8621A; }
+
+  /* favourite dot */
+  .mo-dot.fav { background: #E8621A; }
 
   /* card info */
   .mo-info { flex: 1; min-width: 0; }
@@ -199,7 +231,7 @@ body,
 
   .mo-amount {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     color: #1A2E19;
   }
 
@@ -207,7 +239,7 @@ body,
     background: #2D5A27;
     color: #fff;
     border-radius: 8px;
-    padding: 5px 11px;
+    padding: 5px 12px;
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
@@ -217,38 +249,43 @@ body,
     background: #F0F4EF;
     color: #4A7045;
     border-radius: 8px;
-    padding: 5px 11px;
+    padding: 5px 12px;
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
   }
 
-  /* ── STATUS PILL ── */
+  /* status pills */
   .mo-pill {
     font-size: 10px;
-    padding: 2px 8px;
+    padding: 3px 9px;
     border-radius: 20px;
     font-weight: 500;
     white-space: nowrap;
   }
 
-  .mo-pill.green    { background: #EAF2E8; color: #2D6B27; }
-  .mo-pill.orange   { background: #FDF1EB; color: #C05018; }
-  .mo-pill.grey     { background: #F0F4EF; color: #9AA899; font-weight: 400; }
-  .mo-pill.red      { background: #FDE8E8; color: #B03030; }
-  .mo-pill.amber    { background: #FDF8EE; color: #B07810; }
+  .mo-pill.green  { background: #EAF2E8; color: #2D6B27; }
+  .mo-pill.orange { background: #FDF1EB; color: #C05018; }
+  .mo-pill.grey   { background: #F0F4EF; color: #9AA899; }
+  .mo-pill.red    { background: #FDE8E8; color: #B03030; }
+  .mo-pill.amber  { background: #FDF8EE; color: #B07810; }
+
+  /* favourite heart */
+  .mo-fav-heart {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
 
   /* ── EMPTY STATE ── */
   .mo-empty {
     text-align: center;
-    padding: 48px 24px;
-    color: #9AA899;
+    padding: 52px 24px;
   }
 
   .mo-empty-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 50px;
     display: block;
+    margin-bottom: 14px;
   }
 
   .mo-empty-title {
@@ -261,68 +298,7 @@ body,
   .mo-empty-sub {
     font-size: 13px;
     color: #A8C9A5;
-    line-height: 1.5;
-  }
-
-  /* ── NO SEARCH YET ── */
-  .mo-prompt {
-    text-align: center;
-    padding: 40px 24px;
-  }
-
-  .mo-prompt-icon {
-    font-size: 44px;
-    display: block;
-    margin-bottom: 12px;
-  }
-
-  .mo-prompt-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: #6B7B69;
-    margin-bottom: 6px;
-  }
-
-  .mo-prompt-sub {
-    font-size: 13px;
-    color: #A8C9A5;
-    line-height: 1.5;
-  }
-
-  /* ── SECTION SPACER ── */
-  .mo-section { margin-bottom: 6px; }
-
-  /* ── CUSTOMER HEADER ── */
-
-  .mo-customer-wrap {
-      background: #1A3A16;
-      padding: 0 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-  }
-
-  .mo-customer-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 17px;
-  }
-
-  .mo-customer-label {
-      color: rgba(255,255,255,.55);
-      font-size: 10px;
-      margin-bottom: 2px;
-  }
-
-  .mo-customer-name {
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
+    line-height: 1.6;
   }
 </style>
 
@@ -330,168 +306,296 @@ body,
 
   <!-- STICKY NAV -->
   <div class="mo-nav">
-    <a
-        href="{% url 'customer_profile' %}"
-        class="mo-nav-back"
-        aria-label="{% trans 'Back to profile' %}"
-    >
-        &#8249;
-    </a>
+    <a href="{% url 'customer_profile' %}" class="mo-nav-back" aria-label="{% trans 'Back' %}">&#8249;</a>
     <span class="mo-nav-title">{% trans "My Orders" %}</span>
   </div>
 
-  <!-- SEARCH -->
- <!-- CUSTOMER -->
-<div class="mo-customer-wrap">
-
-    <div class="mo-customer-icon">
-        👤
-    </div>
-
+  <!-- CUSTOMER STRIP -->
+  <div class="mo-customer">
+    <div class="mo-customer-icon">👤</div>
     <div>
-        <div class="mo-customer-label">
-            {% trans "Your Orders" %}
-        </div>
-
-        <div class="mo-customer-name">
-            {{ customer.name|default:"LOKA Customer" }}
-        </div>
+      <div class="mo-customer-label">{% trans "Your Orders" %}</div>
+      <div class="mo-customer-name">{{ customer.name|default:"LOKA Customer" }}</div>
     </div>
+  </div>
 
-</div>
+  <!-- TAB BAR -->
+  <div class="mo-tabs-wrap">
+    <div class="mo-tabs" id="moTabs">
+      <div class="mo-tab active" data-tab="all">{% trans "All" %}</div>
+      <div class="mo-tab" data-tab="active">{% trans "Active" %}</div>
+      <div class="mo-tab" data-tab="delivered">{% trans "Delivered" %}</div>
+      <div class="mo-tab" data-tab="failed">{% trans "Failed" %}</div>
+      <div class="mo-tab" data-tab="cancelled">{% trans "Cancelled" %}</div>
+      <div class="mo-tab" data-tab="favourite">❤ {% trans "Favourite" %}</div>
+    </div>
+  </div>
 
+  <!-- BODY -->
   <div class="mo-body">
 
     {% if not orders %}
 
     <!-- NO ORDERS -->
-
     <div class="mo-empty">
-
-        <span class="mo-empty-icon">📦</span>
-
-        <div class="mo-empty-title">
-            {% trans "No orders yet" %}
-        </div>
-
-        <div class="mo-empty-sub">
-            {% trans "Your LOKA orders will appear here once you place your first order." %}
-        </div>
-
+      <span class="mo-empty-icon">📦</span>
+      <div class="mo-empty-title">{% trans "No orders yet" %}</div>
+      <div class="mo-empty-sub">
+        {% trans "Your LOKA orders will appear here once you place your first order." %}
+      </div>
     </div>
 
     {% else %}
 
-    <!-- ── ACTIVE ORDERS ── -->
-    {% with active_statuses="REQUEST_SUBMITTED,ACCEPTED,IN_PROGRESS,PICKED_UP,OUT_FOR_DELIVERY" %}
-    {% for order in orders %}
-    {% if order.status in active_statuses or order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
-    {% if forloop.first %}
-    <div class="mo-section">
-      <div class="mo-section-label">{% trans "Active" %}</div>
-    {% endif %}
+    <!-- ══ ALL TAB ══ -->
+    <div class="mo-section visible" id="tab-all">
 
-      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-        <div class="mo-dot orange"></div>
-        <div class="mo-info">
-          <div class="mo-store">{{ order.store.name }}</div>
-          <div class="mo-meta">
-            {{ order.created_at|date:"d M Y · g:i A" }}
-          </div>
+      {% with active_orders=orders|dictsortreversed:"created_at" %}
+
+      <!-- Active group -->
+      {% for order in orders %}
+        {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
+          {% if forloop.first %}<div class="mo-section-label">{% trans "Active" %}</div>{% endif %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot orange"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-track-btn">{% trans "Track" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Delivered group -->
+      {% for order in orders %}
+        {% if order.status == "DELIVERED" %}
+          {% if forloop.first %}<div class="mo-section-label">{% trans "Delivered" %}</div>{% endif %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot green"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-view-btn">{% trans "View" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Failed group -->
+      {% for order in orders %}
+        {% if order.status == "FAILED" %}
+          {% if forloop.first %}<div class="mo-section-label">{% trans "Failed" %}</div>{% endif %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot amber"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-pill amber">{% trans "Failed" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Cancelled group -->
+      {% for order in orders %}
+        {% if order.status == "CANCELLED" %}
+          {% if forloop.first %}<div class="mo-section-label">{% trans "Cancelled" %}</div>{% endif %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot grey"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-pill grey">{% trans "Cancelled" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      {% endwith %}
+    </div>
+
+    <!-- ══ ACTIVE TAB ══ -->
+    <div class="mo-section" id="tab-active">
+      {% with found=False %}
+      {% for order in orders %}
+        {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot orange"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-track-btn">{% trans "Track" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% empty %}
+        <div class="mo-empty">
+          <span class="mo-empty-icon">🚴</span>
+          <div class="mo-empty-title">{% trans "No active orders" %}</div>
+          <div class="mo-empty-sub">{% trans "You have no orders in progress right now." %}</div>
         </div>
-        <div class="mo-right">
-          <span class="mo-amount">₹{{ order.total }}</span>
-          <span class="mo-track-btn">{% trans "Track" %}</span>
+      {% endfor %}
+      {% endwith %}
+    </div>
+
+    <!-- ══ DELIVERED TAB ══ -->
+    <div class="mo-section" id="tab-delivered">
+      {% for order in orders %}
+        {% if order.status == "DELIVERED" %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot green"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-view-btn">{% trans "View" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% empty %}
+        <div class="mo-empty">
+          <span class="mo-empty-icon">✅</span>
+          <div class="mo-empty-title">{% trans "No delivered orders" %}</div>
+          <div class="mo-empty-sub">{% trans "Your delivered orders will appear here." %}</div>
         </div>
-      </a>
+      {% endfor %}
+    </div>
 
-    {% if forloop.last %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
-    {% endwith %}
-
-    <!-- ── DELIVERED ORDERS ── -->
-    {% for order in orders %}
-    {% if order.status == "DELIVERED" %}
-    {% if forloop.first %}
-    <div class="mo-section">
-      <div class="mo-section-label">{% trans "Delivered" %}</div>
-    {% endif %}
-
-      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-        <div class="mo-dot green"></div>
-        <div class="mo-info">
-          <div class="mo-store">{{ order.store.name }}</div>
-          <div class="mo-meta">
-            {{ order.created_at|date:"d M Y · g:i A" }}
-          </div>
+    <!-- ══ FAILED TAB ══ -->
+    <div class="mo-section" id="tab-failed">
+      {% for order in orders %}
+        {% if order.status == "FAILED" %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot amber"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-pill amber">{% trans "Failed" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% empty %}
+        <div class="mo-empty">
+          <span class="mo-empty-icon">😮‍💨</span>
+          <div class="mo-empty-title">{% trans "No failed orders" %}</div>
+          <div class="mo-empty-sub">{% trans "Thankfully no failed orders here!" %}</div>
         </div>
-        <div class="mo-right">
-          <span class="mo-amount">₹{{ order.total }}</span>
-          <span class="mo-view-btn">{% trans "View" %}</span>
+      {% endfor %}
+    </div>
+
+    <!-- ══ CANCELLED TAB ══ -->
+    <div class="mo-section" id="tab-cancelled">
+      {% for order in orders %}
+        {% if order.status == "CANCELLED" %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot grey"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-pill grey">{% trans "Cancelled" %}</span>
+            </div>
+          </a>
+        {% endif %}
+      {% empty %}
+        <div class="mo-empty">
+          <span class="mo-empty-icon">🎉</span>
+          <div class="mo-empty-title">{% trans "No cancelled orders" %}</div>
+          <div class="mo-empty-sub">{% trans "No cancellations on record." %}</div>
         </div>
-      </a>
+      {% endfor %}
+    </div>
 
-    {% if forloop.last %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
-
-    <!-- ── FAILED ORDERS ── -->
-    {% for order in orders %}
-    {% if order.status == "FAILED" %}
-    {% if forloop.first %}
-    <div class="mo-section">
-      <div class="mo-section-label">{% trans "Failed" %}</div>
-    {% endif %}
-
-      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-        <div class="mo-dot amber"></div>
-        <div class="mo-info">
-          <div class="mo-store">{{ order.store.name }}</div>
-          <div class="mo-meta">
-            {{ order.created_at|date:"d M Y · g:i A" }}
-          </div>
+    <!-- ══ FAVOURITE TAB ══ -->
+    <div class="mo-section" id="tab-favourite">
+      {% with has_fav=False %}
+      {% for order in orders %}
+        {% if order.is_favourite %}
+          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+            <div class="mo-dot fav"></div>
+            <div class="mo-info">
+              <div class="mo-store">{{ order.store.name }}</div>
+              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+            </div>
+            <div class="mo-right">
+              <span class="mo-amount">₹{{ order.total }}</span>
+              <span class="mo-fav-heart">❤️</span>
+            </div>
+          </a>
+        {% endif %}
+      {% empty %}
+        <div class="mo-empty">
+          <span class="mo-empty-icon">❤️</span>
+          <div class="mo-empty-title">{% trans "No favourites yet" %}</div>
+          <div class="mo-empty-sub">{% trans "Mark orders as favourite to find them here quickly." %}</div>
         </div>
-        <div class="mo-right">
-          <span class="mo-amount">₹{{ order.total }}</span>
-          <span class="mo-pill amber">{% trans "Failed" %}</span>
-        </div>
-      </a>
-
-    {% if forloop.last %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
-
-    <!-- ── CANCELLED ORDERS ── -->
-    {% for order in orders %}
-    {% if order.status == "CANCELLED" %}
-    {% if forloop.first %}
-    <div class="mo-section">
-      <div class="mo-section-label">{% trans "Cancelled" %}</div>
-    {% endif %}
-
-      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-        <div class="mo-dot grey"></div>
-        <div class="mo-info">
-          <div class="mo-store">{{ order.store.name }}</div>
-          <div class="mo-meta">
-           {{ order.created_at|date:"d M Y · g:i A" }}
-          </div>
-        </div>
-        <div class="mo-right">
-          <span class="mo-amount">₹{{ order.total }}</span>
-          <span class="mo-pill grey">{% trans "Cancelled" %}</span>
-        </div>
-      </a>
-
-    {% if forloop.last %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
+      {% endfor %}
+      {% endwith %}
+    </div>
 
     {% endif %}
 
   </div><!-- /mo-body -->
 
 </div><!-- /mo-page -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  var tabs    = document.querySelectorAll(".mo-tab");
+  var sections = document.querySelectorAll(".mo-section");
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+
+      /* update active tab */
+      tabs.forEach(function (t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+
+      /* show matching section */
+      var target = "tab-" + tab.dataset.tab;
+      sections.forEach(function (sec) {
+        sec.classList.remove("visible");
+        if (sec.id === target) { sec.classList.add("visible"); }
+      });
+
+      /* scroll tab into view */
+      tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+
+    });
+  });
+
+  /* activate tab from URL hash e.g. #active */
+  var hash = window.location.hash.replace("#", "");
+  if (hash) {
+    var matchTab = document.querySelector('.mo-tab[data-tab="' + hash + '"]');
+    if (matchTab) matchTab.click();
+  }
+
+});
+</script>
 
 {% endblock %}
