@@ -1,564 +1,429 @@
 {% extends "base.html" %}
-
-{% block extra_css %}
-<style>
-
-    /* =========================================================
-       LOKA MY INFO
-       ========================================================= */
-    .page-wrapper,
-    .main-content {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    .my-infp-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    html,
-    body,
-    .my-info-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    .my-info-page {
-        min-height: 100vh;
-        background: #FAF7F2;
-        padding: 22px 15px 40px;
-    }
-
-    .my-info-container {
-        width: 100%;
-        max-width: 520px;
-        margin: 0 auto;
-    }
-
-    /* ---------- HEADER ---------- */
-
-    .my-info-header {
-        display: flex;
-        align-items: center;
-        gap: 13px;
-        margin-bottom: 20px;
-    }
-
-    .my-info-back {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: #fff;
-        color: #198754;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        box-shadow: 0 3px 12px rgba(0,0,0,.08);
-        transition: .2s ease;
-    }
-
-    .my-info-back:hover {
-        background: #198754;
-        color: #fff;
-    }
-
-    .my-info-back svg {
-        width: 20px;
-        height: 20px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .my-info-title {
-        margin: 0;
-        color: #183b22;
-        font-size: 22px;
-        font-weight: 800;
-    }
-
-    /* ---------- CARD ---------- */
-
-    .info-card {
-        background: #fff;
-        border-radius: 20px;
-        padding: 22px 18px;
-        box-shadow: 0 5px 20px rgba(0,0,0,.07);
-        border: 1px solid rgba(0,0,0,.04);
-    }
-
-    /* ---------- PROFILE MINI HEADER ---------- */
-
-    .info-profile {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding-bottom: 20px;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #eeeeee;
-    }
-
-    .info-avatar {
-        width: 58px;
-        height: 58px;
-        min-width: 58px;
-        border-radius: 50%;
-        background: #eef7f0;
-        color: #198754;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 23px;
-        font-weight: 800;
-    }
-
-    .info-profile-name {
-        margin: 0 0 3px;
-        color: #203a26;
-        font-size: 17px;
-        font-weight: 700;
-    }
-
-    .info-profile-phone {
-        margin: 0;
-        color: #888;
-        font-size: 12px;
-    }
-
-    /* ---------- FORM ---------- */
-
-    .info-field {
-        margin-bottom: 18px;
-    }
-
-    .info-field:last-of-type {
-        margin-bottom: 22px;
-    }
-
-    .info-label {
-        display: block;
-        margin-bottom: 7px;
-        color: #304735;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .info-input,
-    .info-select {
-        width: 100%;
-        height: 48px;
-        padding: 0 13px;
-        border: 1px solid #dedede;
-        border-radius: 11px;
-        background: #fff;
-        color: #263b2b;
-        font-size: 14px;
-        outline: none;
-        transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .info-input:focus,
-    .info-select:focus {
-        border-color: #198754;
-        box-shadow: 0 0 0 3px rgba(25,135,84,.10);
-    }
-
-    /* ---------- LOCKED PHONE ---------- */
-
-    .locked-field {
-        position: relative;
-    }
-
-    .locked-input {
-        background: #f4f4f4;
-        color: #777;
-        cursor: not-allowed;
-        padding-right: 42px;
-    }
-
-    .lock-icon {
-        position: absolute;
-        right: 14px;
-        bottom: 14px;
-        color: #888;
-        font-size: 15px;
-        pointer-events: none;
-    }
-
-    .locked-note {
-        margin-top: 5px;
-        color: #999;
-        font-size: 10px;
-    }
-
-    /* ---------- SAVE BUTTON ---------- */
-
-    .save-btn {
-        width: 100%;
-        height: 49px;
-        border: none;
-        border-radius: 12px;
-        background: #198754;
-        color: white;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 5px 14px rgba(25,135,84,.20);
-        transition: .2s ease;
-    }
-
-    .save-btn:hover {
-        background: #146c43;
-        transform: translateY(-1px);
-    }
-
-    .save-btn:active {
-        transform: scale(.99);
-    }
-
-    /* ---------- MESSAGES ---------- */
-
-    .profile-message {
-        border-radius: 11px;
-        padding: 11px 13px;
-        margin-bottom: 17px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .profile-message.success {
-        background: #eaf7ee;
-        color: #176b3a;
-        border: 1px solid #ccebd7;
-    }
-
-    .profile-message.error {
-        background: #fff0f0;
-        color: #b42318;
-        border: 1px solid #f2cccc;
-    }
-
-    /* ---------- FOOTER ---------- */
-
-    .my-info-footer {
-        text-align: center;
-        margin-top: 22px;
-        color: #999;
-        font-size: 11px;
-    }
-
-    .my-info-footer strong {
-        color: #198754;
-    }
-
-    /* ---------- MOBILE ---------- */
-
-    @media (max-width: 480px) {
-
-        .my-info-page {
-            padding: 17px 12px 30px;
-        }
-
-        .my-info-title {
-            font-size: 21px;
-        }
-
-        .info-card {
-            border-radius: 18px;
-            padding: 20px 15px;
-        }
-
-    }
-
-</style>
-{% endblock %}
-
+{% load i18n %}
 
 {% block content %}
+<style>
+  * { box-sizing: border-box; }
 
-<div class="my-info-page">
+  /* ── PAGE ── */
+  .mi-page {
+    background: #FAF7F2;
+    min-height: 100vh;
+    font-family: inherit;
+    padding-bottom: 32px;
+  }
 
-    <div class="my-info-container">
+  /* ── STICKY NAV ── */
+  .mi-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
 
-        <!-- =========================
-             HEADER
-             ========================= -->
+  .mi-nav-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-        <div class="my-info-header">
+  .mi-nav-back:active { transform: scale(0.88); background: rgba(255,255,255,0.25); }
 
-            <a
-                href="{% url 'customer_profile' %}"
-                class="my-info-back"
-                aria-label="Back to profile"
-            >
+  .mi-nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+  }
 
-                <svg viewBox="0 0 24 24">
-                    <path d="M19 12H5"></path>
-                    <path d="M12 19l-7-7 7-7"></path>
-                </svg>
+  /* ── PROFILE PILL ── */
+  .mi-profile-pill {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 14px 14px 0;
+    box-shadow: 0 2px 10px rgba(26,58,22,0.06);
+  }
 
-            </a>
+  .mi-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #2D5A27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(45,90,39,0.2);
+  }
 
-            <h1 class="my-info-title">
-                My Info
-            </h1>
+  .mi-pill-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1A2E19;
+    margin-bottom: 2px;
+  }
 
+  .mi-pill-phone {
+    font-size: 12px;
+    color: #9AA899;
+  }
+
+  /* ── BODY ── */
+  .mi-body { padding: 12px 14px 0; }
+
+  /* ── MESSAGES ── */
+  .mi-msg {
+    border-radius: 11px;
+    padding: 10px 13px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mi-msg.success {
+    background: #EAF2E8;
+    border: 0.5px solid #A8C9A5;
+    color: #2D6B27;
+  }
+
+  .mi-msg.error {
+    background: #FDE8E8;
+    border: 0.5px solid #F5C6C6;
+    color: #B03030;
+  }
+
+  /* ── FIELD CARD ── */
+  .mi-field-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #E0E8DF;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(26,58,22,0.05);
+  }
+
+  /* ── FIELD ROW ── */
+  .mi-field-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 13px;
+    border-bottom: 0.5px solid #F0F4EF;
+  }
+
+  .mi-field-row:last-child { border-bottom: none; }
+
+  /* icon square */
+  .mi-field-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #EAF2E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .mi-field-icon.lock { background: #F0F4EF; }
+  .mi-field-icon.orange { background: #FDF1EB; }
+  .mi-field-icon.blue { background: #EEF2FD; }
+
+  .mi-field-content { flex: 1; min-width: 0; }
+
+  .mi-field-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #9AA899;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .mi-locked-badge {
+    background: #F0F4EF;
+    color: #9AA899;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  /* editable inputs styled to match the row */
+  .mi-field-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A2E19;
+    font-family: inherit;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mi-field-input::placeholder { color: #C0D0BE; font-weight: 400; }
+
+  .mi-field-input:focus { color: #2D5A27; }
+
+  .mi-field-input.locked {
+    color: #9AA899;
+    cursor: not-allowed;
+    font-weight: 400;
+  }
+
+  .mi-field-select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A2E19;
+    font-family: inherit;
+    padding: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .mi-field-select:focus { color: #2D5A27; }
+
+  /* chevron for select */
+  .mi-select-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .mi-select-wrap::after {
+    content: '›';
+    position: absolute;
+    right: 0;
+    color: #C0D0BE;
+    font-size: 18px;
+    pointer-events: none;
+    transform: rotate(90deg);
+    line-height: 1;
+  }
+
+  /* arrow for date/text rows */
+  .mi-row-arrow {
+    color: #C0D0BE;
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  /* locked note */
+  .mi-locked-note {
+    font-size: 10px;
+    color: #B8CCB6;
+    margin-top: 2px;
+  }
+
+  /* ── SAVE BUTTON ── */
+  .mi-save-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 13px;
+    background: #2D5A27;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 16px rgba(45,90,39,0.28);
+    transition: transform 0.12s ease, background 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    margin-bottom: 14px;
+  }
+
+  .mi-save-btn:hover { background: #1A3A16; color: #fff; }
+  .mi-save-btn:active { transform: scale(0.98); background: #1A3A16; }
+
+  /* ── FOOTER ── */
+  .mi-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #9AA899;
+  }
+
+  .mi-footer strong { color: #2D5A27; }
+</style>
+
+<div class="mi-page">
+
+  <!-- STICKY NAV -->
+  <div class="mi-nav">
+    <a href="{% url 'customer_profile' %}" class="mi-nav-back" aria-label="{% trans 'Back to profile' %}">&#8249;</a>
+    <span class="mi-nav-title">{% trans "My Info" %}</span>
+  </div>
+
+  <!-- PROFILE PILL -->
+  <div class="mi-profile-pill">
+    <div class="mi-avatar">
+      {% if customer.name %}{{ customer.name|first|upper }}{% else %}👤{% endif %}
+    </div>
+    <div>
+      <div class="mi-pill-name">
+        {% if customer.name %}{{ customer.name }}{% else %}LOKA Customer{% endif %}
+      </div>
+      <div class="mi-pill-phone">📱 {{ customer.phone }}</div>
+    </div>
+  </div>
+
+  <div class="mi-body">
+
+    <!-- DJANGO MESSAGES -->
+    {% if messages %}
+      {% for message in messages %}
+      <div class="mi-msg {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+        {% if message.tags == 'success' %}✓{% else %}!{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- EDIT FORM -->
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="mi-field-card">
+
+        <!-- NAME -->
+        <div class="mi-field-row">
+          <div class="mi-field-icon">👤</div>
+          <div class="mi-field-content">
+            <div class="mi-field-label">{% trans "Name" %}</div>
+            <input type="text"
+                   name="name"
+                   id="customerName"
+                   class="mi-field-input"
+                   value="{{ customer.name|default:'' }}"
+                   maxlength="150"
+                   placeholder="{% trans 'Enter your name' %}"
+                   required>
+          </div>
+          <span class="mi-row-arrow">›</span>
         </div>
 
+        <!-- EMAIL -->
+        <div class="mi-field-row">
+          <div class="mi-field-icon orange">✉</div>
+          <div class="mi-field-content">
+            <div class="mi-field-label">{% trans "Email" %}</div>
+            <input type="email"
+                   name="email"
+                   id="customerEmail"
+                   class="mi-field-input"
+                   value="{{ customer.email|default:'' }}"
+                   placeholder="{% trans 'Enter your email' %}">
+          </div>
+          <span class="mi-row-arrow">›</span>
+        </div>
 
-        <!-- =========================
-             FORM CARD
-             ========================= -->
-
-        <div class="info-card">
-
-            <!-- PROFILE SUMMARY -->
-
-            <div class="info-profile">
-
-                <div class="info-avatar">
-
-                    {% if customer.name %}
-                        {{ customer.name|first|upper }}
-                    {% else %}
-                        👤
-                    {% endif %}
-
-                </div>
-
-                <div>
-
-                    <h2 class="info-profile-name">
-
-                        {% if customer.name %}
-                            {{ customer.name }}
-                        {% else %}
-                            LOKA Customer
-                        {% endif %}
-
-                    </h2>
-
-                    <p class="info-profile-phone">
-                        📱 {{ customer.phone }}
-                    </p>
-
-                </div>
-
+        <!-- PHONE (locked) -->
+        <div class="mi-field-row">
+          <div class="mi-field-icon lock">🔒</div>
+          <div class="mi-field-content">
+            <div class="mi-field-label">
+              {% trans "Phone" %}
+              <span class="mi-locked-badge">{% trans "Locked" %}</span>
             </div>
-
-
-            <!-- =========================
-                 DJANGO MESSAGES
-                 ========================= -->
-
-            {% if messages %}
-
-                {% for message in messages %}
-
-                    <div
-                        class="profile-message
-                        {% if message.tags == 'success' %}
-                            success
-                        {% else %}
-                            error
-                        {% endif %}"
-                    >
-                        {{ message }}
-                    </div>
-
-                {% endfor %}
-
-            {% endif %}
-
-
-            <!-- =========================
-                 EDIT FORM
-                 ========================= -->
-
-            <form method="POST">
-
-                {% csrf_token %}
-
-
-                <!-- NAME -->
-
-                <div class="info-field">
-
-                    <label
-                        class="info-label"
-                        for="customerName"
-                    >
-                        Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="customerName"
-                        name="name"
-                        class="info-input"
-                        value="{{ customer.name|default:'' }}"
-                        maxlength="150"
-                        placeholder="Enter your name"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- EMAIL -->
-
-                <div class="info-field">
-
-                    <label
-                        class="info-label"
-                        for="customerEmail"
-                    >
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        id="customerEmail"
-                        name="email"
-                        class="info-input"
-                        value="{{ customer.email|default:'' }}"
-                        placeholder="Enter your email"
-                    >
-
-                </div>
-
-
-                <!-- PHONE -->
-
-                <div class="info-field locked-field">
-
-                    <label
-                        class="info-label"
-                        for="customerPhone"
-                    >
-                        Phone
-                    </label>
-
-                    <input
-                        type="text"
-                        id="customerPhone"
-                        class="info-input locked-input"
-                        value="{{ customer.phone }}"
-                        readonly
-                        disabled
-                    >
-
-                    <span class="lock-icon">
-                        🔒
-                    </span>
-
-                    <div class="locked-note">
-                        Phone number is linked to your LOKA account and cannot be changed.
-                    </div>
-
-                </div>
-
-
-                <!-- GENDER -->
-
-                <div class="info-field">
-
-                    <label
-                        class="info-label"
-                        for="customerGender"
-                    >
-                        Gender
-                    </label>
-
-                    <select
-                        id="customerGender"
-                        name="gender"
-                        class="info-select"
-                    >
-
-                        <option value="">
-                            Select gender
-                        </option>
-
-                        <option
-                            value="MALE"
-                            {% if customer.gender == "MALE" %}selected{% endif %}
-                        >
-                            Male
-                        </option>
-
-                        <option
-                            value="FEMALE"
-                            {% if customer.gender == "FEMALE" %}selected{% endif %}
-                        >
-                            Female
-                        </option>
-
-                        <option
-                            value="OTHER"
-                            {% if customer.gender == "OTHER" %}selected{% endif %}
-                        >
-                            Other
-                        </option>
-
-                        <option
-                            value="PREFER_NOT_TO_SAY"
-                            {% if customer.gender == "PREFER_NOT_TO_SAY" %}selected{% endif %}
-                        >
-                            Prefer not to say
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- DATE OF BIRTH -->
-
-                <div class="info-field">
-
-                    <label
-                        class="info-label"
-                        for="customerDob"
-                    >
-                        Date of Birth
-                    </label>
-
-                    <input
-                        type="date"
-                        id="customerDob"
-                        name="date_of_birth"
-                        class="info-input"
-                        value="{% if customer.date_of_birth %}{{ customer.date_of_birth|date:'Y-m-d' }}{% endif %}"
-                    >
-
-                </div>
-
-
-                <!-- SAVE -->
-
-                <button
-                    type="submit"
-                    class="save-btn"
-                >
-                    Save Changes
-                </button>
-
-            </form>
-
+            <input type="text"
+                   id="customerPhone"
+                   class="mi-field-input locked"
+                   value="{{ customer.phone }}"
+                   readonly
+                   disabled>
+            <div class="mi-locked-note">{% trans "Linked to your account · cannot be changed" %}</div>
+          </div>
         </div>
 
-
-        <div class="my-info-footer">
-            <strong>LOKA</strong> · Your local food delivery service
+        <!-- GENDER -->
+        <div class="mi-field-row">
+          <div class="mi-field-icon blue">🧑</div>
+          <div class="mi-field-content">
+            <div class="mi-field-label">{% trans "Gender" %}</div>
+            <div class="mi-select-wrap">
+              <select name="gender" id="customerGender" class="mi-field-select">
+                <option value="">{% trans "Select gender" %}</option>
+                <option value="MALE"              {% if customer.gender == "MALE"              %}selected{% endif %}>{% trans "Male" %}</option>
+                <option value="FEMALE"            {% if customer.gender == "FEMALE"            %}selected{% endif %}>{% trans "Female" %}</option>
+                <option value="OTHER"             {% if customer.gender == "OTHER"             %}selected{% endif %}>{% trans "Other" %}</option>
+                <option value="PREFER_NOT_TO_SAY" {% if customer.gender == "PREFER_NOT_TO_SAY"%}selected{% endif %}>{% trans "Prefer not to say" %}</option>
+              </select>
+            </div>
+          </div>
         </div>
 
+        <!-- DATE OF BIRTH -->
+        <div class="mi-field-row">
+          <div class="mi-field-icon">🎂</div>
+          <div class="mi-field-content">
+            <div class="mi-field-label">{% trans "Date of Birth" %}</div>
+            <input type="date"
+                   name="date_of_birth"
+                   id="customerDob"
+                   class="mi-field-input"
+                   value="{% if customer.date_of_birth %}{{ customer.date_of_birth|date:'Y-m-d' }}{% endif %}">
+          </div>
+          <span class="mi-row-arrow">›</span>
+        </div>
+
+      </div>
+
+      <!-- SAVE BUTTON -->
+      <button type="submit" class="mi-save-btn">{% trans "Save Changes" %}</button>
+
+    </form>
+
+    <!-- FOOTER -->
+    <div class="mi-footer">
+      <strong>LOKA</strong> · {% trans "Your local food delivery service" %}
     </div>
 
-</div>
+  </div><!-- /mi-body -->
+
+</div><!-- /mi-page -->
 
 {% endblock %}
