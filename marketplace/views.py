@@ -2628,7 +2628,7 @@ def toggle_favorite_order(request, order_id):
             "message": "Order removed from favourites."
         })
 
-    FavoriteOrder.objects.create(
+    favorite = FavoriteOrder.objects.create(
         customer=customer,
         order=order
     )
@@ -2636,6 +2636,7 @@ def toggle_favorite_order(request, order_id):
     return JsonResponse({
         "success": True,
         "is_favourite": True,
+        "favorite_id": favorite.id,
         "message": "Order added to favourites."
     })
 # =====================================================
@@ -8196,15 +8197,16 @@ def order_again(request, favorite_id):
 
     if not is_store_open_cached(store):
 
-        messages.warning(
-            request,
-            f"{store.name} is currently closed. "
-            "Please try again when the store is open."
-        )
+        request.session["order_again_store_closed"] = {
+            "store_name": store.name,
+            "message": (
+                f"{store.name} is currently closed. "
+                "Please try again when the store is open."
+            )
+        }
+        request.session.modified = True
 
-        return redirect(
-            f"{reverse('my_orders')}#favourite"
-        )
+        return redirect(f"{reverse('my_orders')}#favourite")
 
     # ---------------------------------
     # GET ORIGINAL ORDER ITEMS
