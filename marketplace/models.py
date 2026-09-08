@@ -1313,3 +1313,25 @@ class CustomerOTP(models.Model):
 
     def __str__(self):
         return f"{self.phone} - {self.purpose}"
+
+
+class FavoriteOrder(models.Model):
+    customer = models.ForeignKey(
+        "Customer",
+        on_delete=models.CASCADE,
+        related_name="favorite_orders"
+    )
+
+    order = models.OneToOneField(
+        "Order",
+        on_delete=models.CASCADE,
+        related_name="favorite_record"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Favorite Order #{self.order.id} - {self.customer.phone}"

@@ -286,6 +286,11 @@ urlpatterns = [
         views.customer_registration_success,
         name="customer_registration_success"
     ),
+    path(
+        "orders/<int:order_id>/toggle-favorite/",
+        views.toggle_favorite_order,
+        name="toggle_favorite_order"
+    ),
     path("profile/", views.customer_profile, name="customer_profile"),
 ]
 

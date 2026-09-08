@@ -276,6 +276,31 @@
     flex-shrink: 0;
   }
 
+  .mo-favorite-btn {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: #FDF1EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mo-favorite-btn:active {
+    transform: scale(0.85);
+  }
+
+  .mo-favorite-btn.is-favourite {
+    background: #FDE8E8;
+  }
+
   /* ── EMPTY STATE ── */
   .mo-empty {
     text-align: center;
@@ -459,15 +484,38 @@
       {% for order in orders %}
         {% if order.status == "DELIVERED" %}
           <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+
             <div class="mo-dot green"></div>
+
             <div class="mo-info">
               <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+
+              <div class="mo-meta">
+                {{ order.created_at|date:"d M Y · g:i A" }}
+              </div>
             </div>
+
             <div class="mo-right">
               <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-view-btn">{% trans "View" %}</span>
+
+              <span class="mo-view-btn">
+                {% trans "View" %}
+              </span>
             </div>
+
+            <button
+              type="button"
+              class="mo-favorite-btn {% if order.favorite_record %}is-favourite{% endif %}"
+              data-order-id="{{ order.id }}"
+              aria-label="{% trans 'Favourite order' %}"
+            >
+              {% if order.favorite_record %}
+                ❤️
+              {% else %}
+                ♡
+              {% endif %}
+            </button>
+
           </a>
         {% endif %}
       {% empty %}
@@ -530,35 +578,53 @@
     </div>
 
     <!-- ══ FAVOURITE TAB ══ -->
-    <div class="mo-section" id="tab-favourite">
-      {% with has_fav=False %}
-      {% for order in orders %}
-        {% if order.is_favourite %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-            <div class="mo-dot fav"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-fav-heart">❤️</span>
-            </div>
-          </a>
-        {% endif %}
-      {% empty %}
-        <div class="mo-empty">
-          <span class="mo-empty-icon">❤️</span>
-          <div class="mo-empty-title">{% trans "No favourites yet" %}</div>
-          <div class="mo-empty-sub">{% trans "Mark orders as favourite to find them here quickly." %}</div>
+  <div class="mo-section" id="tab-favourite">
+
+    {% for order in favorite_orders %}
+
+      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+
+        <div class="mo-dot fav"></div>
+
+        <div class="mo-info">
+          <div class="mo-store">
+            {{ order.store.name }}
+          </div>
+
+          <div class="mo-meta">
+            {% trans "Order" %} #{{ order.id }}
+            ·
+            {{ order.created_at|date:"d M Y · g:i A" }}
+          </div>
         </div>
-      {% endfor %}
-      {% endwith %}
-    </div>
 
-    {% endif %}
+        <div class="mo-right">
+          <span class="mo-amount">
+            ₹{{ order.total }}
+          </span>
 
-  </div><!-- /mo-body -->
+          <span class="mo-fav-heart">❤️</span>
+        </div>
+
+      </a>
+
+    {% empty %}
+
+      <div class="mo-empty">
+        <span class="mo-empty-icon">❤️</span>
+
+        <div class="mo-empty-title">
+          {% trans "No favourites yet" %}
+        </div>
+
+        <div class="mo-empty-sub">
+          {% trans "Mark orders as favourite to find them here quickly." %}
+        </div>
+      </div>
+
+    {% endfor %}
+
+  </div>
 
 </div><!-- /mo-page -->
 
@@ -596,6 +662,84 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 });
+
+  /* ── FAVOURITE ORDER TOGGLE ── */
+
+  document.querySelectorAll(".mo-favorite-btn").forEach(function (button) {
+
+    button.addEventListener("click", function (event) {
+
+      // Prevent the parent order card from opening
+      event.preventDefault();
+      event.stopPropagation();
+
+      var orderId = button.dataset.orderId;
+
+      if (!orderId) {
+        return;
+      }
+
+      // Prevent double-click requests
+      if (button.dataset.loading === "true") {
+        return;
+      }
+
+      button.dataset.loading = "true";
+
+      fetch(
+        "{% url 'toggle_favorite_order' 0 %}".replace("/0/", "/" + orderId + "/"),
+        {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: new URLSearchParams({
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+          })
+        }
+      )
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+
+        if (!data.success) {
+
+          if (data.message) {
+            alert(data.message);
+          }
+
+          return;
+        }
+
+        if (data.is_favourite) {
+
+          button.classList.add("is-favourite");
+          button.innerHTML = "❤️";
+
+        } else {
+
+          button.classList.remove("is-favourite");
+          button.innerHTML = "♡";
+
+        }
+
+      })
+      .catch(function (error) {
+
+        console.error("Favourite order error:", error);
+        alert("Something went wrong. Please try again.");
+
+      })
+      .finally(function () {
+
+        button.dataset.loading = "false";
+
+      });
+
+    });
+
+  });
 </script>
 
 {% endblock %}

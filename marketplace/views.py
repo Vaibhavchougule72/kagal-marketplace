@@ -49,6 +49,7 @@ from .models import Customer, CustomerOTP
 from django.db import IntegrityError, transaction
 from django.contrib.auth.hashers import make_password, check_password
 from .services.whatsapp_service import send_login_otp as send_whatsapp_login_otp
+from .models import FavoriteOrder
 
 MAX_CART_QTY = 50
 
@@ -2536,7 +2537,12 @@ def my_orders(request):
     orders = (
         Order.objects
         .filter(phone=phone)
+        .select_related("store", "favorite_record")
         .order_by("-created_at")
+    )
+
+    favorite_orders = orders.filter(
+        favorite_record__isnull=False
     )
 
     return render(
@@ -2544,6 +2550,7 @@ def my_orders(request):
         "my_orders.html",
         {
             "orders": orders,
+            "favorite_orders": favorite_orders,
             "phone": phone,
             "customer": customer,
             "show_navbar": False,
@@ -2553,6 +2560,82 @@ def my_orders(request):
     )
 
 
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+
+from .models import FavoriteOrder
+
+
+@require_POST
+def toggle_favorite_order(request, order_id):
+    """
+    Add/remove an order from the logged-in customer's favourites.
+    Only delivered orders belonging to the logged-in customer can
+    be favourited.
+    """
+
+    # -----------------------------------------
+    # GET LOGGED-IN CUSTOMER
+    # -----------------------------------------
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please login to continue."
+            },
+            status=401
+        )
+
+    # -----------------------------------------
+    # GET CUSTOMER'S OWN ORDER
+    # -----------------------------------------
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        phone=customer.phone
+    )
+
+    # -----------------------------------------
+    # ONLY DELIVERED ORDERS CAN BE FAVOURITES
+    # -----------------------------------------
+    if order.status != "DELIVERED":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Only delivered orders can be added to favourites."
+            },
+            status=400
+        )
+
+    # -----------------------------------------
+    # TOGGLE FAVOURITE
+    # -----------------------------------------
+    favorite = FavoriteOrder.objects.filter(
+        customer=customer,
+        order=order
+    ).first()
+
+    if favorite:
+        favorite.delete()
+
+        return JsonResponse({
+            "success": True,
+            "is_favourite": False,
+            "message": "Order removed from favourites."
+        })
+
+    FavoriteOrder.objects.create(
+        customer=customer,
+        order=order
+    )
+
+    return JsonResponse({
+        "success": True,
+        "is_favourite": True,
+        "message": "Order added to favourites."
+    })
 # =====================================================
 # SEARCH
 # =====================================================
