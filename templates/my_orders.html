@@ -325,6 +325,44 @@
     color: #A8C9A5;
     line-height: 1.6;
   }
+  .mo-order-again-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 8px;
+
+  padding: 8px 14px;
+
+  border-radius: 10px;
+
+  background: #1f7a45;
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition: transform 0.15s ease,
+              opacity 0.15s ease;
+}
+
+.mo-order-again-btn:active {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+
+@media (max-width: 480px) {
+
+  .mo-order-again-btn {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+}
 </style>
 
 <div class="mo-page">
@@ -587,9 +625,10 @@
 
         {% for order in favorite_orders %}
 
-          <a href="{% url 'order_tracking' order.id %}"
+          <div
             class="mo-card"
-            data-favorite-order-id="{{ order.id }}">
+            data-favorite-order-id="{{ order.id }}"
+          >
 
             <div class="mo-dot fav"></div>
 
@@ -606,14 +645,24 @@
             </div>
 
             <div class="mo-right">
+
               <span class="mo-amount">
                 ₹{{ order.total }}
               </span>
 
               <span class="mo-fav-heart">❤️</span>
+
+              <a
+                href="{% url 'order_again' order.favorite_record.id %}"
+                class="mo-order-again-btn"
+                onclick="event.stopPropagation();"
+              >
+                {% trans "Order Again" %}
+              </a>
+
             </div>
 
-          </a>
+          </div>
 
         {% empty %}
 

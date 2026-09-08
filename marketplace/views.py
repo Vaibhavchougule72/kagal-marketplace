@@ -21,6 +21,8 @@ from .models import CouponUsage
 from .models import Coupon
 from django.core.cache import cache
 from decimal import Decimal, ROUND_HALF_UP
+from django.urls import reverse
+from .models import BundleItem
 # from .sms_service import send_sms   ❌ comment
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -8157,3 +8159,236 @@ def customer_registration_success(request):
         request,
         "customer_registration_success.html"
     )
+
+
+def order_again(request, favorite_id):
+    """
+    Rebuild the cart from a customer's favorite order
+    and redirect to checkout.
+
+    Only the logged-in customer's own favorite order
+    can be used.
+    """
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return redirect("customer_login")
+
+    # ---------------------------------
+    # GET CUSTOMER'S FAVORITE ORDER
+    # ---------------------------------
+
+    favorite = get_object_or_404(
+        FavoriteOrder.objects.select_related(
+            "order__store"
+        ),
+        id=favorite_id,
+        customer=customer
+    )
+
+    order = favorite.order
+    store = order.store
+
+    # ---------------------------------
+    # CHECK STORE
+    # ---------------------------------
+
+    if not is_store_open_cached(store):
+
+        messages.warning(
+            request,
+            f"{store.name} is currently closed. "
+            "Please try again when the store is open."
+        )
+
+        return redirect(
+            f"{reverse('my_orders')}#favourite"
+        )
+
+    # ---------------------------------
+    # GET ORIGINAL ORDER ITEMS
+    # ---------------------------------
+
+    order_items = (
+        OrderItem.objects
+        .filter(order=order)
+        .select_related("product", "bundle")
+    )
+
+    if not order_items.exists():
+
+        messages.error(
+            request,
+            "This order has no items available to order again."
+        )
+
+        return redirect(
+            f"{reverse('my_orders')}#favourite"
+        )
+
+    # ---------------------------------
+    # BUILD NEW CART
+    # ---------------------------------
+
+    cart_items = {}
+
+    unavailable_items = []
+
+    for item in order_items:
+
+        # -----------------------------
+        # PRODUCT
+        # -----------------------------
+
+        if item.product:
+
+            product = item.product
+
+            # Product no longer active
+            if not product.is_active:
+
+                unavailable_items.append(
+                    product.name
+                )
+                continue
+
+            # Product no longer available
+            if not product.is_available_now():
+
+                unavailable_items.append(
+                    product.name
+                )
+                continue
+
+            cart_items[str(product.id)] = {
+                "quantity": item.quantity
+            }
+
+        # -----------------------------
+        # BUNDLE
+        # -----------------------------
+
+        elif item.bundle:
+
+            bundle = item.bundle
+
+            # -----------------------------
+            # BUNDLE ACTIVE CHECK
+            # -----------------------------
+
+            if not bundle.is_active:
+
+                unavailable_items.append(
+                    item.bundle_name or bundle.name or "Bundle"
+                )
+
+                continue
+
+            # -----------------------------
+            # CHECK PRODUCTS INSIDE BUNDLE
+            # -----------------------------
+
+            bundle_items = (
+                BundleItem.objects
+                .filter(bundle=bundle)
+                .select_related("product")
+            )
+
+            bundle_unavailable = []
+
+            for bundle_item in bundle_items:
+
+                product = bundle_item.product
+
+                if not product:
+                    bundle_unavailable.append(
+                        "Missing product"
+                    )
+                    continue
+
+                if not product.is_active:
+                    bundle_unavailable.append(
+                        product.name
+                    )
+                    continue
+
+                if not product.is_available_now():
+                    bundle_unavailable.append(
+                        product.name
+                    )
+                    continue
+
+            # -----------------------------
+            # BUNDLE NOT AVAILABLE
+            # -----------------------------
+
+            if bundle_unavailable:
+
+                unavailable_items.append(
+                    f"{item.bundle_name or bundle.name}: "
+                    + ", ".join(bundle_unavailable)
+                )
+
+                continue
+
+            # -----------------------------
+            # BUNDLE AVAILABLE
+            # -----------------------------
+
+            cart_items[f"bundle_{bundle.id}"] = {
+                "quantity": item.quantity
+            }
+
+    # ---------------------------------
+    # ITEMS NOT AVAILABLE
+    # ---------------------------------
+
+    if unavailable_items:
+
+        request.session["order_again_unavailable"] = (
+            unavailable_items
+        )
+
+        request.session.modified = True
+
+        messages.warning(
+            request,
+            "Some items from this order are currently unavailable."
+        )
+
+        return redirect(
+            f"{reverse('my_orders')}#favourite"
+        )
+
+    # ---------------------------------
+    # NOTHING LEFT
+    # ---------------------------------
+
+    if not cart_items:
+
+        messages.error(
+            request,
+            "None of the items from this order are currently available."
+        )
+
+        return redirect(
+            f"{reverse('my_orders')}#favourite"
+        )
+
+    # ---------------------------------
+    # CREATE SESSION CART
+    # ---------------------------------
+
+    request.session["cart"] = {
+        "store_id": store.id,
+        "items": cart_items
+    }
+
+    request.session.modified = True
+
+    # ---------------------------------
+    # GO TO EXISTING CHECKOUT
+    # ---------------------------------
+
+    return redirect("checkout")
