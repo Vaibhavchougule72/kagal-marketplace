@@ -409,6 +409,18 @@
               <span class="mo-amount">₹{{ order.total }}</span>
               <span class="mo-view-btn">{% trans "View" %}</span>
             </div>
+            <button
+              type="button"
+              class="mo-favorite-btn {% if order.favorite_record %}is-favourite{% endif %}"
+              data-order-id="{{ order.id }}"
+              aria-label="{% trans 'Favourite order' %}"
+            >
+              {% if order.favorite_record %}
+                ❤️
+              {% else %}
+                ♡
+              {% endif %}
+            </button>
           </a>
         {% endif %}
       {% endfor %}
@@ -631,37 +643,58 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-  var tabs    = document.querySelectorAll(".mo-tab");
+  /* ── TAB SYSTEM ── */
+
+  var tabs = document.querySelectorAll(".mo-tab");
   var sections = document.querySelectorAll(".mo-section");
 
   tabs.forEach(function (tab) {
+
     tab.addEventListener("click", function () {
 
-      /* update active tab */
-      tabs.forEach(function (t) { t.classList.remove("active"); });
-      tab.classList.add("active");
-
-      /* show matching section */
-      var target = "tab-" + tab.dataset.tab;
-      sections.forEach(function (sec) {
-        sec.classList.remove("visible");
-        if (sec.id === target) { sec.classList.add("visible"); }
+      tabs.forEach(function (t) {
+        t.classList.remove("active");
       });
 
-      /* scroll tab into view */
-      tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      tab.classList.add("active");
+
+      var target = "tab-" + tab.dataset.tab;
+
+      sections.forEach(function (section) {
+        section.classList.remove("visible");
+
+        if (section.id === target) {
+          section.classList.add("visible");
+        }
+      });
+
+      tab.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center"
+      });
 
     });
+
   });
 
-  /* activate tab from URL hash e.g. #active */
+
+  /* ── ACTIVATE TAB FROM URL HASH ── */
+
   var hash = window.location.hash.replace("#", "");
+
   if (hash) {
-    var matchTab = document.querySelector('.mo-tab[data-tab="' + hash + '"]');
-    if (matchTab) matchTab.click();
+
+    var matchTab = document.querySelector(
+      '.mo-tab[data-tab="' + hash + '"]'
+    );
+
+    if (matchTab) {
+      matchTab.click();
+    }
+
   }
 
-});
 
   /* ── FAVOURITE ORDER TOGGLE ── */
 
@@ -669,7 +702,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     button.addEventListener("click", function (event) {
 
-      // Prevent the parent order card from opening
+      // Do not open the order tracking link
       event.preventDefault();
       event.stopPropagation();
 
@@ -679,29 +712,49 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // Prevent double-click requests
+      // Prevent multiple requests
       if (button.dataset.loading === "true") {
         return;
       }
 
       button.dataset.loading = "true";
+      button.disabled = true;
+
 
       fetch(
-        "{% url 'toggle_favorite_order' 0 %}".replace("/0/", "/" + orderId + "/"),
+        "{% url 'toggle_favorite_order' 0 %}".replace(
+          "/0/",
+          "/" + orderId + "/"
+        ),
         {
           method: "POST",
+
           headers: {
             "X-Requested-With": "XMLHttpRequest"
           },
+
           body: new URLSearchParams({
             csrfmiddlewaretoken: "{{ csrf_token }}"
           })
         }
       )
+
       .then(function (response) {
+
+        if (response.status === 401) {
+          window.location.href = "{% url 'customer_login' %}";
+          return null;
+        }
+
         return response.json();
+
       })
+
       .then(function (data) {
+
+        if (!data) {
+          return;
+        }
 
         if (!data.success) {
 
@@ -712,12 +765,19 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
+
+        /* Order is now favourite */
+
         if (data.is_favourite) {
 
           button.classList.add("is-favourite");
           button.innerHTML = "❤️";
 
-        } else {
+        }
+
+        /* Order removed from favourites */
+
+        else {
 
           button.classList.remove("is-favourite");
           button.innerHTML = "♡";
@@ -725,21 +785,33 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
       })
+
       .catch(function (error) {
 
-        console.error("Favourite order error:", error);
-        alert("Something went wrong. Please try again.");
+        console.error(
+          "Favourite order error:",
+          error
+        );
+
+        alert(
+          "Something went wrong. Please try again."
+        );
 
       })
+
       .finally(function () {
 
         button.dataset.loading = "false";
+        button.disabled = false;
 
       });
 
     });
 
   });
+
+});
+
 </script>
 
 {% endblock %}
