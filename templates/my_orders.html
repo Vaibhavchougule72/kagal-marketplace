@@ -335,15 +335,6 @@
     <span class="mo-nav-title">{% trans "My Orders" %}</span>
   </div>
 
-  <!-- CUSTOMER STRIP -->
-  <div class="mo-customer">
-    <div class="mo-customer-icon">👤</div>
-    <div>
-      <div class="mo-customer-label">{% trans "Your Orders" %}</div>
-      <div class="mo-customer-name">{{ customer.name|default:"LOKA Customer" }}</div>
-    </div>
-  </div>
-
   <!-- TAB BAR -->
   <div class="mo-tabs-wrap">
     <div class="mo-tabs" id="moTabs">
@@ -590,53 +581,59 @@
     </div>
 
     <!-- ══ FAVOURITE TAB ══ -->
-  <div class="mo-section" id="tab-favourite">
+    <div class="mo-section" id="tab-favourite">
 
-    {% for order in favorite_orders %}
+      <div id="favoriteOrdersList">
 
-      <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+        {% for order in favorite_orders %}
 
-        <div class="mo-dot fav"></div>
+          <a href="{% url 'order_tracking' order.id %}"
+            class="mo-card"
+            data-favorite-order-id="{{ order.id }}">
 
-        <div class="mo-info">
-          <div class="mo-store">
-            {{ order.store.name }}
+            <div class="mo-dot fav"></div>
+
+            <div class="mo-info">
+              <div class="mo-store">
+                {{ order.store.name }}
+              </div>
+
+              <div class="mo-meta">
+                {% trans "Order" %} #{{ order.id }}
+                ·
+                {{ order.created_at|date:"d M Y · g:i A" }}
+              </div>
+            </div>
+
+            <div class="mo-right">
+              <span class="mo-amount">
+                ₹{{ order.total }}
+              </span>
+
+              <span class="mo-fav-heart">❤️</span>
+            </div>
+
+          </a>
+
+        {% empty %}
+
+          <div class="mo-empty" id="favoriteEmptyState">
+            <span class="mo-empty-icon">❤️</span>
+
+            <div class="mo-empty-title">
+              {% trans "No favourites yet" %}
+            </div>
+
+            <div class="mo-empty-sub">
+              {% trans "Mark orders as favourite to find them here quickly." %}
+            </div>
           </div>
 
-          <div class="mo-meta">
-            {% trans "Order" %} #{{ order.id }}
-            ·
-            {{ order.created_at|date:"d M Y · g:i A" }}
-          </div>
-        </div>
+        {% endfor %}
 
-        <div class="mo-right">
-          <span class="mo-amount">
-            ₹{{ order.total }}
-          </span>
-
-          <span class="mo-fav-heart">❤️</span>
-        </div>
-
-      </a>
-
-    {% empty %}
-
-      <div class="mo-empty">
-        <span class="mo-empty-icon">❤️</span>
-
-        <div class="mo-empty-title">
-          {% trans "No favourites yet" %}
-        </div>
-
-        <div class="mo-empty-sub">
-          {% trans "Mark orders as favourite to find them here quickly." %}
-        </div>
       </div>
 
-    {% endfor %}
-
-  </div>
+    </div>
   {% endif %}
 
 </div><!-- /mo-page -->
@@ -771,17 +768,150 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (data.is_favourite) {
 
+          /* Update current heart */
           button.classList.add("is-favourite");
           button.innerHTML = "❤️";
 
+
+          /* Add order to Favourite tab immediately */
+
+          var favoriteList = document.getElementById("favoriteOrdersList");
+
+          if (favoriteList) {
+
+            /* Remove empty state if it exists */
+            var emptyState = document.getElementById("favoriteEmptyState");
+
+            if (emptyState) {
+              emptyState.remove();
+            }
+
+
+            /* Prevent duplicate favourite cards */
+            var existingCard = favoriteList.querySelector(
+              '[data-favorite-order-id="' + orderId + '"]'
+            );
+
+            if (!existingCard) {
+
+              /*
+              * Get the information from the current order card
+              */
+              var currentCard = button.closest(".mo-card");
+
+              var storeName = "";
+              var amount = "";
+              var meta = "";
+
+              if (currentCard) {
+
+                var storeElement = currentCard.querySelector(".mo-store");
+                var amountElement = currentCard.querySelector(".mo-amount");
+                var metaElement = currentCard.querySelector(".mo-meta");
+
+                if (storeElement) {
+                  storeName = storeElement.textContent.trim();
+                }
+
+                if (amountElement) {
+                  amount = amountElement.textContent.trim();
+                }
+
+                if (metaElement) {
+                  meta = metaElement.textContent.trim();
+                }
+
+              }
+
+
+              /* Create Favourite card */
+
+              var favoriteCard = document.createElement("a");
+
+              favoriteCard.href =
+                "{% url 'order_tracking' 0 %}".replace(
+                  "/0/",
+                  "/" + orderId + "/"
+                );
+
+              favoriteCard.className = "mo-card";
+
+              favoriteCard.dataset.favoriteOrderId = orderId;
+
+              favoriteCard.innerHTML = `
+                <div class="mo-dot fav"></div>
+
+                <div class="mo-info">
+                  <div class="mo-store">
+                    ${storeName}
+                  </div>
+
+                  <div class="mo-meta">
+                    Order #${orderId} · ${meta}
+                  </div>
+                </div>
+
+                <div class="mo-right">
+                  <span class="mo-amount">
+                    ${amount}
+                  </span>
+
+                  <span class="mo-fav-heart">❤️</span>
+                </div>
+              `;
+
+              favoriteList.prepend(favoriteCard);
+
+            }
+
+          }
+
         }
 
-        /* Order removed from favourites */
 
         else {
 
+          /* Update current heart */
           button.classList.remove("is-favourite");
           button.innerHTML = "♡";
+
+
+          /* Remove order from Favourite tab */
+
+          var favoriteList = document.getElementById("favoriteOrdersList");
+
+          if (favoriteList) {
+
+            var favoriteCard = favoriteList.querySelector(
+              '[data-favorite-order-id="' + orderId + '"]'
+            );
+
+            if (favoriteCard) {
+              favoriteCard.remove();
+            }
+
+
+            /* Show empty state if no favourites remain */
+
+            if (!favoriteList.querySelector(".mo-card")) {
+
+              favoriteList.innerHTML = `
+                <div class="mo-empty" id="favoriteEmptyState">
+                  <span class="mo-empty-icon">❤️</span>
+
+                  <div class="mo-empty-title">
+                    {% trans "No favourites yet" %}
+                  </div>
+
+                  <div class="mo-empty-sub">
+                    {% trans "Mark orders as favourite to find them here quickly." %}
+                  </div>
+                </div>
+              `;
+
+            }
+
+          }
 
         }
 
