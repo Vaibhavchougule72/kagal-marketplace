@@ -456,7 +456,7 @@
   <!-- TAB BAR -->
   <div class="mo-tabs-wrap">
     <div class="mo-tabs" id="moTabs">
-      <div class="mo-tab active" data-tab="all">{% trans "All" %}</div>
+      <div class="mo-tab active" data-tab="all">All</div>
       <div class="mo-tab" data-tab="active">{% trans "Active" %}</div>
       <div class="mo-tab" data-tab="cancelled">{% trans "Cancelled" %}</div>
       <div class="mo-tab" data-tab="favourite">❤ {% trans "Favourite" %}</div>
@@ -482,46 +482,78 @@
     <!-- ══ ALL TAB ══ -->
     <div class="mo-section visible" id="tab-all">
 
-      {% with active_orders=orders|dictsortreversed:"created_at" %}
-
-      <!-- Active group -->
       {% for order in orders %}
-        {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
-          {% if forloop.first %}<div class="mo-section-label">{% trans "Active" %}</div>{% endif %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+
+        <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+
+          {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
             <div class="mo-dot orange"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-track-btn">{% trans "Track" %}</span>
-            </div>
-          </a>
-        {% endif %}
-      {% endfor %}
-
-
-      <!-- Cancelled group -->
-      {% for order in orders %}
-        {% if order.status == "CANCELLED" %}
-          {% if forloop.first %}<div class="mo-section-label">{% trans "Cancelled" %}</div>{% endif %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
+          {% elif order.status == "CANCELLED" %}
             <div class="mo-dot grey"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
+          {% else %}
+            <div class="mo-dot green"></div>
+          {% endif %}
+
+          <div class="mo-info">
+
+            <div class="mo-store">
+              {{ order.store.name }}
             </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-pill grey">{% trans "Cancelled" %}</span>
+
+            <div class="mo-meta">
+              {% trans "Order" %} #{{ order.id }}
+              ·
+              {{ order.created_at|date:"d M Y · g:i A" }}
             </div>
-          </a>
-        {% endif %}
+
+          </div>
+
+          <div class="mo-right">
+
+            <span class="mo-amount">
+              ₹{{ order.total }}
+            </span>
+
+            {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
+
+              <span class="mo-track-btn">
+                {% trans "Track" %}
+              </span>
+
+            {% elif order.status == "CANCELLED" %}
+
+              <span class="mo-pill grey">
+                {% trans "Cancelled" %}
+              </span>
+
+            {% else %}
+
+              <span class="mo-pill green">
+                {% trans "Delivered" %}
+              </span>
+
+            {% endif %}
+
+          </div>
+
+        </a>
+
+      {% empty %}
+
+        <div class="mo-empty">
+          <span class="mo-empty-icon">📦</span>
+
+          <div class="mo-empty-title">
+            {% trans "No orders yet" %}
+          </div>
+
+          <div class="mo-empty-sub">
+            {% trans "Your LOKA orders will appear here once you place your first order." %}
+          </div>
+        </div>
+
       {% endfor %}
 
-      {% endwith %}
     </div>
 
     <!-- ══ ACTIVE TAB ══ -->
