@@ -2393,6 +2393,11 @@ def order_tracking(request, order_id):
             Order.objects.select_related("store", "assigned_delivery"),
             id=order_id
         )
+        order_items = (
+            OrderItem.objects
+            .filter(order=order)
+            .select_related("product", "bundle")
+        )
 
         existing_rating = StoreRating.objects.filter(
             order=order
@@ -2401,6 +2406,7 @@ def order_tracking(request, order_id):
         context = {
             "order": order,
             "existing_rating": existing_rating,
+            "order_items": order_items,
             "show_floating_cart": False,
             "show_navbar": False,
             "simple_navbar": False,

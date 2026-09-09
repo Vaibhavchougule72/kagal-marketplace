@@ -477,6 +477,270 @@ body,
     background: #1A3A16;
     padding: 0 14px 20px;
   }
+  /* ── ITEMS IN ORDER BUTTON ── */
+
+.ot-items-order-action {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #E0E8DF;
+}
+
+.ot-items-order-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 0;
+
+  border: none;
+  background: transparent;
+
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ot-items-order-btn:active {
+  transform: scale(0.985);
+}
+
+.ot-items-order-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #EAF2E8;
+  border-radius: 10px;
+
+  color: #2D5A27;
+  font-size: 17px;
+}
+
+.ot-items-order-text {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ot-items-order-text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A2E19;
+}
+
+.ot-items-order-text small {
+  font-size: 11px;
+  color: #9AA899;
+}
+
+.ot-items-order-arrow {
+  font-size: 22px;
+  color: #C0D0BE;
+}
+
+/* ── ITEMS IN ORDER MODAL ── */
+
+.ot-items-modal-backdrop {
+  display: none;
+
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,0.5);
+
+  z-index: 9999;
+
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.ot-items-modal-backdrop.open {
+  display: flex;
+}
+
+.ot-items-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+
+  background: #fff;
+
+  border-radius: 16px 16px 0 0;
+
+  padding: 12px 16px 24px;
+
+  overflow-y: auto;
+
+  animation: ot-items-slide-up .25s ease-out;
+}
+
+@keyframes ot-items-slide-up {
+
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+
+}
+
+.ot-items-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 12px;
+}
+
+.ot-items-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A2E19;
+}
+
+.ot-items-modal-sub {
+  font-size: 11px;
+  color: #9AA899;
+  margin-top: 3px;
+}
+
+.ot-items-close {
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #F0F4EF;
+  color: #6B7B69;
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ot-items-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ot-item-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  padding: 11px 0;
+
+  border-bottom: 0.5px solid #F0F4EF;
+}
+
+.ot-item-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+
+  border-radius: 10px;
+
+  background: #FDF1EB;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 17px;
+}
+
+.ot-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ot-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1A2E19;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ot-item-quantity {
+  font-size: 11px;
+  color: #9AA899;
+  margin-top: 3px;
+}
+
+.ot-item-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A2E19;
+  white-space: nowrap;
+}
+
+.ot-items-empty {
+  text-align: center;
+  padding: 30px 10px;
+
+  color: #9AA899;
+  font-size: 13px;
+}
+
+.ot-items-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 13px;
+  padding: 13px 0;
+
+  border-top: 1px solid #E0E8DF;
+}
+
+.ot-items-total span {
+  font-size: 13px;
+  color: #6B7B69;
+}
+
+.ot-items-total strong {
+  font-size: 15px;
+  color: #1A2E19;
+}
+
+.ot-items-done {
+  width: 100%;
+
+  border: none;
+  border-radius: 11px;
+
+  background: #2D5A27;
+  color: #fff;
+
+  padding: 12px;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  font-family: inherit;
+
+  cursor: pointer;
+}
 </style>
 
 
@@ -513,6 +777,120 @@ body,
   </div><!-- /ot-header, properly closed here -->
 
   {% include "partials/_order_tracking_live.html" %}
+  <!-- ITEMS IN ORDER MODAL -->
+
+  <div
+    class="ot-items-modal-backdrop"
+    id="itemsOrderModal"
+  >
+
+    <div class="ot-items-modal">
+
+      <div class="ot-modal-handle"></div>
+
+      <div class="ot-items-modal-header">
+
+        <div>
+          <div class="ot-items-modal-title">
+            {% trans "Items in Order" %}
+          </div>
+
+          <div class="ot-items-modal-sub">
+            {% trans "Order" %} #{{ order.id }}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="ot-items-close"
+          id="closeItemsOrderModal"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="ot-items-list">
+
+        {% for item in order_items %}
+
+          <div class="ot-item-row">
+
+            <div class="ot-item-icon">
+
+              {% if item.bundle %}
+                🎁
+              {% else %}
+                🍽️
+              {% endif %}
+
+            </div>
+
+
+            <div class="ot-item-info">
+
+              <div class="ot-item-name">
+
+                {% if item.product %}
+                  {{ item.product.name }}
+
+                {% elif item.bundle %}
+                  {{ item.bundle_name|default:item.bundle.name }}
+
+                {% else %}
+                  {% trans "Item" %}
+
+                {% endif %}
+
+              </div>
+
+              <div class="ot-item-quantity">
+                × {{ item.quantity }}
+              </div>
+
+            </div>
+
+
+            <div class="ot-item-price">
+              ₹{{ item.price }}
+            </div>
+
+          </div>
+
+        {% empty %}
+
+          <div class="ot-items-empty">
+            {% trans "No items found for this order." %}
+          </div>
+
+        {% endfor %}
+
+      </div>
+
+
+      <div class="ot-items-total">
+
+        <span>{% trans "Order Total" %}</span>
+
+        <strong>
+          ₹{{ order.total }}
+        </strong>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="ot-items-done"
+        id="closeItemsOrderModalBottom"
+      >
+        {% trans "Close" %}
+      </button>
+
+    </div>
+
+  </div>
 
   <!--
   ALL DYNAMIC VALUES LIVE HERE.
@@ -565,7 +943,49 @@ document.addEventListener("DOMContentLoaded", function () {
   var currentStatus = otData.status;
 
   var liveMap, riderMarker, routeLine, riderPollTimer, statusPollTimer;
+  /* ── ITEMS IN ORDER MODAL ── */
 
+  function initItemsOrderModal() {
+
+    var openBtn = document.getElementById("openItemsOrderModal");
+    var backdrop = document.getElementById("itemsOrderModal");
+    var closeBtn = document.getElementById("closeItemsOrderModal");
+    var bottomCloseBtn =
+      document.getElementById("closeItemsOrderModalBottom");
+
+    if (!openBtn || !backdrop) {
+      return;
+    }
+
+    function openItemsModal() {
+      backdrop.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeItemsModal() {
+      backdrop.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    openBtn.addEventListener("click", openItemsModal);
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeItemsModal);
+    }
+
+    if (bottomCloseBtn) {
+      bottomCloseBtn.addEventListener("click", closeItemsModal);
+    }
+
+    backdrop.addEventListener("click", function (event) {
+
+      if (event.target === backdrop) {
+        closeItemsModal();
+      }
+
+    });
+
+  }
   /* ── CANCEL MODAL ── */
   function initCancelModal() {
     var openBtn  = document.getElementById("openCancelModal");
@@ -737,6 +1157,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function bindDynamicHandlers(newStatus) {
     initCancelModal();
     initStarRating();
+    initItemsOrderModal();
+
     if (newStatus === "OUT_FOR_DELIVERY") {
       startLiveMap();
     }
