@@ -465,6 +465,7 @@
 
   <!-- BODY -->
   <div class="mo-body">
+    
 
     {% if not orders %}
 
@@ -514,8 +515,23 @@
               ₹{{ order.total }}
             </span>
 
-            {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
+            {% if order.status == "DELIVERED" %}
+              <button
+                type="button"
+                class="mo-favorite-btn {% if order.favorite_record %}is-favourite{% endif %}"
+                data-order-id="{{ order.id }}"
+                aria-label="{% trans 'Add to favourites' %}"
+                onclick="event.preventDefault(); event.stopPropagation();"
+              >
+                {% if order.favorite_record %}
+                  ❤️
+                {% else %}
+                  ♡
+                {% endif %}
+              </button>
+            {% endif %}
 
+            {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
               <span class="mo-track-btn">
                 {% trans "Track" %}
               </span>
