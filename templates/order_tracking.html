@@ -795,9 +795,6 @@ body,
             {% trans "Items in Order" %}
           </div>
 
-          <div class="ot-items-modal-sub">
-            {% trans "Order" %} #{{ order.id }}
-          </div>
         </div>
 
         <button
@@ -869,23 +866,13 @@ body,
       </div>
 
 
-      <div class="ot-items-total">
-
-        <span>{% trans "Order Total" %}</span>
-
-        <strong>
-          ₹{{ order.total }}
-        </strong>
-
-      </div>
-
 
       <button
         type="button"
         class="ot-items-done"
         id="closeItemsOrderModalBottom"
       >
-        {% trans "Close" %}
+        Close
       </button>
 
     </div>

@@ -767,13 +767,13 @@
 
 </div><!-- /mo-page -->
 
-{% if request.session.order_again_store_closed %}
+{% if order_again_store_closed %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
   const popupData = {
-    storeName: "{{ request.session.order_again_store_closed.store_name|escapejs }}",
-    message: "{{ request.session.order_again_store_closed.message|escapejs }}"
+    storeName: "{{ order_again_store_closed.store_name|escapejs }}",
+    message: "{{ order_again_store_closed.message|escapejs }}"
   };
 
   const popup = document.createElement("div");

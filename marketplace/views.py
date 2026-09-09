@@ -2552,6 +2552,10 @@ def my_orders(request):
     favorite_orders = orders.filter(
         favorite_record__isnull=False
     )
+    order_again_store_closed = request.session.pop(
+        "order_again_store_closed",
+        None
+    )
 
     return render(
         request,
@@ -2561,6 +2565,7 @@ def my_orders(request):
             "favorite_orders": favorite_orders,
             "phone": phone,
             "customer": customer,
+            "order_again_store_closed": order_again_store_closed,
             "show_navbar": False,
             "simple_navbar": False,
             "show_floating_cart": False,
