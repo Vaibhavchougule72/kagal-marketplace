@@ -458,8 +458,6 @@
     <div class="mo-tabs" id="moTabs">
       <div class="mo-tab active" data-tab="all">{% trans "All" %}</div>
       <div class="mo-tab" data-tab="active">{% trans "Active" %}</div>
-      <div class="mo-tab" data-tab="delivered">{% trans "Delivered" %}</div>
-      <div class="mo-tab" data-tab="failed">{% trans "Failed" %}</div>
       <div class="mo-tab" data-tab="cancelled">{% trans "Cancelled" %}</div>
       <div class="mo-tab" data-tab="favourite">❤ {% trans "Favourite" %}</div>
     </div>
@@ -504,53 +502,6 @@
         {% endif %}
       {% endfor %}
 
-      <!-- Delivered group -->
-      {% for order in orders %}
-        {% if order.status == "DELIVERED" %}
-          {% if forloop.first %}<div class="mo-section-label">{% trans "Delivered" %}</div>{% endif %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-            <div class="mo-dot green"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-view-btn">{% trans "View" %}</span>
-            </div>
-            <button
-              type="button"
-              class="mo-favorite-btn {% if order.favorite_record %}is-favourite{% endif %}"
-              data-order-id="{{ order.id }}"
-              aria-label="{% trans 'Favourite order' %}"
-            >
-              {% if order.favorite_record %}
-                ❤️
-              {% else %}
-                ♡
-              {% endif %}
-            </button>
-          </a>
-        {% endif %}
-      {% endfor %}
-
-      <!-- Failed group -->
-      {% for order in orders %}
-        {% if order.status == "FAILED" %}
-          {% if forloop.first %}<div class="mo-section-label">{% trans "Failed" %}</div>{% endif %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-            <div class="mo-dot amber"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-pill amber">{% trans "Failed" %}</span>
-            </div>
-          </a>
-        {% endif %}
-      {% endfor %}
 
       <!-- Cancelled group -->
       {% for order in orders %}
@@ -576,125 +527,36 @@
     <!-- ══ ACTIVE TAB ══ -->
     <div class="mo-section" id="tab-active">
       {% with found=False %}
-      {% for order in orders %}
-        {% if order.status == "REQUEST_SUBMITTED" or order.status == "ACCEPTED" or order.status == "IN_PROGRESS" or order.status == "PICKED_UP" or order.status == "OUT_FOR_DELIVERY" %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-            <div class="mo-dot orange"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-track-btn">{% trans "Track" %}</span>
-            </div>
-          </a>
-        {% endif %}
+      {% for order in active_orders %}
+
+          <!-- KEEP YOUR EXISTING ACTIVE ORDER CARD HERE -->
+
       {% empty %}
-        <div class="mo-empty">
-          <span class="mo-empty-icon">🚴</span>
-          <div class="mo-empty-title">{% trans "No active orders" %}</div>
-          <div class="mo-empty-sub">{% trans "You have no orders in progress right now." %}</div>
-        </div>
+
+          <div class="mo-empty">
+              <div class="mo-empty-icon">📦</div>
+              <h3>{% trans "No active orders" %}</h3>
+              <p>{% trans "You don't have any active orders right now." %}</p>
+          </div>
+
       {% endfor %}
       {% endwith %}
     </div>
 
-    <!-- ══ DELIVERED TAB ══ -->
-    <div class="mo-section" id="tab-delivered">
-      {% for order in orders %}
-        {% if order.status == "DELIVERED" %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-
-            <div class="mo-dot green"></div>
-
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-
-              <div class="mo-meta">
-                {{ order.created_at|date:"d M Y · g:i A" }}
-              </div>
-            </div>
-
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-
-              <span class="mo-view-btn">
-                {% trans "View" %}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              class="mo-favorite-btn {% if order.favorite_record %}is-favourite{% endif %}"
-              data-order-id="{{ order.id }}"
-              aria-label="{% trans 'Favourite order' %}"
-            >
-              {% if order.favorite_record %}
-                ❤️
-              {% else %}
-                ♡
-              {% endif %}
-            </button>
-
-          </a>
-        {% endif %}
-      {% empty %}
-        <div class="mo-empty">
-          <span class="mo-empty-icon">✅</span>
-          <div class="mo-empty-title">{% trans "No delivered orders" %}</div>
-          <div class="mo-empty-sub">{% trans "Your delivered orders will appear here." %}</div>
-        </div>
-      {% endfor %}
-    </div>
-
-    <!-- ══ FAILED TAB ══ -->
-    <div class="mo-section" id="tab-failed">
-      {% for order in orders %}
-        {% if order.status == "FAILED" %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-            <div class="mo-dot amber"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-pill amber">{% trans "Failed" %}</span>
-            </div>
-          </a>
-        {% endif %}
-      {% empty %}
-        <div class="mo-empty">
-          <span class="mo-empty-icon">😮‍💨</span>
-          <div class="mo-empty-title">{% trans "No failed orders" %}</div>
-          <div class="mo-empty-sub">{% trans "Thankfully no failed orders here!" %}</div>
-        </div>
-      {% endfor %}
-    </div>
-
     <!-- ══ CANCELLED TAB ══ -->
     <div class="mo-section" id="tab-cancelled">
-      {% for order in orders %}
-        {% if order.status == "CANCELLED" %}
-          <a href="{% url 'order_tracking' order.id %}" class="mo-card">
-            <div class="mo-dot grey"></div>
-            <div class="mo-info">
-              <div class="mo-store">{{ order.store.name }}</div>
-              <div class="mo-meta">{{ order.created_at|date:"d M Y · g:i A" }}</div>
-            </div>
-            <div class="mo-right">
-              <span class="mo-amount">₹{{ order.total }}</span>
-              <span class="mo-pill grey">{% trans "Cancelled" %}</span>
-            </div>
-          </a>
-        {% endif %}
+      {% for order in cancelled_orders %}
+
+          <!-- KEEP YOUR EXISTING CANCELLED ORDER CARD HERE -->
+
       {% empty %}
-        <div class="mo-empty">
-          <span class="mo-empty-icon">🎉</span>
-          <div class="mo-empty-title">{% trans "No cancelled orders" %}</div>
-          <div class="mo-empty-sub">{% trans "No cancellations on record." %}</div>
-        </div>
+
+          <div class="mo-empty">
+              <div class="mo-empty-icon">📦</div>
+              <h3>{% trans "No cancelled orders" %}</h3>
+              <p>{% trans "You don't have any cancelled orders." %}</p>
+          </div>
+
       {% endfor %}
     </div>
 

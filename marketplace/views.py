@@ -2552,6 +2552,20 @@ def my_orders(request):
     favorite_orders = orders.filter(
         favorite_record__isnull=False
     )
+
+    active_orders = orders.filter(
+        status__in=[
+            "REQUEST_SUBMITTED",
+            "ACCEPTED",
+            "IN_PROGRESS",
+            "PICKED_UP",
+            "OUT_FOR_DELIVERY",
+        ]
+    )
+
+    cancelled_orders = orders.filter(
+        status="CANCELLED"
+    )
     order_again_store_closed = request.session.pop(
         "order_again_store_closed",
         None
@@ -2563,6 +2577,8 @@ def my_orders(request):
         {
             "orders": orders,
             "favorite_orders": favorite_orders,
+            "active_orders": active_orders,
+            "cancelled_orders": cancelled_orders,
             "phone": phone,
             "customer": customer,
             "order_again_store_closed": order_again_store_closed,
