@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
-
+import secrets
 from django.db.models import Q
 from decimal import Decimal
 from django.utils import timezone
@@ -7011,6 +7011,47 @@ def send_login_otp(request):
             status=400
         )
 
+    # ============================================================
+    # GOOGLE PLAY REVIEWER LOGIN
+    # ============================================================
+
+    if (
+        settings.GOOGLE_REVIEW_PHONE
+        and phone == settings.GOOGLE_REVIEW_PHONE
+    ):
+        customer = (
+            Customer.objects
+            .filter(phone=phone, is_active=True)
+            .first()
+        )
+
+        if not customer:
+            logger.error(
+                "Google Play reviewer account does not exist: %s",
+                phone
+            )
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Review account is not configured correctly."
+                },
+                status=500
+            )
+
+        # Store phone in session so the existing OTP page works
+        request.session["pending_login_phone"] = phone
+        request.session.modified = True
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "OTP sent successfully.",
+                "phone": phone,
+                "review_account": True
+            }
+        )
+
     # --------------------------------------------------------
     # Check recent OTP
     # --------------------------------------------------------
@@ -7289,6 +7330,84 @@ def verify_login_otp(request):
                 "message": "Please enter the 6-digit OTP."
             },
             status=400
+        )
+
+    # ============================================================
+    # GOOGLE PLAY REVIEWER LOGIN
+    # ============================================================
+
+    if (
+        settings.GOOGLE_REVIEW_PHONE
+        and phone == settings.GOOGLE_REVIEW_PHONE
+        and settings.GOOGLE_REVIEW_OTP
+        and secrets.compare_digest(
+            entered_otp,
+            settings.GOOGLE_REVIEW_OTP
+        )
+    ):
+        customer = (
+            Customer.objects
+            .filter(phone=phone)
+            .first()
+        )
+
+        if not customer:
+            logger.error(
+                "Google Play reviewer account does not exist: %s",
+                phone
+            )
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Review account is not configured correctly."
+                    )
+                },
+                status=500
+            )
+
+        if not customer.is_active:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Your LOKA account is currently inactive."
+                    )
+                },
+                status=403
+            )
+
+        customer.is_verified = True
+        customer.last_login_at = timezone.now()
+
+        customer.save(
+            update_fields=[
+                "is_verified",
+                "last_login_at"
+            ]
+        )
+
+        # Create customer session
+        request.session["customer_id"] = customer.id
+        request.session["customer_phone"] = customer.phone
+
+        # Remove temporary login phone
+        request.session.pop(
+            "pending_login_phone",
+            None
+        )
+
+        request.session.modified = True
+
+        return JsonResponse(
+            {
+                "success": True,
+                "existing_customer": True,
+                "needs_registration": False,
+                "message": "Login successful.",
+                "redirect_url": "/"
+            }
         )
 
     # --------------------------------------------------------
@@ -7661,6 +7780,26 @@ def resend_login_otp(request):
                 "message": "Invalid mobile number."
             },
             status=400
+        )
+    
+    # ============================================================
+    # GOOGLE PLAY REVIEWER LOGIN
+    # ============================================================
+
+    if (
+        settings.GOOGLE_REVIEW_PHONE
+        and phone == settings.GOOGLE_REVIEW_PHONE
+    ):
+        return JsonResponse(
+            {
+                "success": True,
+                "message": (
+                    "Your review OTP is reusable. "
+                    "Please enter the OTP provided in the "
+                    "Google Play review instructions."
+                ),
+                "review_account": True
+            }
         )
 
     # --------------------------------------------------------

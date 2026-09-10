@@ -248,3 +248,17 @@ FAST2SMS_WHATSAPP_OTP_LANGUAGE = config(
     "FAST2SMS_WHATSAPP_OTP_LANGUAGE",
     default="en"
 )
+
+# ============================================================
+# GOOGLE PLAY REVIEWER LOGIN
+# ============================================================
+
+GOOGLE_REVIEW_PHONE = os.getenv(
+    "GOOGLE_REVIEW_PHONE",
+    ""
+).strip()
+
+GOOGLE_REVIEW_OTP = os.getenv(
+    "GOOGLE_REVIEW_OTP",
+    ""
+).strip()
