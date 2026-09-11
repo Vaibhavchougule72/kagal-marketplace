@@ -4801,8 +4801,9 @@ def upi_payment(request):
 
 def download_app(request):
     return render(request, "download_app.html", {
+        "show_navbar": False,
+        "simple_navbar": False,
         "show_floating_cart": False,
-        "simple_navbar": True
     })
 
 @require_POST
