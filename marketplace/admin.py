@@ -187,6 +187,7 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     list_editable = (
+        'price',
         'unavailable_10_12',
         'unavailable_12_3',
         'unavailable_3_630',
