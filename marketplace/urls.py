@@ -301,8 +301,8 @@ urlpatterns = [
         views.admin_credit_loka_money,
         name="admin_credit_loka_money"
     ),
-        path(
-        "admin/loka-money/",
+    path(
+        "loka-money-admin/",
         views.admin_loka_money,
         name="admin_loka_money"
     ),
