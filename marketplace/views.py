@@ -7340,7 +7340,7 @@ def get_logged_in_customer(request):
         is_active=True
     ).first()
 
-@login_required
+
 def loka_money_data(request):
 
     customer = get_logged_in_customer(request)
