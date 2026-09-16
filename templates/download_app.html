@@ -5,22 +5,22 @@
 <style>
 
     .page-wrapper,
-    .main-content {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+.main-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    .da-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+.da-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
 
-    html,
-    body,
-    .da-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
+html,
+body,
+.da-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
   * { box-sizing: border-box; }
 
   /* ── PAGE ── */
@@ -73,195 +73,197 @@
 
   /* ── HERO ── */
   .da-hero {
-    background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
-    padding: 28px 16px 40px;
-    text-align: center;
+    background: #1A3A16;
+    padding: 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
     position: relative;
     overflow: hidden;
   }
 
-  /* decorative circles */
-  .da-hero::before {
-    content: '';
-    position: absolute;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.05);
-    right: -55px;
-    top: -55px;
-    pointer-events: none;
-  }
-
   .da-hero::after {
-    content: '';
+    content: '🌿';
+    font-size: 90px;
     position: absolute;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: rgba(232,98,26,0.1);
-    left: -30px;
-    bottom: -30px;
+    right: -14px;
+    top: -14px;
+    opacity: 0.1;
     pointer-events: none;
   }
 
-  .da-hero-logo {
-    font-size: 52px;
-    display: block;
-    margin-bottom: 12px;
+  .da-hero-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.12);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
     position: relative;
     z-index: 1;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
   }
+
+  .da-hero-info { position: relative; z-index: 1; }
 
   .da-hero-title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     color: #fff;
-    margin-bottom: 6px;
-    position: relative;
-    z-index: 1;
+    margin-bottom: 4px;
+    line-height: 1.2;
   }
 
   .da-hero-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.6);
-    margin-bottom: 18px;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* feature badges */
-  .da-badges {
-    display: flex;
-    gap: 7px;
-    justify-content: center;
-    flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
-  }
-
-  .da-badge {
-    background: rgba(255,255,255,0.1);
-    border: 0.5px solid rgba(255,255,255,0.18);
-    border-radius: 20px;
-    padding: 5px 13px;
     font-size: 12px;
-    color: rgba(255,255,255,0.75);
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
   }
 
   /* ── BODY ── */
   .da-body {
-    padding: 0 14px 0;
-    margin-top: -20px;
+    padding: 14px 14px 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
 
-  /* ── DOWNLOAD CARD ── */
-  .da-card {
-    background: #fff;
-    border-radius: 16px;
-    border: 0.5px solid #E0E8DF;
-    padding: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  /* ══════════════════════════
+     SECTION 1 — BENTO GRID
+  ══════════════════════════ */
+  .da-bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .da-tile {
+    border-radius: 14px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 11px;
+    gap: 3px;
+    text-decoration: none;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 110px;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
   }
 
-  .da-card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #1A2E19;
-    margin-bottom: 2px;
-  }
+  .da-tile:active { transform: scale(0.97); }
 
-  /* download buttons row */
-  .da-dl-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  /* Google Play button */
-  .da-btn-ps {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  /* tile variants */
+  .da-tile.dark {
     background: #1A2E19;
-    border-radius: 12px;
-    padding: 11px 14px;
-    text-decoration: none;
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 16px rgba(26,46,25,0.3);
   }
 
-  .da-btn-ps:active { transform: scale(0.97); background: #0F1E0D; }
-
-  .da-btn-ps-icon { font-size: 22px; flex-shrink: 0; }
-
-  .da-btn-ps-label {
-    font-size: 9px;
-    color: rgba(255,255,255,0.6);
-    display: block;
-    margin-bottom: 1px;
-    letter-spacing: 0.04em;
-  }
-
-  .da-btn-ps-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: #fff;
-    white-space: nowrap;
-  }
-
-  /* Direct APK button */
-  .da-btn-apk {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .da-tile.orange {
     background: #E8621A;
-    border-radius: 12px;
-    padding: 11px 14px;
-    text-decoration: none;
-    transition: transform 0.12s ease, background 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 4px 14px rgba(232,98,26,0.3);
+    box-shadow: 0 4px 16px rgba(232,98,26,0.32);
   }
 
-  .da-btn-apk:active { transform: scale(0.97); background: #C05018; }
+  .da-tile.muted {
+    background: #F0F4EF;
+    border: 0.5px solid #E0E8DF;
+    opacity: 0.75;
+    cursor: default;
+  }
 
-  .da-btn-apk-icon { font-size: 22px; flex-shrink: 0; }
+  .da-tile.green-light {
+    background: #EAF2E8;
+    border: 0.5px solid #D0E4CE;
+  }
 
-  .da-btn-apk-label {
-    font-size: 9px;
-    color: rgba(255,255,255,0.75);
+  /* tile decorative emoji */
+  .da-tile::before {
+    font-size: 52px;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    opacity: 0.15;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .da-tile.dark::before   { content: '▶'; }
+  .da-tile.orange::before { content: '📲'; }
+  .da-tile.muted::before  { content: '🍎'; }
+  .da-tile.green-light::before { content: '🍔'; }
+
+  .da-tile-icon {
+    font-size: 24px;
     display: block;
-    margin-bottom: 1px;
-    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
   }
 
-  .da-btn-apk-name {
-    font-size: 13px;
+  .da-tile-label {
+    font-size: 9px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .da-tile-label.white { color: rgba(255,255,255,0.6); }
+  .da-tile-label.grey  { color: #9AA899; }
+
+  .da-tile-name {
+    font-size: 14px;
     font-weight: 700;
-    color: #fff;
-    white-space: nowrap;
+    display: block;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
   }
 
-  /* ── IPHONE NOTE ── */
+  .da-tile-name.white { color: #fff; }
+  .da-tile-name.dark  { color: #1A2E19; }
+  .da-tile-name.green { color: #2D5A27; }
+
+  .da-tile-sub {
+    font-size: 10px;
+    display: block;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .da-tile-sub.muted-white { color: rgba(255,255,255,0.55); }
+  .da-tile-sub.grey        { color: #9AA899; }
+
+  /* ══════════════════════════
+     SECTION 2 — IPHONE NOTE
+  ══════════════════════════ */
   .da-iphone-note {
     background: #FDF8F3;
     border: 0.5px solid #F0DCC8;
-    border-radius: 11px;
-    padding: 11px 13px;
+    border-radius: 13px;
+    padding: 13px 14px;
     display: flex;
     align-items: flex-start;
-    gap: 9px;
+    gap: 10px;
   }
 
-  .da-iphone-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .da-iphone-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  .da-iphone-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #7A4A10;
+    margin-bottom: 3px;
+  }
 
   .da-iphone-text {
     font-size: 12px;
@@ -269,9 +271,54 @@
     line-height: 1.6;
   }
 
-  .da-iphone-text strong { color: #7A4A10; }
+  /* ══════════════════════════
+     SECTION 3 — FEATURES GRID
+  ══════════════════════════ */
+  .da-features-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #9AA899;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding-left: 2px;
+  }
 
-  /* ── ORDER CTA ── */
+  .da-feat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 8px;
+  }
+
+  .da-feat {
+    background: #fff;
+    border-radius: 13px;
+    border: 0.5px solid #E0E8DF;
+    padding: 13px;
+    text-align: center;
+  }
+
+  .da-feat-icon {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .da-feat-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1A2E19;
+    margin-bottom: 2px;
+  }
+
+  .da-feat-sub {
+    font-size: 10px;
+    color: #9AA899;
+  }
+
+  /* ══════════════════════════
+     SECTION 4 — ORDER CTA
+  ══════════════════════════ */
   .da-order-cta {
     display: block;
     width: 100%;
@@ -288,27 +335,8 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .da-order-cta:hover { color: #fff; text-decoration: none; background: #C05018; }
+  .da-order-cta:hover  { color: #fff; text-decoration: none; background: #C05018; }
   .da-order-cta:active { transform: scale(0.98); background: #C05018; }
-
-  /* ── FEATURES GRID ── */
-  .da-features {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-  }
-
-  .da-feature {
-    background: #F7F9F6;
-    border: 0.5px solid #E8EDE7;
-    border-radius: 11px;
-    padding: 11px;
-    text-align: center;
-  }
-
-  .da-feature-icon { font-size: 22px; display: block; margin-bottom: 5px; }
-  .da-feature-title { font-size: 12px; font-weight: 600; color: #1A2E19; margin-bottom: 2px; }
-  .da-feature-sub { font-size: 10px; color: #9AA899; }
 
   /* ── FOOTER ── */
   .da-footer {
@@ -328,87 +356,104 @@
     <span class="da-nav-title">{% trans "Download App" %}</span>
   </div>
 
-  <!-- HERO -->
+  <!-- ── HERO ── -->
   <div class="da-hero">
-    <div class="da-hero-title">LOKA App</div>
-    <div class="da-hero-sub">{% trans "Order Food in Kagal · Fast delivery · Best offers" %}</div>
+    <div class="da-hero-avatar">🌿</div>
+    <div class="da-hero-info">
+      <div class="da-hero-title">LOKA App</div>
+      <div class="da-hero-sub">
+        {% trans "Order food in Kagal" %}<br>
+        {% trans "Fast delivery · Best offers" %}
+      </div>
+    </div>
   </div>
 
-  <!-- BODY -->
   <div class="da-body">
 
-    <!-- DOWNLOAD CARD -->
-    <div class="da-card">
+    <!-- ══ SECTION 1: BENTO DOWNLOAD GRID ══ -->
+    <div class="da-bento">
 
-      <div class="da-card-title">{% trans "Download for Android" %} 🤖</div>
+      <!-- Google Play Store -->
+      <a href="https://play.google.com/store/apps/details?id=com.lokamarketplace.app"
+         class="da-tile dark"
+         target="_blank"
+         rel="noopener noreferrer">
+        <span class="da-tile-icon">▶</span>
+        <span class="da-tile-label white">{% trans "GET IT ON" %}</span>
+        <span class="da-tile-name white">Google Play</span>
+        <span class="da-tile-sub muted-white">{% trans "Recommended" %}</span>
+      </a>
 
-      <!-- Download buttons -->
-      <div class="da-dl-row">
+      <!-- Direct APK -->
+      <a href="/static/LOKA-v1.13.apk"
+         class="da-tile orange"
+         download>
+        <span class="da-tile-icon">📲</span>
+        <span class="da-tile-label white">{% trans "DIRECT DOWNLOAD" %}</span>
+        <span class="da-tile-name white">{% trans "Download APK" %}</span>
+        <span class="da-tile-sub muted-white">{% trans "All Android devices" %}</span>
+      </a>
 
-        <!-- Google Play Store -->
-        <a href="https://play.google.com/store/apps/details?id=com.lokamarketplace.app"
-           class="da-btn-ps"
-           target="_blank"
-           rel="noopener noreferrer">
-          <span class="da-btn-ps-icon">▶</span>
-          <div>
-            <span class="da-btn-ps-label">GET IT ON</span>
-            <span class="da-btn-ps-name">Google Play</span>
-          </div>
-        </a>
-
-        <!-- Direct APK -->
-        <a href="/static/LOKA-v1.13.apk"
-           class="da-btn-apk"
-           download>
-          <span class="da-btn-apk-icon">📲</span>
-          <div>
-            <span class="da-btn-apk-label">DIRECT DOWNLOAD</span>
-            <span class="da-btn-apk-name">Download APK</span>
-          </div>
-        </a>
-
+      <!-- iPhone (coming soon) -->
+      <div class="da-tile muted">
+        <span class="da-tile-icon">🍎</span>
+        <span class="da-tile-label grey">{% trans "COMING SOON" %}</span>
+        <span class="da-tile-name dark">iPhone iOS</span>
+        <span class="da-tile-sub grey">{% trans "In development" %}</span>
       </div>
 
-      <!-- iPhone note -->
-      <div class="da-iphone-note">
-        <span class="da-iphone-icon">🍎</span>
+      <!-- Order via Website -->
+      <a href="/" class="da-tile green-light">
+        <span class="da-tile-icon">🍔</span>
+        <span class="da-tile-label grey">{% trans "ORDER VIA" %}</span>
+        <span class="da-tile-name green">{% trans "Website" %}</span>
+        <span class="da-tile-sub grey">{% trans "No app needed" %}</span>
+      </a>
+
+    </div>
+
+    <!-- ══ SECTION 2: IPHONE NOTE ══ -->
+    <div class="da-iphone-note">
+      <span class="da-iphone-icon">🍎</span>
+      <div class="da-iphone-body">
+        <div class="da-iphone-title">{% trans "iPhone users" %}</div>
         <div class="da-iphone-text">
-          <strong>{% trans "iPhone users:" %}</strong>
-          {% trans "The iOS app is not yet published on the App Store. We're actively working on it — stay tuned! In the meantime, please use our website to place orders." %}
+          {% trans "The LOKA iOS app is not yet published on the App Store. We're actively working on it — stay tuned! In the meantime, please use our website to place orders." %}
         </div>
       </div>
-
     </div>
 
-    <!-- APP FEATURES GRID -->
-    <div class="da-features">
-      <div class="da-feature">
-        <span class="da-feature-icon">⚡</span>
-        <div class="da-feature-title">{% trans "Faster Checkout" %}</div>
-        <div class="da-feature-sub">{% trans "Saved addresses & quick pay" %}</div>
-      </div>
-      <div class="da-feature">
-        <span class="da-feature-icon">🔔</span>
-        <div class="da-feature-title">{% trans "Live Updates" %}</div>
-        <div class="da-feature-sub">{% trans "Real-time order notifications" %}</div>
-      </div>
-      <div class="da-feature">
-        <span class="da-feature-icon">📍</span>
-        <div class="da-feature-title">{% trans "Live Tracking" %}</div>
-        <div class="da-feature-sub">{% trans "Track your rider in real time" %}</div>
-      </div>
-      <div class="da-feature">
-        <span class="da-feature-icon">🎁</span>
-        <div class="da-feature-title">{% trans "Exclusive Offers" %}</div>
-        <div class="da-feature-sub">{% trans "App-only deals & coupons" %}</div>
+    <!-- ══ SECTION 3: APP FEATURES ══ -->
+    <div>
+      <div class="da-features-label">{% trans "Why use the app?" %}</div>
+      <div class="da-feat-grid">
+        <div class="da-feat">
+          <span class="da-feat-icon">⚡</span>
+          <div class="da-feat-title">{% trans "Faster Checkout" %}</div>
+          <div class="da-feat-sub">{% trans "Saved addresses & quick pay" %}</div>
+        </div>
+        <div class="da-feat">
+          <span class="da-feat-icon">🔔</span>
+          <div class="da-feat-title">{% trans "Live Updates" %}</div>
+          <div class="da-feat-sub">{% trans "Real-time order notifications" %}</div>
+        </div>
+        <div class="da-feat">
+          <span class="da-feat-icon">📍</span>
+          <div class="da-feat-title">{% trans "Live Tracking" %}</div>
+          <div class="da-feat-sub">{% trans "Track your rider in real time" %}</div>
+        </div>
+        <div class="da-feat">
+          <span class="da-feat-icon">🎁</span>
+          <div class="da-feat-title">{% trans "Exclusive Offers" %}</div>
+          <div class="da-feat-sub">{% trans "App-only deals & coupons" %}</div>
+        </div>
       </div>
     </div>
 
-    <!-- ORDER CTA -->
+    <!-- ══ SECTION 4: ORDER CTA ══ -->
     <a href="/" class="da-order-cta">🍔 {% trans "Start Ordering Now" %}</a>
 
-    <!-- FOOTER -->
+    <!-- ── FOOTER ── -->
     <div class="da-footer">
       <strong>LOKA</strong> · {% trans "Kagal's food delivery service" %}
     </div>

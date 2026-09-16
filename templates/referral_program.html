@@ -699,53 +699,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-});
+    const shareButton = document.getElementById("shareReferralButton");
 
-const shareButton = document.getElementById("shareReferralButton");
+    if (shareButton) {
+        shareButton.addEventListener("click", async function () {
 
-if (shareButton) {
-    shareButton.addEventListener("click", async function () {
+            const code = referralCode.textContent.trim();
 
-        const code = referralCode.textContent.trim();
+            if (!code) {
+                return;
+            }
 
-        if (!code) {
-            return;
-        }
+            const shareMessage =
+                "🎉 Join LOKA – Kagal's own food delivery service!\n\n" +
+                "Use my referral code: " + code + "\n\n" +
+                "Sign up on LOKA and start ordering your favourite food! 🍔🍕🍛";
 
-        const shareMessage =
-            "🎉 Join LOKA – Kagal's own food delivery service!\n\n" +
-            "Use my referral code: " + code + "\n\n" +
-            "Sign up on LOKA and start ordering your favourite food! 🍔🍕🍛";
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: "Join LOKA",
+                        text: shareMessage
+                    });
+                } catch (error) {
+                    if (error.name !== "AbortError") {
+                        console.error("Share failed:", error);
+                    }
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(shareMessage);
 
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: "Join LOKA",
-                    text: shareMessage
-                });
-            } catch (error) {
-                if (error.name !== "AbortError") {
-                    console.error("Share failed:", error);
+                    const originalText = shareButton.textContent;
+
+                    shareButton.textContent = "Message Copied!";
+
+                    setTimeout(function () {
+                        shareButton.textContent = originalText;
+                    }, 1500);
+
+                } catch (error) {
+                    console.error("Failed to copy share message:", error);
                 }
             }
-        } else {
-            try {
-                await navigator.clipboard.writeText(shareMessage);
+        });
+    }
 
-                const originalText = shareButton.textContent;
+});
 
-                shareButton.textContent = "Message Copied!";
 
-                setTimeout(function () {
-                    shareButton.textContent = originalText;
-                }, 1500);
-
-            } catch (error) {
-                console.error("Failed to copy share message:", error);
-            }
-        }
-    });
-}
 </script>
 
 {% endblock %}
