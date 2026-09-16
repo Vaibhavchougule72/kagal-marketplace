@@ -297,22 +297,25 @@ urlpatterns = [
         name="order_again"
     ),
     path(
-        "admin/credit-loka-money/",
-        views.admin_credit_loka_money,
-        name="admin_credit_loka_money"
-    ),
-    path(
         "loka-money-admin/",
         views.admin_loka_money,
         name="admin_loka_money"
     ),
+
     path(
-        "admin/loka-money/debit/",
+        "loka-money-admin/credit/",
+        views.admin_credit_loka_money,
+        name="admin_credit_loka_money"
+    ),
+
+    path(
+        "loka-money-admin/debit/",
         views.admin_debit_loka_money,
         name="admin_debit_loka_money"
     ),
+
     path(
-        "admin/loka-money/transactions/",
+        "loka-money-admin/transactions/",
         views.admin_loka_money_transactions,
         name="admin_loka_money_transactions"
     ),
