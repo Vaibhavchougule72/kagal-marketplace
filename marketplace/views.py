@@ -1258,6 +1258,21 @@ def checkout(request):
             or next_order_number == 10
         )
 
+    # -------------------------
+    # LOKA MONEY ACCOUNT
+    # -------------------------
+    loka_money_used = Decimal("0.00")
+    loka_account = None
+
+    customer = get_logged_in_customer(request)
+
+    if customer:
+        loka_account = (
+            LokaMoneyAccount.objects
+            .filter(customer=customer)
+            .first()
+        )
+
     context.update({
         "subtotal": subtotal,
         "handling_fee": handling_fee,
