@@ -346,18 +346,16 @@
     <div class="profile-section-label">Rewards</div>
     <div class="profile-menu-card">
 
-      <button type="button" class="profile-menu-item"
-              onclick="showProfileComingSoon('Referral Program')">
+      <a href="{% url 'referral_program' %}" class="profile-menu-item">
         <div class="profile-menu-icon yellow">🎁</div>
         <div class="profile-menu-text">
           <span class="profile-menu-title">
             Referral Program
-            <span class="coming-soon-badge">COMING SOON</span>
           </span>
           <span class="profile-menu-subtitle">Invite friends and earn rewards</span>
         </div>
         <div class="profile-menu-arrow">›</div>
-      </button>
+      </a>
 
       <button type="button" class="profile-menu-item"
               onclick="showProfileComingSoon('Coupons')">

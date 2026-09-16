@@ -1,0 +1,751 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .referral-page {
+        min-height: calc(100vh - 70px);
+        background: #f7f8f5;
+        padding: 30px 16px 50px;
+    }
+
+    .referral-container {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .referral-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .referral-header h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        font-weight: 800;
+        color: #174d32;
+    }
+
+    .referral-header p {
+        margin: 0;
+        font-size: 15px;
+        color: #666;
+    }
+
+    @media (max-width: 600px) {
+        .referral-page {
+            padding: 22px 14px 40px;
+        }
+
+        .referral-header h1 {
+            font-size: 26px;
+        }
+    }
+    .referral-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px 24px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e8ece7;
+}
+
+.referral-card-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: #fff4e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+
+.referral-card h2 {
+    margin: 0 0 10px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #174d32;
+}
+
+.referral-card-text {
+    max-width: 500px;
+    margin: 0 auto 25px;
+    color: #666;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.referral-card-text strong {
+    color: #e87922;
+}
+
+.referral-code-section {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.referral-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #777;
+}
+
+.referral-code-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px;
+    background: #f5f7f3;
+    border: 1px dashed #174d32;
+    border-radius: 12px;
+}
+
+#referralCode {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #174d32;
+    text-align: center;
+}
+
+#copyReferralCode {
+    border: none;
+    border-radius: 9px;
+    padding: 11px 18px;
+    background: #174d32;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#copyReferralCode:active {
+    transform: scale(0.97);
+}
+
+@media (max-width: 600px) {
+    .referral-card {
+        padding: 25px 16px;
+    }
+
+    .referral-card h2 {
+        font-size: 21px;
+    }
+
+    .referral-code-box {
+        gap: 6px;
+    }
+
+    #copyReferralCode {
+        padding: 10px 14px;
+    }
+}
+
+.how-referral-works {
+    margin-top: 25px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px 24px;
+    border: 1px solid #e8ece7;
+}
+
+.how-referral-works > h2 {
+    margin: 0 0 20px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #174d32;
+}
+
+.referral-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.referral-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.step-number {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #174d32;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.referral-step h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 750;
+    color: #222;
+}
+
+.referral-step p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #777;
+}
+
+.share-referral-section {
+    margin-top: 18px;
+}
+
+#shareReferralButton {
+    width: 100%;
+    max-width: 420px;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 20px;
+    background: #e87922;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+#shareReferralButton:hover {
+    opacity: 0.92;
+}
+
+#shareReferralButton:active {
+    transform: scale(0.98);
+}
+
+.referral-wallet-card {
+    margin-top: 18px;
+    background: #ffffff;
+    border: 1px solid #e8ece7;
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.wallet-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border-radius: 12px;
+    background: #fff4e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+
+.wallet-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.wallet-info span {
+    font-size: 13px;
+    color: #777;
+}
+
+.wallet-info strong {
+    font-size: 20px;
+    font-weight: 800;
+    color: #174d32;
+}
+
+.referral-activity-card {
+    margin-top: 25px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px 24px;
+    border: 1px solid #e8ece7;
+}
+
+.referral-activity-card > h2 {
+    margin: 0 0 20px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #174d32;
+}
+
+.referral-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.referral-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.referral-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.referral-item:first-child {
+    padding-top: 0;
+}
+
+.referral-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.referral-user-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 50%;
+    background: #f1f6f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+}
+
+.referral-user div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.referral-user strong {
+    font-size: 14px;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.referral-user span {
+    font-size: 12px;
+    color: #888;
+}
+
+.referral-status {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+
+.referral-status strong {
+    font-size: 14px;
+}
+
+.referral-status span {
+    font-size: 11px;
+}
+
+.referral-status.rewarded strong {
+    color: #174d32;
+}
+
+.referral-status.rewarded span {
+    color: #5d8067;
+}
+
+.referral-status.pending strong {
+    color: #e87922;
+}
+
+.referral-status.pending span {
+    color: #999;
+}
+
+.no-referrals {
+    text-align: center;
+    padding: 15px 5px 5px;
+}
+
+.no-referrals-icon {
+    font-size: 35px;
+    margin-bottom: 8px;
+}
+
+.no-referrals h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #333;
+}
+
+.no-referrals p {
+    margin: 0 auto;
+    max-width: 400px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #888;
+}
+
+@media (max-width: 600px) {
+    .referral-activity-card {
+        padding: 22px 16px;
+    }
+
+    .referral-item {
+        gap: 8px;
+    }
+
+    .referral-user-icon {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+        font-size: 17px;
+    }
+
+    .referral-status {
+        max-width: 125px;
+        text-align: right;
+    }
+
+    .referral-status span {
+        line-height: 1.3;
+    }
+}
+
+.referral-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.referral-stat {
+    background: #ffffff;
+    border: 1px solid #e8ece7;
+    border-radius: 16px;
+    padding: 18px 10px;
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 22px;
+    margin-bottom: 7px;
+}
+
+.referral-stat strong {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    color: #174d32;
+    margin-bottom: 3px;
+}
+
+.referral-stat span {
+    display: block;
+    font-size: 11px;
+    color: #777;
+}
+
+@media (max-width: 600px) {
+    .referral-stats {
+        gap: 8px;
+    }
+
+    .referral-stat {
+        padding: 15px 6px;
+    }
+
+    .referral-stat strong {
+        font-size: 18px;
+    }
+
+    .referral-stat span {
+        font-size: 10px;
+    }
+}
+
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="referral-page">
+
+    <div class="referral-container">
+
+        <div class="referral-header">
+            <h1>Refer & Earn</h1>
+            <p>Invite your friends to LOKA and earn LOKA Money.</p>
+        </div>
+
+        <div class="referral-stats">
+
+            <div class="referral-stat">
+                <div class="stat-icon">👥</div>
+                <strong>{{ total_referrals }}</strong>
+                <span>Total Referrals</span>
+            </div>
+
+            <div class="referral-stat">
+                <div class="stat-icon">🎉</div>
+                <strong>{{ successful_referrals }}</strong>
+                <span>Successful</span>
+            </div>
+
+            <div class="referral-stat">
+                <div class="stat-icon">💰</div>
+                <strong>₹{{ total_referral_earnings|floatformat:0 }}</strong>
+                <span>Total Earned</span>
+            </div>
+
+        </div>
+
+        <div class="referral-card">
+
+            <div class="referral-card-icon">
+                🎁
+            </div>
+
+            <h2>Give ₹20, Get ₹20</h2>
+
+            <p class="referral-card-text">
+                Invite your friends to order from LOKA.
+                When they complete their first order, you earn
+                <strong>₹20 LOKA Money</strong>.
+            </p>
+
+            <div class="referral-code-section">
+                <span class="referral-label">Your Referral Code</span>
+
+                <div class="referral-code-box">
+                    <span id="referralCode">{{ customer.referral_code }}</span>
+                    <button type="button" id="copyReferralCode">
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+            <div class="share-referral-section">
+                <button type="button" id="shareReferralButton">
+                    📤 Share with Friends
+                </button>
+            </div>
+
+        </div>
+
+        <div class="referral-wallet-card">
+
+            <div class="wallet-icon">
+                💰
+            </div>
+
+            <div class="wallet-info">
+                <span>Available LOKA Money</span>
+                <strong>₹{{ loka_money_balance|floatformat:2 }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="how-referral-works">
+
+            <h2>How it works</h2>
+
+            <div class="referral-steps">
+
+                <div class="referral-step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3>Share your code</h3>
+                        <p>Share your unique referral code with your friends.</p>
+                    </div>
+                </div>
+
+                <div class="referral-step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3>Friend joins LOKA</h3>
+                        <p>Your friend signs up using your referral code.</p>
+                    </div>
+                </div>
+
+                <div class="referral-step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3>Earn ₹20</h3>
+                        <p>When your friend completes their first order, you receive ₹20 LOKA Money.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="referral-activity-card">
+
+            <h2>Your Referrals</h2>
+
+            {% if referrals %}
+
+                <div class="referral-list">
+
+                    {% for referral in referrals %}
+
+                        <div class="referral-item">
+
+                            <div class="referral-user">
+                                <div class="referral-user-icon">
+                                    👤
+                                </div>
+
+                                <div>
+                                    <strong>
+                                        {{ referral.referred_customer.name|default:"LOKA Customer" }}
+                                    </strong>
+
+                                    <span>
+                                        Joined
+                                        {{ referral.created_at|date:"d M Y" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {% if referral.is_rewarded %}
+
+                                <div class="referral-status rewarded">
+                                    <strong>₹{{ referral.reward_amount|floatformat:0 }}</strong>
+                                    <span>Reward earned ✓</span>
+                                </div>
+
+                            {% else %}
+
+                                <div class="referral-status pending">
+                                    <strong>Pending</strong>
+                                    <span>Waiting for first order</span>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="no-referrals">
+                    <div class="no-referrals-icon">👥</div>
+                    <h3>No referrals yet</h3>
+                    <p>Share your referral code with friends and start earning LOKA Money.</p>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const referralCode = document.getElementById("referralCode");
+    const copyButton = document.getElementById("copyReferralCode");
+
+    if (!referralCode || !copyButton) {
+        return;
+    }
+
+    copyButton.addEventListener("click", async function () {
+
+        const code = referralCode.textContent.trim();
+
+        if (!code) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(code);
+
+            const originalText = copyButton.textContent;
+
+            copyButton.textContent = "Copied!";
+
+            setTimeout(function () {
+                copyButton.textContent = originalText;
+            }, 1500);
+
+        } catch (error) {
+            console.error("Failed to copy referral code:", error);
+        }
+
+    });
+
+});
+
+const shareButton = document.getElementById("shareReferralButton");
+
+if (shareButton) {
+    shareButton.addEventListener("click", async function () {
+
+        const code = referralCode.textContent.trim();
+
+        if (!code) {
+            return;
+        }
+
+        const shareMessage =
+            "🎉 Join LOKA – Kagal's own food delivery service!\n\n" +
+            "Use my referral code: " + code + "\n\n" +
+            "Sign up on LOKA and start ordering your favourite food! 🍔🍕🍛";
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: "Join LOKA",
+                    text: shareMessage
+                });
+            } catch (error) {
+                if (error.name !== "AbortError") {
+                    console.error("Share failed:", error);
+                }
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(shareMessage);
+
+                const originalText = shareButton.textContent;
+
+                shareButton.textContent = "Message Copied!";
+
+                setTimeout(function () {
+                    shareButton.textContent = originalText;
+                }, 1500);
+
+            } catch (error) {
+                console.error("Failed to copy share message:", error);
+            }
+        }
+    });
+}
+</script>
+
+{% endblock %}

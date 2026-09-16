@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 import secrets
+import string
 from django.db.models import Q
 from decimal import Decimal
 from django.utils import timezone
@@ -18,7 +19,7 @@ from django.db.models import Count
 from django.db.models import Sum
 from django.db.models import F
 from .models import CouponUsage
-from .models import Coupon
+from .models import Coupon, CustomerReferral, CustomerReferral, LokaMoneyAccount, LokaMoneyTransaction
 from django.core.cache import cache
 from decimal import Decimal, ROUND_HALF_UP
 from django.urls import reverse
@@ -1261,7 +1262,13 @@ def checkout(request):
         "subtotal": subtotal,
         "handling_fee": handling_fee,
         "upi_only_required": upi_only_required,
-        "free_delivery_order": free_delivery_order
+        "free_delivery_order": free_delivery_order,
+        "loka_money_balance": (
+            loka_account.balance
+            if loka_account
+            else Decimal("0.00")
+        ),
+        "loka_money_used": loka_money_used,
     })
 
     # =========================
@@ -1279,6 +1286,83 @@ def checkout(request):
             longitude = request.POST.get("longitude")
             coupon_code = request.POST.get("coupon_code")
             customer_note = cart.get("customer_note", "").strip()
+            # -------------------------
+            # LOKA MONEY
+            # -------------------------
+            use_loka_money = (
+                request.POST.get("use_loka_money") == "on"
+            )
+
+            loka_money_used = Decimal("0.00")
+            loka_account = None
+
+            if use_loka_money:
+
+                if subtotal < Decimal("199"):
+                    context["error"] = (
+                        "LOKA Money can be used only on orders "
+                        "of ₹199 or more."
+                    )
+                    return render(
+                        request,
+                        "checkout.html",
+                        context
+                    )
+
+                customer = get_logged_in_customer(request)
+
+                if not customer:
+                    context["error"] = (
+                        "Please login to use LOKA Money."
+                    )
+                    return render(
+                        request,
+                        "checkout.html",
+                        context
+                    )
+
+                if customer.phone != phone:
+                    context["error"] = (
+                        "Please use your registered mobile number "
+                        "to use LOKA Money."
+                    )
+                    return render(
+                        request,
+                        "checkout.html",
+                        context
+                    )
+
+                if not customer:
+                    context["error"] = "Customer account not found."
+                    return render(
+                        request,
+                        "checkout.html",
+                        context
+                    )
+
+                loka_account = (
+                    LokaMoneyAccount.objects
+                    .filter(customer=customer)
+                    .first()
+                )
+
+                if loka_account:
+                    loka_money_used = min(
+                        loka_account.balance,
+                        Decimal("15.00")
+                    )
+                # -----------------------------------
+                # SERVER-SIDE LOKA MONEY LIMIT
+                # -----------------------------------
+                if loka_money_used > Decimal("15.00"):
+                    loka_money_used = Decimal("15.00")
+
+                if loka_account and loka_money_used > loka_account.balance:
+                    loka_money_used = loka_account.balance
+
+                if loka_money_used < Decimal("0.00"):
+                    loka_money_used = Decimal("0.00")
+
             customer_note = customer_note[:500]
 
             # -------------------------
@@ -1462,11 +1546,25 @@ def checkout(request):
                 discount = subtotal
 
             # FINAL TOTAL
-            total = (
+            total_before_loka_money = (
                 subtotal
                 + delivery_fee
                 + handling_fee
                 - discount
+            ).quantize(
+                Decimal("1"),
+                rounding=ROUND_HALF_UP
+            )
+
+            # -------------------------
+            # APPLY LOKA MONEY
+            # -------------------------
+            if loka_money_used > total_before_loka_money:
+                loka_money_used = total_before_loka_money
+
+            total = (
+                total_before_loka_money
+                - loka_money_used
             ).quantize(
                 Decimal("1"),
                 rounding=ROUND_HALF_UP
@@ -1530,11 +1628,29 @@ def checkout(request):
                         delivery_fee=delivery_fee,
                         handling_fee=handling_fee,
                         discount=discount,
+                        loka_money_used=loka_money_used,
                         coupon_code=coupon_code,
                         total=total,
                         payment_method="COD",
                         status="REQUEST_SUBMITTED"
                     )
+
+                    # -----------------------------------
+                    # DEDUCT LOKA MONEY — COD
+                    # -----------------------------------
+                    if loka_money_used > Decimal("0.00"):
+                        customer = get_logged_in_customer(request)
+
+                        if not customer:
+                            raise ValueError(
+                                "Customer session required for LOKA Money."
+                            )
+
+                        debit_loka_money(
+                            customer=customer,
+                            amount=loka_money_used,
+                            order=order
+                        )
                     request.session["customer_phone"] = phone
 
                     for item_id, item in cart["items"].items():
@@ -1657,6 +1773,7 @@ def checkout(request):
                     delivery_fee=delivery_fee,
                     handling_fee=handling_fee,
                     discount=discount,
+                    loka_money_used=loka_money_used,
 
                     coupon_code=coupon_code,
                     total=total,
@@ -1936,12 +2053,34 @@ def razorpay_webhook(request):
                 delivery_fee=pending.delivery_fee,
                 handling_fee=pending.handling_fee,
                 discount=pending.discount,
+                loka_money_used=pending.loka_money_used,
                 coupon_code=pending.coupon_code,
                 total=pending.total,
                 payment_method="UPI",
                 payment_id=razorpay_payment_id,
                 status="REQUEST_SUBMITTED"
             )
+
+            # -----------------------------------
+            # DEDUCT LOKA MONEY — SUCCESSFUL UPI
+            # -----------------------------------
+            if pending.loka_money_used > Decimal("0.00"):
+
+                customer = Customer.objects.filter(
+                    phone=pending.phone,
+                    is_active=True
+                ).first()
+
+                if not customer:
+                    raise ValueError(
+                        "Customer account not found for LOKA Money."
+                    )
+
+                debit_loka_money(
+                    customer=customer,
+                    amount=pending.loka_money_used,
+                    order=order
+                )
 
             # -----------------------------------
             # CREATE ORDER ITEMS
@@ -3318,8 +3457,19 @@ def cancel_order(request, order_id):
     # --------------------------------
     if order.payment_method == "COD":
 
-        order.status = "CANCELLED"
-        order.save(update_fields=["status"])
+        with transaction.atomic():
+
+            order.status = "CANCELLED"
+            order.save(update_fields=["status"])
+
+            # -----------------------------------
+            # REFUND LOKA MONEY — COD
+            # -----------------------------------
+            if order.loka_money_used > Decimal("0.00"):
+                refund_loka_money(
+                    order=order,
+                    description="LOKA Money refunded for cancelled order"
+                )
 
         return redirect("order_tracking", order_id=order.id)
 
@@ -3331,22 +3481,32 @@ def cancel_order(request, order_id):
         if order.is_refunded:
             return redirect("order_tracking", order_id=order.id)
 
-        client = razorpay.Client(auth=(
-            settings.RAZORPAY_KEY_ID,
-            settings.RAZORPAY_KEY_SECRET
-        ))
+        client = razorpay.Client(...)
 
         refund_amount = to_paise(order.total)
 
         try:
 
+            # -----------------------------------
+            # RAZORPAY REFUND
+            # -----------------------------------
             refund = client.payment.refund(
                 order.payment_id,
-                {
-                    "amount": refund_amount
-                }
+                {"amount": refund_amount}
             )
 
+            # -----------------------------------
+            # REFUND LOKA MONEY
+            # -----------------------------------
+            if order.loka_money_used > Decimal("0.00"):
+                refund_loka_money(
+                    order=order,
+                    description="LOKA Money refunded for cancelled UPI order"
+                )
+
+            # -----------------------------------
+            # MARK ORDER REFUNDED
+            # -----------------------------------
             order.status = "CANCELLED"
             order.refund_id = refund["id"]
             order.refund_amount = order.total
@@ -3361,13 +3521,18 @@ def cancel_order(request, order_id):
 
         except Exception as e:
 
-            logger.error(f"Refund failed: {e}")
+            logger.error(
+                f"UPI refund failed for order {order.id}: {str(e)}"
+            )
 
             return HttpResponse(
                 "Refund failed. Contact support."
             )
 
-        return redirect("order_tracking", order_id=order.id)
+        return redirect(
+            "order_tracking",
+            order_id=order.id
+        )
 
     return redirect("order_tracking", order_id=order.id)
 
@@ -4586,7 +4751,232 @@ def rider_dashboard(request):
     except Exception as e:
         logger.exception("RIDER DASHBOARD ERROR")
         return HttpResponse("Rider dashboard failed. Check logs.")
-    
+
+
+def reward_referral_for_delivered_order(order):
+    """
+    Award ₹20 LOKA Money to the referrer when
+    the referred customer's first order is delivered.
+
+    Reward is protected against duplicate processing.
+    """
+
+    if order.status != "DELIVERED":
+        return
+
+    with transaction.atomic():
+
+        referral = (
+            CustomerReferral.objects
+            .select_for_update()
+            .filter(
+                referred_customer__phone=order.phone,
+                is_rewarded=False
+            )
+            .first()
+        )
+
+        if not referral:
+            return
+
+        # Make sure this is the referred customer's first
+        # successfully delivered order.
+        delivered_count = Order.objects.filter(
+            phone=order.phone,
+            status="DELIVERED"
+        ).count()
+
+        if delivered_count != 1:
+            return
+
+        # Get/create referrer's LOKA Money account
+        account, created = LokaMoneyAccount.objects.get_or_create(
+            customer=referral.referrer
+        )
+
+        account = (
+            LokaMoneyAccount.objects
+            .select_for_update()
+            .get(id=account.id)
+        )
+
+        reward = referral.reward_amount
+
+        account.balance += reward
+        account.save(
+            update_fields=["balance", "updated_at"]
+        )
+
+        LokaMoneyTransaction.objects.create(
+            account=account,
+            order=order,
+            transaction_type=LokaMoneyTransaction.CREDIT,
+            amount=reward,
+            balance_after=account.balance,
+            description="Referral reward"
+        )
+
+        referral.is_rewarded = True
+        referral.rewarded_at = timezone.now()
+        referral.save(
+            update_fields=[
+                "is_rewarded",
+                "rewarded_at"
+            ]
+        )
+
+
+def credit_loka_money(customer, amount, description, order=None):
+    """
+    Credit LOKA Money to a customer's account
+    and create a transaction history record.
+    """
+
+    amount = Decimal(str(amount))
+
+    if amount <= 0:
+        raise ValueError(
+            "LOKA Money credit amount must be greater than zero."
+        )
+
+    with transaction.atomic():
+
+        account, created = (
+            LokaMoneyAccount.objects.get_or_create(
+                customer=customer
+            )
+        )
+
+        account = (
+            LokaMoneyAccount.objects
+            .select_for_update()
+            .get(id=account.id)
+        )
+
+        account.balance += amount
+
+        account.save(
+            update_fields=[
+                "balance",
+                "updated_at"
+            ]
+        )
+
+        transaction_record = (
+            LokaMoneyTransaction.objects.create(
+                account=account,
+                order=order,
+                transaction_type=(
+                    LokaMoneyTransaction.CREDIT
+                ),
+                amount=amount,
+                balance_after=account.balance,
+                description=description
+            )
+        )
+
+    return transaction_record
+
+def debit_loka_money(customer, amount, order):
+    amount = Decimal(str(amount))
+
+    if amount <= 0:
+        return None
+
+    with transaction.atomic():
+
+        account = (
+            LokaMoneyAccount.objects
+            .select_for_update()
+            .get(customer=customer)
+        )
+
+        if account.balance < amount:
+            raise ValueError(
+                "Insufficient LOKA Money balance."
+            )
+
+        account.balance -= amount
+
+        account.save(
+            update_fields=[
+                "balance",
+                "updated_at"
+            ]
+        )
+
+        transaction_record = (
+            LokaMoneyTransaction.objects.create(
+                account=account,
+                order=order,
+                transaction_type=LokaMoneyTransaction.DEBIT,
+                amount=amount,
+                balance_after=account.balance,
+                description="LOKA Money used on order"
+            )
+        )
+
+    return transaction_record
+
+def refund_loka_money(order, description="LOKA Money refund"):
+    amount = Decimal(str(order.loka_money_used or 0))
+
+    if amount <= Decimal("0.00"):
+        return None
+
+    with transaction.atomic():
+
+        # Prevent duplicate LOKA Money refunds
+        already_refunded = (
+            LokaMoneyTransaction.objects
+            .filter(
+                order=order,
+                transaction_type=LokaMoneyTransaction.REFUND
+            )
+            .exists()
+        )
+
+        if already_refunded:
+            return None
+
+        customer = Customer.objects.filter(
+            phone=order.phone,
+            is_active=True
+        ).first()
+
+        if not customer:
+            raise ValueError(
+                "Customer account not found for LOKA Money refund."
+            )
+
+        account = (
+            LokaMoneyAccount.objects
+            .select_for_update()
+            .get(customer=customer)
+        )
+
+        account.balance += amount
+
+        account.save(
+            update_fields=[
+                "balance",
+                "updated_at"
+            ]
+        )
+
+        transaction_record = (
+            LokaMoneyTransaction.objects.create(
+                account=account,
+                order=order,
+                transaction_type=LokaMoneyTransaction.REFUND,
+                amount=amount,
+                balance_after=account.balance,
+                description=description
+            )
+        )
+
+    return transaction_record
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
@@ -4614,6 +5004,9 @@ def rider_update_status(request, order_id, new_status):
 
     order.status = new_status
     order.save()
+
+    if new_status == "DELIVERED":
+        reward_referral_for_delivered_order(order)
 
     messages.success(request, f"Order #{order.id} updated to {new_status}")
 
@@ -6947,6 +7340,61 @@ def get_logged_in_customer(request):
         is_active=True
     ).first()
 
+@login_required
+def loka_money_data(request):
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please login to view LOKA Money."
+            },
+            status=401
+        )
+
+    account = (
+        LokaMoneyAccount.objects
+        .filter(customer=customer)
+        .first()
+    )
+
+    if not account:
+        return JsonResponse({
+            "success": True,
+            "balance": "0.00",
+            "transactions": []
+        })
+
+    transactions = (
+        LokaMoneyTransaction.objects
+        .filter(account=account)
+        .select_related("order")
+        .order_by("-created_at")[:10]
+    )
+
+    transaction_data = []
+
+    for item in transactions:
+
+        transaction_data.append({
+            "type": item.transaction_type,
+            "amount": str(item.amount),
+            "balance_after": str(item.balance_after),
+            "description": item.description,
+            "created_at": item.created_at.strftime(
+                "%d %b %Y, %I:%M %p"
+            ),
+            "order_id": item.order_id
+        })
+
+    return JsonResponse({
+        "success": True,
+        "balance": str(account.balance),
+        "transactions": transaction_data
+    })
+
 
 def customer_login(request):
     """
@@ -7642,6 +8090,10 @@ def customer_register(request):
         request.POST.get("email") or ""
     ).strip()
 
+    referral_code = (
+        request.POST.get("referral_code") or ""
+    ).strip().upper()
+
     if not name:
         return render(
             request,
@@ -7663,6 +8115,38 @@ def customer_register(request):
         )
 
     # --------------------------------------------------------
+    # Validate referral code
+    # --------------------------------------------------------
+
+    referrer = None
+
+    if referral_code:
+        referrer = Customer.objects.filter(
+            referral_code=referral_code
+        ).first()
+
+        if not referrer:
+            return render(
+                request,
+                "customer_register.html",
+                {
+                    "phone": verified_phone,
+                    "error": "Invalid referral code."
+                }
+            )
+
+        # Prevent self-referral
+        if referrer.phone == verified_phone:
+            return render(
+                request,
+                "customer_register.html",
+                {
+                    "phone": verified_phone,
+                    "error": "You cannot use your own referral code."
+                }
+            )
+
+    # --------------------------------------------------------
     # Create / retrieve customer safely
     # --------------------------------------------------------
 
@@ -7676,9 +8160,17 @@ def customer_register(request):
                     "email": email,
                     "is_active": True,
                     "is_verified": True,
-                    "last_login_at": timezone.now()
+                    "last_login_at": timezone.now(),
+                    "referral_code": generate_referral_code(name),
                 }
             )
+
+            if created and referrer:
+                CustomerReferral.objects.create(
+                    referrer=referrer,
+                    referred_customer=customer,
+                    referral_code=referral_code
+                )
 
     except IntegrityError:
 
@@ -8026,6 +8518,54 @@ def customer_profile(request):
         "customer_profile.html",
         {
             "customer": customer,
+            "show_navbar": False,
+            "simple_navbar": True,
+            "show_floating_cart": False,
+        }
+    )
+
+def referral_program(request):
+    """
+    Display the logged-in customer's Referral Program page.
+    """
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return redirect("customer_login")
+
+    account = LokaMoneyAccount.objects.filter(
+        customer=customer
+    ).first()
+
+    loka_money_balance = account.balance if account else Decimal("0.00")
+
+    referrals = CustomerReferral.objects.filter(
+        referrer=customer
+    ).select_related("referred_customer")
+
+    total_referrals = referrals.count()
+
+    successful_referrals = referrals.filter(
+        is_rewarded=True
+    ).count()
+
+    total_referral_earnings = referrals.filter(
+        is_rewarded=True
+    ).aggregate(
+        total=Sum("reward_amount")
+    )["total"] or Decimal("0.00")
+
+    return render(
+        request,
+        "referral_program.html",
+        {
+            "customer": customer,
+            "loka_money_balance": loka_money_balance,
+            "referrals": referrals,
+            "total_referrals": total_referrals,
+            "successful_referrals": successful_referrals,
+            "total_referral_earnings": total_referral_earnings,
             "show_navbar": False,
             "simple_navbar": True,
             "show_floating_cart": False,
@@ -8561,3 +9101,511 @@ def order_again(request, favorite_id):
     # ---------------------------------
 
     return redirect("checkout")
+
+
+def generate_referral_code(name):
+    """
+    Generate a unique LOKA referral code using
+    the first 3 characters of the customer's name
+    followed by a random unique code.
+    """
+
+    prefix = "".join(
+        char for char in (name or "").upper()
+        if char.isalnum()
+    )[:3]
+
+    # Fallback if name has fewer than 3 usable characters
+    prefix = prefix.ljust(3, "X")
+
+    while True:
+        suffix = "".join(
+            random.choices(
+                string.ascii_uppercase + string.digits,
+                k=6
+            )
+        )
+
+        code = f"{prefix}{suffix}"
+
+        if not Customer.objects.filter(
+            referral_code=code
+        ).exists():
+            return code
+
+from decimal import Decimal, InvalidOperation
+
+@login_required
+def admin_credit_loka_money(request):
+    """
+    Staff-only endpoint to manually credit LOKA Money
+    to a customer's account.
+    """
+
+    if not request.user.is_staff:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Permission denied."
+            },
+            status=403
+        )
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid request."
+            },
+            status=405
+        )
+
+    phone = (
+        request.POST.get("phone") or ""
+    ).strip()
+
+    amount = (
+        request.POST.get("amount") or ""
+    ).strip()
+
+    description = (
+        request.POST.get("description") or ""
+    ).strip()
+
+    if not phone:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer phone number is required."
+            },
+            status=400
+        )
+
+    if not amount:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Amount is required."
+            },
+            status=400
+        )
+
+    if not description:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Description is required."
+            },
+            status=400
+        )
+
+    try:
+        amount = Decimal(amount)
+    except (InvalidOperation, ValueError):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid amount."
+            },
+            status=400
+        )
+
+    if amount <= 0:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Amount must be greater than zero."
+            },
+            status=400
+        )
+
+    if amount > Decimal("10000.00"):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Maximum manual credit is ₹10,000 per transaction."
+            },
+            status=400
+        )
+
+    customer = Customer.objects.filter(
+        phone=phone
+    ).first()
+
+    if not customer:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer not found."
+            },
+            status=404
+        )
+
+    try:
+        transaction_record = credit_loka_money(
+            customer=customer,
+            amount=amount,
+            description=description
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "LOKA Money credited successfully.",
+                "balance": str(
+                    transaction_record.balance_after
+                )
+            }
+        )
+
+    except Exception:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Unable to credit LOKA Money. Please try again."
+            },
+            status=500
+        )
+
+@login_required
+def admin_debit_loka_money(request):
+    """
+    Manually debit LOKA Money from a customer.
+    """
+
+    if not request.user.is_staff:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Permission denied."
+            },
+            status=403
+        )
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid request."
+            },
+            status=405
+        )
+
+    phone = (request.POST.get("phone") or "").strip()
+    amount = (request.POST.get("amount") or "").strip()
+    description = (request.POST.get("description") or "").strip()
+
+    # -----------------------------------
+    # VALIDATE CUSTOMER
+    # -----------------------------------
+
+    if not phone:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer phone number is required."
+            },
+            status=400
+        )
+
+    customer = Customer.objects.filter(
+        phone=phone,
+        is_active=True
+    ).first()
+
+    if not customer:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer not found."
+            },
+            status=404
+        )
+
+    # -----------------------------------
+    # VALIDATE AMOUNT
+    # -----------------------------------
+
+    try:
+        amount = Decimal(amount)
+    except Exception:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid debit amount."
+            },
+            status=400
+        )
+
+    if amount <= Decimal("0.00"):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Debit amount must be greater than zero."
+            },
+            status=400
+        )
+
+    # -----------------------------------
+    # MAXIMUM MANUAL DEBIT
+    # -----------------------------------
+
+    if amount > Decimal("10000.00"):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Maximum manual debit is ₹10,000 "
+                    "per transaction."
+                )
+            },
+            status=400
+        )
+
+    # -----------------------------------
+    # VALIDATE DESCRIPTION
+    # -----------------------------------
+
+    if not description:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Description is required."
+            },
+            status=400
+        )
+
+    description = description[:255]
+
+    # -----------------------------------
+    # GET WALLET
+    # -----------------------------------
+
+    account = (
+        LokaMoneyAccount.objects
+        .filter(customer=customer)
+        .first()
+    )
+
+    if not account:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer has no LOKA Money balance."
+            },
+            status=400
+        )
+
+    # -----------------------------------
+    # LOCK + DEBIT WALLET
+    # -----------------------------------
+
+    try:
+
+        with transaction.atomic():
+
+            account = (
+                LokaMoneyAccount.objects
+                .select_for_update()
+                .get(id=account.id)
+            )
+
+            if account.balance < amount:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            f"Insufficient LOKA Money balance. "
+                            f"Available balance: "
+                            f"₹{account.balance:.2f}"
+                        )
+                    },
+                    status=400
+                )
+
+            account.balance -= amount
+
+            account.save(
+                update_fields=[
+                    "balance",
+                    "updated_at"
+                ]
+            )
+
+            transaction_record = (
+                LokaMoneyTransaction.objects.create(
+                    account=account,
+                    transaction_type=(
+                        LokaMoneyTransaction.DEBIT
+                    ),
+                    amount=amount,
+                    balance_after=account.balance,
+                    description=description
+                )
+            )
+
+    except Exception as e:
+
+        logger.error(
+            f"Manual LOKA Money debit failed: {e}",
+            exc_info=True
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Unable to debit LOKA Money."
+            },
+            status=500
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "LOKA Money debited successfully.",
+            "balance": str(
+                transaction_record.balance_after
+            )
+        }
+    )
+
+@login_required
+def admin_loka_money(request):
+    """
+    Display the LOKA Money admin page.
+    """
+
+    if not request.user.is_staff:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Permission denied."
+            },
+            status=403
+        )
+
+    customers = (
+        Customer.objects
+        .select_related("loka_money_account")
+        .all()
+        .order_by("name")
+    )
+
+    total_customers = customers.count()
+
+    customers_with_balance = customers.filter(
+        loka_money_account__balance__gt=0
+    ).count()
+
+    total_loka_money = (
+        LokaMoneyAccount.objects
+        .aggregate(
+            total=Sum("balance")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    return render(
+        request,
+        "admin_loka_money.html",
+        {
+            "customers": customers,
+            "total_customers": total_customers,
+            "customers_with_balance": customers_with_balance,
+            "total_loka_money": total_loka_money,
+        }
+    )
+
+@login_required
+def admin_loka_money_transactions(request):
+    """
+    Return LOKA Money transaction history for a customer.
+    """
+
+    if not request.user.is_staff:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Permission denied."
+            },
+            status=403
+        )
+
+    phone = (request.GET.get("phone") or "").strip()
+
+    if not phone:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer phone number is required."
+            },
+            status=400
+        )
+
+    customer = (
+        Customer.objects
+        .filter(
+            phone=phone,
+            is_active=True
+        )
+        .first()
+    )
+
+    if not customer:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Customer not found."
+            },
+            status=404
+        )
+
+    account = (
+        LokaMoneyAccount.objects
+        .filter(customer=customer)
+        .first()
+    )
+
+    if not account:
+        return JsonResponse({
+            "success": True,
+            "customer": {
+                "name": customer.name,
+                "phone": customer.phone
+            },
+            "balance": "0.00",
+            "transactions": []
+        })
+
+    transactions = (
+        LokaMoneyTransaction.objects
+        .filter(account=account)
+        .select_related("order")
+        .order_by("-created_at")
+    )
+
+    transaction_data = []
+
+    for item in transactions:
+
+        transaction_data.append({
+            "id": item.id,
+            "type": item.transaction_type,
+            "amount": str(item.amount),
+            "balance_after": str(item.balance_after),
+            "description": item.description,
+            "created_at": item.created_at.strftime(
+                "%d %b %Y, %I:%M %p"
+            ),
+            "order_id": item.order_id
+        })
+
+    return JsonResponse({
+        "success": True,
+        "customer": {
+            "name": customer.name,
+            "phone": customer.phone
+        },
+        "balance": str(account.balance),
+        "transactions": transaction_data
+    })

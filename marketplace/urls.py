@@ -296,7 +296,37 @@ urlpatterns = [
         views.order_again,
         name="order_again"
     ),
+    path(
+        "admin/credit-loka-money/",
+        views.admin_credit_loka_money,
+        name="admin_credit_loka_money"
+    ),
+        path(
+        "admin/loka-money/",
+        views.admin_loka_money,
+        name="admin_loka_money"
+    ),
+    path(
+        "admin/loka-money/debit/",
+        views.admin_debit_loka_money,
+        name="admin_debit_loka_money"
+    ),
+    path(
+        "admin/loka-money/transactions/",
+        views.admin_loka_money_transactions,
+        name="admin_loka_money_transactions"
+    ),
+    path(
+        "loka-money/data/",
+        views.loka_money_data,
+        name="loka_money_data"
+    ),
     path("profile/", views.customer_profile, name="customer_profile"),
+    path(
+        "profile/referral-program/",
+        views.referral_program,
+        name="referral_program",
+    ),
 ]
 
 

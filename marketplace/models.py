@@ -215,7 +215,11 @@ class Order(models.Model):
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2)
     handling_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+    loka_money_used = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
 
     coupon_code = models.CharField(max_length=20, null=True, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -545,7 +549,11 @@ class PendingOrder(models.Model):
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2)
     handling_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
+    loka_money_used = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
 
     coupon_code = models.CharField(max_length=20, null=True, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -1228,6 +1236,13 @@ class Customer(models.Model):
         blank=True,
         default=""
     )
+    
+    referral_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
 
     gender = models.CharField(
         max_length=20,
@@ -1265,6 +1280,128 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.name or 'Customer'} - {self.phone}"
 
+
+class LokaMoneyAccount(models.Model):
+    customer = models.OneToOneField(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="loka_money_account"
+    )
+
+    balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.customer.name} - ₹{self.balance}"
+
+class LokaMoneyTransaction(models.Model):
+
+    CREDIT = "CREDIT"
+    DEBIT = "DEBIT"
+    REFUND = "REFUND"
+
+    TRANSACTION_TYPES = [
+        (CREDIT, "Credit"),
+        (DEBIT, "Debit"),
+        (REFUND, "Refund"),
+    ]
+
+    account = models.ForeignKey(
+        LokaMoneyAccount,
+        on_delete=models.CASCADE,
+        related_name="transactions"
+    )
+
+    order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="loka_money_transactions"
+    )
+
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=TRANSACTION_TYPES
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    balance_after = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    description = models.CharField(
+        max_length=255
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"{self.account.customer.name} - "
+            f"{self.transaction_type} ₹{self.amount}"
+        )
+
+class CustomerReferral(models.Model):
+    referrer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="referrals_made"
+    )
+
+    referred_customer = models.OneToOneField(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="referred_by_record"
+    )
+
+    referral_code = models.CharField(
+        max_length=20,
+        unique=True
+    )
+
+    reward_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("20.00")
+    )
+
+    is_rewarded = models.BooleanField(
+        default=False
+    )
+
+    rewarded_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return (
+            f"{self.referrer.phone} → "
+            f"{self.referred_customer.phone}"
+        )
+
+    
 class CustomerOTP(models.Model):
     phone = models.CharField(
         max_length=10,

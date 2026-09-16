@@ -1,0 +1,1323 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div style="max-width: 1000px; margin: 40px auto; padding: 25px;">
+
+    <h2>LOKA Money</h2>
+
+    <!-- LOKA MONEY KPI CARDS -->
+    <div style="
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 25px 0;
+    ">
+
+        <!-- Total Customers -->
+        <div style="
+            padding: 18px;
+            border: 1px solid #E5EAE6;
+            border-radius: 12px;
+            background: #F8FAF9;
+        ">
+            <div style="
+                font-size: 12px;
+                color: #68756D;
+                margin-bottom: 6px;
+            ">
+                Total Customers
+            </div>
+
+            <div style="
+                font-size: 24px;
+                font-weight: 700;
+                color: #173B2A;
+            ">
+                {{ total_customers }}
+            </div>
+        </div>
+
+
+        <!-- Customers With Balance -->
+        <div style="
+            padding: 18px;
+            border: 1px solid #E5EAE6;
+            border-radius: 12px;
+            background: #F8FAF9;
+        ">
+            <div style="
+                font-size: 12px;
+                color: #68756D;
+                margin-bottom: 6px;
+            ">
+                Customers With Balance
+            </div>
+
+            <div style="
+                font-size: 24px;
+                font-weight: 700;
+                color: #173B2A;
+            ">
+                {{ customers_with_balance }}
+            </div>
+        </div>
+
+
+        <!-- Total LOKA Money -->
+        <div style="
+            padding: 18px;
+            border: 1px solid #E5EAE6;
+            border-radius: 12px;
+            background: #F8FAF9;
+        ">
+            <div style="
+                font-size: 12px;
+                color: #68756D;
+                margin-bottom: 6px;
+            ">
+                Total LOKA Money
+            </div>
+
+            <div style="
+                font-size: 24px;
+                font-weight: 700;
+                color: #173B2A;
+            ">
+                ₹{{ total_loka_money|floatformat:2 }}
+            </div>
+        </div>
+
+    </div>
+
+    <p>
+        Manually credit LOKA Money to a customer.
+    </p>
+
+    <form id="lokaMoneyForm">
+
+        {% csrf_token %}
+
+        <div style="margin-bottom: 15px;">
+            <label>Customer</label>
+
+            <select
+                id="customer_phone"
+                name="phone"
+                required
+                style="width: 100%; padding: 10px;"
+            >
+                <option value="">
+                    Select customer
+                </option>
+
+                {% for customer in customers %}
+                    <option value="{{ customer.phone }}">
+                        {{ customer.name }} — {{ customer.phone }}
+                        {% if customer.loka_money_account %}
+                            — ₹{{ customer.loka_money_account.balance|floatformat:2 }}
+                        {% else %}
+                            — ₹0.00
+                        {% endif %}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+
+        <div style="margin-bottom: 15px;">
+            <label>Amount</label>
+
+            <input
+                type="number"
+                id="amount"
+                name="amount"
+                min="0.01"
+                step="0.01"
+                placeholder="Enter amount"
+                required
+                style="width: 100%; padding: 10px;"
+            >
+        </div>
+
+
+        <div style="margin-bottom: 15px;">
+            <label>Description</label>
+
+            <input
+                type="text"
+                id="description"
+                name="description"
+                maxlength="255"
+                placeholder="e.g. Festival reward"
+                required
+                style="width: 100%; padding: 10px;"
+            >
+        </div>
+
+
+        <button
+            type="submit"
+            style="padding: 12px 20px; cursor: pointer;"
+        >
+            Credit LOKA Money
+        </button>
+
+    </form>
+
+    <div
+        id="result"
+        style="margin-top: 20px;"
+    ></div>
+
+
+    <!-- MANUAL DEBIT -->
+    <div style="
+        margin-top: 25px;
+        padding: 20px;
+        border: 1px solid #E5EAE6;
+        border-radius: 12px;
+        background: #FFFFFF;
+    ">
+
+        <h3 style="margin: 0 0 8px 0;">
+            Manual Debit
+        </h3>
+
+        <p style="
+            margin: 0 0 18px 0;
+            color: #6B756D;
+            font-size: 13px;
+        ">
+            Deduct LOKA Money from a customer's wallet manually.
+        </p>
+
+
+        <form id="lokaMoneyDebitForm">
+
+            {% csrf_token %}
+
+
+            <!-- CUSTOMER -->
+            <div style="margin-bottom: 12px;">
+
+                <label
+                    for="debit_customer_phone"
+                    style="
+                        display: block;
+                        margin-bottom: 6px;
+                        font-weight: 600;
+                    "
+                >
+                    Customer
+                </label>
+
+                <select
+                    id="debit_customer_phone"
+                    name="phone"
+                    required
+                    style="
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #DDE5DE;
+                        border-radius: 8px;
+                    "
+                >
+
+                    <option value="">
+                        Select customer
+                    </option>
+
+                    {% for customer in customers %}
+
+                        <option value="{{ customer.phone }}">
+
+                            {{ customer.name }} — {{ customer.phone }}
+
+                            {% if customer.loka_money_account %}
+                                — ₹{{ customer.loka_money_account.balance|floatformat:2 }}
+                            {% else %}
+                                — ₹0.00
+                            {% endif %}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- AMOUNT -->
+            <div style="margin-bottom: 12px;">
+
+                <label
+                    for="debit_amount"
+                    style="
+                        display: block;
+                        margin-bottom: 6px;
+                        font-weight: 600;
+                    "
+                >
+                    Debit Amount
+                </label>
+
+                <input
+                    type="number"
+                    id="debit_amount"
+                    name="amount"
+                    min="0.01"
+                    max="10000"
+                    step="0.01"
+                    required
+                    placeholder="Enter amount"
+                    style="
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #DDE5DE;
+                        border-radius: 8px;
+                    "
+                >
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+            <div style="margin-bottom: 15px;">
+
+                <label
+                    for="debit_description"
+                    style="
+                        display: block;
+                        margin-bottom: 6px;
+                        font-weight: 600;
+                    "
+                >
+                    Description
+                </label>
+
+                <input
+                    type="text"
+                    id="debit_description"
+                    name="description"
+                    maxlength="255"
+                    required
+                    placeholder="Reason for debit"
+                    style="
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #DDE5DE;
+                        border-radius: 8px;
+                    "
+                >
+
+            </div>
+
+
+            <!-- BUTTON -->
+            <button
+                type="submit"
+                style="
+                    padding: 10px 18px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                "
+            >
+                Debit LOKA Money
+            </button>
+
+        </form>
+
+
+        <div
+            id="debitResult"
+            style="margin-top: 15px;"
+        ></div>
+
+    </div>
+
+
+    <hr style="
+        margin: 35px 0;
+        border: none;
+        border-top: 1px solid #E5EAE6;
+    ">
+
+    <h3 style="margin-bottom: 15px;">
+        Customer Balances
+    </h3>
+
+    <!-- TRANSACTION HISTORY -->
+    <div style="
+        margin-top: 35px;
+        padding: 20px;
+        border: 1px solid #E5EAE6;
+        border-radius: 12px;
+        background: #FFFFFF;
+    ">
+
+        <h3 style="margin: 0 0 15px 0;">
+            Transaction History
+        </h3>
+
+        <div style="
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        ">
+
+            <select
+                id="historyCustomer"
+                style="
+                    flex: 1;
+                    min-width: 250px;
+                    padding: 11px 13px;
+                    border: 1px solid #DDE5DF;
+                    border-radius: 8px;
+                    font-size: 14px;
+                "
+            >
+
+                <option value="">
+                    Select customer
+                </option>
+
+                {% for customer in customers %}
+
+                    <option value="{{ customer.phone }}">
+                        {{ customer.name }} — {{ customer.phone }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <select
+                id="historyType"
+                style="
+                    padding: 11px 13px;
+                    border: 1px solid #DDE5DF;
+                    border-radius: 8px;
+                    font-size: 14px;
+                "
+            >
+                <option value="ALL">All Transactions</option>
+                <option value="CREDIT">Credit</option>
+                <option value="DEBIT">Debit</option>
+                <option value="REFUND">Refund</option>
+            </select>
+
+            <input
+                type="date"
+                id="historyFromDate"
+                title="From date"
+                style="
+                    padding: 11px 13px;
+                    border: 1px solid #DDE5DF;
+                    border-radius: 8px;
+                    font-size: 14px;
+                "
+            >
+
+            <input
+                type="date"
+                id="historyToDate"
+                title="To date"
+                style="
+                    padding: 11px 13px;
+                    border: 1px solid #DDE5DF;
+                    border-radius: 8px;
+                    font-size: 14px;
+                "
+            >
+
+            <button
+                type="button"
+                id="viewHistoryBtn"
+                style="
+                    padding: 11px 18px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    background: #173B2A;
+                    color: white;
+                    font-weight: 600;
+                "
+            >
+                View History
+            </button>
+
+            <button
+                type="button"
+                id="clearHistoryDatesBtn"
+                style="
+                    padding: 11px 18px;
+                    border: 1px solid #DDE5DF;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    background: #FFFFFF;
+                    color: #173B2A;
+                    font-weight: 600;
+                "
+            >
+                Clear Dates
+            </button>
+
+        </div>
+
+        <div
+            id="historyResult"
+            style="margin-top: 18px;"
+        ></div>
+
+    </div>
+
+    <!-- CUSTOMER SEARCH -->
+    <input
+        type="text"
+        id="customerBalanceSearch"
+        placeholder="Search customer name or phone..."
+        style="
+            width: 100%;
+            max-width: 400px;
+            padding: 11px 13px;
+            margin-bottom: 15px;
+            border: 1px solid #DDE5DF;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        "
+    >
+
+    <div style="
+        overflow-x: auto;
+    ">
+
+        <table style="
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        ">
+
+            <thead>
+                <tr style="
+                    background: #F3F6F4;
+                    text-align: left;
+                ">
+                    <th style="padding: 12px;">
+                        Customer
+                    </th>
+
+                    <th style="padding: 12px;">
+                        Phone
+                    </th>
+
+                    <th style="
+                        padding: 12px;
+                        text-align: right;
+                    ">
+                        LOKA Money
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for customer in customers %}
+
+                    <tr
+                        class="customer-balance-row"
+                        style="
+                            border-bottom: 1px solid #E5EAE6;
+                        "
+                    >
+
+                        <td style="padding: 12px;">
+                            {{ customer.name }}
+                        </td>
+
+                        <td style="
+                            padding: 12px;
+                            color: #68756D;
+                        ">
+                            {{ customer.phone }}
+                        </td>
+
+                        <td style="
+                            padding: 12px;
+                            text-align: right;
+                            font-weight: 700;
+                        ">
+
+                            {% if customer.loka_money_account %}
+                                ₹{{ customer.loka_money_account.balance|floatformat:2 }}
+                            {% else %}
+                                ₹0.00
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td
+                            colspan="3"
+                            style="
+                                padding: 20px;
+                                text-align: center;
+                                color: #68756D;
+                            "
+                        >
+                            No customers found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.getElementById("lokaMoneyForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const form = event.target;
+
+        const formData = new FormData(form);
+
+        const result = document.getElementById("result");
+
+        result.innerHTML = "Processing...";
+
+        try {
+
+            const response = await fetch(
+                "{% url 'admin_credit_loka_money' %}",
+                {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": form.querySelector(
+                            "[name=csrfmiddlewaretoken]"
+                        ).value
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+
+                result.innerHTML =
+                    "✅ LOKA Money credited successfully. " +
+                    "New balance: ₹" + data.balance;
+
+                form.reset();
+
+            } else {
+
+                result.innerHTML =
+                    "❌ " + data.message;
+
+            }
+
+        } catch (error) {
+
+            result.innerHTML =
+                "❌ Something went wrong. Please try again.";
+
+        }
+
+    }
+);
+
+// CUSTOMER BALANCE SEARCH
+
+const customerBalanceSearch =
+    document.getElementById("customerBalanceSearch");
+
+if (customerBalanceSearch) {
+
+    customerBalanceSearch.addEventListener(
+        "input",
+        function () {
+
+            const searchValue =
+                this.value.trim().toLowerCase();
+
+            const rows =
+                document.querySelectorAll(
+                    ".customer-balance-row"
+                );
+
+            rows.forEach(function (row) {
+
+                const rowText =
+                    row.innerText.toLowerCase();
+
+                if (rowText.includes(searchValue)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+
+            });
+
+        }
+    );
+
+}
+
+// =====================================
+// LOKA MONEY TRANSACTION HISTORY
+// =====================================
+
+const historyCustomer =
+    document.getElementById("historyCustomer");
+
+const viewHistoryBtn =
+    document.getElementById("viewHistoryBtn");
+
+const historyType =
+    document.getElementById("historyType");
+
+const historyFromDate =
+    document.getElementById("historyFromDate");
+
+const historyToDate =
+    document.getElementById("historyToDate");
+
+const clearHistoryDatesBtn =
+    document.getElementById("clearHistoryDatesBtn");
+
+const historyResult =
+    document.getElementById("historyResult");
+
+
+if (
+    historyCustomer &&
+    viewHistoryBtn &&
+    historyResult
+) {
+
+    viewHistoryBtn.addEventListener(
+        "click",
+        async function () {
+
+            const phone =
+                historyCustomer.value;
+
+            const selectedType =
+                historyType ? historyType.value : "ALL";
+
+            const fromDate =
+                historyFromDate
+                    ? historyFromDate.value
+                    : "";
+
+            const toDate =
+                historyToDate
+                    ? historyToDate.value
+                    : "";
+
+            if (fromDate && toDate && fromDate > toDate) {
+
+                historyResult.innerHTML =
+                    "❌ From date cannot be later than To date.";
+
+                return;
+            }
+
+            if (!phone) {
+
+                historyResult.innerHTML =
+                    "❌ Please select a customer.";
+
+                return;
+            }
+
+            historyResult.innerHTML =
+                "Loading transaction history...";
+
+            viewHistoryBtn.disabled = true;
+
+            try {
+
+                const response = await fetch(
+                    "{% url 'admin_loka_money_transactions' %}" +
+                    "?phone=" +
+                    encodeURIComponent(phone),
+                    {
+                        method: "GET",
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        },
+                        credentials: "same-origin"
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok || !data.success) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to load transaction history."
+                    );
+
+                }
+
+                renderLokaMoneyHistory(data);
+
+            } catch (error) {
+
+                console.error(
+                    "LOKA Money history error:",
+                    error
+                );
+
+                historyResult.innerHTML =
+                    "❌ " +
+                    (
+                        error.message ||
+                        "Unable to load transaction history."
+                    );
+
+            } finally {
+
+                viewHistoryBtn.disabled = false;
+
+            }
+
+        }
+    );
+
+}
+
+if (clearHistoryDatesBtn) {
+
+    clearHistoryDatesBtn.addEventListener(
+        "click",
+        function () {
+
+            if (historyFromDate) {
+                historyFromDate.value = "";
+            }
+
+            if (historyToDate) {
+                historyToDate.value = "";
+            }
+
+            if (historyCustomer && historyCustomer.value) {
+                viewHistoryBtn.click();
+            }
+        }
+    );
+
+}
+
+
+// =====================================
+// RENDER TRANSACTION HISTORY
+// =====================================
+
+function renderLokaMoneyHistory(data) {
+
+    if (!historyResult) {
+        return;
+    }
+
+    const customer =
+        data.customer || {};
+
+    const balance =
+        parseFloat(data.balance || 0);
+
+    const transactions =
+        data.transactions || [];
+
+    const selectedType =
+    historyType ? historyType.value : "ALL";
+
+const fromDate =
+    historyFromDate
+        ? historyFromDate.value
+        : "";
+
+const toDate =
+    historyToDate
+        ? historyToDate.value
+        : "";
+
+const filteredTransactions =
+    transactions.filter(function(item) {
+
+        // Transaction type filter
+        if (
+            selectedType !== "ALL" &&
+            item.type !== selectedType
+        ) {
+            return false;
+        }
+
+        // Date filter
+        if (fromDate || toDate) {
+
+            const transactionDate =
+                new Date(item.created_at);
+
+            if (isNaN(transactionDate.getTime())) {
+                return false;
+            }
+
+            if (fromDate) {
+                const from =
+                    new Date(fromDate + "T00:00:00");
+
+                if (transactionDate < from) {
+                    return false;
+                }
+            }
+
+            if (toDate) {
+                const to =
+                    new Date(toDate + "T23:59:59");
+
+                if (transactionDate > to) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    });
+
+    const transactionCount =
+        filteredTransactions.length;
+
+    let filterLabel = "All Transactions";
+
+    if (selectedType === "CREDIT") {
+        filterLabel = "Credits";
+    } else if (selectedType === "DEBIT") {
+        filterLabel = "Debits";
+    } else if (selectedType === "REFUND") {
+        filterLabel = "Refunds";
+    }
+
+    if (fromDate || toDate) {
+
+        function formatFilterDate(dateString) {
+
+            if (!dateString) {
+                return "";
+            }
+
+            const date =
+                new Date(dateString + "T00:00:00");
+
+            return date.toLocaleDateString(
+                "en-GB",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+        }
+
+        let dateLabel = "";
+
+        if (fromDate && toDate) {
+
+            dateLabel =
+                formatFilterDate(fromDate) +
+                " to " +
+                formatFilterDate(toDate);
+
+        } else if (fromDate) {
+
+            dateLabel =
+                "From " +
+                formatFilterDate(fromDate);
+
+        } else if (toDate) {
+
+            dateLabel =
+                "Until " +
+                formatFilterDate(toDate);
+        }
+
+        filterLabel += " · " + dateLabel;
+    }
+
+    let html = `
+        <div style="
+            margin-bottom:15px;
+            padding:15px;
+            background:#F3F6F4;
+            border-radius:10px;
+        ">
+
+            <div style="
+                font-size:16px;
+                font-weight:700;
+                color:#173B2A;
+            ">
+                ${escapeHtml(customer.name || "Customer")}
+            </div>
+
+            <div style="
+                font-size:12px;
+                color:#68756D;
+                margin-top:3px;
+            ">
+                ${escapeHtml(customer.phone || "")}
+            </div>
+
+            <div style="
+                margin-top:10px;
+                font-size:14px;
+                font-weight:700;
+            ">
+                Current Balance:
+                ₹${balance.toFixed(2)}
+            </div>
+
+        </div>
+    `;
+
+    html += `
+        <div style="
+            margin-bottom:12px;
+            font-size:12px;
+            color:#68756D;
+        ">
+            ${filterLabel} · ${transactionCount} transaction${transactionCount === 1 ? "" : "s"} found
+        </div>
+    `;
+
+
+    if (filteredTransactions.length === 0) {
+
+        html += `
+            <div style="
+                padding:20px;
+                text-align:center;
+                color:#68756D;
+            ">
+                No LOKA Money transactions found.
+            </div>
+        `;
+
+        historyResult.innerHTML = html;
+
+        return;
+    }
+
+
+    html += `
+        <div style="
+            overflow-x:auto;
+        ">
+
+            <table style="
+                width:100%;
+                border-collapse:collapse;
+                font-size:13px;
+            ">
+
+                <thead>
+
+                    <tr style="
+                        background:#F3F6F4;
+                        text-align:left;
+                    ">
+
+                        <th style="padding:10px;">
+                            ID
+                        </th>
+
+                        <th style="padding:10px;">
+                            Type
+                        </th>
+
+                        <th style="padding:10px;">
+                            Amount
+                        </th>
+
+                        <th style="padding:10px;">
+                            Description
+                        </th>
+
+                        <th style="padding:10px;">
+                            Order
+                        </th>
+
+                        <th style="padding:10px;">
+                            Balance
+                        </th>
+
+                        <th style="padding:10px;">
+                            Date
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+    `;
+
+
+    filteredTransactions.forEach(function(item) {
+
+        const type =
+            item.type || "";
+
+        let sign = "";
+
+        if (
+            type === "CREDIT" ||
+            type === "REFUND"
+        ) {
+            sign = "+";
+        }
+
+        if (type === "DEBIT") {
+            sign = "−";
+        }
+
+
+        const amount =
+            parseFloat(item.amount || 0);
+
+
+        const balanceAfter =
+            parseFloat(
+                item.balance_after || 0
+            );
+
+
+        let typeLabel = type;
+
+        if (type === "CREDIT") {
+            typeLabel = "Credit";
+        } else if (type === "DEBIT") {
+            typeLabel = "Debit";
+        } else if (type === "REFUND") {
+            typeLabel = "Refund";
+        }
+
+
+        html += `
+            <tr style="
+                border-bottom:1px solid #E5EAE6;
+            ">
+
+            <td style="
+                padding:10px;
+                color:#68756D;
+                font-weight:600;
+            ">
+                #${item.id}
+            </td>
+
+                <td style="
+                    padding:10px;
+                    font-weight:700;
+                ">
+                    ${typeLabel}
+                </td>
+
+                <td style="
+                    padding:10px;
+                    font-weight:700;
+                ">
+                    ${sign}₹${amount.toFixed(2)}
+                </td>
+
+                <td style="
+                    padding:10px;
+                ">
+                    ${escapeHtml(
+                        item.description || ""
+                    )}
+                </td>
+
+                <td style="
+                    padding:10px;
+                ">
+                    ${
+                        item.order_id
+                            ? "#" + item.order_id
+                            : "—"
+                    }
+                </td>
+
+                <td style="
+                    padding:10px;
+                    font-weight:600;
+                ">
+                    ₹${balanceAfter.toFixed(2)}
+                </td>
+
+                <td style="
+                    padding:10px;
+                    white-space:nowrap;
+                    color:#68756D;
+                ">
+                    ${escapeHtml(
+                        item.created_at || ""
+                    )}
+                </td>
+
+            </tr>
+        `;
+
+    });
+
+
+    html += `
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+
+
+    historyResult.innerHTML = html;
+}
+
+
+// =====================================
+// BASIC HTML ESCAPING
+// =====================================
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// =====================================
+// MANUAL LOKA MONEY DEBIT
+// =====================================
+
+const lokaMoneyDebitForm =
+    document.getElementById("lokaMoneyDebitForm");
+
+if (lokaMoneyDebitForm) {
+
+    lokaMoneyDebitForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            const form = event.target;
+
+            const formData = new FormData(form);
+
+            const result =
+                document.getElementById("debitResult");
+
+            result.innerHTML = "Processing...";
+
+
+            try {
+
+                const response = await fetch(
+                    "{% url 'admin_debit_loka_money' %}",
+                    {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+
+                            "X-CSRFToken":
+                                form.querySelector(
+                                    "[name=csrfmiddlewaretoken]"
+                                ).value
+                        }
+                    }
+                );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok || !data.success) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to debit LOKA Money."
+                    );
+
+                }
+
+
+                result.innerHTML =
+                    "✅ LOKA Money debited successfully. " +
+                    "New balance: ₹" +
+                    data.balance;
+
+                form.reset();
+
+
+                // Refresh the page after a successful debit
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+
+
+            } catch (error) {
+
+                console.error(
+                    "LOKA Money debit error:",
+                    error
+                );
+
+                result.innerHTML =
+                    "❌ " +
+                    (
+                        error.message ||
+                        "Something went wrong. Please try again."
+                    );
+
+            }
+
+        }
+    );
+
+}
+
+</script>
+
+{% endblock %}

@@ -647,6 +647,49 @@
         </div>
       </div>
 
+      <!-- 4. LOKA MONEY -->
+      <div class="co-card">
+        <div class="co-card-head">
+          <span>LOKA Money</span>
+        </div>
+
+        <div class="co-card-body">
+
+          <div class="co-check-row">
+            <input
+              type="checkbox"
+              id="useLokaMoney"
+              name="use_loka_money"
+              {% if subtotal < 199 or loka_money_balance <= 0 %}disabled{% endif %}
+            >
+
+            <label for="useLokaMoney">
+              <strong>Use LOKA Money</strong><br>
+
+              <span style="font-size:11px;color:#9AA899;">
+                Balance: ₹{{ loka_money_balance|floatformat:2 }}
+                · Max ₹15 per order
+              </span>
+            </label>
+          </div>
+
+          {% if subtotal < 199 %}
+            <div class="co-upi-warn" style="margin-top:8px;margin-bottom:0;">
+              🔒 LOKA Money can be used on orders of ₹199 or more.
+            </div>
+          {% elif loka_money_balance <= 0 %}
+            <div style="
+              margin-top:8px;
+              font-size:11px;
+              color:#9AA899;
+            ">
+              💰 You don't have any LOKA Money yet.
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
       <!-- 4. PAYMENT -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Payment method" %}</span></div>
@@ -692,6 +735,16 @@
           <div class="co-sum-row"><span>{% trans "Delivery fee" %}</span><span id="deliveryFee">₹0</span></div>
           <div class="co-sum-row"><span>{% trans "Handling fee" %}</span><span>₹{{ handling_fee }}</span></div>
           <div class="co-sum-row discount"><span>{% trans "Coupon discount" %}</span><span>— <span id="discount_amount">₹0</span></span></div>
+          <div
+            class="co-sum-row discount"
+            id="lokaMoneyRow"
+            style="display:none;"
+          >
+            <span>LOKA Money</span>
+            <span>− ₹<span id="lokaMoneyAmount">0</span></span>
+          </div>
+
+
           {% if cod_not_allowed %}
           <div class="co-cod-warn">⚠ {% trans "Cash on Delivery is not available for orders below ₹149." %}</div>
           {% endif %}
@@ -751,8 +804,70 @@ const DELIVERY_RADIUS_KM = 10;
 
 const subtotal    = parseFloat("{{ subtotal }}");
 const handlingFee = parseFloat("{{ handling_fee }}");
+
+const lokaMoneyBalance = parseFloat("{{ loka_money_balance|default:'0' }}");
+const lokaMoneyMax = 15;
+
 let appliedDiscount = 0;
-let freeDeliveryUnlocked = "{{ free_delivery_order|yesno:'true,false' }}" === "true";
+let currentDeliveryFee = 0;
+
+let freeDeliveryUnlocked =
+    "{{ free_delivery_order|yesno:'true,false' }}" === "true";
+
+function updateOrderTotal() {
+
+    const useLokaMoney =
+        document.getElementById('useLokaMoney')?.checked;
+
+    let totalBeforeLoka =
+        subtotal +
+        handlingFee +
+        currentDeliveryFee -
+        appliedDiscount;
+
+    let lokaMoneyUsed = 0;
+
+    if (
+        useLokaMoney &&
+        subtotal >= 199 &&
+        lokaMoneyBalance > 0
+    ) {
+        lokaMoneyUsed = Math.min(
+            lokaMoneyBalance,
+            lokaMoneyMax,
+            totalBeforeLoka
+        );
+    }
+
+    const finalTotal =
+        Math.max(0, totalBeforeLoka - lokaMoneyUsed);
+
+    document.getElementById('orderTotal').innerText =
+        '₹' + Math.round(finalTotal);
+
+    document.getElementById('footerTotal').innerText =
+        '₹' + Math.round(finalTotal);
+
+    const lokaRow =
+        document.getElementById('lokaMoneyRow');
+
+    const lokaAmount =
+        document.getElementById('lokaMoneyAmount');
+
+    if (lokaMoneyUsed > 0) {
+
+        lokaRow.style.display = 'flex';
+
+        lokaAmount.innerText =
+            Math.round(lokaMoneyUsed);
+
+    } else {
+
+        lokaRow.style.display = 'none';
+
+        lokaAmount.innerText = '0';
+    }
+}
 
 /* ── MAP SETUP ── */
 var map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
@@ -850,11 +965,16 @@ function updateDelivery(lat, lng) {
     .then(function(data) {
       freeDeliveryUnlocked = data.free_delivery;
       document.getElementById('freeDeliveryInput').value = freeDeliveryUnlocked ? 'true' : 'false';
-      var fee   = data.delivery_fee;
-      var total = subtotal + handlingFee + fee - appliedDiscount;
-      document.getElementById('deliveryFee').innerText  = fee === 0 ? 'FREE 🎉' : '₹' + fee;
-      document.getElementById('orderTotal').innerText   = '₹' + Math.round(total);
-      document.getElementById('footerTotal').innerText  = '₹' + Math.round(total);
+      var fee = data.delivery_fee;
+
+      currentDeliveryFee = parseFloat(fee) || 0;
+
+      document.getElementById('deliveryFee').innerText =
+          currentDeliveryFee === 0
+              ? 'FREE 🎉'
+              : '₹' + currentDeliveryFee;
+
+      updateOrderTotal();
       document.getElementById('distanceInfo').innerText = 'Distance: ' + data.distance + ' km · 40–60 min delivery';
     });
 }
@@ -886,16 +1006,35 @@ function applyCoupon() {
       }
       var lat = document.getElementById('latitude').value;
       var lng = document.getElementById('longitude').value;
-      if (lat && lng) updateDelivery(lat, lng);
+
+      if (lat && lng) {
+          updateDelivery(lat, lng);
+      } else {
+          updateOrderTotal();
+      }
+
       couponBtn.innerText = 'Apply';
-        couponBtn.disabled = false;
+      couponBtn.disabled = false;
     });
 }
 
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', function() {
 
+
   /* Payment toggle */
+  /* LOKA Money toggle */
+  var lokaMoneyCheckbox =
+      document.getElementById('useLokaMoney');
+
+  if (lokaMoneyCheckbox) {
+      lokaMoneyCheckbox.addEventListener(
+          'change',
+          function() {
+              updateOrderTotal();
+          }
+      );
+  }
   var upiOpt   = document.getElementById('upiOption');
   var codOpt   = document.getElementById('codOption');
   var upiLabel = document.getElementById('upiLabel');

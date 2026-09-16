@@ -1389,20 +1389,217 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 
-<!-- LOKA Wallet Coming Soon Modal -->
+<!-- LOKA MONEY MODAL -->
 <div class="loka-wallet-modal" id="lokaWalletModal">
+
     <div class="loka-wallet-card">
-        <div class="loka-wallet-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 7.5h14a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/>
-                <path d="M3 8h15"/>
-                <path d="M16 12h4v3h-4a1.5 1.5 0 0 1 0-3z"/>
-            </svg>
+
+        <!-- Header -->
+        <div style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:18px;
+        ">
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+            ">
+                <div class="loka-wallet-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 7.5h14a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/>
+                        <path d="M3 8h15"/>
+                        <path d="M16 12h4v3h-4a1.5 1.5 0 0 1 0 3z"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <h5 style="margin:0;">LOKA Money</h5>
+                    <span style="
+                        font-size:11px;
+                        color:#9AA899;
+                    ">
+                        Your LOKA rewards
+                    </span>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                id="lokaWalletClose"
+                aria-label="Close"
+                style="
+                    border:0;
+                    background:none;
+                    font-size:24px;
+                    color:#9AA899;
+                    cursor:pointer;
+                    line-height:1;
+                "
+            >
+                ×
+            </button>
         </div>
-        <h5>LOKA Wallet</h5>
-        <p>Wallet feature is coming soon. Stay tuned!</p>
-        <button type="button" class="loka-wallet-close" id="lokaWalletClose">Okay</button>
+
+
+        <!-- Balance -->
+        <div style="
+            background:linear-gradient(
+                135deg,
+                #123C2A,
+                #1D5A3F
+            );
+            border-radius:16px;
+            padding:20px;
+            margin-bottom:16px;
+        ">
+
+            <div style="
+                font-size:11px;
+                color:#B8C8BE;
+                margin-bottom:6px;
+            ">
+                Available Balance
+            </div>
+
+            <div
+                id="lokaMoneyBalance"
+                style="
+                    font-size:30px;
+                    font-weight:800;
+                    color:#FFFFFF;
+                "
+            >
+                ₹0
+            </div>
+
+            <div style="
+                font-size:11px;
+                color:#B8C8BE;
+                margin-top:6px;
+            ">
+                Use up to ₹15 per eligible order
+            </div>
+
+        </div>
+
+
+        <!-- Referral Info -->
+        <div style="
+            background:#F7F9F7;
+            border-radius:12px;
+            padding:14px;
+            margin-bottom:16px;
+        ">
+
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-weight:700;
+                font-size:13px;
+                color:#173B2A;
+            ">
+                🎁 Earn LOKA Money
+            </div>
+
+            <div style="
+                font-size:11px;
+                color:#6F7C73;
+                margin-top:5px;
+                line-height:1.5;
+            ">
+                Refer friends and earn LOKA Money when
+                their first order is successfully delivered.
+            </div>
+
+        </div>
+
+
+        <!-- Transaction History -->
+        <div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:10px;
+            ">
+                <strong style="
+                    font-size:14px;
+                    color:#173B2A;
+                ">
+                    Transaction History
+                </strong>
+
+                <span style="
+                    font-size:10px;
+                    color:#9AA899;
+                ">
+                    Latest 10
+                </span>
+            </div>
+
+
+            <!-- Loading -->
+            <div
+                id="lokaMoneyLoading"
+                style="
+                    text-align:center;
+                    padding:20px 10px;
+                    color:#9AA899;
+                    font-size:12px;
+                    display:none;
+                "
+            >
+                Loading your LOKA Money...
+            </div>
+
+
+            <!-- Empty -->
+            <div
+                id="lokaMoneyEmpty"
+                style="
+                    text-align:center;
+                    padding:20px 10px;
+                    color:#9AA899;
+                    font-size:12px;
+                    display:none;
+                "
+            >
+                No LOKA Money transactions yet.
+            </div>
+
+
+            <!-- Transactions -->
+            <div
+                id="lokaMoneyTransactions"
+                style="
+                    max-height:260px;
+                    overflow-y:auto;
+                "
+            >
+            </div>
+
+        </div>
+
+
+        <!-- Close -->
+        <button
+            type="button"
+            class="loka-wallet-close"
+            id="lokaWalletCloseBottom"
+            style="
+                width:100%;
+                margin-top:18px;
+            "
+        >
+            Done
+        </button>
+
     </div>
+
 </div>
 
 <!-- Product Quick View Modal -->
@@ -1761,11 +1958,20 @@ document.addEventListener("DOMContentLoaded", function(){
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
     const profileBtn = document.getElementById("lokaProfileBtn");
     const profileMenu = document.getElementById("lokaProfileMenu");
+
     const walletBtn = document.getElementById("lokaWalletBtn");
     const walletModal = document.getElementById("lokaWalletModal");
     const walletClose = document.getElementById("lokaWalletClose");
+    const walletCloseBottom =
+        document.getElementById("lokaWalletCloseBottom");
+
+
+    // =====================================
+    // PROFILE
+    // =====================================
 
     if (profileBtn) {
         profileBtn.addEventListener("click", function () {
@@ -1773,22 +1979,321 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (walletBtn && walletModal) {
-        walletBtn.addEventListener("click", function () {
-            walletModal.classList.add("open");
-            document.body.style.overflow = "hidden";
-        });
-        function closeWallet() {
-            walletModal.classList.remove("open");
-            document.body.style.overflow = "";
+
+    // =====================================
+    // LOKA MONEY
+    // =====================================
+
+    function loadLokaMoney() {
+
+        const balanceElement =
+            document.getElementById("lokaMoneyBalance");
+
+        const transactionsElement =
+            document.getElementById("lokaMoneyTransactions");
+
+        const loadingElement =
+            document.getElementById("lokaMoneyLoading");
+
+        const emptyElement =
+            document.getElementById("lokaMoneyEmpty");
+
+
+        if (
+            !balanceElement ||
+            !transactionsElement ||
+            !loadingElement ||
+            !emptyElement
+        ) {
+            return;
         }
-        if (walletClose) walletClose.addEventListener("click", closeWallet);
-        walletModal.addEventListener("click", function (e) {
-            if (e.target === walletModal) closeWallet();
+
+
+        loadingElement.style.display = "block";
+        emptyElement.style.display = "none";
+        transactionsElement.innerHTML = "";
+
+
+        fetch("{% url 'loka_money_data' %}", {
+            method: "GET",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            credentials: "same-origin"
+        })
+
+        .then(response => {
+
+            if (response.status === 401) {
+                throw new Error("LOGIN_REQUIRED");
+            }
+
+            if (!response.ok) {
+                throw new Error("REQUEST_FAILED");
+            }
+
+            return response.json();
+        })
+
+        .then(data => {
+
+            loadingElement.style.display = "none";
+
+
+            if (!data.success) {
+                throw new Error(
+                    data.message ||
+                    "Unable to load LOKA Money."
+                );
+            }
+
+
+            // -------------------------------
+            // BALANCE
+            // -------------------------------
+
+            const balance =
+                parseFloat(data.balance || 0);
+
+            balanceElement.innerText =
+                "₹" + balance.toFixed(2);
+
+
+            // -------------------------------
+            // TRANSACTIONS
+            // -------------------------------
+
+            const transactions =
+                data.transactions || [];
+
+
+            if (transactions.length === 0) {
+
+                emptyElement.innerText =
+                    "No LOKA Money transactions yet.";
+
+                emptyElement.style.display = "block";
+
+                return;
+            }
+
+
+            transactions.forEach(item => {
+
+                const row =
+                    document.createElement("div");
+
+                row.style.cssText = `
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:10px;
+                    padding:12px 0;
+                    border-bottom:1px solid #EEF1EE;
+                `;
+
+
+                // LEFT
+                const left =
+                    document.createElement("div");
+
+                left.style.cssText = `
+                    min-width:0;
+                    flex:1;
+                `;
+
+
+                const description =
+                    document.createElement("div");
+
+                description.innerText =
+                    item.description || "LOKA Money";
+
+                description.style.cssText = `
+                    font-size:12px;
+                    font-weight:600;
+                    color:#173B2A;
+                    line-height:1.4;
+                `;
+
+
+                const date =
+                    document.createElement("div");
+
+                date.innerText =
+                    item.created_at || "";
+
+                date.style.cssText = `
+                    font-size:10px;
+                    color:#9AA899;
+                    margin-top:3px;
+                `;
+
+
+                left.appendChild(description);
+                left.appendChild(date);
+
+
+                // RIGHT
+                const right =
+                    document.createElement("div");
+
+                right.style.cssText = `
+                    text-align:right;
+                    flex-shrink:0;
+                `;
+
+
+                const amount =
+                    document.createElement("div");
+
+                const transactionType =
+                    item.type || "";
+
+
+                let sign = "";
+
+                if (
+                    transactionType === "CREDIT" ||
+                    transactionType === "REFUND"
+                ) {
+                    sign = "+";
+                }
+
+                if (transactionType === "DEBIT") {
+                    sign = "−";
+                }
+
+
+                amount.innerText =
+                    sign +
+                    "₹" +
+                    parseFloat(
+                        item.amount || 0
+                    ).toFixed(2);
+
+                amount.style.cssText = `
+                    font-size:12px;
+                    font-weight:700;
+                `;
+
+
+                const balanceAfter =
+                    document.createElement("div");
+
+                balanceAfter.innerText =
+                    "Balance ₹" +
+                    parseFloat(
+                        item.balance_after || 0
+                    ).toFixed(2);
+
+                balanceAfter.style.cssText = `
+                    font-size:9px;
+                    color:#9AA899;
+                    margin-top:3px;
+                `;
+
+
+                right.appendChild(amount);
+                right.appendChild(balanceAfter);
+
+
+                row.appendChild(left);
+                row.appendChild(right);
+
+                transactionsElement.appendChild(row);
+
+            });
+
+        })
+
+        .catch(error => {
+
+            loadingElement.style.display = "none";
+
+            console.error(
+                "LOKA Money error:",
+                error
+            );
+
+
+            if (error.message === "LOGIN_REQUIRED") {
+
+                balanceElement.innerText = "₹0.00";
+
+                emptyElement.innerText =
+                    "Please login to view your LOKA Money.";
+
+                emptyElement.style.display = "block";
+
+                return;
+            }
+
+
+            emptyElement.innerText =
+                "Unable to load LOKA Money. Please try again.";
+
+            emptyElement.style.display = "block";
         });
     }
+
+
+    // =====================================
+    // OPEN / CLOSE LOKA MONEY
+    // =====================================
+
+    if (walletBtn && walletModal) {
+
+        walletBtn.addEventListener("click", function () {
+
+            walletModal.classList.add("open");
+
+            document.body.style.overflow = "hidden";
+
+            // Load latest balance + 10 transactions
+            loadLokaMoney();
+        });
+
+
+        function closeWallet() {
+
+            walletModal.classList.remove("open");
+
+            document.body.style.overflow = "";
+        }
+
+
+        if (walletClose) {
+            walletClose.addEventListener(
+                "click",
+                closeWallet
+            );
+        }
+
+
+        if (walletCloseBottom) {
+            walletCloseBottom.addEventListener(
+                "click",
+                closeWallet
+            );
+        }
+
+
+        walletModal.addEventListener(
+            "click",
+            function (e) {
+
+                if (e.target === walletModal) {
+                    closeWallet();
+                }
+
+            }
+        );
+    }
+
 });
 </script>
+
 <!-- 🔥 LINK FCM TOKEN TO LOGGED-IN CUSTOMER -->
 {% if request.session.customer_id %}
 <script>
