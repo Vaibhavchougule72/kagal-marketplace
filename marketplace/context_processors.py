@@ -9,9 +9,9 @@ def maintenance(request):
 
     if request.path.startswith("/admin"):
         return {
-            "maintenance_mode": True
+            "maintenance_mode": False
         }
 
     return {
-        "maintenance_mode": True
+        "maintenance_mode": False
     }
