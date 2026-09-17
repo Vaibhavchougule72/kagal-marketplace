@@ -934,3 +934,52 @@ class CustomerAdmin(admin.ModelAdmin):
     actions = [
         download_customers_excel,
     ]
+
+from django.contrib import admin
+from .models import StorePartnerProfile, PartnerDeviceToken
+
+
+@admin.register(StorePartnerProfile)
+class StorePartnerProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "store",
+        "phone",
+        "is_active",
+        "created_at",
+    )
+
+    list_filter = (
+        "store",
+        "is_active",
+    )
+
+    search_fields = (
+        "user__username",
+        "user__first_name",
+        "user__last_name",
+        "phone",
+        "store__name",
+    )
+
+
+@admin.register(PartnerDeviceToken)
+class PartnerDeviceTokenAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "store",
+        "is_active",
+        "created_at",
+        "updated_at",
+    )
+
+    list_filter = (
+        "store",
+        "is_active",
+    )
+
+    search_fields = (
+        "user__username",
+        "store__name",
+        "token",
+    )
