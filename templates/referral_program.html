@@ -2,21 +2,92 @@
 
 {% block extra_css %}
 <style>
+    .page-wrapper,
+    .main-content {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
     .referral-page {
-        min-height: calc(100vh - 70px);
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    html,
+    body,
+    .referral-page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .referral-page {
         background: #f7f8f5;
-        padding: 30px 16px 50px;
+        min-height: 100vh;
+        padding-bottom: 50px;
     }
 
     .referral-container {
         width: 100%;
         max-width: 700px;
         margin: 0 auto;
+        padding: 0 16px;
     }
+
+    /* ---------- sticky nav ---------- */
+
+    .referral-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: linear-gradient(150deg, #1A3A16 0%, #2D5A27 55%, #3A2010 100%);
+        padding: 11px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .referral-nav-back {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        border: 0.5px solid rgba(255, 255, 255, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        line-height: 1;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: transform 0.12s ease, background 0.12s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .referral-nav-back:active {
+        transform: scale(0.88);
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .referral-nav-back:focus-visible {
+        outline: 2px solid #E8621A;
+        outline-offset: 2px;
+    }
+
+    .referral-nav-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
+        flex: 1;
+    }
+
+    /* ---------- header ---------- */
 
     .referral-header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
 
     .referral-header h1 {
@@ -26,470 +97,531 @@
         color: #174d32;
     }
 
+
     .referral-header p {
         margin: 0;
         font-size: 15px;
         color: #666;
     }
 
+    /* ---------- stats ---------- */
+
+    .referral-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .referral-stat {
+        background: #ffffff;
+        border: 1px solid #e8ece7;
+        border-radius: 16px;
+        padding: 18px 10px;
+        text-align: center;
+    }
+
+    .stat-icon {
+        font-size: 22px;
+        margin-bottom: 7px;
+    }
+
+    .referral-stat strong {
+        display: block;
+        font-size: 20px;
+        font-weight: 800;
+        color: #174d32;
+        margin-bottom: 3px;
+    }
+
+    .referral-stat span {
+        display: block;
+        font-size: 11px;
+        color: #777;
+    }
+
+    /* ---------- tear-off coupon ---------- */
+
+    .ticket-wrap {
+        padding: 6px 14px 0;
+    }
+
+    .referral-ticket {
+        position: relative;
+        width: 100%;
+        max-width: 460px;
+        margin: 0 auto;
+        background: #174d32;
+        color: #ffffff;
+        border: none;
+        border-radius: 20px;
+        padding: 28px 24px 24px;
+        text-align: center;
+        overflow: hidden;
+        cursor: pointer;
+        font-family: inherit;
+        box-shadow: 0 14px 34px rgba(23, 77, 50, 0.22);
+        transition: transform 0.15s ease;
+    }
+
+    .referral-ticket:active {
+        transform: scale(0.99);
+    }
+
+    .referral-ticket:focus-visible {
+        outline: 3px solid #e87922;
+        outline-offset: 3px;
+    }
+
+    /* side notches — background must match .referral-page */
+    .referral-ticket::before,
+    .referral-ticket::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #f7f8f5;
+        transform: translateY(-50%);
+    }
+
+    .referral-ticket::before {
+        left: -16px;
+    }
+
+    .referral-ticket::after {
+        right: -16px;
+    }
+
+    .ticket-stamp {
+        position: absolute;
+        top: 16px;
+        right: -34px;
+        background: #e87922;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        padding: 5px 38px;
+        transform: rotate(38deg);
+    }
+
+    .ticket-offer {
+        margin: 0 0 7px;
+        font-size: 27px;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+    }
+
+    .ticket-sub {
+        margin: 0 0 22px;
+        font-size: 13px;
+        line-height: 1.6;
+        opacity: 0.78;
+    }
+
+    .ticket-perforation {
+        border-top: 2px dashed rgba(255, 255, 255, 0.35);
+        margin: 0 -24px 20px;
+    }
+
+    .ticket-code-label {
+        margin: 0 0 9px;
+        font-size: 11px;
+        letter-spacing: 2px;
+        opacity: 0.6;
+    }
+
+    #referralCode {
+        display: block;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 11px;
+        padding: 14px 10px;
+        margin-bottom: 12px;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        word-break: break-all;
+    }
+
+    .ticket-hint {
+        margin: 0;
+        font-size: 11.5px;
+        opacity: 0.6;
+        min-height: 16px;
+    }
+
+    .ticket-hint.copied {
+        opacity: 1;
+        font-weight: 700;
+        color: #ffd9b3;
+    }
+
+    /* ---------- share ---------- */
+
+    .share-referral-section {
+        margin-top: 16px;
+        text-align: center;
+    }
+
+    #shareReferralButton {
+        width: 100%;
+        max-width: 460px;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 20px;
+        background: #e87922;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 750;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    #shareReferralButton:hover {
+        opacity: 0.92;
+    }
+
+    #shareReferralButton:active {
+        transform: scale(0.98);
+    }
+
+    /* ---------- wallet ---------- */
+
+    .referral-wallet-card {
+        margin-top: 16px;
+        background: #ffffff;
+        border: 1px solid #e8ece7;
+        border-radius: 16px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .wallet-icon {
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        border-radius: 12px;
+        background: #fff4e8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+    }
+
+    .wallet-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .wallet-info span {
+        font-size: 13px;
+        color: #777;
+    }
+
+    .wallet-info strong {
+        font-size: 20px;
+        font-weight: 800;
+        color: #174d32;
+    }
+
+    /* ---------- how it works ---------- */
+
+    .how-referral-works {
+        margin-top: 25px;
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 25px 24px;
+        border: 1px solid #e8ece7;
+    }
+
+    .how-referral-works > h2 {
+        margin: 0 0 20px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 800;
+        color: #174d32;
+    }
+
+    .referral-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .referral-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .step-number {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #174d32;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .referral-step h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 750;
+        color: #222;
+    }
+
+    .referral-step p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #777;
+    }
+
+    /* ---------- referral activity ---------- */
+
+    .referral-activity-card {
+        margin-top: 25px;
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 25px 24px;
+        border: 1px solid #e8ece7;
+    }
+
+    .referral-activity-card > h2 {
+        margin: 0 0 20px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 800;
+        color: #174d32;
+    }
+
+    .referral-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .referral-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 16px 0;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    .referral-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .referral-item:first-child {
+        padding-top: 0;
+    }
+
+    .referral-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .referral-user-icon {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        border-radius: 50%;
+        background: #f1f6f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+    .referral-user div:last-child {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    .referral-user strong {
+        font-size: 14px;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .referral-user span {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .referral-status {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 3px;
+    }
+
+    .referral-status strong {
+        font-size: 14px;
+    }
+
+    .referral-status span {
+        font-size: 11px;
+    }
+
+    .referral-status.rewarded strong {
+        color: #174d32;
+    }
+
+    .referral-status.rewarded span {
+        color: #5d8067;
+    }
+
+    .referral-status.pending strong {
+        color: #e87922;
+    }
+
+    .referral-status.pending span {
+        color: #999;
+    }
+
+    .no-referrals {
+        text-align: center;
+        padding: 15px 5px 5px;
+    }
+
+    .no-referrals-icon {
+        font-size: 35px;
+        margin-bottom: 8px;
+    }
+
+    .no-referrals h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .no-referrals p {
+        margin: 0 auto;
+        max-width: 400px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #888;
+    }
+
+    /* ---------- mobile ---------- */
+
     @media (max-width: 600px) {
         .referral-page {
-            padding: 22px 14px 40px;
+            padding-bottom: 40px;
+        }
+
+        .referral-container {
+            padding: 0 14px;
         }
 
         .referral-header h1 {
             font-size: 26px;
         }
-    }
-    .referral-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 30px 24px;
-    text-align: center;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e8ece7;
-}
 
-.referral-card-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    background: #fff4e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-}
+        .referral-stats {
+            gap: 8px;
+        }
 
-.referral-card h2 {
-    margin: 0 0 10px;
-    font-size: 24px;
-    font-weight: 800;
-    color: #174d32;
-}
+        .referral-stat {
+            padding: 15px 6px;
+        }
 
-.referral-card-text {
-    max-width: 500px;
-    margin: 0 auto 25px;
-    color: #666;
-    font-size: 15px;
-    line-height: 1.6;
-}
+        .referral-stat strong {
+            font-size: 18px;
+        }
 
-.referral-card-text strong {
-    color: #e87922;
-}
+        .referral-stat span {
+            font-size: 10px;
+        }
 
-.referral-code-section {
-    max-width: 420px;
-    margin: 0 auto;
-}
+        .ticket-wrap {
+            padding: 4px 6px 0;
+        }
 
-.referral-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #777;
-}
+        .referral-ticket {
+            padding: 24px 18px 20px;
+        }
 
-.referral-code-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px;
-    background: #f5f7f3;
-    border: 1px dashed #174d32;
-    border-radius: 12px;
-}
+        .ticket-offer {
+            font-size: 23px;
+        }
 
-#referralCode {
-    flex: 1;
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: #174d32;
-    text-align: center;
-}
+        .ticket-perforation {
+            margin: 0 -18px 18px;
+        }
 
-#copyReferralCode {
-    border: none;
-    border-radius: 9px;
-    padding: 11px 18px;
-    background: #174d32;
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-}
+        #referralCode {
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
 
-#copyReferralCode:active {
-    transform: scale(0.97);
-}
+        .referral-activity-card {
+            padding: 22px 16px;
+        }
 
-@media (max-width: 600px) {
-    .referral-card {
-        padding: 25px 16px;
+        .referral-item {
+            gap: 8px;
+        }
+
+        .referral-user-icon {
+            width: 38px;
+            height: 38px;
+            flex-basis: 38px;
+            font-size: 17px;
+        }
+
+        .referral-status {
+            max-width: 125px;
+            text-align: right;
+        }
+
+        .referral-status span {
+            line-height: 1.3;
+        }
     }
 
-    .referral-card h2 {
-        font-size: 21px;
+    @media (prefers-reduced-motion: reduce) {
+        .referral-ticket,
+        #shareReferralButton {
+            transition: none;
+        }
     }
-
-    .referral-code-box {
-        gap: 6px;
-    }
-
-    #copyReferralCode {
-        padding: 10px 14px;
-    }
-}
-
-.how-referral-works {
-    margin-top: 25px;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 25px 24px;
-    border: 1px solid #e8ece7;
-}
-
-.how-referral-works > h2 {
-    margin: 0 0 20px;
-    text-align: center;
-    font-size: 20px;
-    font-weight: 800;
-    color: #174d32;
-}
-
-.referral-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.referral-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-}
-
-.step-number {
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #174d32;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    font-weight: 800;
-}
-
-.referral-step h3 {
-    margin: 0 0 4px;
-    font-size: 15px;
-    font-weight: 750;
-    color: #222;
-}
-
-.referral-step p {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-    color: #777;
-}
-
-.share-referral-section {
-    margin-top: 18px;
-}
-
-#shareReferralButton {
-    width: 100%;
-    max-width: 420px;
-    border: none;
-    border-radius: 12px;
-    padding: 13px 20px;
-    background: #e87922;
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 750;
-    cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-#shareReferralButton:hover {
-    opacity: 0.92;
-}
-
-#shareReferralButton:active {
-    transform: scale(0.98);
-}
-
-.referral-wallet-card {
-    margin-top: 18px;
-    background: #ffffff;
-    border: 1px solid #e8ece7;
-    border-radius: 16px;
-    padding: 18px 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.wallet-icon {
-    width: 46px;
-    height: 46px;
-    flex: 0 0 46px;
-    border-radius: 12px;
-    background: #fff4e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 23px;
-}
-
-.wallet-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.wallet-info span {
-    font-size: 13px;
-    color: #777;
-}
-
-.wallet-info strong {
-    font-size: 20px;
-    font-weight: 800;
-    color: #174d32;
-}
-
-.referral-activity-card {
-    margin-top: 25px;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 25px 24px;
-    border: 1px solid #e8ece7;
-}
-
-.referral-activity-card > h2 {
-    margin: 0 0 20px;
-    text-align: center;
-    font-size: 20px;
-    font-weight: 800;
-    color: #174d32;
-}
-
-.referral-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.referral-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 16px 0;
-    border-bottom: 1px solid #eeeeee;
-}
-
-.referral-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.referral-item:first-child {
-    padding-top: 0;
-}
-
-.referral-user {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-}
-
-.referral-user-icon {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    border-radius: 50%;
-    background: #f1f6f1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 19px;
-}
-
-.referral-user div:last-child {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-}
-
-.referral-user strong {
-    font-size: 14px;
-    color: #222;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.referral-user span {
-    font-size: 12px;
-    color: #888;
-}
-
-.referral-status {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 3px;
-}
-
-.referral-status strong {
-    font-size: 14px;
-}
-
-.referral-status span {
-    font-size: 11px;
-}
-
-.referral-status.rewarded strong {
-    color: #174d32;
-}
-
-.referral-status.rewarded span {
-    color: #5d8067;
-}
-
-.referral-status.pending strong {
-    color: #e87922;
-}
-
-.referral-status.pending span {
-    color: #999;
-}
-
-.no-referrals {
-    text-align: center;
-    padding: 15px 5px 5px;
-}
-
-.no-referrals-icon {
-    font-size: 35px;
-    margin-bottom: 8px;
-}
-
-.no-referrals h3 {
-    margin: 0 0 6px;
-    font-size: 16px;
-    color: #333;
-}
-
-.no-referrals p {
-    margin: 0 auto;
-    max-width: 400px;
-    font-size: 13px;
-    line-height: 1.5;
-    color: #888;
-}
-
-@media (max-width: 600px) {
-    .referral-activity-card {
-        padding: 22px 16px;
-    }
-
-    .referral-item {
-        gap: 8px;
-    }
-
-    .referral-user-icon {
-        width: 38px;
-        height: 38px;
-        flex-basis: 38px;
-        font-size: 17px;
-    }
-
-    .referral-status {
-        max-width: 125px;
-        text-align: right;
-    }
-
-    .referral-status span {
-        line-height: 1.3;
-    }
-}
-
-.referral-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.referral-stat {
-    background: #ffffff;
-    border: 1px solid #e8ece7;
-    border-radius: 16px;
-    padding: 18px 10px;
-    text-align: center;
-}
-
-.stat-icon {
-    font-size: 22px;
-    margin-bottom: 7px;
-}
-
-.referral-stat strong {
-    display: block;
-    font-size: 20px;
-    font-weight: 800;
-    color: #174d32;
-    margin-bottom: 3px;
-}
-
-.referral-stat span {
-    display: block;
-    font-size: 11px;
-    color: #777;
-}
-
-@media (max-width: 600px) {
-    .referral-stats {
-        gap: 8px;
-    }
-
-    .referral-stat {
-        padding: 15px 6px;
-    }
-
-    .referral-stat strong {
-        font-size: 18px;
-    }
-
-    .referral-stat span {
-        font-size: 10px;
-    }
-}
-
 </style>
 {% endblock %}
+
 {% block content %}
 
 <div class="referral-page">
 
+    <div class="referral-nav">
+        <button type="button" class="referral-nav-back" id="referralBackButton" aria-label="Back">&#8249;</button>
+        <span class="referral-nav-title">Refer &amp; Earn</span>
+    </div>
+
     <div class="referral-container">
 
         <div class="referral-header">
-            <h1>Refer & Earn</h1>
+            <h1>Refer &amp; Earn</h1>
             <p>Invite your friends to LOKA and earn LOKA Money.</p>
         </div>
 
@@ -515,37 +647,37 @@
 
         </div>
 
-        <div class="referral-card">
+        <div class="ticket-wrap">
 
-            <div class="referral-card-icon">
-                🎁
-            </div>
+            <button type="button" class="referral-ticket" id="referralTicket">
 
-            <h2>Give ₹20, Get ₹20</h2>
+                <span class="ticket-stamp">LOKA</span>
 
-            <p class="referral-card-text">
-                Invite your friends to order from LOKA.
-                When they complete their first order, you earn
-                <strong>₹20 LOKA Money</strong>.
-            </p>
+                <p class="ticket-offer">Give ₹20, get ₹20</p>
 
-            <div class="referral-code-section">
-                <span class="referral-label">Your Referral Code</span>
+                <p class="ticket-sub">
+                    Your friend saves ₹20 on their first order.<br>
+                    You get ₹20 LOKA Money once it's delivered.
+                </p>
 
-                <div class="referral-code-box">
-                    <span id="referralCode">{{ customer.referral_code }}</span>
-                    <button type="button" id="copyReferralCode">
-                        Copy
-                    </button>
-                </div>
-            </div>
+                <div class="ticket-perforation"></div>
 
-            <div class="share-referral-section">
-                <button type="button" id="shareReferralButton">
-                    📤 Share with Friends
-                </button>
-            </div>
+                <p class="ticket-code-label">YOUR CODE</p>
 
+                <span id="referralCode">{{ customer.referral_code }}</span>
+
+                <p class="ticket-hint" id="ticketHint" aria-live="polite">
+                    Tap the ticket to copy
+                </p>
+
+            </button>
+
+        </div>
+
+        <div class="share-referral-section">
+            <button type="button" id="shareReferralButton">
+                📤 Share with Friends
+            </button>
         </div>
 
         <div class="referral-wallet-card">
@@ -560,7 +692,6 @@
             </div>
 
         </div>
-
 
         <div class="how-referral-works">
 
@@ -663,48 +794,93 @@
 
 </div>
 
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const referralCode = document.getElementById("referralCode");
-    const copyButton = document.getElementById("copyReferralCode");
+    const ticket = document.getElementById("referralTicket");
+    const ticketHint = document.getElementById("ticketHint");
+    const shareButton = document.getElementById("shareReferralButton");
+    const backButton = document.getElementById("referralBackButton");
 
-    if (!referralCode || !copyButton) {
-        return;
+    if (backButton) {
+        backButton.addEventListener("click", function () {
+            if (document.referrer && window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "/";
+            }
+        });
     }
 
-    copyButton.addEventListener("click", async function () {
+    const DEFAULT_HINT = "Tap the ticket to copy";
 
-        const code = referralCode.textContent.trim();
+    function getCode() {
+        return referralCode ? referralCode.textContent.trim() : "";
+    }
 
-        if (!code) {
+    function setHint(message, isCopied) {
+        if (!ticketHint) {
             return;
         }
 
-        try {
-            await navigator.clipboard.writeText(code);
+        ticketHint.textContent = message;
+        ticketHint.classList.toggle("copied", Boolean(isCopied));
 
-            const originalText = copyButton.textContent;
-
-            copyButton.textContent = "Copied!";
-
+        if (isCopied) {
             setTimeout(function () {
-                copyButton.textContent = originalText;
-            }, 1500);
+                ticketHint.textContent = DEFAULT_HINT;
+                ticketHint.classList.remove("copied");
+            }, 1600);
+        }
+    }
 
-        } catch (error) {
-            console.error("Failed to copy referral code:", error);
+    async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
         }
 
-    });
+        // fallback for non-HTTPS / older browsers
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        document.body.removeChild(helper);
+    }
 
-    const shareButton = document.getElementById("shareReferralButton");
+    if (ticket && referralCode) {
+
+        ticket.addEventListener("click", async function () {
+
+            const code = getCode();
+
+            if (!code) {
+                setHint("Referral code unavailable — try refreshing", false);
+                return;
+            }
+
+            try {
+                await copyText(code);
+                setHint("Copied " + code + " ✓", true);
+            } catch (error) {
+                console.error("Failed to copy referral code:", error);
+                setHint("Couldn't copy — press and hold the code instead", false);
+            }
+
+        });
+
+    }
 
     if (shareButton) {
+
         shareButton.addEventListener("click", async function () {
 
-            const code = referralCode.textContent.trim();
+            const code = getCode();
 
             if (!code) {
                 return;
@@ -713,7 +889,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const shareMessage =
                 "🎉 Join LOKA – Kagal's own food delivery service!\n\n" +
                 "Use my referral code: " + code + "\n\n" +
-                "Sign up on LOKA and start ordering your favourite food! 🍔🍕🍛";
+                "You get ₹20 off your first order. 🍔🍕🍛";
 
             if (navigator.share) {
                 try {
@@ -721,33 +897,34 @@ document.addEventListener("DOMContentLoaded", function () {
                         title: "Join LOKA",
                         text: shareMessage
                     });
+                    return;
                 } catch (error) {
-                    if (error.name !== "AbortError") {
-                        console.error("Share failed:", error);
+                    if (error.name === "AbortError") {
+                        return;
                     }
-                }
-            } else {
-                try {
-                    await navigator.clipboard.writeText(shareMessage);
-
-                    const originalText = shareButton.textContent;
-
-                    shareButton.textContent = "Message Copied!";
-
-                    setTimeout(function () {
-                        shareButton.textContent = originalText;
-                    }, 1500);
-
-                } catch (error) {
-                    console.error("Failed to copy share message:", error);
+                    console.error("Share failed:", error);
                 }
             }
+
+            try {
+                await copyText(shareMessage);
+
+                const originalText = shareButton.textContent;
+                shareButton.textContent = "Message Copied!";
+
+                setTimeout(function () {
+                    shareButton.textContent = originalText;
+                }, 1600);
+
+            } catch (error) {
+                console.error("Failed to copy share message:", error);
+            }
+
         });
+
     }
 
 });
-
-
 </script>
 
 {% endblock %}
