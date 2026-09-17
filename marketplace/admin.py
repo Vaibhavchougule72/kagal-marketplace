@@ -874,6 +874,38 @@ class ComplaintAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
+def download_customers_excel(modeladmin, request, queryset):
+    customers = Customer.objects.all().values(
+        "name",
+        "phone"
+    )
+
+    df = pd.DataFrame(customers)
+
+    # Rename columns
+    df.rename(columns={
+        "name": "Customer Name",
+        "phone": "Phone Number",
+    }, inplace=True)
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="customers.xlsx"'
+    )
+
+    df.to_excel(
+        response,
+        index=False,
+        engine="openpyxl"
+    )
+
+    return response
+
+
+download_customers_excel.short_description = "Download Customers Excel"
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
@@ -898,3 +930,7 @@ class CustomerAdmin(admin.ModelAdmin):
     ordering = (
         "-created_at",
     )
+
+    actions = [
+        download_customers_excel,
+    ]
