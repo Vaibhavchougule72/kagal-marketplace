@@ -3,6 +3,11 @@ from . import views
 from .views import save_fcm_token
 from django.views.generic import TemplateView
 from django.conf.urls.i18n import set_language
+from .views import (
+        partner_login,
+        partner_dashboard,
+        partner_logout,
+    )
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -329,6 +334,24 @@ urlpatterns = [
         "profile/referral-program/",
         views.referral_program,
         name="referral_program",
+    ),
+
+    path(
+        "partner/login/",
+        partner_login,
+        name="partner_login"
+    ),
+
+    path(
+        "partner/",
+        partner_dashboard,
+        name="partner_dashboard"
+    ),
+
+    path(
+        "partner/logout/",
+        partner_logout,
+        name="partner_logout"
     ),
 ]
 

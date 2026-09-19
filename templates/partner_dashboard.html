@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ store.name }} - LOKA Partner
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family:
+                Arial,
+                sans-serif;
+
+            background: #f5f7f6;
+
+            color: #222;
+        }
+
+        .header {
+            background: #227D57;
+
+            color: white;
+
+            padding: 20px;
+        }
+
+        .header-content {
+            max-width: 900px;
+
+            margin: auto;
+        }
+
+        .brand {
+            font-size: 14px;
+
+            opacity: 0.85;
+        }
+
+        .store-name {
+            font-size: 24px;
+
+            font-weight: 800;
+
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 900px;
+
+            margin: auto;
+
+            padding: 20px;
+        }
+
+        .cards {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(140px, 1fr)
+                );
+
+            gap: 12px;
+
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+
+            border-radius: 15px;
+
+            padding: 18px;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+        }
+
+        .card-title {
+            color: #777;
+
+            font-size: 13px;
+        }
+
+        .card-number {
+            font-size: 28px;
+
+            font-weight: 800;
+
+            margin-top: 8px;
+        }
+
+        .section-title {
+            font-size: 20px;
+
+            font-weight: 800;
+
+            margin:
+                25px 0
+                12px;
+        }
+
+        .order {
+            background: white;
+
+            border-radius: 15px;
+
+            padding: 16px;
+
+            margin-bottom: 12px;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+        }
+
+        .order-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+        }
+
+        .order-id {
+            font-weight: 800;
+
+            font-size: 17px;
+        }
+
+        .status {
+            font-size: 12px;
+
+            font-weight: 700;
+
+            padding: 6px 10px;
+
+            border-radius: 20px;
+
+            background: #eef6f1;
+
+            color: #227D57;
+        }
+
+        .customer {
+            margin-top: 10px;
+
+            font-weight: 600;
+        }
+
+        .details {
+            margin-top: 6px;
+
+            color: #666;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+        }
+
+        .empty {
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 15px;
+
+            text-align: center;
+
+            color: #777;
+        }
+
+        .logout {
+            display: inline-block;
+
+            margin-top: 12px;
+
+            color: white;
+
+            text-decoration: none;
+
+            font-size: 14px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="header-content">
+
+        <div class="brand">
+            LOKA PARTNER
+        </div>
+
+        <div class="store-name">
+            {{ store.name }}
+        </div>
+
+        <a
+            href="{% url 'partner_logout' %}"
+            class="logout"
+        >
+            Logout
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <!-- ============================= -->
+    <!-- ORDER COUNTS -->
+    <!-- ============================= -->
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="card-title">
+                New Orders
+            </div>
+
+            <div class="card-number">
+                {{ new_orders.count }}
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-title">
+                Accepted
+            </div>
+
+            <div class="card-number">
+                {{ accepted_orders.count }}
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-title">
+                Picked Up
+            </div>
+
+            <div class="card-number">
+                {{ picked_up_orders.count }}
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-title">
+                Out for Delivery
+            </div>
+
+            <div class="card-number">
+                {{ out_for_delivery_orders.count }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- RECENT ORDERS -->
+    <!-- ============================= -->
+
+    <div class="section-title">
+        Recent Orders
+    </div>
+
+
+    {% if recent_orders %}
+
+        {% for order in recent_orders %}
+
+            <div class="order">
+
+                <div class="order-top">
+
+                    <div class="order-id">
+                        Order #{{ order.id }}
+                    </div>
+
+                    <div class="status">
+                        {{ order.get_status_display }}
+                    </div>
+
+                </div>
+
+
+                <div class="customer">
+                    {{ order.customer_name }}
+                </div>
+
+
+                <div class="details">
+
+                    📞 {{ order.phone }}
+
+                    <br>
+
+                    💰 ₹{{ order.total }}
+
+                    <br>
+
+                    💳 {{ order.get_payment_method_display }}
+
+                    <br>
+
+                    🕐 {{ order.created_at|date:"d M Y, h:i A" }}
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+            No orders found.
+        </div>
+
+    {% endif %}
+
+</main>
+
+</body>
+
+</html>

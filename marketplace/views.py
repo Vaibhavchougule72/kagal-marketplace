@@ -53,6 +53,12 @@ from django.db import IntegrityError, transaction
 from django.contrib.auth.hashers import make_password, check_password
 from .services.whatsapp_service import send_login_otp as send_whatsapp_login_otp
 from .models import FavoriteOrder
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from .models import StorePartnerProfile, PartnerDeviceToken
 
 MAX_CART_QTY = 50
 
@@ -9624,3 +9630,203 @@ def admin_loka_money_transactions(request):
         "balance": str(account.balance),
         "transactions": transaction_data
     })
+
+
+# ============================================================
+# LOKA STORE PARTNER
+# ============================================================
+
+def partner_login(request):
+    """
+    Login page for LOKA restaurant/store partners.
+    """
+
+    # Already logged in as a valid partner
+    if request.user.is_authenticated:
+        profile = getattr(
+            request.user,
+            "store_partner_profile",
+            None
+        )
+
+        if profile and profile.is_active:
+            return redirect("partner_dashboard")
+
+    if request.method == "POST":
+
+        username = request.POST.get(
+            "username",
+            ""
+        ).strip()
+
+        password = request.POST.get(
+            "password",
+            ""
+        )
+
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
+        if user is None:
+            return render(
+                request,
+                "partner_login.html",
+                {
+                    "error": "Invalid username or password."
+                }
+            )
+
+        profile = getattr(
+            user,
+            "store_partner_profile",
+            None
+        )
+
+        if not profile:
+            return render(
+                request,
+                "partner_login.html",
+                {
+                    "error": "This account is not registered as a store partner."
+                }
+            )
+
+        if not profile.is_active:
+            return render(
+                request,
+                "partner_login.html",
+                {
+                    "error": "Your partner account is inactive."
+                }
+            )
+
+        login(request, user)
+
+        return redirect("partner_dashboard")
+
+    return render(
+        request,
+        "partner_login.html"
+    )
+
+
+@login_required
+def partner_dashboard(request):
+    """
+    Main dashboard for the logged-in store partner.
+
+    IMPORTANT:
+    The store is obtained from StorePartnerProfile.
+    The request cannot choose another store.
+    """
+
+    profile = getattr(
+        request.user,
+        "store_partner_profile",
+        None
+    )
+
+    # User is logged in but isn't a store partner
+    if not profile:
+        logout(request)
+        return redirect("partner_login")
+
+    # Partner account disabled
+    if not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    # ========================================================
+    # STORE ORDERS
+    # ========================================================
+
+    orders = (
+        Order.objects
+        .filter(store=store)
+        .select_related("store")
+        .prefetch_related("items__product", "items__bundle")
+        .order_by("-created_at")
+    )
+
+    # ========================================================
+    # COUNTS
+    # ========================================================
+
+    new_orders = orders.filter(
+        status="REQUEST_SUBMITTED"
+    )
+
+    accepted_orders = orders.filter(
+        status="ACCEPTED"
+    )
+
+    picked_up_orders = orders.filter(
+        status="PICKED_UP"
+    )
+
+    out_for_delivery_orders = orders.filter(
+        status="OUT_FOR_DELIVERY"
+    )
+
+    completed_orders = orders.filter(
+        status="DELIVERED"
+    )
+
+    cancelled_orders = orders.filter(
+        status__in=[
+            "FAILED",
+            "CANCELLED"
+        ]
+    )
+
+    # ========================================================
+    # RECENT ORDERS
+    # ========================================================
+
+    recent_orders = orders[:30]
+
+    context = {
+        "profile": profile,
+        "store": store,
+
+        "new_orders": new_orders,
+        "accepted_orders": accepted_orders,
+        "picked_up_orders": picked_up_orders,
+        "out_for_delivery_orders": out_for_delivery_orders,
+        "completed_orders": completed_orders,
+        "cancelled_orders": cancelled_orders,
+
+        "recent_orders": recent_orders,
+
+        "show_navbar": False,
+        "show_floating_cart": False,
+        "simple_navbar": False,
+    }
+
+    return render(
+        request,
+        "partner_dashboard.html",
+        context
+    )
+
+
+@login_required
+def partner_logout(request):
+    """
+    Logout store partner.
+    """
+
+    profile = getattr(
+        request.user,
+        "store_partner_profile",
+        None
+    )
+
+    logout(request)
+
+    return redirect("partner_login")
