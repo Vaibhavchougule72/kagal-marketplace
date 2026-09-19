@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Order #{{ order.id }} - LOKA Partner
+    </title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            background: #f5f7f6;
+
+            font-family:
+                Arial,
+                sans-serif;
+
+            color: #222;
+
+            padding-bottom: 40px;
+        }
+
+
+        .header {
+
+            background: #227D57;
+
+            color: white;
+
+            padding: 18px;
+        }
+
+
+        .header-inner {
+
+            max-width: 700px;
+
+            margin: auto;
+        }
+
+
+        .back {
+
+            color: white;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            display: inline-block;
+
+            margin-bottom: 15px;
+        }
+
+
+        .title {
+
+            font-size: 25px;
+
+            font-weight: 800;
+        }
+
+
+        .store {
+
+            opacity: 0.85;
+
+            margin-top: 5px;
+
+            font-size: 14px;
+        }
+
+
+        .container {
+
+            max-width: 700px;
+
+            margin: auto;
+
+            padding: 18px;
+        }
+
+
+        .card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 18px;
+
+            margin-bottom: 15px;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+        }
+
+
+        .section-title {
+
+            font-size: 18px;
+
+            font-weight: 800;
+
+            margin-bottom: 14px;
+        }
+
+
+        .info-row {
+
+            padding: 9px 0;
+
+            border-bottom:
+                1px solid #eee;
+        }
+
+
+        .info-row:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .label {
+
+            color: #777;
+
+            font-size: 13px;
+
+            margin-bottom: 4px;
+        }
+
+
+        .value {
+
+            font-size: 16px;
+
+            font-weight: 600;
+        }
+
+
+        .item {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 13px 0;
+
+            border-bottom:
+                1px solid #eee;
+        }
+
+
+        .item:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .item-name {
+
+            font-weight: 600;
+        }
+
+
+        .item-qty {
+
+            color: #777;
+
+            font-size: 14px;
+
+            margin-top: 3px;
+        }
+
+
+        .item-price {
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        .total {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 20px;
+
+            font-weight: 800;
+
+            padding-top: 15px;
+        }
+
+
+        .note {
+
+            background: #fff8e8;
+
+            border-radius: 10px;
+
+            padding: 13px;
+
+            color: #765c00;
+
+            margin-top: 12px;
+        }
+
+
+        .status-box {
+
+            text-align: center;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            background: #eef6f1;
+
+            color: #227D57;
+
+            font-weight: 800;
+
+            margin-bottom: 15px;
+        }
+
+
+        .actions {
+
+            position: sticky;
+
+            bottom: 0;
+
+            background: #f5f7f6;
+
+            padding-top: 10px;
+        }
+
+
+        .action-btn {
+
+            width: 100%;
+
+            padding: 16px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            margin-bottom: 10px;
+
+            cursor: pointer;
+        }
+
+
+        .accept {
+
+            background: #227D57;
+
+            color: white;
+        }
+
+
+        .reject {
+
+            background: #fff;
+
+            color: #c62828;
+
+            border:
+                2px solid #c62828;
+        }
+
+
+        .action-btn:disabled {
+
+            opacity: 0.5;
+
+            cursor: not-allowed;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a
+            href="{% url 'partner_dashboard' %}"
+            class="back"
+        >
+            ← Back to Dashboard
+        </a>
+
+
+        <div class="title">
+            Order #{{ order.id }}
+        </div>
+
+
+        <div class="store">
+            {{ store.name }}
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <!-- STATUS -->
+
+    <div class="status-box">
+
+        {{ order.get_status_display }}
+
+    </div>
+
+
+    <!-- CUSTOMER -->
+
+    <div class="card">
+
+        <div class="section-title">
+            Customer Details
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Name
+            </div>
+
+            <div class="value">
+                {{ order.customer_name }}
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Phone
+            </div>
+
+            <div class="value">
+                {{ order.phone }}
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Delivery Address
+            </div>
+
+            <div class="value">
+                {{ order.address }}
+            </div>
+
+        </div>
+
+
+        {% if order.customer_note %}
+
+            <div class="note">
+
+                <strong>
+                    Customer Note
+                </strong>
+
+                <br>
+
+                {{ order.customer_note }}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ITEMS -->
+
+    <div class="card">
+
+        <div class="section-title">
+            Order Items
+        </div>
+
+
+        {% for item in order.items.all %}
+
+            <div class="item">
+
+                <div>
+
+                    <div class="item-name">
+
+                        {% if item.product %}
+
+                            {{ item.product.name }}
+
+                        {% elif item.bundle %}
+
+                            {{ item.bundle_name|default:item.bundle.name }}
+
+                        {% else %}
+
+                            {{ item.bundle_name|default:"Item" }}
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="item-qty">
+
+                        Qty:
+                        {{ item.quantity }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="item-price">
+
+                    ₹{{ item.price|floatformat:2 }}
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+
+        <div class="total">
+
+            <span>
+                Total
+            </span>
+
+            <span>
+                ₹{{ order.total|floatformat:2 }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- PAYMENT -->
+
+    <div class="card">
+
+        <div class="section-title">
+            Payment
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Payment Method
+            </div>
+
+            <div class="value">
+                {{ order.get_payment_method_display }}
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Subtotal
+            </div>
+
+            <div class="value">
+                ₹{{ order.subtotal|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Delivery Fee
+            </div>
+
+            <div class="value">
+                ₹{{ order.delivery_fee|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="label">
+                Handling Fee
+            </div>
+
+            <div class="value">
+                ₹{{ order.handling_fee|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        {% if order.discount > 0 %}
+
+            <div class="info-row">
+
+                <div class="label">
+                    Discount
+                </div>
+
+                <div class="value">
+                    -₹{{ order.discount|floatformat:2 }}
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ACTIONS -->
+
+    {% if order.status == "REQUEST_SUBMITTED" %}
+
+        <div class="actions">
+
+            <form
+                method="POST"
+                action="{% url 'partner_order_action' order.id %}"
+                onsubmit="return confirmAccept();"
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="ACCEPT"
+                >
+
+                <button
+                    type="submit"
+                    class="action-btn accept"
+                >
+                    ✓ ACCEPT ORDER
+                </button>
+
+            </form>
+
+
+            <form
+                method="POST"
+                action="{% url 'partner_order_action' order.id %}"
+                onsubmit="return confirmReject();"
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="REJECT"
+                >
+
+                <button
+                    type="submit"
+                    class="action-btn reject"
+                >
+                    ✕ REJECT ORDER
+                </button>
+
+            </form>
+
+        </div>
+
+    {% endif %}
+
+
+</main>
+
+
+<script>
+
+function confirmAccept() {
+
+    return confirm(
+        "Accept this order?"
+    );
+
+}
+
+
+function confirmReject() {
+
+    return confirm(
+        "Are you sure you want to reject this order?"
+    );
+
+}
+
+</script>
+
+
+</body>
+
+</html>

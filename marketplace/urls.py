@@ -4,10 +4,12 @@ from .views import save_fcm_token
 from django.views.generic import TemplateView
 from django.conf.urls.i18n import set_language
 from .views import (
-        partner_login,
-        partner_dashboard,
-        partner_logout,
-    )
+    partner_login,
+    partner_dashboard,
+    partner_logout,
+    partner_order_detail,
+    partner_order_action,
+)
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -352,6 +354,17 @@ urlpatterns = [
         "partner/logout/",
         partner_logout,
         name="partner_logout"
+    ),
+    path(
+        "partner/orders/<int:order_id>/",
+        partner_order_detail,
+        name="partner_order_detail"
+    ),
+
+    path(
+        "partner/orders/<int:order_id>/action/",
+        partner_order_action,
+        name="partner_order_action"
     ),
 ]
 

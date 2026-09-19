@@ -208,6 +208,26 @@
             font-size: 14px;
         }
 
+        .view-order {
+            display: block;
+
+            margin-top: 14px;
+
+            padding: 12px;
+
+            text-align: center;
+
+            background: #227D57;
+
+            color: white;
+
+            border-radius: 10px;
+
+            text-decoration: none;
+
+            font-weight: 700;
+        }
+
     </style>
 
 </head>
@@ -342,6 +362,14 @@
                     🕐 {{ order.created_at|date:"d M Y, h:i A" }}
 
                 </div>
+
+
+                <a
+                    href="{% url 'partner_order_detail' order.id %}"
+                    class="view-order"
+                >
+                    View Order →
+                </a>
 
             </div>
 

@@ -9814,6 +9814,210 @@ def partner_dashboard(request):
         context
     )
 
+# ============================================================
+# PARTNER ORDER DETAIL
+# ============================================================
+
+@login_required
+def partner_order_detail(request, order_id):
+
+    # --------------------------------------------------------
+    # GET LOGGED-IN PARTNER PROFILE
+    # --------------------------------------------------------
+
+    profile = (
+        StorePartnerProfile.objects
+        .select_related("store", "user")
+        .filter(
+            user=request.user,
+            is_active=True
+        )
+        .first()
+    )
+
+    if not profile:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    # --------------------------------------------------------
+    # IMPORTANT SECURITY CHECK
+    #
+    # The order MUST belong to this partner's store.
+    # --------------------------------------------------------
+
+    order = get_object_or_404(
+        Order.objects
+        .select_related("store")
+        .prefetch_related(
+            "items__product",
+            "items__bundle"
+        ),
+        id=order_id,
+        store=store
+    )
+
+    return render(
+        request,
+        "partner_order_detail.html",
+        {
+            "profile": profile,
+            "store": store,
+            "order": order,
+            "show_navbar": False,
+            "show_floating_cart": False,
+            "simple_navbar": False,
+        }
+    )
+
+# ============================================================
+# PARTNER ACCEPT / REJECT ORDER
+# ============================================================
+
+@login_required
+@require_POST
+def partner_order_action(request, order_id):
+
+    # --------------------------------------------------------
+    # GET PARTNER PROFILE
+    # --------------------------------------------------------
+
+    profile = (
+        StorePartnerProfile.objects
+        .select_related("store", "user")
+        .filter(
+            user=request.user,
+            is_active=True
+        )
+        .first()
+    )
+
+    if not profile:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Partner account not found."
+            },
+            status=403
+        )
+
+    store = profile.store
+
+    # --------------------------------------------------------
+    # ACTION
+    # --------------------------------------------------------
+
+    action = request.POST.get(
+        "action",
+        ""
+    ).strip().upper()
+
+    if action not in [
+        "ACCEPT",
+        "REJECT"
+    ]:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid action."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # LOCK ORDER
+    #
+    # Prevent two requests from accepting/rejecting
+    # the same order simultaneously.
+    # --------------------------------------------------------
+
+    with transaction.atomic():
+
+        order = (
+            Order.objects
+            .select_for_update()
+            .filter(
+                id=order_id,
+                store=store
+            )
+            .first()
+        )
+
+        if not order:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Order not found."
+                },
+                status=404
+            )
+
+        # ----------------------------------------------------
+        # ORDER MUST STILL BE PENDING
+        # ----------------------------------------------------
+
+        if order.status != "REQUEST_SUBMITTED":
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "This order has already been "
+                        "processed."
+                    ),
+                    "status": order.status
+                },
+                status=409
+            )
+
+        # ----------------------------------------------------
+        # ACCEPT
+        # ----------------------------------------------------
+
+        if action == "ACCEPT":
+
+            order.status = "ACCEPTED"
+
+            # IMPORTANT:
+            # Use normal save(), not update_fields=["status"].
+            #
+            # Your Order.save() automatically handles
+            # accepted_at and the existing customer push.
+            order.save()
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "action": "ACCEPT",
+                    "status": order.status,
+                    "message": (
+                        f"Order #{order.id} accepted."
+                    )
+                }
+            )
+
+        # ----------------------------------------------------
+        # REJECT
+        # ----------------------------------------------------
+
+        if action == "REJECT":
+
+            order.status = "FAILED"
+
+            order.save()
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "action": "REJECT",
+                    "status": order.status,
+                    "message": (
+                        f"Order #{order.id} rejected."
+                    )
+                }
+            )
+        
 
 @login_required
 def partner_logout(request):
