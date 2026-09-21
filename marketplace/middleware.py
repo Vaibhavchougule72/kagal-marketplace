@@ -47,6 +47,8 @@ class CustomerAuthenticationMiddleware:
         "/check-payment-status/",
         "/upi_payment/",
         "/payment-success/",
+        "/partner/",
+        "/save-partner-fcm-token/",
     ]
 
     def __init__(self, get_response):
