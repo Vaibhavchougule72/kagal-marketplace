@@ -59,6 +59,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .models import StorePartnerProfile, PartnerDeviceToken
+from .notification_service import notify_store_partner_new_order
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 MAX_CART_QTY = 50
 
@@ -1656,6 +1659,10 @@ def checkout(request):
                         status="REQUEST_SUBMITTED"
                     )
 
+                    transaction.on_commit(
+                        lambda: notify_store_partner_new_order(order)
+                    )
+
                     # -----------------------------------
                     # DEDUCT LOKA MONEY — COD
                     # -----------------------------------
@@ -2080,6 +2087,9 @@ def razorpay_webhook(request):
                 payment_method="UPI",
                 payment_id=razorpay_payment_id,
                 status="REQUEST_SUBMITTED"
+            )
+            transaction.on_commit(
+                lambda: notify_store_partner_new_order(order)
             )
 
             # -----------------------------------
@@ -10034,3 +10044,68 @@ def partner_logout(request):
     logout(request)
 
     return redirect("partner_login")
+
+# ============================================================
+# PARTNER FCM TOKEN
+# ============================================================
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_partner_fcm_token(request):
+
+    token = (
+        request.data
+        .get("token", "")
+        .strip()
+    )
+
+    if not token:
+
+        return Response(
+            {
+                "success": False,
+                "message": "FCM token required."
+            },
+            status=400
+        )
+
+    profile = (
+        StorePartnerProfile.objects
+        .select_related("store")
+        .filter(
+            user=request.user,
+            is_active=True
+        )
+        .first()
+    )
+
+    if not profile:
+
+        return Response(
+            {
+                "success": False,
+                "message": "Partner account not found."
+            },
+            status=403
+        )
+
+    device, created = (
+        PartnerDeviceToken.objects
+        .update_or_create(
+            token=token,
+
+            defaults={
+                "user": request.user,
+                "store": profile.store,
+                "is_active": True,
+            }
+        )
+    )
+
+    return Response(
+        {
+            "success": True,
+            "created": created,
+            "message": "Partner FCM token saved."
+        }
+    )

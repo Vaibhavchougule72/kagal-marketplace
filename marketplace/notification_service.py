@@ -10,6 +10,54 @@ from .models import (
     NotificationCampaign,
     Order,
 )
+from .models import (
+    Order,
+    PartnerDeviceToken,
+)
+
+from .firebase import (
+    send_partner_new_order_notification,
+)
+
+# ============================================================
+# SEND NEW ORDER TO STORE PARTNER
+# ============================================================
+
+def notify_store_partner_new_order(order):
+
+    if not order:
+        return
+
+    if order.status != "REQUEST_SUBMITTED":
+        return
+
+    tokens = (
+        PartnerDeviceToken.objects
+        .filter(
+            store=order.store,
+            is_active=True
+        )
+        .values_list(
+            "token",
+            flat=True
+        )
+    )
+
+    for token in tokens:
+
+        try:
+
+            send_partner_new_order_notification(
+                token,
+                order
+            )
+
+        except Exception as e:
+
+            print(
+                "❌ Partner FCM Error:",
+                str(e)
+            )
 
 
 # =====================================================

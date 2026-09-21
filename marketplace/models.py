@@ -1535,3 +1535,5 @@ class FavoriteOrder(models.Model):
 
     def __str__(self):
         return f"Favorite Order #{self.order.id} - {self.customer.phone}"
+
+

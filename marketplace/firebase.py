@@ -223,3 +223,43 @@ def send_bulk_push_notifications(
         "failed": failed,
         "invalid_tokens": invalid_tokens,
     }
+
+
+# ============================================================
+# PARTNER NEW ORDER NOTIFICATION
+# ============================================================
+
+def send_partner_new_order_notification(token, order):
+
+    message = messaging.Message(
+
+        data={
+            "type": "NEW_ORDER",
+
+            "order_id": str(order.id),
+
+            "store_id": str(order.store_id),
+
+            "customer_name": str(
+                order.customer_name
+            ),
+
+            "payment_method": str(
+                order.payment_method
+            ),
+
+            "total": str(
+                order.total
+            ),
+
+            "created_at": order.created_at.isoformat(),
+        },
+
+        token=token,
+
+        android=messaging.AndroidConfig(
+            priority="high"
+        )
+    )
+
+    return messaging.send(message)

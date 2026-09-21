@@ -9,7 +9,9 @@ from .views import (
     partner_logout,
     partner_order_detail,
     partner_order_action,
+    save_partner_fcm_token,
 )
+
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -365,6 +367,11 @@ urlpatterns = [
         "partner/orders/<int:order_id>/action/",
         partner_order_action,
         name="partner_order_action"
+    ),
+    path(
+        "save-partner-fcm-token/",
+        save_partner_fcm_token,
+        name="save_partner_fcm_token"
     ),
 ]
 
