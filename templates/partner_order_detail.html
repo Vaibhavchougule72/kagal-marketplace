@@ -582,7 +582,6 @@
             <form
                 method="POST"
                 action="{% url 'partner_order_action' order.id %}"
-                onsubmit="return confirmAccept();"
             >
 
                 {% csrf_token %}
@@ -606,7 +605,6 @@
             <form
                 method="POST"
                 action="{% url 'partner_order_action' order.id %}"
-                onsubmit="return confirmReject();"
             >
 
                 {% csrf_token %}
@@ -634,26 +632,6 @@
 </main>
 
 
-<script>
-
-function confirmAccept() {
-
-    return confirm(
-        "Accept this order?"
-    );
-
-}
-
-
-function confirmReject() {
-
-    return confirm(
-        "Are you sure you want to reject this order?"
-    );
-
-}
-
-</script>
 
 
 </body>
