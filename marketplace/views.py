@@ -9937,9 +9937,6 @@ def partner_order_action(request, order_id):
 
     # --------------------------------------------------------
     # LOCK ORDER
-    #
-    # Prevent two requests from accepting/rejecting
-    # the same order simultaneously.
     # --------------------------------------------------------
 
     with transaction.atomic():
@@ -9989,22 +9986,14 @@ def partner_order_action(request, order_id):
 
             order.status = "ACCEPTED"
 
-            # IMPORTANT:
-            # Use normal save(), not update_fields=["status"].
-            #
-            # Your Order.save() automatically handles
-            # accepted_at and the existing customer push.
+            # Use normal save() so your existing Order.save()
+            # logic continues to run.
             order.save()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "action": "ACCEPT",
-                    "status": order.status,
-                    "message": (
-                        f"Order #{order.id} accepted."
-                    )
-                }
+            # Stay on the same order-detail page.
+            return redirect(
+                "partner_order_detail",
+                order_id=order.id
             )
 
         # ----------------------------------------------------
@@ -10017,17 +10006,12 @@ def partner_order_action(request, order_id):
 
             order.save()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "action": "REJECT",
-                    "status": order.status,
-                    "message": (
-                        f"Order #{order.id} rejected."
-                    )
-                }
+            # Stay on the same order-detail page.
+            return redirect(
+                "partner_order_detail",
+                order_id=order.id
             )
-        
+                
 
 @login_required
 def partner_logout(request):
