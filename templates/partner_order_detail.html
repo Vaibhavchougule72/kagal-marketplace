@@ -189,12 +189,13 @@
 
 
         .item-qty {
-
             color: #777;
 
             font-size: 14px;
 
             margin-top: 3px;
+
+            font-weight: 700;
         }
 
 
@@ -356,63 +357,19 @@
     </div>
 
 
-    <!-- CUSTOMER -->
+    <!-- ITEMS -->
 
     <div class="card">
-
-        <div class="section-title">
-            Customer Details
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Name
-            </div>
-
-            <div class="value">
-                {{ order.customer_name }}
-            </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Phone
-            </div>
-
-            <div class="value">
-                {{ order.phone }}
-            </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Delivery Address
-            </div>
-
-            <div class="value">
-                {{ order.address }}
-            </div>
-
-        </div>
-
 
         {% if order.customer_note %}
 
             <div class="note">
 
                 <strong>
-                    Customer Note
+                    📝 Customer Note
                 </strong>
 
-                <br>
+                <br><br>
 
                 {{ order.customer_note }}
 
@@ -420,12 +377,6 @@
 
         {% endif %}
 
-    </div>
-
-
-    <!-- ITEMS -->
-
-    <div class="card">
 
         <div class="section-title">
             Order Items
@@ -469,7 +420,9 @@
 
                 <div class="item-price">
 
-                    ₹{{ item.price|floatformat:2 }}
+                    {% widthratio item.price 1 item.quantity as item_total %}
+
+                    ₹{{ item_total|floatformat:2 }}
 
                 </div>
 
@@ -481,94 +434,14 @@
         <div class="total">
 
             <span>
-                Total
+                Subtotal
             </span>
 
             <span>
-                ₹{{ order.total|floatformat:2 }}
+                ₹{{ order.subtotal|floatformat:2 }}
             </span>
 
         </div>
-
-    </div>
-
-
-    <!-- PAYMENT -->
-
-    <div class="card">
-
-        <div class="section-title">
-            Payment
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Payment Method
-            </div>
-
-            <div class="value">
-                {{ order.get_payment_method_display }}
-            </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Subtotal
-            </div>
-
-            <div class="value">
-                ₹{{ order.subtotal|floatformat:2 }}
-            </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Delivery Fee
-            </div>
-
-            <div class="value">
-                ₹{{ order.delivery_fee|floatformat:2 }}
-            </div>
-
-        </div>
-
-
-        <div class="info-row">
-
-            <div class="label">
-                Handling Fee
-            </div>
-
-            <div class="value">
-                ₹{{ order.handling_fee|floatformat:2 }}
-            </div>
-
-        </div>
-
-
-        {% if order.discount > 0 %}
-
-            <div class="info-row">
-
-                <div class="label">
-                    Discount
-                </div>
-
-                <div class="value">
-                    -₹{{ order.discount|floatformat:2 }}
-                </div>
-
-            </div>
-
-        {% endif %}
 
     </div>
 
