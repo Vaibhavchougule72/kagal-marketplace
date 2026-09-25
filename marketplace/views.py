@@ -62,6 +62,7 @@ from .models import StorePartnerProfile, PartnerDeviceToken
 from .notification_service import notify_store_partner_new_order
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from .firebase import notify_partner_order_alert_cancelled
 
 MAX_CART_QTY = 50
 
@@ -9990,6 +9991,11 @@ def partner_order_action(request, order_id):
             # logic continues to run.
             order.save()
 
+            # Tell Partner App to cancel remaining order alerts.
+            transaction.on_commit(
+                lambda: notify_partner_order_alert_cancelled(order)
+            )
+
             # Stay on the same order-detail page.
             return redirect(
                 "partner_order_detail",
@@ -10005,6 +10011,11 @@ def partner_order_action(request, order_id):
             order.status = "FAILED"
 
             order.save()
+
+            # Tell Partner App to cancel remaining order alerts.
+            transaction.on_commit(
+                lambda: notify_partner_order_alert_cancelled(order)
+            )
 
             # Stay on the same order-detail page.
             return redirect(

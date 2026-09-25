@@ -4,7 +4,7 @@ import os
 
 import firebase_admin
 from firebase_admin import credentials, messaging
-
+from .models import PartnerDeviceToken
 
 logger = logging.getLogger(__name__)
 
@@ -263,3 +263,44 @@ def send_partner_new_order_notification(token, order):
     )
 
     return messaging.send(message)
+
+def send_partner_order_alert_cancelled(token, order):
+    message = messaging.Message(
+        data={
+            "type": "CANCEL_ORDER_ALERT",
+            "order_id": str(order.id),
+        },
+        token=token,
+        android=messaging.AndroidConfig(
+            priority="high"
+        )
+    )
+
+    return messaging.send(message)
+
+
+def notify_partner_order_alert_cancelled(order):
+    if not order:
+        return
+
+    tokens = (
+        PartnerDeviceToken.objects
+        .filter(
+            store=order.store,
+            is_active=True
+        )
+        .values_list("token", flat=True)
+    )
+
+    for token in tokens:
+        try:
+            send_partner_order_alert_cancelled(
+                token,
+                order
+            )
+
+        except Exception as e:
+            print(
+                "❌ Partner cancel alert FCM Error:",
+                str(e)
+            )
