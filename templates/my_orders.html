@@ -502,7 +502,9 @@
             </div>
 
             <div class="mo-meta">
-              {{ order.created_at|date:"d M Y · g:i a" }}
+              {% language 'en' %}
+                {{ order.created_at|date:"d M Y · g:i A" }}
+              {% endlanguage %}
             </div>
 
           </div>
@@ -626,7 +628,9 @@
               </div>
 
               <div class="mo-meta">
-                {{ order.created_at|date:"d M Y · g:i a" }}
+                {% language 'en' %}
+                  {{ order.created_at|date:"d M Y · g:i A" }}
+                {% endlanguage %}
               </div>
             </div>
 

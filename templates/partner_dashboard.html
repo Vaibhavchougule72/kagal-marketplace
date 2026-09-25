@@ -261,12 +261,13 @@
 <main class="container">
 
     <!-- ============================= -->
-    <!-- ORDER COUNTS -->
+    <!-- TODAY'S ORDER COUNTS -->
     <!-- ============================= -->
 
     <div class="cards">
 
         <div class="card">
+
             <div class="card-title">
                 New Orders
             </div>
@@ -274,10 +275,12 @@
             <div class="card-number">
                 {{ new_orders.count }}
             </div>
+
         </div>
 
 
         <div class="card">
+
             <div class="card-title">
                 Accepted
             </div>
@@ -285,28 +288,20 @@
             <div class="card-number">
                 {{ accepted_orders.count }}
             </div>
+
         </div>
 
 
         <div class="card">
+
             <div class="card-title">
-                Picked Up
+                Failed
             </div>
 
             <div class="card-number">
-                {{ picked_up_orders.count }}
-            </div>
-        </div>
-
-
-        <div class="card">
-            <div class="card-title">
-                Out for Delivery
+                {{ failed_orders.count }}
             </div>
 
-            <div class="card-number">
-                {{ out_for_delivery_orders.count }}
-            </div>
         </div>
 
     </div>
@@ -317,7 +312,7 @@
     <!-- ============================= -->
 
     <div class="section-title">
-        Recent Orders
+         Today's Orders
     </div>
 
 

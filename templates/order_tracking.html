@@ -770,7 +770,9 @@ body,
       <div>
         <div class="ot-store-name">{{ order.store.name }}</div>
         <div class="ot-order-meta">
-          ₹{{ order.total }} · {{ order.created_at|date:"d M Y · g:i A" }}
+          {% language 'en' %}
+            ₹{{ order.total }} · {{ order.created_at|date:"d M Y · g:i A" }}
+          {% endlanguage %}
         </div>
       </div>
     </div>
