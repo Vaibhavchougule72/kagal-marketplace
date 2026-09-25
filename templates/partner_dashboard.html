@@ -349,9 +349,8 @@
                     💳 {{ order.get_payment_method_display }}
 
                     <br>
-                    {% language 'en' %}
-                        🕐 {{ order.created_at|date:"d M Y · g:i A" }}
-                    {% endlanguage %}
+
+                    🕐 {{ order.created_at|date:"d M Y, h:i A" }}
 
                 </div>
 
