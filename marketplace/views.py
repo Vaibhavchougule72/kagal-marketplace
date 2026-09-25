@@ -9777,6 +9777,8 @@ def partner_dashboard(request):
     # TODAY'S ORDER COUNTS
     # ========================================================
 
+    total_orders = orders.count()
+
     new_orders = orders.filter(
         status="REQUEST_SUBMITTED"
     )
@@ -9791,17 +9793,11 @@ def partner_dashboard(request):
 
 
     # ========================================================
-    # TODAY'S RECENT ORDERS
+    # TODAY'S ORDERS
     # ========================================================
 
     recent_orders = list(
-        orders.filter(
-            status__in=[
-                "REQUEST_SUBMITTED",
-                "ACCEPTED",
-                "FAILED"
-            ]
-        )[:30]
+        orders[:30]
     )
 
 
@@ -9823,6 +9819,7 @@ def partner_dashboard(request):
         "profile": profile,
         "store": store,
 
+        "total_orders": total_orders,
         "new_orders": new_orders,
         "accepted_orders": accepted_orders,
         "failed_orders": failed_orders,

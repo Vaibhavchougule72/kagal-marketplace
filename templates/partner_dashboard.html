@@ -267,7 +267,17 @@
     <div class="cards">
 
         <div class="card">
+            <div class="card-title">
+                Total Orders
+            </div>
 
+            <div class="card-number">
+                {{ total_orders }}
+            </div>
+        </div>
+
+
+        <div class="card">
             <div class="card-title">
                 New Orders
             </div>
@@ -275,12 +285,10 @@
             <div class="card-number">
                 {{ new_orders.count }}
             </div>
-
         </div>
 
 
         <div class="card">
-
             <div class="card-title">
                 Accepted
             </div>
@@ -288,12 +296,10 @@
             <div class="card-number">
                 {{ accepted_orders.count }}
             </div>
-
         </div>
 
 
         <div class="card">
-
             <div class="card-title">
                 Failed
             </div>
@@ -301,7 +307,6 @@
             <div class="card-number">
                 {{ failed_orders.count }}
             </div>
-
         </div>
 
     </div>
