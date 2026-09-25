@@ -4,7 +4,7 @@ import os
 
 import firebase_admin
 from firebase_admin import credentials, messaging
-from .models import PartnerDeviceToken
+
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +282,8 @@ def send_partner_order_alert_cancelled(token, order):
 def notify_partner_order_alert_cancelled(order):
     if not order:
         return
+
+    from .models import PartnerDeviceToken
 
     tokens = (
         PartnerDeviceToken.objects
