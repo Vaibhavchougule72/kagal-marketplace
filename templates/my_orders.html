@@ -502,9 +502,7 @@
             </div>
 
             <div class="mo-meta">
-              {% trans "Order" %} #{{ order.id }}
-              ·
-              {{ order.created_at|date:"d M Y · g:i A" }}
+              {{ order.created_at|date:"d M Y · g:i a" }}
             </div>
 
           </div>
@@ -628,9 +626,7 @@
               </div>
 
               <div class="mo-meta">
-                {% trans "Order" %} #{{ order.id }}
-                ·
-                {{ order.created_at|date:"d M Y · g:i A" }}
+                {{ order.created_at|date:"d M Y · g:i a" }}
               </div>
             </div>
 

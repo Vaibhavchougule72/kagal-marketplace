@@ -330,7 +330,7 @@
                 <div class="order-top">
 
                     <div class="order-id">
-                        Order #{{ order.id }}
+                        Order #{{ order.store_day_order_number }}
                     </div>
 
                     <div class="status">
@@ -340,18 +340,9 @@
                 </div>
 
 
-                <div class="customer">
-                    {{ order.customer_name }}
-                </div>
-
-
                 <div class="details">
 
-                    📞 {{ order.phone }}
-
-                    <br>
-
-                    💰 ₹{{ order.total }}
+                    💰 ₹{{ order.subtotal }}
 
                     <br>
 

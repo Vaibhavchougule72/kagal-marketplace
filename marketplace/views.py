@@ -9753,19 +9753,28 @@ def partner_dashboard(request):
     store = profile.store
 
     # ========================================================
-    # STORE ORDERS
+    # TODAY'S STORE ORDERS
     # ========================================================
+
+    today = timezone.localdate()
 
     orders = (
         Order.objects
-        .filter(store=store)
+        .filter(
+            store=store,
+            created_at__date=today
+        )
         .select_related("store")
-        .prefetch_related("items__product", "items__bundle")
+        .prefetch_related(
+            "items__product",
+            "items__bundle"
+        )
         .order_by("-created_at")
     )
 
+
     # ========================================================
-    # COUNTS
+    # TODAY'S ORDER COUNTS
     # ========================================================
 
     new_orders = orders.filter(
@@ -9776,30 +9785,39 @@ def partner_dashboard(request):
         status="ACCEPTED"
     )
 
-    picked_up_orders = orders.filter(
-        status="PICKED_UP"
+    failed_orders = orders.filter(
+        status="FAILED"
     )
 
-    out_for_delivery_orders = orders.filter(
-        status="OUT_FOR_DELIVERY"
-    )
-
-    completed_orders = orders.filter(
-        status="DELIVERED"
-    )
-
-    cancelled_orders = orders.filter(
-        status__in=[
-            "FAILED",
-            "CANCELLED"
-        ]
-    )
 
     # ========================================================
-    # RECENT ORDERS
+    # TODAY'S RECENT ORDERS
     # ========================================================
 
-    recent_orders = orders[:30]
+    recent_orders = list(
+        orders.filter(
+            status__in=[
+                "REQUEST_SUBMITTED",
+                "ACCEPTED",
+                "FAILED"
+            ]
+        )[:30]
+    )
+
+
+    # ========================================================
+    # STORE DAILY ORDER NUMBER
+    # ========================================================
+
+    for order in recent_orders:
+
+        daily_order_count = orders.filter(
+            created_at__lt=order.created_at
+        ).count()
+
+        order.store_day_order_number = (
+            daily_order_count + 1
+        )
 
     context = {
         "profile": profile,
@@ -9807,10 +9825,7 @@ def partner_dashboard(request):
 
         "new_orders": new_orders,
         "accepted_orders": accepted_orders,
-        "picked_up_orders": picked_up_orders,
-        "out_for_delivery_orders": out_for_delivery_orders,
-        "completed_orders": completed_orders,
-        "cancelled_orders": cancelled_orders,
+        "failed_orders": failed_orders,
 
         "recent_orders": recent_orders,
 
