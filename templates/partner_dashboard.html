@@ -28,58 +28,130 @@
         }
 
         /* ============================= */
-        /* HEADER */
+        /* HERO (status-first) */
         /* ============================= */
 
-        .header {
-            background: #227D57;
+        .hero {
+            background: linear-gradient(135deg, #227D57 0%, #175f42 100%);
             color: white;
-            padding: 20px;
+            padding: 20px 20px 44px;
+            border-radius: 0 0 26px 26px;
         }
 
-        .header-content {
+        .hero-content {
             max-width: 900px;
             margin: auto;
         }
 
-        .brand {
-            font-size: 14px;
-            opacity: 0.85;
-        }
-
-        .store-name {
-            font-size: 24px;
-            font-weight: 800;
-            margin-top: 5px;
-        }
-
-        .store-status {
-            display: inline-flex;
+        .hero-top-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
+        }
 
-            margin-top: 10px;
-
-            padding: 6px 12px;
-
-            border-radius: 20px;
-
-            background: rgba(255,255,255,0.15);
-
+        .brand {
             font-size: 13px;
-            font-weight: 700;
+            opacity: 0.8;
+            letter-spacing: 0.04em;
         }
 
         .logout {
-            display: inline-block;
-
-            margin-top: 12px;
-
             color: white;
-
+            opacity: 0.85;
             text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
 
+        .store-name {
+            font-size: 25px;
+            font-weight: 800;
+            margin: 8px 0 14px;
+        }
+
+        /* status toggle bar */
+
+        .status-toggle-form {
+            margin: 0;
+        }
+
+        .status-toggle {
+            width: 100%;
+            border: none;
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+
+            padding: 12px 14px;
+            border-radius: 14px;
+
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+        }
+
+        .status-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 14px;
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot.open {
+            background: #3ddc84;
+        }
+
+        .status-dot.closed {
+            background: #ff6b6b;
+        }
+
+        .switch-track {
+            width: 40px;
+            height: 22px;
+            border-radius: 20px;
+            position: relative;
+            flex-shrink: 0;
+            transition: background 0.15s ease;
+        }
+
+        .switch-track.open {
+            background: #3ddc84;
+        }
+
+        .switch-track.closed {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .switch-knob {
+            position: absolute;
+            top: 2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            transition: right 0.15s ease, left 0.15s ease;
+        }
+
+        .switch-track.open .switch-knob {
+            right: 2px;
+        }
+
+        .switch-track.closed .switch-knob {
+            left: 2px;
+        }
+
+        .status-toggle:active .switch-knob {
+            transform: scale(0.92);
         }
 
 
@@ -95,7 +167,7 @@
 
 
         /* ============================= */
-        /* DASHBOARD CARDS */
+        /* DASHBOARD CARDS (overlap the hero) */
         /* ============================= */
 
         .cards {
@@ -104,12 +176,13 @@
             grid-template-columns:
                 repeat(
                     auto-fit,
-                    minmax(140px, 1fr)
+                    minmax(120px, 1fr)
                 );
 
             gap: 12px;
 
-            margin-bottom: 25px;
+            margin-top: -32px;
+            margin-bottom: 22px;
         }
 
         .card {
@@ -117,65 +190,60 @@
 
             border-radius: 15px;
 
-            padding: 18px;
+            padding: 16px 12px;
 
             box-shadow:
-                0 4px 15px rgba(
+                0 8px 22px rgba(
                     0,
                     0,
                     0,
-                    0.05
+                    0.1
                 );
         }
 
         .card-title {
             color: #777;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .card-number {
-            font-size: 28px;
+            font-size: 25px;
             font-weight: 800;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
 
         /* ============================= */
-        /* MENU */
+        /* MENU (single row of 3 larger cards) */
         /* ============================= */
 
-        .menu {
-            display: grid;
-
-            grid-template-columns:
-                repeat(
-                    auto-fit,
-                    minmax(150px, 1fr)
-                );
+        .menu-row {
+            display: flex;
 
             gap: 12px;
 
             margin-bottom: 30px;
         }
 
-        .menu-button {
+        .menu-card {
+            flex: 1;
+
             display: flex;
-
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
 
-            gap: 10px;
+            gap: 8px;
 
-            padding: 15px;
+            padding: 20px 8px;
 
             background: white;
 
-            border-radius: 14px;
+            border-radius: 16px;
 
             text-decoration: none;
 
             color: #222;
-
-            font-weight: 700;
 
             box-shadow:
                 0 4px 15px rgba(
@@ -188,12 +256,18 @@
             transition: 0.2s;
         }
 
-        .menu-button:hover {
+        .menu-card:hover {
             transform: translateY(-2px);
         }
 
         .menu-icon {
-            font-size: 22px;
+            font-size: 26px;
+        }
+
+        .menu-label {
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
         }
 
 
@@ -293,160 +367,6 @@
             font-weight: 700;
         }
 
-        /* ============================= */
-        /* PRODUCTS */
-        /* ============================= */
-
-        .products-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-
-
-        .product-card {
-            background: white;
-            border-radius: 15px;
-            padding: 16px;
-
-            box-shadow:
-                0 4px 15px rgba(
-                    0,
-                    0,
-                    0,
-                    0.05
-                );
-        }
-
-
-        .product-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-
-        .product-name {
-            font-size: 17px;
-            font-weight: 800;
-            color: #222;
-        }
-
-
-        .product-category {
-            margin-top: 4px;
-            font-size: 13px;
-            color: #777;
-        }
-
-
-        .product-price-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 9px;
-        }
-
-
-        .product-price {
-            font-size: 17px;
-            font-weight: 800;
-            color: #227D57;
-        }
-
-
-        .product-original-price {
-            font-size: 13px;
-            color: #999;
-            text-decoration: line-through;
-        }
-
-
-        .product-status-area {
-            flex-shrink: 0;
-        }
-
-
-        .product-status {
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-
-        .product-status.available {
-            color: #16803c;
-        }
-
-
-        .product-status.unavailable {
-            color: #d93025;
-        }
-
-
-        .product-status.inactive {
-            color: #777;
-        }
-
-
-        /* ACTION BUTTONS */
-
-        .product-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-
-            margin-top: 15px;
-        }
-
-
-        .edit-product-btn,
-        .product-availability-btn {
-            width: 100%;
-
-            min-height: 42px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 10px;
-
-            font-size: 13px;
-            font-weight: 700;
-
-            text-decoration: none;
-
-            cursor: pointer;
-        }
-
-
-        .edit-product-btn {
-            background: #f2f5f3;
-            color: #227D57;
-            border: 1px solid #d8e2dc;
-        }
-
-
-        .product-availability-btn {
-            border: 1px solid transparent;
-        }
-
-
-        .unavailable-btn {
-            background: #fff1f1;
-            color: #d93025;
-            border-color: #f2b8b5;
-        }
-
-
-        .available-btn {
-            background: #edf9f0;
-            color: #16803c;
-            border-color: #a8d5b2;
-        }
-
 
         /* ============================= */
         /* EMPTY */
@@ -464,98 +384,16 @@
             color: #777;
         }
 
-        .store-status-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 25px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            margin-top: 20px;
-        }
-
-        .store-status-icon {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .store-status-icon.open {
-            background: #e8f7ed;
-            color: #198754;
-        }
-
-        .store-status-icon.closed {
-            background: #fdeaea;
-            color: #dc3545;
-        }
-
-        .store-status-info {
-            flex: 1;
-        }
-
-        .store-status-info h3 {
-            margin: 0 0 5px;
-            font-size: 18px;
-        }
-
-        .store-status-info p {
-            margin: 0;
-            color: #777;
-            font-size: 14px;
-        }
-
-        .store-status-btn {
-            border: none;
-            border-radius: 10px;
-            padding: 12px 22px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .close-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .open-btn {
-            background: #198754;
-            color: white;
-        }
-
-        .store-status-btn:active {
-            transform: scale(0.97);
-        }
-
-        @media (max-width: 600px) {
-            .store-status-card {
-                flex-wrap: wrap;
-            }
-
-            .store-status-info {
-                min-width: calc(100% - 75px);
-            }
-
-            .store-status-btn {
-                width: 100%;
-                margin-top: 5px;
-            }
-        }
-
 
         /* ============================= */
         /* MOBILE */
         /* ============================= */
 
         @media (max-width: 600px) {
+
+            .hero {
+                padding: 16px 16px 40px;
+            }
 
             .container {
                 padding: 15px;
@@ -565,25 +403,33 @@
                 font-size: 21px;
             }
 
+            .cards {
+                gap: 8px;
+                margin-top: -28px;
+            }
+
             .card {
-                padding: 15px;
+                padding: 13px 9px;
             }
 
             .card-number {
-                font-size: 25px;
+                font-size: 21px;
             }
 
-            .menu-button {
-                padding: 13px;
-            }
-
-            .product-main {
-                flex-direction: column;
+            .menu-row {
                 gap: 8px;
             }
 
-            .product-actions {
-                grid-template-columns: 1fr;
+            .menu-card {
+                padding: 15px 6px;
+            }
+
+            .menu-icon {
+                font-size: 22px;
+            }
+
+            .menu-label {
+                font-size: 11.5px;
             }
 
         }
@@ -597,15 +443,26 @@
 
 
 <!-- ================================= -->
-<!-- HEADER -->
+<!-- HERO -->
 <!-- ================================= -->
 
-<header class="header">
+<header class="hero">
 
-    <div class="header-content">
+    <div class="hero-content">
 
-        <div class="brand">
-            LOKA PARTNER
+        <div class="hero-top-row">
+
+            <div class="brand">
+                LOKA PARTNER
+            </div>
+
+            <a
+                href="{% url 'partner_logout' %}"
+                class="logout"
+            >
+                Logout
+            </a>
+
         </div>
 
         <div class="store-name">
@@ -613,31 +470,37 @@
         </div>
 
 
-        <!-- Store status -->
+        <!-- Store status toggle -->
 
-        <div class="store-status">
-
-            {% if store_is_open %}
-
-                🟢 Store Open
-
-            {% else %}
-
-                🔴 Store Closed
-
-            {% endif %}
-
-        </div>
-
-
-        <br>
-
-        <a
-            href="{% url 'partner_logout' %}"
-            class="logout"
+        <form
+            method="POST"
+            action="{% url 'partner_toggle_store_status' %}"
+            class="status-toggle-form"
         >
-            Logout
-        </a>
+
+            {% csrf_token %}
+
+            <button type="submit" class="status-toggle">
+
+                <span class="status-toggle-label">
+
+                    {% if store_is_open %}
+                        <span class="status-dot open"></span>
+                        Store Open
+                    {% else %}
+                        <span class="status-dot closed"></span>
+                        Store Closed
+                    {% endif %}
+
+                </span>
+
+                <span class="switch-track {% if store_is_open %}open{% else %}closed{% endif %}">
+                    <span class="switch-knob"></span>
+                </span>
+
+            </button>
+
+        </form>
 
     </div>
 
@@ -648,7 +511,7 @@
 
 
     <!-- ================================= -->
-    <!-- TODAY'S ORDER COUNTS -->
+    <!-- TODAY'S ORDER COUNTS (overlapping the hero) -->
     <!-- ================================= -->
 
     <div class="cards">
@@ -710,42 +573,24 @@
 
 
     <!-- ================================= -->
-    <!-- PARTNER MENU -->
+    <!-- PARTNER MENU (single row) -->
     <!-- ================================= -->
 
-    <div class="menu">
-
-
-        <!-- Orders -->
-
-        <a
-            href="#orders"
-            class="menu-button"
-        >
-
-            <span class="menu-icon">
-                🧾
-            </span>
-
-            <span>
-                Orders
-            </span>
-
-        </a>
+    <div class="menu-row">
 
 
         <!-- Products -->
 
         <a
             href="{% url 'partner_products' %}"
-            class="menu-button"
+            class="menu-card"
         >
 
             <span class="menu-icon">
                 🍔
             </span>
 
-            <span>
+            <span class="menu-label">
                 Products
             </span>
 
@@ -756,82 +601,32 @@
 
         <a
             href="{% url 'partner_store_details' %}"
-            class="menu-button"
+            class="menu-card"
         >
 
             <span class="menu-icon">
                 🏪
             </span>
 
-            <span>
+            <span class="menu-label">
                 Store Details
             </span>
 
         </a>
 
 
-        <!-- Store Open / Close -->
-
-       <section id="store-status" class="dashboard-section">
-
-            <div class="section-header">
-                <div>
-                    <h2>Store Open / Close</h2>
-                    <p>Control whether your store is currently accepting orders.</p>
-                </div>
-            </div>
-
-            <div class="store-status-card">
-
-                {% if store_is_open %}
-                    <div class="store-status-icon open">
-                        ✓
-                    </div>
-
-                    <div class="store-status-info">
-                        <h3>Store is Open</h3>
-                        <p>Your store is currently visible to customers and can receive orders.</p>
-                    </div>
-
-                    <form method="POST" action="{% url 'partner_toggle_store_status' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="store-status-btn close-btn">
-                            Close Store
-                        </button>
-                    </form>
-
-                {% else %}
-                    <div class="store-status-icon closed">
-                        ×
-                    </div>
-
-                    <div class="store-status-info">
-                        <h3>Store is Closed</h3>
-                        <p>Your store is currently not accepting orders.</p>
-                    </div>
-
-                    <form method="POST" action="{% url 'partner_toggle_store_status' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="store-status-btn open-btn">
-                            Open Store
-                        </button>
-                    </form>
-                {% endif %}
-
-            </div>
-
-        </section>
-
-
         <!-- Summary -->
 
-        <a href="{% url 'partner_summary' %}" class="menu-button">
+        <a
+            href="{% url 'partner_summary' %}"
+            class="menu-card"
+        >
 
             <span class="menu-icon">
                 📊
             </span>
 
-            <span>
+            <span class="menu-label">
                 Summary
             </span>
 
