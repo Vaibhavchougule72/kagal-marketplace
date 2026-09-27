@@ -10459,3 +10459,33 @@ def partner_summary(request):
         "partner_summary.html",
         context
     )
+
+@login_required
+def partner_products(request):
+
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    products = (
+        Product.objects
+        .filter(store=store)
+        .select_related("category")
+        .order_by("category__name", "name")
+    )
+
+    return render(
+        request,
+        "partner_products.html",
+        {
+            "store": store,
+            "products": products,
+            "simple_navbar": False,
+            "show_navbar": False,
+            "show_floating_cart": False,
+        }
+    )

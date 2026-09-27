@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Products - LOKA Partner
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7f6;
+            color: #222;
+        }
+
+        /* HEADER */
+
+        .header {
+            background: #227D57;
+            color: white;
+            padding: 20px;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .brand {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .store-name {
+            font-size: 24px;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        /* CONTAINER */
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* BACK */
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #227D57;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* TITLE */
+
+        .page-title {
+            margin-bottom: 20px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .page-title p {
+            margin-top: 6px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* PRODUCTS */
+
+        .products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 16px;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+        }
+
+        .product-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .product-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #222;
+        }
+
+        .product-category {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .product-price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 9px;
+        }
+
+        .product-price {
+            font-size: 17px;
+            font-weight: 800;
+            color: #227D57;
+        }
+
+        .product-original-price {
+            font-size: 13px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        /* STATUS */
+
+        .product-status-area {
+            flex-shrink: 0;
+        }
+
+        .product-status {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .product-status.available {
+            color: #16803c;
+        }
+
+        .product-status.unavailable {
+            color: #d93025;
+        }
+
+        .product-status.inactive {
+            color: #777;
+        }
+
+        /* ACTIONS */
+
+        .product-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-product-btn,
+        .product-availability-btn {
+            width: 100%;
+            min-height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .edit-product-btn {
+            background: #f2f5f3;
+            color: #227D57;
+            border: 1px solid #d8e2dc;
+        }
+
+        .product-availability-btn {
+            border: 1px solid transparent;
+        }
+
+        .unavailable-btn {
+            background: #fff1f1;
+            color: #d93025;
+            border-color: #f2b8b5;
+        }
+
+        .available-btn {
+            background: #edf9f0;
+            color: #16803c;
+            border-color: #a8d5b2;
+        }
+
+        /* EMPTY */
+
+        .empty {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            color: #777;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 600px) {
+
+            .container {
+                padding: 15px;
+            }
+
+            .store-name {
+                font-size: 21px;
+            }
+
+            .product-main {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .product-actions {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+    <div class="header-content">
+
+        <div class="brand">
+            LOKA PARTNER
+        </div>
+
+        <div class="store-name">
+            {{ store.name }}
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <a
+        href="{% url 'partner_dashboard' %}"
+        class="back-btn"
+    >
+        ← Back to Dashboard
+    </a>
+
+
+    <div class="page-title">
+
+        <h1>
+            Products
+        </h1>
+
+        <p>
+            Manage products available in your store.
+        </p>
+
+    </div>
+
+
+    {% if products %}
+
+        <div class="products-list">
+
+            {% for product in products %}
+
+                <div class="product-card">
+
+
+                    <div class="product-main">
+
+
+                        <div>
+
+                            <div class="product-name">
+                                {{ product.name }}
+                            </div>
+
+
+                            <div class="product-category">
+                                {{ product.category.name }}
+                            </div>
+
+
+                            <div class="product-price-row">
+
+                                {% if product.discount_price %}
+
+                                    <span class="product-price">
+                                        ₹{{ product.discount_price }}
+                                    </span>
+
+                                    <span class="product-original-price">
+                                        ₹{{ product.price }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="product-price">
+                                        ₹{{ product.price }}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="product-status-area">
+
+                            {% if not product.is_active %}
+
+                                <div class="product-status inactive">
+                                    🔴 Inactive
+                                </div>
+
+                            {% elif product.partner_unavailable %}
+
+                                <div class="product-status unavailable">
+                                    🔴 Temporarily Unavailable
+                                </div>
+
+                            {% elif not product.is_available_now %}
+
+                                <div class="product-status unavailable">
+                                    🕐 Unavailable Now
+                                </div>
+
+                            {% else %}
+
+                                <div class="product-status available">
+                                    🟢 Available
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="product-actions">
+
+
+                        <!-- EDIT -->
+
+                        <a
+                            href="{% url 'partner_product_edit' product.id %}"
+                            class="edit-product-btn"
+                        >
+                            ✏️ Edit Product
+                        </a>
+
+
+                        <!-- TEMPORARY AVAILABILITY -->
+
+                        <form
+                            method="POST"
+                            action="{% url 'partner_toggle_product_availability' product.id %}"
+                        >
+
+                            {% csrf_token %}
+
+
+                            {% if product.partner_unavailable %}
+
+                                <button
+                                    type="submit"
+                                    class="product-availability-btn available-btn"
+                                >
+                                    ✓ Available Again
+                                </button>
+
+                            {% else %}
+
+                                <button
+                                    type="submit"
+                                    class="product-availability-btn unavailable-btn"
+                                >
+                                    Mark Unavailable
+                                </button>
+
+                            {% endif %}
+
+                        </form>
+
+
+                    </div>
+
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+
+            No products found.
+
+        </div>
+
+    {% endif %}
+
+
+</main>
+
+
+</body>
+
+</html>

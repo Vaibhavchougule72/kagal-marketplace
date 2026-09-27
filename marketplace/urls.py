@@ -398,6 +398,11 @@ urlpatterns = [
         views.partner_summary,
         name="partner_summary",
     ),
+    path(
+        "partner/products/",
+        views.partner_products,
+        name="partner_products",
+    ),
 ]
 
 
