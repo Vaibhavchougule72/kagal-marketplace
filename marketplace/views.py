@@ -9729,9 +9729,8 @@ def partner_dashboard(request):
     """
     Main dashboard for the logged-in store partner.
 
-    IMPORTANT:
-    The store is obtained from StorePartnerProfile.
-    The request cannot choose another store.
+    The store is always taken from StorePartnerProfile.
+    The partner cannot select another store.
     """
 
     profile = getattr(
@@ -9752,6 +9751,13 @@ def partner_dashboard(request):
 
     store = profile.store
 
+    products = (
+        Product.objects
+        .filter(store=store)
+        .select_related("category")
+        .order_by("category__name", "name")
+    )
+
     # ========================================================
     # TODAY'S STORE ORDERS
     # ========================================================
@@ -9769,9 +9775,8 @@ def partner_dashboard(request):
             "items__product",
             "items__bundle"
         )
-        .order_by("-created_at")
+        .order_by("created_at", "id")
     )
-
 
     # ========================================================
     # TODAY'S ORDER COUNTS
@@ -9791,41 +9796,64 @@ def partner_dashboard(request):
         status="FAILED"
     )
 
-
-    # ========================================================
-    # TODAY'S ORDERS
-    # ========================================================
-
-    recent_orders = list(
-        orders[:30]
-    )
-
-
     # ========================================================
     # STORE DAILY ORDER NUMBER
     # ========================================================
+    #
+    # Example:
+    #
+    # First order today  -> 1
+    # Second order today -> 2
+    # Third order today  -> 3
+    #
+    # This number is only for this store and this day.
+    # It is NOT the global Order.id.
+    # ========================================================
 
-    for order in recent_orders:
+    today_orders = list(orders)
 
-        daily_order_count = orders.filter(
-            created_at__lt=order.created_at
-        ).count()
+    for number, order in enumerate(today_orders, start=1):
+        order.store_day_order_number = number
 
-        order.store_day_order_number = (
-            daily_order_count + 1
-        )
+    # ========================================================
+    # DISPLAY ORDERS
+    # ========================================================
+
+    recent_orders = list(
+        reversed(today_orders[-30:])
+    )
+
+    # ========================================================
+    # STORE OPEN/CLOSED STATUS
+    # ========================================================
+
+    try:
+        store_is_open = store.is_open()
+    except Exception:
+        store_is_open = False
+
+    # ========================================================
+    # DASHBOARD CONTEXT
+    # ========================================================
 
     context = {
         "profile": profile,
         "store": store,
 
+        # Counts
         "total_orders": total_orders,
         "new_orders": new_orders,
         "accepted_orders": accepted_orders,
         "failed_orders": failed_orders,
+        "products": products,
 
+        # Orders
         "recent_orders": recent_orders,
 
+        # Store status
+        "store_is_open": store_is_open,
+
+        # Existing layout settings
         "show_navbar": False,
         "show_floating_cart": False,
         "simple_navbar": False,
@@ -9836,6 +9864,30 @@ def partner_dashboard(request):
         "partner_dashboard.html",
         context
     )
+
+@login_required
+def partner_toggle_product_availability(request, product_id):
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    if request.method != "POST":
+        return redirect("partner_dashboard")
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        store=store
+    )
+
+    product.partner_unavailable = not product.partner_unavailable
+    product.save(update_fields=["partner_unavailable"])
+
+    return redirect("partner_dashboard")
 
 # ============================================================
 # PARTNER ORDER DETAIL
@@ -10115,4 +10167,295 @@ def save_partner_fcm_token(request):
             "created": created,
             "message": "Partner FCM token saved."
         }
+    )
+
+
+@login_required
+def partner_product_edit(request, product_id):
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        store=store
+    )
+
+    if request.method == "POST":
+
+        product.name = request.POST.get("name", "").strip()
+        product.price = request.POST.get("price") or product.price
+        product.discount_price = (
+            request.POST.get("discount_price")
+            or None
+        )
+        product.description = request.POST.get(
+            "description",
+            ""
+        ).strip()
+
+        product.is_active = (
+            request.POST.get("is_active") == "on"
+        )
+
+        product.upi_only = (
+            request.POST.get("upi_only") == "on"
+        )
+
+        product.unavailable_10_12 = (
+            request.POST.get("unavailable_10_12") == "on"
+        )
+
+        product.unavailable_12_3 = (
+            request.POST.get("unavailable_12_3") == "on"
+        )
+
+        product.unavailable_3_630 = (
+            request.POST.get("unavailable_3_630") == "on"
+        )
+
+        product.unavailable_630_9 = (
+            request.POST.get("unavailable_630_9") == "on"
+        )
+
+        if request.FILES.get("image"):
+            product.image = request.FILES["image"]
+
+        product.save()
+
+        return redirect("partner_dashboard")
+
+    return render(
+        request,
+        "partner_product_edit.html",
+        {
+            "product": product,
+            "store": store,
+        }
+    )
+
+
+@login_required
+def partner_store_details(request):
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    if request.method == "POST":
+
+        store.name = request.POST.get("name", "").strip()
+        store.description = request.POST.get(
+            "description",
+            ""
+        ).strip()
+
+        category_id = request.POST.get("category")
+
+        if category_id:
+            category = get_object_or_404(
+                Category,
+                id=category_id
+            )
+            store.category = category
+
+        if request.FILES.get("image"):
+            store.image = request.FILES["image"]
+
+        store.save()
+
+        return redirect("partner_dashboard")
+
+    categories = Category.objects.all().order_by("name")
+
+    return render(
+        request,
+        "partner_store_details.html",
+        {
+            "store": store,
+            "categories": categories,
+        }
+    )
+
+
+@login_required
+def partner_toggle_store_status(request):
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    if request.method != "POST":
+        return redirect("partner_dashboard")
+
+    store.partner_closed = not store.partner_closed
+    store.save(update_fields=["partner_closed"])
+
+    return redirect("partner_dashboard")
+
+
+@login_required
+def partner_summary(request):
+
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    today = timezone.localdate()
+
+    # -----------------------------
+    # DATE FILTER
+    # -----------------------------
+
+    period = request.GET.get("period", "today")
+
+    start_date = today
+    end_date = today
+
+    if period == "today":
+
+        start_date = today
+        end_date = today
+
+    elif period == "week":
+
+        start_date = today - timedelta(days=today.weekday())
+        end_date = today
+
+    elif period == "month":
+
+        start_date = today.replace(day=1)
+        end_date = today
+
+    elif period == "overall":
+
+        start_date = None
+        end_date = None
+
+    elif period == "custom":
+
+        custom_start = request.GET.get("start_date")
+        custom_end = request.GET.get("end_date")
+
+        if custom_start:
+            try:
+                start_date = timezone.datetime.strptime(
+                    custom_start,
+                    "%Y-%m-%d"
+                ).date()
+            except ValueError:
+                start_date = today
+
+        if custom_end:
+            try:
+                end_date = timezone.datetime.strptime(
+                    custom_end,
+                    "%Y-%m-%d"
+                ).date()
+            except ValueError:
+                end_date = today
+
+    # -----------------------------
+    # DELIVERED ORDERS
+    # -----------------------------
+
+    orders = Order.objects.filter(
+        store=store,
+        status="DELIVERED"
+    )
+
+    if start_date:
+        orders = orders.filter(
+            created_at__date__gte=start_date
+        )
+
+    if end_date:
+        orders = orders.filter(
+            created_at__date__lte=end_date
+        )
+
+    # -----------------------------
+    # TOTAL ORDERS
+    # -----------------------------
+
+    total_orders = orders.count()
+
+    # -----------------------------
+    # TOTAL SALES
+    # -----------------------------
+
+    total_sales = (
+        orders.aggregate(
+            total=Sum("subtotal")
+        )["total"]
+        or Decimal("0")
+    )
+
+    # -----------------------------
+    # AVERAGE ORDER VALUE
+    # -----------------------------
+
+    if total_orders:
+        aov = total_sales / Decimal(total_orders)
+    else:
+        aov = Decimal("0")
+
+    # -----------------------------
+    # PLATFORM COMMISSION
+    # -----------------------------
+
+    commission_percent = (
+        store.commission_percent or Decimal("0")
+    )
+
+    platform_commission = (
+        total_sales * commission_percent
+    ) / Decimal("100")
+
+    # -----------------------------
+    # STORE INCOME
+    # -----------------------------
+
+    store_income = total_sales - platform_commission
+
+    context = {
+        "store": store,
+
+        "period": period,
+
+        "start_date": start_date,
+        "end_date": end_date,
+
+        "total_orders": total_orders,
+        "total_sales": total_sales,
+        "aov": aov,
+
+        "commission_percent": commission_percent,
+        "platform_commission": platform_commission,
+        "store_income": store_income,
+
+        "simple_navbar": False,
+        "show_navbar": False,
+        "show_floating_cart": False,
+    }
+
+    return render(
+        request,
+        "partner_summary.html",
+        context
     )

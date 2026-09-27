@@ -373,6 +373,31 @@ urlpatterns = [
         save_partner_fcm_token,
         name="save_partner_fcm_token"
     ),
+    path(
+        "partner/products/<int:product_id>/toggle-availability/",
+        views.partner_toggle_product_availability,
+        name="partner_toggle_product_availability",
+    ),
+    path(
+        "partner/products/<int:product_id>/edit/",
+        views.partner_product_edit,
+        name="partner_product_edit",
+    ),
+    path(
+        "partner/store-details/",
+        views.partner_store_details,
+        name="partner_store_details",
+    ),
+    path(
+        "partner/store-status/toggle/",
+        views.partner_toggle_store_status,
+        name="partner_toggle_store_status",
+    ),
+    path(
+        "partner/summary/",
+        views.partner_summary,
+        name="partner_summary",
+    ),
 ]
 
 

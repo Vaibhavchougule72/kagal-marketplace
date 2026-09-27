@@ -22,51 +22,81 @@
 
         body {
             margin: 0;
-
-            font-family:
-                Arial,
-                sans-serif;
-
+            font-family: Arial, sans-serif;
             background: #f5f7f6;
-
             color: #222;
         }
 
+        /* ============================= */
+        /* HEADER */
+        /* ============================= */
+
         .header {
             background: #227D57;
-
             color: white;
-
             padding: 20px;
         }
 
         .header-content {
             max-width: 900px;
-
             margin: auto;
         }
 
         .brand {
             font-size: 14px;
-
             opacity: 0.85;
         }
 
         .store-name {
             font-size: 24px;
-
             font-weight: 800;
-
             margin-top: 5px;
         }
 
+        .store-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            margin-top: 10px;
+
+            padding: 6px 12px;
+
+            border-radius: 20px;
+
+            background: rgba(255,255,255,0.15);
+
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .logout {
+            display: inline-block;
+
+            margin-top: 12px;
+
+            color: white;
+
+            text-decoration: none;
+
+            font-size: 14px;
+        }
+
+
+        /* ============================= */
+        /* CONTAINER */
+        /* ============================= */
+
         .container {
             max-width: 900px;
-
             margin: auto;
-
             padding: 20px;
         }
+
+
+        /* ============================= */
+        /* DASHBOARD CARDS */
+        /* ============================= */
 
         .cards {
             display: grid;
@@ -100,17 +130,76 @@
 
         .card-title {
             color: #777;
-
             font-size: 13px;
         }
 
         .card-number {
             font-size: 28px;
-
             font-weight: 800;
-
             margin-top: 8px;
         }
+
+
+        /* ============================= */
+        /* MENU */
+        /* ============================= */
+
+        .menu {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(150px, 1fr)
+                );
+
+            gap: 12px;
+
+            margin-bottom: 30px;
+        }
+
+        .menu-button {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 15px;
+
+            background: white;
+
+            border-radius: 14px;
+
+            text-decoration: none;
+
+            color: #222;
+
+            font-weight: 700;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+
+            transition: 0.2s;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .menu-icon {
+            font-size: 22px;
+        }
+
+
+        /* ============================= */
+        /* SECTION */
+        /* ============================= */
 
         .section-title {
             font-size: 20px;
@@ -121,6 +210,11 @@
                 25px 0
                 12px;
         }
+
+
+        /* ============================= */
+        /* ORDERS */
+        /* ============================= */
 
         .order {
             background: white;
@@ -145,12 +239,13 @@
 
             justify-content: space-between;
 
+            align-items: center;
+
             gap: 10px;
         }
 
         .order-id {
             font-weight: 800;
-
             font-size: 17px;
         }
 
@@ -168,44 +263,14 @@
             color: #227D57;
         }
 
-        .customer {
-            margin-top: 10px;
-
-            font-weight: 600;
-        }
-
         .details {
-            margin-top: 6px;
+            margin-top: 8px;
 
             color: #666;
 
             font-size: 14px;
 
-            line-height: 1.6;
-        }
-
-        .empty {
-            background: white;
-
-            padding: 30px;
-
-            border-radius: 15px;
-
-            text-align: center;
-
-            color: #777;
-        }
-
-        .logout {
-            display: inline-block;
-
-            margin-top: 12px;
-
-            color: white;
-
-            text-decoration: none;
-
-            font-size: 14px;
+            line-height: 1.7;
         }
 
         .view-order {
@@ -228,11 +293,312 @@
             font-weight: 700;
         }
 
+        /* ============================= */
+        /* PRODUCTS */
+        /* ============================= */
+
+        .products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 16px;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+        }
+
+
+        .product-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+
+        .product-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #222;
+        }
+
+
+        .product-category {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #777;
+        }
+
+
+        .product-price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 9px;
+        }
+
+
+        .product-price {
+            font-size: 17px;
+            font-weight: 800;
+            color: #227D57;
+        }
+
+
+        .product-original-price {
+            font-size: 13px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+
+        .product-status-area {
+            flex-shrink: 0;
+        }
+
+
+        .product-status {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+
+        .product-status.available {
+            color: #16803c;
+        }
+
+
+        .product-status.unavailable {
+            color: #d93025;
+        }
+
+
+        .product-status.inactive {
+            color: #777;
+        }
+
+
+        /* ACTION BUTTONS */
+
+        .product-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+
+            margin-top: 15px;
+        }
+
+
+        .edit-product-btn,
+        .product-availability-btn {
+            width: 100%;
+
+            min-height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            text-decoration: none;
+
+            cursor: pointer;
+        }
+
+
+        .edit-product-btn {
+            background: #f2f5f3;
+            color: #227D57;
+            border: 1px solid #d8e2dc;
+        }
+
+
+        .product-availability-btn {
+            border: 1px solid transparent;
+        }
+
+
+        .unavailable-btn {
+            background: #fff1f1;
+            color: #d93025;
+            border-color: #f2b8b5;
+        }
+
+
+        .available-btn {
+            background: #edf9f0;
+            color: #16803c;
+            border-color: #a8d5b2;
+        }
+
+
+        /* ============================= */
+        /* EMPTY */
+        /* ============================= */
+
+        .empty {
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 15px;
+
+            text-align: center;
+
+            color: #777;
+        }
+
+        .store-status-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-top: 20px;
+        }
+
+        .store-status-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .store-status-icon.open {
+            background: #e8f7ed;
+            color: #198754;
+        }
+
+        .store-status-icon.closed {
+            background: #fdeaea;
+            color: #dc3545;
+        }
+
+        .store-status-info {
+            flex: 1;
+        }
+
+        .store-status-info h3 {
+            margin: 0 0 5px;
+            font-size: 18px;
+        }
+
+        .store-status-info p {
+            margin: 0;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .store-status-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .close-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .open-btn {
+            background: #198754;
+            color: white;
+        }
+
+        .store-status-btn:active {
+            transform: scale(0.97);
+        }
+
+        @media (max-width: 600px) {
+            .store-status-card {
+                flex-wrap: wrap;
+            }
+
+            .store-status-info {
+                min-width: calc(100% - 75px);
+            }
+
+            .store-status-btn {
+                width: 100%;
+                margin-top: 5px;
+            }
+        }
+
+
+        /* ============================= */
+        /* MOBILE */
+        /* ============================= */
+
+        @media (max-width: 600px) {
+
+            .container {
+                padding: 15px;
+            }
+
+            .store-name {
+                font-size: 21px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .card-number {
+                font-size: 25px;
+            }
+
+            .menu-button {
+                padding: 13px;
+            }
+
+            .product-main {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .product-actions {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
     </style>
 
 </head>
 
+
 <body>
+
+
+<!-- ================================= -->
+<!-- HEADER -->
+<!-- ================================= -->
 
 <header class="header">
 
@@ -245,6 +611,26 @@
         <div class="store-name">
             {{ store.name }}
         </div>
+
+
+        <!-- Store status -->
+
+        <div class="store-status">
+
+            {% if store_is_open %}
+
+                🟢 Store Open
+
+            {% else %}
+
+                🔴 Store Closed
+
+            {% endif %}
+
+        </div>
+
+
+        <br>
 
         <a
             href="{% url 'partner_logout' %}"
@@ -260,13 +646,16 @@
 
 <main class="container">
 
-    <!-- ============================= -->
+
+    <!-- ================================= -->
     <!-- TODAY'S ORDER COUNTS -->
-    <!-- ============================= -->
+    <!-- ================================= -->
 
     <div class="cards">
 
+
         <div class="card">
+
             <div class="card-title">
                 Total Orders
             </div>
@@ -274,10 +663,12 @@
             <div class="card-number">
                 {{ total_orders }}
             </div>
+
         </div>
 
 
         <div class="card">
+
             <div class="card-title">
                 New Orders
             </div>
@@ -285,10 +676,12 @@
             <div class="card-number">
                 {{ new_orders.count }}
             </div>
+
         </div>
 
 
         <div class="card">
+
             <div class="card-title">
                 Accepted
             </div>
@@ -296,10 +689,12 @@
             <div class="card-number">
                 {{ accepted_orders.count }}
             </div>
+
         </div>
 
 
         <div class="card">
+
             <div class="card-title">
                 Failed
             </div>
@@ -307,17 +702,154 @@
             <div class="card-number">
                 {{ failed_orders.count }}
             </div>
+
         </div>
+
 
     </div>
 
 
-    <!-- ============================= -->
-    <!-- RECENT ORDERS -->
-    <!-- ============================= -->
+    <!-- ================================= -->
+    <!-- PARTNER MENU -->
+    <!-- ================================= -->
 
-    <div class="section-title">
-         Today's Orders
+    <div class="menu">
+
+
+        <!-- Orders -->
+
+        <a
+            href="#orders"
+            class="menu-button"
+        >
+
+            <span class="menu-icon">
+                🧾
+            </span>
+
+            <span>
+                Orders
+            </span>
+
+        </a>
+
+
+        <!-- Products -->
+
+        <a
+            href="#products"
+            class="menu-button"
+        >
+
+            <span class="menu-icon">
+                🍔
+            </span>
+
+            <span>
+                Products
+            </span>
+
+        </a>
+
+
+        <!-- Store Details -->
+
+        <a
+            href="{% url 'partner_store_details' %}"
+            class="menu-button"
+        >
+
+            <span class="menu-icon">
+                🏪
+            </span>
+
+            <span>
+                Store Details
+            </span>
+
+        </a>
+
+
+        <!-- Store Open / Close -->
+
+       <section id="store-status" class="dashboard-section">
+
+            <div class="section-header">
+                <div>
+                    <h2>Store Open / Close</h2>
+                    <p>Control whether your store is currently accepting orders.</p>
+                </div>
+            </div>
+
+            <div class="store-status-card">
+
+                {% if store_is_open %}
+                    <div class="store-status-icon open">
+                        ✓
+                    </div>
+
+                    <div class="store-status-info">
+                        <h3>Store is Open</h3>
+                        <p>Your store is currently visible to customers and can receive orders.</p>
+                    </div>
+
+                    <form method="POST" action="{% url 'partner_toggle_store_status' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="store-status-btn close-btn">
+                            Close Store
+                        </button>
+                    </form>
+
+                {% else %}
+                    <div class="store-status-icon closed">
+                        ×
+                    </div>
+
+                    <div class="store-status-info">
+                        <h3>Store is Closed</h3>
+                        <p>Your store is currently not accepting orders.</p>
+                    </div>
+
+                    <form method="POST" action="{% url 'partner_toggle_store_status' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="store-status-btn open-btn">
+                            Open Store
+                        </button>
+                    </form>
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Summary -->
+
+        <a href="{% url 'partner_summary' %}" class="menu-button">
+
+            <span class="menu-icon">
+                📊
+            </span>
+
+            <span>
+                Summary
+            </span>
+
+        </a>
+
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- ORDERS -->
+    <!-- ================================= -->
+
+    <div
+        id="orders"
+        class="section-title"
+    >
+        Today's Orders
     </div>
 
 
@@ -327,14 +859,20 @@
 
             <div class="order">
 
+
                 <div class="order-top">
 
                     <div class="order-id">
+
                         Order #{{ order.store_day_order_number }}
+
                     </div>
 
+
                     <div class="status">
+
                         {{ order.get_status_display }}
+
                     </div>
 
                 </div>
@@ -350,7 +888,8 @@
 
                     <br>
 
-                    🕐 {{ order.created_at|date:"d M Y, h:i A" }}
+                    🕐
+                    {{ order.created_at|date:"d M Y, h:i A" }}
 
                 </div>
 
@@ -362,17 +901,229 @@
                     View Order →
                 </a>
 
+
             </div>
 
         {% endfor %}
 
+
     {% else %}
 
         <div class="empty">
+
             No orders found.
+
         </div>
 
     {% endif %}
+
+
+    <!-- ================================= -->
+    <!-- PRODUCTS -->
+    <!-- ================================= -->
+
+    <div
+        id="products"
+        class="section-title"
+    >
+        Products
+    </div>
+
+    {% if products %}
+
+        <div class="products-list">
+
+            {% for product in products %}
+
+                <div class="product-card">
+
+                    <div class="product-main">
+
+                        <div class="product-info">
+
+                            <div class="product-name">
+                                {{ product.name }}
+                            </div>
+
+                            <div class="product-category">
+                                {{ product.category.name }}
+                            </div>
+
+                            <div class="product-price-row">
+
+                                {% if product.discount_price %}
+
+                                    <span class="product-price">
+                                        ₹{{ product.discount_price }}
+                                    </span>
+
+                                    <span class="product-original-price">
+                                        ₹{{ product.price }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="product-price">
+                                        ₹{{ product.price }}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="product-status-area">
+
+                            {% if not product.is_active %}
+
+                                <div class="product-status inactive">
+                                    🔴 Inactive
+                                </div>
+
+                            {% elif product.partner_unavailable %}
+
+                                <div class="product-status unavailable">
+                                    🔴 Temporarily Unavailable
+                                </div>
+
+                            {% elif not product.is_available_now %}
+
+                                <div class="product-status unavailable">
+                                    🕐 Unavailable Now
+                                </div>
+
+                            {% else %}
+
+                                <div class="product-status available">
+                                    🟢 Available
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="product-actions">
+
+                        <!-- EDIT -->
+
+                        <a
+                            href="{% url 'partner_product_edit' product.id %}"
+                            class="edit-product-btn"
+                        >
+                            ✏️ Edit Product
+                        </a>
+
+
+                        <!-- TEMPORARY AVAILABILITY -->
+
+                        <form
+                            method="POST"
+                            action="{% url 'partner_toggle_product_availability' product.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            {% if product.partner_unavailable %}
+
+                                <button
+                                    type="submit"
+                                    class="product-availability-btn available-btn"
+                                >
+                                    ✓ Available Again
+                                </button>
+
+                            {% else %}
+
+                                <button
+                                    type="submit"
+                                    class="product-availability-btn unavailable-btn"
+                                >
+                                    Mark Unavailable
+                                </button>
+
+                            {% endif %}
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+            No products found.
+        </div>
+
+    {% endif %}
+
+
+    <!-- ================================= -->
+    <!-- STORE DETAILS PLACEHOLDER -->
+    <!-- ================================= -->
+
+    <div
+        id="store-details"
+        class="section-title"
+    >
+        Store Details
+    </div>
+
+    <div class="empty">
+
+        Store details management will appear here.
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- STORE STATUS PLACEHOLDER -->
+    <!-- ================================= -->
+
+    <div
+        id="store-status"
+        class="section-title"
+    >
+        Store Open / Close
+    </div>
+
+    <div class="empty">
+
+        Store open / close control will appear here.
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- SUMMARY PLACEHOLDER -->
+    <!-- ================================= -->
+
+    <div
+        id="summary"
+        class="section-title"
+    >
+        Summary
+    </div>
+
+    <div class="empty">
+
+        Sales summary will appear here.
+
+    </div>
+
 
 </main>
 

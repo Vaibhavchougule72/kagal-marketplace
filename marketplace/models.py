@@ -20,6 +20,11 @@ class Store(models.Model):
     image = CloudinaryField('image', blank=True, null=True)
     description = models.TextField(blank=True)
 
+    partner_closed = models.BooleanField(
+        default=False,
+        help_text="Temporarily closed by store partner"
+    )
+
     commission_percent = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -44,6 +49,9 @@ class Store(models.Model):
 
 
     def is_open(self):
+        if self.partner_closed:
+            return False
+        
         now = timezone.localtime()
         today = now.date()
         current_time = now.time()
@@ -122,6 +130,11 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False)
 
     is_active = models.BooleanField(default=True)
+    
+    partner_unavailable = models.BooleanField(
+        default=False,
+        help_text="Temporarily unavailable by store partner"
+    )
 
     upi_only = models.BooleanField(
         default=False,
@@ -153,6 +166,10 @@ class Product(models.Model):
     from django.utils import timezone
 
     def is_available_now(self):
+
+        if self.partner_unavailable:
+            return False
+        
         now = timezone.localtime()
         current_minutes = now.hour * 60 + now.minute
 

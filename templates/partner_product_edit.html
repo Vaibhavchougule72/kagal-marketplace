@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Product - LOKA Partner</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7f6;
+            color: #222;
+        }
+
+        .header {
+            background: #227D57;
+            color: white;
+            padding: 20px;
+        }
+
+        .header-content {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .brand {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .store-name {
+            font-size: 22px;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+
+            box-shadow:
+                0 4px 15px rgba(
+                    0,
+                    0,
+                    0,
+                    0.05
+                );
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px;
+            color: #444;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+
+            border: 1px solid #d8dedb;
+            border-radius: 10px;
+
+            font-size: 14px;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #227D57;
+        }
+
+        .checkbox-group {
+            background: #f7f9f8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 18px;
+        }
+
+        .checkbox-title {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-row input {
+            width: auto;
+        }
+
+        .checkbox-row label {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            min-height: 46px;
+
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+            font-weight: 800;
+
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background: #f1f3f2;
+            color: #555;
+            border: 1px solid #d8dedb;
+        }
+
+        .save-btn {
+            background: #227D57;
+            color: white;
+            border: none;
+        }
+
+        .current-image {
+            width: 180px;
+            height: 130px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f1f3f2;
+            margin-bottom: 12px;
+            border: 1px solid #d8dedb;
+        }
+
+        .current-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-help {
+            margin-top: 7px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        @media (max-width: 600px) {
+
+            .container {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header class="header">
+
+    <div class="header-content">
+
+        <div class="brand">
+            LOKA PARTNER
+        </div>
+
+        <div class="store-name">
+            {{ store.name }}
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="card">
+
+        <div class="title">
+            Edit Product
+        </div>
+
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- PRODUCT NAME -->
+
+            <div class="field">
+
+                <label>
+                    Product Name
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ product.name }}"
+                    required
+                >
+
+            </div>
+
+
+            <!-- CATEGORY -->
+
+            <div class="field">
+
+                <label>
+                    Category
+                </label>
+
+                <input
+                    type="text"
+                    value="{{ product.category.name }}"
+                    disabled
+                >
+
+            </div>
+
+
+            <!-- PRICE -->
+
+            <div class="field">
+
+                <label>
+                    Price
+                </label>
+
+                <input
+                    type="number"
+                    name="price"
+                    value="{{ product.price }}"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+
+            </div>
+
+
+            <!-- DISCOUNT PRICE -->
+
+            <div class="field">
+
+                <label>
+                    Discount Price
+                </label>
+
+                <input
+                    type="number"
+                    name="discount_price"
+                    value="{{ product.discount_price|default:'' }}"
+                    min="0"
+                    step="0.01"
+                >
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+
+            <div class="field">
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                >{{ product.description }}</textarea>
+
+            </div>
+
+            <!-- PRODUCT IMAGE -->
+
+            <div class="field">
+
+                <label>
+                    Product Image
+                </label>
+
+                {% if product.image %}
+
+                    <div class="current-image">
+
+                        <img
+                            src="{{ product.image.url }}"
+                            alt="{{ product.name }}"
+                        >
+
+                    </div>
+
+                {% endif %}
+
+                <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                >
+
+                {% if product.image %}
+                    <div class="image-help">
+                        Select a new image to replace the current image.
+                    </div>
+                {% else %}
+                    <div class="image-help">
+                        Add an image for this product.
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- PRODUCT SETTINGS -->
+
+            <div class="checkbox-group">
+
+                <div class="checkbox-title">
+                    Product Settings
+                </div>
+
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="is_active"
+                        name="is_active"
+                        {% if product.is_active %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label for="is_active">
+                        Product Active
+                    </label>
+
+                </div>
+
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="upi_only"
+                        name="upi_only"
+                        {% if product.upi_only %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label for="upi_only">
+                        UPI Only
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- TIMING SETTINGS -->
+
+            <div class="checkbox-group">
+
+                <div class="checkbox-title">
+                    Product Timing Availability
+                </div>
+
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="unavailable_10_12"
+                        name="unavailable_10_12"
+                        {% if product.unavailable_10_12 %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label for="unavailable_10_12">
+                        Unavailable 10 AM – 12 PM
+                    </label>
+
+                </div>
+
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="unavailable_12_3"
+                        name="unavailable_12_3"
+                        {% if product.unavailable_12_3 %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label for="unavailable_12_3">
+                        Unavailable 12 PM – 3 PM
+                    </label>
+
+                </div>
+
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="unavailable_3_630"
+                        name="unavailable_3_630"
+                        {% if product.unavailable_3_630 %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label for="unavailable_3_630">
+                        Unavailable 3 PM – 6:30 PM
+                    </label>
+
+                </div>
+
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="unavailable_630_9"
+                        name="unavailable_630_9"
+                        {% if product.unavailable_630_9 %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <label for="unavailable_630_9">
+                        Unavailable 6:30 PM – 9 PM
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- BUTTONS -->
+
+            <div class="buttons">
+
+                <a
+                    href="{% url 'partner_dashboard' %}"
+                    class="btn cancel-btn"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn save-btn"
+                >
+                    Save Product
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+</body>
+
+</html>

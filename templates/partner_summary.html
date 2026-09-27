@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Summary - LOKA Partner</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f6f7f8;
+            color: #222;
+        }
+
+        .header {
+            background: #0b5d3b;
+            color: white;
+            padding: 18px 22px;
+        }
+
+        .header-inner {
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .store-name {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 25px auto;
+            padding: 0 18px 40px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #0b5d3b;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+
+        .page-title {
+            margin-bottom: 20px;
+        }
+
+        .page-title h1 {
+            margin: 0 0 5px;
+            font-size: 28px;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #777;
+        }
+
+        /* FILTERS */
+
+        .filter-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            margin-bottom: 22px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .period-btn {
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 9px;
+            border: 1px solid #ddd;
+            color: #333;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .period-btn.active {
+            background: #0b5d3b;
+            color: white;
+            border-color: #0b5d3b;
+        }
+
+        .custom-form {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #eee;
+
+            display: flex;
+            gap: 12px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .field input {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .apply-btn {
+            border: none;
+            background: #f28c28;
+            color: white;
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* SUMMARY CARDS */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .summary-card .label {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .value {
+            font-size: 27px;
+            font-weight: 700;
+            color: #0b5d3b;
+        }
+
+        .summary-card .sub {
+            margin-top: 7px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* COMMISSION */
+
+        .commission-card {
+            margin-top: 18px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .commission-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .commission-row:last-child {
+            border-bottom: none;
+        }
+
+        .income-row {
+            font-weight: 700;
+            font-size: 17px;
+            color: #0b5d3b;
+        }
+
+        @media (max-width: 800px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title h1 {
+                font-size: 24px;
+            }
+
+            .custom-form {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .apply-btn {
+                width: 100%;
+            }
+
+            .header-inner {
+                align-items: flex-start;
+                gap: 5px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="header-inner">
+
+        <div class="brand">
+            LOKA PARTNER
+        </div>
+
+        <div class="store-name">
+            {{ store.name }}
+        </div>
+
+    </div>
+</header>
+
+
+<div class="container">
+
+    <a href="{% url 'partner_dashboard' %}" class="back-btn">
+        ← Back to Dashboard
+    </a>
+
+
+    <div class="page-title">
+
+        <h1>Summary</h1>
+
+        <p>
+            View your store's sales and order performance.
+        </p>
+
+    </div>
+
+
+    <!-- FILTERS -->
+
+    <div class="filter-card">
+
+        <div class="filter-buttons">
+
+            <a
+                href="?period=today"
+                class="period-btn {% if period == 'today' %}active{% endif %}"
+            >
+                Today
+            </a>
+
+            <a
+                href="?period=week"
+                class="period-btn {% if period == 'week' %}active{% endif %}"
+            >
+                This Week
+            </a>
+
+            <a
+                href="?period=month"
+                class="period-btn {% if period == 'month' %}active{% endif %}"
+            >
+                This Month
+            </a>
+
+            <a
+                href="?period=overall"
+                class="period-btn {% if period == 'overall' %}active{% endif %}"
+            >
+                Overall
+            </a>
+
+        </div>
+
+
+        <!-- CUSTOM DATE -->
+
+        <form
+            method="GET"
+            class="custom-form"
+        >
+
+            <input
+                type="hidden"
+                name="period"
+                value="custom"
+            >
+
+            <div class="field">
+
+                <label>
+                    Start Date
+                </label>
+
+                <input
+                    type="date"
+                    name="start_date"
+                    value="{% if period == 'custom' and start_date %}{{ start_date|date:'Y-m-d' }}{% endif %}"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    End Date
+                </label>
+
+                <input
+                    type="date"
+                    name="end_date"
+                    value="{% if period == 'custom' and end_date %}{{ end_date|date:'Y-m-d' }}{% endif %}"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="apply-btn"
+            >
+                Apply
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+
+            <div class="label">
+                Total Orders
+            </div>
+
+            <div class="value">
+                {{ total_orders }}
+            </div>
+
+            <div class="sub">
+                Delivered orders
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="label">
+                AOV
+            </div>
+
+            <div class="value">
+                ₹{{ aov|floatformat:2 }}
+            </div>
+
+            <div class="sub">
+                Average order value
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="label">
+                Total Sales
+            </div>
+
+            <div class="value">
+                ₹{{ total_sales|floatformat:2 }}
+            </div>
+
+            <div class="sub">
+                Delivered order subtotal
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="label">
+                Income After Commission
+            </div>
+
+            <div class="value">
+                ₹{{ store_income|floatformat:2 }}
+            </div>
+
+            <div class="sub">
+                After {{ commission_percent|floatformat:2 }}% platform commission
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- COMMISSION BREAKDOWN -->
+
+    <div class="commission-card">
+
+        <div class="commission-row">
+
+            <span>
+                Total Sales
+            </span>
+
+            <strong>
+                ₹{{ total_sales|floatformat:2 }}
+            </strong>
+
+        </div>
+
+
+        <div class="commission-row">
+
+            <span>
+                Platform Commission
+                ({{ commission_percent|floatformat:2 }}%)
+            </span>
+
+            <strong>
+                - ₹{{ platform_commission|floatformat:2 }}
+            </strong>
+
+        </div>
+
+
+        <div class="commission-row income-row">
+
+            <span>
+                Income After Commission
+            </span>
+
+            <strong>
+                ₹{{ store_income|floatformat:2 }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
