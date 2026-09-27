@@ -9885,7 +9885,14 @@ def partner_toggle_product_availability(request, product_id):
     )
 
     product.partner_unavailable = not product.partner_unavailable
+
     product.save(update_fields=["partner_unavailable"])
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "success": True,
+            "partner_unavailable": product.partner_unavailable,
+        })
 
     return redirect("partner_dashboard")
 

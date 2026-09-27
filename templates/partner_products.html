@@ -86,6 +86,52 @@
             font-size: 14px;
         }
 
+        /* SEARCH & FILTERS */
+
+        .product-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #d8e2dc;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #227D57;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d8e2dc;
+            border-radius: 10px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* PRODUCTS */
 
         .products-list {
@@ -297,6 +343,34 @@
             Manage products available in your store.
         </p>
 
+        <div class="product-controls">
+
+            <input
+                type="text"
+                id="productSearch"
+                class="search-box"
+                placeholder="🔍 Search products..."
+            >
+
+            <div class="filter-row">
+
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">All Products</option>
+                    <option value="available">Available</option>
+                    <option value="unavailable">Temporarily Unavailable</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+
+                <select id="sortFilter" class="filter-select">
+                    <option value="default">Sort: Default</option>
+                    <option value="az">A → Z</option>
+                    <option value="za">Z → A</option>
+                </select>
+
+            </div>
+
+        </div>
+
     </div>
 
 
@@ -306,7 +380,12 @@
 
             {% for product in products %}
 
-                <div class="product-card">
+                <div
+                    class="product-card"
+                    data-name="{{ product.name|lower }}"
+                    data-inactive="{% if not product.is_active %}true{% else %}false{% endif %}"
+                    data-unavailable="{% if product.partner_unavailable %}true{% else %}false{% endif %}"
+                >
 
 
                     <div class="product-main">
@@ -405,10 +484,9 @@
                         <form
                             method="POST"
                             action="{% url 'partner_toggle_product_availability' product.id %}"
+                            class="availability-form"
                         >
-
                             {% csrf_token %}
-
 
                             {% if product.partner_unavailable %}
 
@@ -454,6 +532,214 @@
 
 
 </main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("productSearch");
+    const statusFilter = document.getElementById("statusFilter");
+    const sortFilter = document.getElementById("sortFilter");
+
+    const productsList = document.querySelector(".products-list");
+
+    if (!productsList) return;
+
+    function getProductStatus(card) {
+        if (card.dataset.inactive === "true") {
+            return "inactive";
+        }
+
+        if (card.dataset.unavailable === "true") {
+            return "unavailable";
+        }
+
+        return "available";
+    }
+
+    function filterAndSortProducts() {
+
+        const searchText =
+            searchInput.value.trim().toLowerCase();
+
+        const selectedStatus =
+            statusFilter.value;
+
+        const selectedSort =
+            sortFilter.value;
+
+        const cards =
+            Array.from(
+                productsList.querySelectorAll(".product-card")
+            );
+
+        cards.forEach(function (card) {
+
+            const productName =
+                card.dataset.name.toLowerCase();
+
+            const status =
+                getProductStatus(card);
+
+            const matchesSearch =
+                productName.includes(searchText);
+
+            const matchesStatus =
+                selectedStatus === "all" ||
+                selectedStatus === status;
+
+            card.style.display =
+                matchesSearch && matchesStatus
+                    ? ""
+                    : "none";
+        });
+
+        const visibleCards =
+            cards.filter(function (card) {
+                return card.style.display !== "none";
+            });
+
+        if (selectedSort === "az") {
+
+            visibleCards.sort(function (a, b) {
+                return a.dataset.name.localeCompare(
+                    b.dataset.name
+                );
+            });
+
+        } else if (selectedSort === "za") {
+
+            visibleCards.sort(function (a, b) {
+                return b.dataset.name.localeCompare(
+                    a.dataset.name
+                );
+            });
+        }
+
+        visibleCards.forEach(function (card) {
+            productsList.appendChild(card);
+        });
+    }
+
+    searchInput.addEventListener(
+        "input",
+        filterAndSortProducts
+    );
+
+    statusFilter.addEventListener(
+        "change",
+        filterAndSortProducts
+    );
+
+    sortFilter.addEventListener(
+        "change",
+        filterAndSortProducts
+    );
+
+    document.querySelectorAll(".availability-form").forEach(function (form) {
+
+        form.addEventListener("submit", async function (event) {
+
+            event.preventDefault();
+
+            const scrollPosition = window.scrollY;
+
+            const button = form.querySelector("button");
+
+            button.disabled = true;
+            button.textContent = "Updating...";
+
+            try {
+
+                const response = await fetch(
+                    form.action,
+                    {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+                        body: new FormData(form)
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error("Update failed");
+                }
+
+                const card = form.closest(".product-card");
+
+                const statusElement =
+                    card.querySelector(".product-status");
+
+                if (data.partner_unavailable) {
+
+                    card.dataset.unavailable = "true";
+
+                    statusElement.className =
+                        "product-status unavailable";
+
+                    statusElement.textContent =
+                        "🔴 Temporarily Unavailable";
+
+                    button.className =
+                        "product-availability-btn available-btn";
+
+                    button.textContent =
+                        "✓ Available Again";
+
+                } else {
+
+                    card.dataset.unavailable = "false";
+
+                    statusElement.className =
+                        "product-status available";
+
+                    statusElement.textContent =
+                        "🟢 Available";
+
+                    button.className =
+                        "product-availability-btn unavailable-btn";
+
+                    button.textContent =
+                        "Mark Unavailable";
+                }
+
+                button.disabled = false;
+
+                /*
+                * Re-apply the current search/filter
+                * without changing the scroll position.
+                */
+                filterAndSortProducts();
+
+                window.scrollTo(
+                    0,
+                    scrollPosition
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Availability update error:",
+                    error
+                );
+
+                button.disabled = false;
+
+                /*
+                * Reload only if something actually failed.
+                */
+                window.location.reload();
+            }
+
+        });
+
+    });
+
+
+});
+</script>
 
 
 </body>
