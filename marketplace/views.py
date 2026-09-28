@@ -10285,32 +10285,24 @@ def partner_store_details(request):
         # -----------------------------
 
         days = [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
+            (0, "Monday"),
+            (1, "Tuesday"),
+            (2, "Wednesday"),
+            (3, "Thursday"),
+            (4, "Friday"),
+            (5, "Saturday"),
+            (6, "Sunday"),
         ]
 
-        for day in days:
+        for day_number, day_name in days:
+            is_closed = request.POST.get(f"closed_{day_name}") == "on"
 
-            is_closed = request.POST.get(
-                f"closed_{day}"
-            ) == "on"
-
-            open_time = request.POST.get(
-                f"open_time_{day}"
-            )
-
-            close_time = request.POST.get(
-                f"close_time_{day}"
-            )
+            open_time = request.POST.get(f"open_time_{day_name}")
+            close_time = request.POST.get(f"close_time_{day_name}")
 
             timing, created = StoreTiming.objects.get_or_create(
                 store=store,
-                day=day,
+                day=day_number,
                 defaults={
                     "open_time": open_time or "10:00",
                     "close_time": close_time or "21:00",
@@ -10322,6 +10314,7 @@ def partner_store_details(request):
                 timing.open_time = open_time or timing.open_time
                 timing.close_time = close_time or timing.close_time
                 timing.is_closed = is_closed
+
                 timing.save(
                     update_fields=[
                         "open_time",
@@ -10335,36 +10328,45 @@ def partner_store_details(request):
     categories = Category.objects.all().order_by("name")
 
     days = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
+        (0, "Monday"),
+        (1, "Tuesday"),
+        (2, "Wednesday"),
+        (3, "Thursday"),
+        (4, "Friday"),
+        (5, "Saturday"),
+        (6, "Sunday"),
     ]
 
-    timings = StoreTiming.objects.filter(store=store).order_by("id")
-    timing_map = {timing.day: timing for timing in timings}
+    timings = StoreTiming.objects.filter(store=store)
+
+    timing_map = {
+        timing.day: timing
+        for timing in timings
+    }
 
     timing_rows = []
 
-    for day in days:
-        timing = timing_map.get(day)
+    for day_number, day_name in days:
+        timing = timing_map.get(day_number)
 
         timing_rows.append({
-            "day": day,
+            "day": day_name,
+            "day_number": day_number,
             "open_time": (
                 timing.open_time.strftime("%H:%M")
-                if timing and timing.open_time
+                if timing
                 else "10:00"
             ),
             "close_time": (
                 timing.close_time.strftime("%H:%M")
-                if timing and timing.close_time
+                if timing
                 else "21:00"
             ),
-            "is_closed": timing.is_closed if timing else False,
+            "is_closed": (
+                timing.is_closed
+                if timing
+                else False
+            ),
         })
 
     return render(
