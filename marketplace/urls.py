@@ -403,6 +403,12 @@ urlpatterns = [
         views.partner_products,
         name="partner_products",
     ),
+
+    path(
+        "partner/products/add/",
+        views.partner_product_add,
+        name="partner_product_add",
+    ),
 ]
 
 

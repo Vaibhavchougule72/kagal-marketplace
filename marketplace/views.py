@@ -10496,3 +10496,62 @@ def partner_products(request):
             "show_floating_cart": False,
         }
     )
+
+@login_required
+def partner_product_add(request):
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        category_id = request.POST.get("category")
+        price = request.POST.get("price") or 0
+        discount_price = request.POST.get("discount_price") or None
+        description = request.POST.get("description", "").strip()
+
+        category = get_object_or_404(
+            Category,
+            id=category_id
+        )
+
+        product = Product(
+            name=name,
+            store=store,
+            category=category,
+            price=price,
+            discount_price=discount_price,
+            description=description,
+
+            is_active=request.POST.get("is_active") == "on",
+            is_featured=request.POST.get("is_featured") == "on",
+            is_hero=request.POST.get("is_hero") == "on",
+            upi_only=request.POST.get("upi_only") == "on",
+
+            unavailable_10_12=request.POST.get("unavailable_10_12") == "on",
+            unavailable_12_3=request.POST.get("unavailable_12_3") == "on",
+            unavailable_3_630=request.POST.get("unavailable_3_630") == "on",
+            unavailable_630_9=request.POST.get("unavailable_630_9") == "on",
+        )
+
+        if request.FILES.get("image"):
+            product.image = request.FILES["image"]
+
+        product.save()
+
+        return redirect("partner_products")
+
+    categories = Category.objects.all().order_by("name")
+
+    return render(
+        request,
+        "partner_product_add.html",
+        {
+            "store": store,
+            "categories": categories,
+        }
+    )

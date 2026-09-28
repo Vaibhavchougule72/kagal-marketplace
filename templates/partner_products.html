@@ -330,6 +330,37 @@
             color: #777;
         }
 
+        /* ADD PRODUCT */
+
+        .add-product-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 100%;
+            min-height: 46px;
+
+            margin-top: 14px;
+
+            background: #227D57;
+            color: white;
+
+            border: none;
+            border-radius: 11px;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            text-decoration: none;
+            cursor: pointer;
+
+            box-shadow: 0 4px 12px rgba(34, 125, 87, 0.20);
+        }
+
+        .add-product-btn:active {
+            transform: scale(0.98);
+        }
+
         /* MOBILE */
 
         @media (max-width: 600px) {
@@ -393,9 +424,12 @@
             Products
         </h1>
 
-        <p>
-            Manage products available in your store.
-        </p>
+        <a
+            href="{% url 'partner_product_add' %}"
+            class="add-product-btn"
+        >
+            ＋ Add New Product
+        </a>
 
     </div>
 
