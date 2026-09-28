@@ -10643,3 +10643,26 @@ def partner_product_add(request):
             "categories": categories,
         }
     )
+
+@login_required
+def partner_product_delete(request, product_id):
+    profile = getattr(request.user, "store_partner_profile", None)
+
+    if not profile or not profile.is_active:
+        logout(request)
+        return redirect("partner_login")
+
+    store = profile.store
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        store=store
+    )
+
+    if request.method != "POST":
+        return redirect("partner_products")
+
+    product.delete()
+
+    return redirect("partner_products")

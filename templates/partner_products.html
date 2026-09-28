@@ -361,6 +361,30 @@
             transform: scale(0.98);
         }
 
+        .delete-product-btn {
+            width: 100%;
+            min-height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            background: #fff1f1;
+            color: #d93025;
+            border: 1px solid #f2b8b5;
+        }
+
+        .delete-product-btn:active {
+            transform: scale(0.98);
+        }
+
         /* MOBILE */
 
         @media (max-width: 600px) {
@@ -615,6 +639,21 @@
 
                         </form>
 
+                        <form
+                            method="POST"
+                            action="{% url 'partner_product_delete' product.id %}"
+                            class="delete-product-form"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="delete-product-btn"
+                            >
+                                🗑️ Delete Product
+                            </button>
+                        </form>
+
 
                     </div>
 
@@ -775,6 +814,74 @@ document.addEventListener("DOMContentLoaded", function () {
             currentStatus = tab.dataset.status;
 
             filterAndSortProducts();
+        });
+
+    });
+
+    document.querySelectorAll(".delete-product-form").forEach(function (form) {
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const productCard = form.closest(".product-card");
+
+            const productName =
+                productCard.querySelector(".product-name").textContent.trim();
+
+            const confirmed = confirm(
+                "Are you sure you want to delete \"" +
+                productName +
+                "\"?\n\nThis action cannot be undone."
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            const scrollPosition = window.scrollY;
+            const button = form.querySelector(".delete-product-btn");
+
+            button.disabled = true;
+            button.textContent = "Deleting...";
+
+            try {
+                const response = await fetch(
+                    form.action,
+                    {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+                        body: new FormData(form)
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Delete failed");
+                }
+
+                productCard.remove();
+
+                updateTabCounts();
+                filterAndSortProducts();
+
+                window.scrollTo(0, scrollPosition);
+
+            } catch (error) {
+
+                console.error(
+                    "Product delete error:",
+                    error
+                );
+
+                button.disabled = false;
+                button.textContent = "🗑️ Delete Product";
+
+                alert(
+                    "Unable to delete the product. Please try again."
+                );
+            }
+
         });
 
     });

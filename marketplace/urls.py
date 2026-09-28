@@ -409,6 +409,11 @@ urlpatterns = [
         views.partner_product_add,
         name="partner_product_add",
     ),
+    path(
+        "partner/products/<int:product_id>/delete/",
+        views.partner_product_delete,
+        name="partner_product_delete",
+    ),
 ]
 
 
