@@ -27,27 +27,64 @@
             color: #222;
         }
 
-        .header {
-            background: #227D57;
+        /* ============================= */
+        /* STICKY NAV */
+        /* ============================= */
+
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            background: linear-gradient(135deg, #227D57 0%, #175f42 100%);
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 12px 16px;
+        }
+
+        .nav-back {
+            width: 32px;
+            height: 32px;
+
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.14);
+            border: 0.5px solid rgba(255, 255, 255, 0.26);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             color: white;
-            padding: 20px;
+            text-decoration: none;
+
+            font-size: 18px;
+            line-height: 1;
+
+            flex-shrink: 0;
+
+            transition: transform 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .header-content {
-            max-width: 700px;
-            margin: auto;
+        .nav-back:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.26);
         }
 
-        .brand {
-            font-size: 13px;
-            opacity: 0.85;
+        .nav-title {
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
         }
 
-        .store-name {
-            font-size: 22px;
-            font-weight: 800;
-            margin-top: 5px;
-        }
+
+        /* ============================= */
+        /* CONTAINER */
+        /* ============================= */
 
         .container {
             max-width: 700px;
@@ -58,7 +95,7 @@
         .card {
             background: white;
             border-radius: 16px;
-            padding: 20px;
+            padding: 18px;
 
             box-shadow:
                 0 4px 15px rgba(
@@ -70,20 +107,20 @@
         }
 
         .title {
-            font-size: 22px;
+            font-size: 19px;
             font-weight: 800;
-            margin-bottom: 22px;
+            margin-bottom: 18px;
         }
 
         .field {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
             font-size: 13px;
             font-weight: 700;
-            margin-bottom: 7px;
+            margin-bottom: 6px;
             color: #444;
         }
 
@@ -91,7 +128,7 @@
         textarea,
         select {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
 
             border: 1px solid #d8dedb;
             border-radius: 10px;
@@ -109,21 +146,21 @@
         }
 
         textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
         .current-image {
             width: 100%;
             max-width: 300px;
-            height: 180px;
+            height: 160px;
 
             border-radius: 12px;
             overflow: hidden;
 
             background: #f1f3f2;
 
-            margin-bottom: 12px;
+            margin-bottom: 10px;
 
             border: 1px solid #d8dedb;
         }
@@ -135,7 +172,7 @@
         }
 
         .image-help {
-            margin-top: 7px;
+            margin-top: 6px;
             font-size: 12px;
             color: #777;
         }
@@ -146,7 +183,7 @@
 
             gap: 10px;
 
-            margin-top: 25px;
+            margin-top: 20px;
         }
 
         .btn {
@@ -182,11 +219,15 @@
         @media (max-width: 600px) {
 
             .container {
-                padding: 15px;
+                padding: 14px;
             }
 
             .card {
-                padding: 16px;
+                padding: 15px;
+            }
+
+            .field {
+                margin-bottom: 13px;
             }
 
             .buttons {
@@ -203,21 +244,25 @@
 <body>
 
 
-<header class="header">
+<!-- ================================= -->
+<!-- STICKY NAV -->
+<!-- ================================= -->
 
-    <div class="header-content">
+<div class="nav">
 
-        <div class="brand">
-            LOKA PARTNER
-        </div>
+    <a
+        href="{% url 'partner_dashboard' %}"
+        class="nav-back"
+        aria-label="Back"
+    >
+        &#8249;
+    </a>
 
-        <div class="store-name">
-            {{ store.name }}
-        </div>
+    <span class="nav-title">
+        Store Details
+    </span>
 
-    </div>
-
-</header>
+</div>
 
 
 <main class="container">

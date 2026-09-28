@@ -27,46 +27,68 @@
             color: #222;
         }
 
-        /* HEADER */
+        /* ============================= */
+        /* STICKY NAV */
+        /* ============================= */
 
-        .header {
-            background: #227D57;
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            background: linear-gradient(135deg, #227D57 0%, #175f42 100%);
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 12px 16px;
+        }
+
+        .nav-back {
+            width: 32px;
+            height: 32px;
+
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.14);
+            border: 0.5px solid rgba(255, 255, 255, 0.26);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             color: white;
-            padding: 20px;
+            text-decoration: none;
+
+            font-size: 18px;
+            line-height: 1;
+
+            flex-shrink: 0;
+
+            transition: transform 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .header-content {
-            max-width: 900px;
-            margin: auto;
+        .nav-back:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.26);
         }
 
-        .brand {
-            font-size: 14px;
-            opacity: 0.85;
+        .nav-title {
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
         }
 
-        .store-name {
-            font-size: 24px;
-            font-weight: 800;
-            margin-top: 5px;
-        }
-
+        /* ============================= */
         /* CONTAINER */
+        /* ============================= */
 
         .container {
             max-width: 900px;
             margin: auto;
             padding: 20px;
-        }
-
-        /* BACK */
-
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #227D57;
-            text-decoration: none;
-            font-weight: 700;
         }
 
         /* TITLE */
@@ -86,13 +108,13 @@
             font-size: 14px;
         }
 
-        /* SEARCH & FILTERS */
+        /* SEARCH & SORT */
 
         .product-controls {
             background: white;
             padding: 15px;
             border-radius: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
@@ -110,9 +132,6 @@
         }
 
         .filter-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
             margin-top: 10px;
         }
 
@@ -126,10 +145,47 @@
             cursor: pointer;
         }
 
-        @media (max-width: 600px) {
-            .filter-row {
-                grid-template-columns: 1fr;
-            }
+        /* STATUS TABS */
+
+        .status-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .status-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .status-tab {
+            flex: 1;
+            min-width: 100px;
+
+            text-align: center;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            padding: 11px 8px;
+
+            border-radius: 12px;
+
+            background: white;
+            color: #777;
+
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+
+            cursor: pointer;
+            user-select: none;
+
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .status-tab.active {
+            background: #227D57;
+            color: white;
         }
 
         /* PRODUCTS */
@@ -282,8 +338,10 @@
                 padding: 15px;
             }
 
-            .store-name {
-                font-size: 21px;
+            .status-tab {
+                min-width: 84px;
+                font-size: 12px;
+                padding: 10px 6px;
             }
 
             .product-main {
@@ -305,32 +363,28 @@
 <body>
 
 
-<header class="header">
+<!-- ================================= -->
+<!-- STICKY NAV -->
+<!-- ================================= -->
 
-    <div class="header-content">
-
-        <div class="brand">
-            LOKA PARTNER
-        </div>
-
-        <div class="store-name">
-            {{ store.name }}
-        </div>
-
-    </div>
-
-</header>
-
-
-<main class="container">
-
+<div class="nav">
 
     <a
         href="{% url 'partner_dashboard' %}"
-        class="back-btn"
+        class="nav-back"
+        aria-label="Back"
     >
-        ← Back to Dashboard
+        &#8249;
     </a>
+
+    <span class="nav-title">
+        Products
+    </span>
+
+</div>
+
+
+<main class="container">
 
 
     <div class="page-title">
@@ -343,32 +397,49 @@
             Manage products available in your store.
         </p>
 
-        <div class="product-controls">
+    </div>
 
-            <input
-                type="text"
-                id="productSearch"
-                class="search-box"
-                placeholder="🔍 Search products..."
-            >
 
-            <div class="filter-row">
+    <div class="product-controls">
 
-                <select id="statusFilter" class="filter-select">
-                    <option value="all">All Products</option>
-                    <option value="available">Available</option>
-                    <option value="unavailable">Temporarily Unavailable</option>
-                    <option value="inactive">Inactive</option>
-                </select>
+        <input
+            type="text"
+            id="productSearch"
+            class="search-box"
+            placeholder="🔍 Search products..."
+        >
 
-                <select id="sortFilter" class="filter-select">
-                    <option value="default">Sort: Default</option>
-                    <option value="az">A → Z</option>
-                    <option value="za">Z → A</option>
-                </select>
+        <div class="filter-row">
 
-            </div>
+            <select id="sortFilter" class="filter-select">
+                <option value="default">Sort: Default</option>
+                <option value="az">A → Z</option>
+                <option value="za">Z → A</option>
+            </select>
 
+        </div>
+
+    </div>
+
+
+    <!-- STATUS-FIRST TABS -->
+
+    <div class="status-tabs" id="statusTabs">
+
+        <div class="status-tab active" data-status="all">
+            All
+        </div>
+
+        <div class="status-tab" data-status="available">
+            Available
+        </div>
+
+        <div class="status-tab" data-status="unavailable">
+            Unavailable
+        </div>
+
+        <div class="status-tab" data-status="inactive">
+            Inactive
         </div>
 
     </div>
@@ -537,12 +608,14 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const searchInput = document.getElementById("productSearch");
-    const statusFilter = document.getElementById("statusFilter");
     const sortFilter = document.getElementById("sortFilter");
+    const statusTabs = document.getElementById("statusTabs");
 
     const productsList = document.querySelector(".products-list");
 
     if (!productsList) return;
+
+    let currentStatus = "all";
 
     function getProductStatus(card) {
         if (card.dataset.inactive === "true") {
@@ -556,13 +629,38 @@ document.addEventListener("DOMContentLoaded", function () {
         return "available";
     }
 
+    function updateTabCounts() {
+
+        const cards = Array.from(
+            productsList.querySelectorAll(".product-card")
+        );
+
+        const counts = {
+            all: cards.length,
+            available: 0,
+            unavailable: 0,
+            inactive: 0
+        };
+
+        cards.forEach(function (card) {
+            counts[getProductStatus(card)] += 1;
+        });
+
+        statusTabs.querySelectorAll(".status-tab").forEach(function (tab) {
+
+            const status = tab.dataset.status;
+            const label = tab.dataset.label || tab.textContent.trim();
+
+            tab.dataset.label = label;
+
+            tab.textContent = label + " (" + counts[status] + ")";
+        });
+    }
+
     function filterAndSortProducts() {
 
         const searchText =
             searchInput.value.trim().toLowerCase();
-
-        const selectedStatus =
-            statusFilter.value;
 
         const selectedSort =
             sortFilter.value;
@@ -584,8 +682,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 productName.includes(searchText);
 
             const matchesStatus =
-                selectedStatus === "all" ||
-                selectedStatus === status;
+                currentStatus === "all" ||
+                currentStatus === status;
 
             card.style.display =
                 matchesSearch && matchesStatus
@@ -625,15 +723,27 @@ document.addEventListener("DOMContentLoaded", function () {
         filterAndSortProducts
     );
 
-    statusFilter.addEventListener(
-        "change",
-        filterAndSortProducts
-    );
-
     sortFilter.addEventListener(
         "change",
         filterAndSortProducts
     );
+
+    statusTabs.querySelectorAll(".status-tab").forEach(function (tab) {
+
+        tab.addEventListener("click", function () {
+
+            statusTabs.querySelectorAll(".status-tab").forEach(function (t) {
+                t.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+
+            currentStatus = tab.dataset.status;
+
+            filterAndSortProducts();
+        });
+
+    });
 
     document.querySelectorAll(".availability-form").forEach(function (form) {
 
@@ -708,9 +818,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 button.disabled = false;
 
                 /*
-                * Re-apply the current search/filter
-                * without changing the scroll position.
+                * Re-apply the current search/sort/tab filter
+                * and refresh the tab counts, without moving
+                * the scroll position.
                 */
+                updateTabCounts();
                 filterAndSortProducts();
 
                 window.scrollTo(
@@ -737,6 +849,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
+    updateTabCounts();
 
 });
 </script>

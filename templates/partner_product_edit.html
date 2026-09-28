@@ -25,27 +25,63 @@
             color: #222;
         }
 
-        .header {
-            background: #227D57;
+        /* ============================= */
+        /* STICKY NAV */
+        /* ============================= */
+
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            background: linear-gradient(135deg, #227D57 0%, #175f42 100%);
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 12px 16px;
+        }
+
+        .nav-back {
+            width: 32px;
+            height: 32px;
+
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.14);
+            border: 0.5px solid rgba(255, 255, 255, 0.26);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             color: white;
-            padding: 20px;
+            text-decoration: none;
+
+            font-size: 18px;
+            line-height: 1;
+
+            flex-shrink: 0;
+
+            transition: transform 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .header-content {
-            max-width: 700px;
-            margin: auto;
+        .nav-back:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.26);
         }
 
-        .brand {
-            font-size: 13px;
-            opacity: 0.85;
+        .nav-title {
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
         }
 
-        .store-name {
-            font-size: 22px;
-            font-weight: 800;
-            margin-top: 5px;
-        }
+        /* ============================= */
+        /* CONTAINER */
+        /* ============================= */
 
         .container {
             max-width: 700px;
@@ -56,7 +92,7 @@
         .card {
             background: white;
             border-radius: 16px;
-            padding: 20px;
+            padding: 18px;
 
             box-shadow:
                 0 4px 15px rgba(
@@ -68,37 +104,50 @@
         }
 
         .title {
-            font-size: 22px;
+            font-size: 19px;
             font-weight: 800;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .field {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
         label {
             display: block;
             font-size: 13px;
             font-weight: 700;
-            margin-bottom: 7px;
+            margin-bottom: 6px;
             color: #444;
         }
 
         input,
         textarea {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
 
             border: 1px solid #d8dedb;
             border-radius: 10px;
 
             font-size: 14px;
             outline: none;
+
+            background: white;
+        }
+
+        input:disabled {
+            background: #f1f3f2;
+            color: #888;
         }
 
         textarea {
-            min-height: 110px;
+            min-height: 100px;
             resize: vertical;
         }
 
@@ -110,8 +159,8 @@
         .checkbox-group {
             background: #f7f9f8;
             border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 18px;
+            padding: 14px;
+            margin-bottom: 15px;
         }
 
         .checkbox-title {
@@ -200,11 +249,19 @@
         @media (max-width: 600px) {
 
             .container {
-                padding: 15px;
+                padding: 14px;
             }
 
             .card {
-                padding: 16px;
+                padding: 15px;
+            }
+
+            .field {
+                margin-bottom: 13px;
+            }
+
+            .field-row {
+                gap: 10px;
             }
 
             .buttons {
@@ -220,21 +277,26 @@
 
 <body>
 
-<header class="header">
 
-    <div class="header-content">
+<!-- ================================= -->
+<!-- STICKY NAV -->
+<!-- ================================= -->
 
-        <div class="brand">
-            LOKA PARTNER
-        </div>
+<div class="nav">
 
-        <div class="store-name">
-            {{ store.name }}
-        </div>
+    <a
+        href="{% url 'partner_dashboard' %}"
+        class="nav-back"
+        aria-label="Back"
+    >
+        &#8249;
+    </a>
 
-    </div>
+    <span class="nav-title">
+        Edit Product
+    </span>
 
-</header>
+</div>
 
 
 <main class="container">
@@ -289,41 +351,43 @@
             </div>
 
 
-            <!-- PRICE -->
+            <!-- PRICE + DISCOUNT PRICE -->
 
-            <div class="field">
+            <div class="field-row">
 
-                <label>
-                    Price
-                </label>
+                <div class="field">
 
-                <input
-                    type="number"
-                    name="price"
-                    value="{{ product.price }}"
-                    min="0"
-                    step="0.01"
-                    required
-                >
+                    <label>
+                        Price
+                    </label>
 
-            </div>
+                    <input
+                        type="number"
+                        name="price"
+                        value="{{ product.price }}"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
 
 
-            <!-- DISCOUNT PRICE -->
+                <div class="field">
 
-            <div class="field">
+                    <label>
+                        Discount Price
+                    </label>
 
-                <label>
-                    Discount Price
-                </label>
+                    <input
+                        type="number"
+                        name="discount_price"
+                        value="{{ product.discount_price|default:'' }}"
+                        min="0"
+                        step="0.01"
+                    >
 
-                <input
-                    type="number"
-                    name="discount_price"
-                    value="{{ product.discount_price|default:'' }}"
-                    min="0"
-                    step="0.01"
-                >
+                </div>
 
             </div>
 
@@ -341,6 +405,7 @@
                 >{{ product.description }}</textarea>
 
             </div>
+
 
             <!-- PRODUCT IMAGE -->
 
