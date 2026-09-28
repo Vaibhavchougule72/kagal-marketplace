@@ -10665,4 +10665,6 @@ def partner_product_delete(request, product_id):
 
     product.delete()
 
-    return redirect("partner_products")
+    return JsonResponse({
+        "success": True
+    })
