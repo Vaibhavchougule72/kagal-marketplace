@@ -216,6 +216,84 @@
             border: none;
         }
 
+        /* STORE TIMINGS */
+
+        .timings-section {
+            margin-top: 28px;
+            padding: 22px;
+            background: #f8faf9;
+            border: 1px solid #e2e8e5;
+            border-radius: 14px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #173f2b;
+            margin-bottom: 5px;
+        }
+
+        .timing-help {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 18px;
+        }
+
+        .timing-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 90px;
+            align-items: center;
+            gap: 18px;
+            padding: 14px 0;
+            border-bottom: 1px solid #e5e9e7;
+        }
+
+        .timing-row:last-child {
+            border-bottom: none;
+        }
+
+        .timing-day {
+            font-weight: 600;
+            color: #26352d;
+        }
+
+        .timing-fields {
+            display: flex;
+            gap: 14px;
+        }
+
+        .timing-field {
+            flex: 1;
+        }
+
+        .timing-field label {
+            display: block;
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .timing-field input[type="time"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .closed-check {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .closed-check input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+
         @media (max-width: 600px) {
 
             .container {
@@ -232,6 +310,23 @@
 
             .buttons {
                 grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .timing-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .timing-fields {
+                gap: 10px;
+            }
+
+            .closed-check {
+                margin-top: 2px;
             }
 
         }
@@ -383,6 +478,60 @@
                     name="image"
                     accept="image/*"
                 >
+
+            </div>
+
+            <!-- STORE TIMINGS -->
+            <div class="timings-section">
+
+                <div class="section-title">
+                    🕒 Store Timings
+                </div>
+
+                <div class="timing-help">
+                    Set the opening and closing time for each day.
+                </div>
+
+                {% for row in timing_rows %}
+                <div class="timing-row">
+
+                    <div class="timing-day">
+                        {{ row.day }}
+                    </div>
+
+                    <div class="timing-fields">
+
+                        <div class="timing-field">
+                            <label>Opening</label>
+                            <input
+                                type="time"
+                                name="open_time_{{ row.day }}"
+                                value="{{ row.open_time }}"
+                            >
+                        </div>
+
+                        <div class="timing-field">
+                            <label>Closing</label>
+                            <input
+                                type="time"
+                                name="close_time_{{ row.day }}"
+                                value="{{ row.close_time }}"
+                            >
+                        </div>
+
+                    </div>
+
+                    <label class="closed-check">
+                        <input
+                            type="checkbox"
+                            name="closed_{{ row.day }}"
+                            {% if row.is_closed %}checked{% endif %}
+                        >
+                        <span>Closed</span>
+                    </label>
+
+                </div>
+                {% endfor %}
 
             </div>
 

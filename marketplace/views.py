@@ -14,7 +14,7 @@ from django.contrib import messages
 from .models import Category, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead, Expense
 from .cart import Cart
 from django.contrib.auth.models import User
-from .models import Bundle
+from .models import Bundle, StoreTiming
 from django.db.models import Count
 from django.db.models import Sum
 from django.db.models import F
@@ -10259,11 +10259,12 @@ def partner_store_details(request):
 
     if request.method == "POST":
 
+        # -----------------------------
+        # STORE DETAILS
+        # -----------------------------
+
         store.name = request.POST.get("name", "").strip()
-        store.description = request.POST.get(
-            "description",
-            ""
-        ).strip()
+        store.description = request.POST.get("description", "").strip()
 
         category_id = request.POST.get("category")
 
@@ -10279,9 +10280,88 @@ def partner_store_details(request):
 
         store.save()
 
-        return redirect("partner_dashboard")
+        # -----------------------------
+        # STORE TIMINGS
+        # -----------------------------
+
+        days = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
+
+        for day in days:
+
+            is_closed = request.POST.get(
+                f"closed_{day}"
+            ) == "on"
+
+            open_time = request.POST.get(
+                f"open_time_{day}"
+            )
+
+            close_time = request.POST.get(
+                f"close_time_{day}"
+            )
+
+            timing, created = StoreTiming.objects.get_or_create(
+                store=store,
+                day=day,
+                defaults={
+                    "open_time": open_time or "10:00",
+                    "close_time": close_time or "21:00",
+                    "is_closed": is_closed,
+                },
+            )
+
+            if not created:
+                timing.open_time = open_time or timing.open_time
+                timing.close_time = close_time or timing.close_time
+                timing.is_closed = is_closed
+                timing.save(
+                    update_fields=[
+                        "open_time",
+                        "close_time",
+                        "is_closed",
+                    ]
+                )
+
+        return redirect("partner_store_details")
 
     categories = Category.objects.all().order_by("name")
+
+    timings = StoreTiming.objects.filter(
+        store=store
+    ).order_by("id")
+
+    timing_map = {
+        timing.day: timing
+        for timing in timings
+    }
+
+    timing_rows = []
+
+    for day in days:
+        timing = timing_map.get(day)
+
+        timing_rows.append({
+            "day": day,
+            "open_time": (
+                timing.open_time.strftime("%H:%M")
+                if timing and timing.open_time
+                else "10:00"
+            ),
+            "close_time": (
+                timing.close_time.strftime("%H:%M")
+                if timing and timing.close_time
+                else "21:00"
+            ),
+            "is_closed": timing.is_closed if timing else False,
+        })
 
     return render(
         request,
@@ -10289,9 +10369,11 @@ def partner_store_details(request):
         {
             "store": store,
             "categories": categories,
-        }
+            "timing_map": timing_map,
+            "days": days,
+            "timing_rows": timing_rows,
+        },
     )
-
 
 @login_required
 def partner_toggle_store_status(request):
