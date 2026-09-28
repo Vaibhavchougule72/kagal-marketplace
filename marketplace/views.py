@@ -10334,14 +10334,18 @@ def partner_store_details(request):
 
     categories = Category.objects.all().order_by("name")
 
-    timings = StoreTiming.objects.filter(
-        store=store
-    ).order_by("id")
+    days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
 
-    timing_map = {
-        timing.day: timing
-        for timing in timings
-    }
+    timings = StoreTiming.objects.filter(store=store).order_by("id")
+    timing_map = {timing.day: timing for timing in timings}
 
     timing_rows = []
 
