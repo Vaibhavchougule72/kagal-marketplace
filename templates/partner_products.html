@@ -831,6 +831,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            const productName =
+                productCard.querySelector(".product-name").textContent.trim();
+
+            // Confirmation popup
+            const confirmed = window.confirm(
+                'Are you sure you want to delete "' +
+                productName +
+                '"?\n\nThis action cannot be undone.'
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
             const scrollPosition = window.scrollY;
 
             button.disabled = true;
@@ -864,7 +878,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 button.disabled = false;
                 button.textContent = "🗑️ Delete Product";
 
-                alert("Unable to delete the product. Please try again.");
+                window.alert(
+                    "Unable to delete the product. Please try again."
+                );
             }
 
         });
