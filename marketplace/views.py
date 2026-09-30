@@ -9997,7 +9997,8 @@ def partner_order_action(request, order_id):
 
     if action not in [
         "ACCEPT",
-        "REJECT"
+        "REJECT",
+        "IN_PROGRESS"
     ]:
         return JsonResponse(
             {
@@ -10068,6 +10069,38 @@ def partner_order_action(request, order_id):
             )
 
             # Stay on the same order-detail page.
+            return redirect(
+                "partner_order_detail",
+                order_id=order.id
+            )
+
+        # ----------------------------------------------------
+        # IN PROGRESS
+        # ----------------------------------------------------
+
+        if action == "IN_PROGRESS":
+
+            # Order must already be accepted
+            if order.status != "ACCEPTED":
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Order must be accepted "
+                            "before starting preparation."
+                        ),
+                        "status": order.status
+                    },
+                    status=409
+                )
+
+            order.status = "PICKED_UP"
+
+            # Order.save() will automatically set picked_at
+            # and send the existing customer notification.
+            order.save()
+
             return redirect(
                 "partner_order_detail",
                 order_id=order.id

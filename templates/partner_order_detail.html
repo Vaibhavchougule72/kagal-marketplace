@@ -352,7 +352,15 @@
 
     <div class="status-box">
 
-        {{ order.get_status_display }}
+        {% if order.status == "PICKED_UP" %}
+
+            In Progress
+
+        {% else %}
+
+            {{ order.get_status_display }}
+
+        {% endif %}
 
     </div>
 
@@ -452,6 +460,8 @@
 
         <div class="actions">
 
+            <!-- ACCEPT ORDER -->
+
             <form
                 method="POST"
                 action="{% url 'partner_order_action' order.id %}"
@@ -474,6 +484,8 @@
 
             </form>
 
+
+            <!-- REJECT ORDER -->
 
             <form
                 method="POST"
@@ -498,6 +510,42 @@
             </form>
 
         </div>
+
+
+    {% elif order.status == "ACCEPTED" %}
+
+        <div class="actions">
+
+            <!-- START PREPARATION -->
+
+            <form
+                method="POST"
+                action="{% url 'partner_order_action' order.id %}"
+            >
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="IN_PROGRESS"
+                >
+
+                <button
+                    type="submit"
+                    class="action-btn accept"
+                >
+                    🍳 IN PROGRESS
+                </button>
+
+            </form>
+
+        </div>
+
+
+    {% elif order.status == "PICKED_UP" %}
+
+        <!-- ORDER IS ALREADY IN PROGRESS -->
 
     {% endif %}
 
