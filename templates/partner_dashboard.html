@@ -434,6 +434,30 @@
 
         }
 
+        /* Highlight order opened from notification */
+
+        .order.notification-highlight {
+            border: 3px solid #227D57;
+            background: #f0faf5;
+            box-shadow: 0 0 0 4px rgba(34, 125, 87, 0.15);
+            animation: lokaOrderPulse 1.5s ease-in-out 2;
+        }
+
+        @keyframes lokaOrderPulse {
+
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
     </style>
 
 </head>
@@ -652,7 +676,10 @@
 
         {% for order in recent_orders %}
 
-            <div class="order">
+            <div
+                class="order"
+                data-order-id="{{ order.id }}"
+            >
 
 
                 <div class="order-top">
@@ -714,6 +741,65 @@
 
 
 </main>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const orderId = window.LOKA_OPEN_ORDER_ID;
+
+    if (!orderId) {
+        return;
+    }
+
+    const orderCard = document.querySelector(
+        `.order[data-order-id="${orderId}"]`
+    );
+
+    if (!orderCard) {
+        console.log(
+            "LOKA order not found on dashboard:",
+            orderId
+        );
+        return;
+    }
+
+    // Highlight the order
+    orderCard.classList.add(
+        "notification-highlight"
+    );
+
+    // Add NEW ORDER label
+    const badge = document.createElement("div");
+
+    badge.textContent = "🔔 NEW ORDER";
+
+    badge.style.background = "#227D57";
+    badge.style.color = "white";
+    badge.style.fontSize = "12px";
+    badge.style.fontWeight = "700";
+    badge.style.padding = "6px 10px";
+    badge.style.borderRadius = "20px";
+    badge.style.display = "inline-block";
+    badge.style.marginBottom = "10px";
+
+    orderCard.insertBefore(
+        badge,
+        orderCard.firstChild
+    );
+
+    // Scroll the order into view
+    setTimeout(function () {
+
+        orderCard.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+    }, 300);
+
+});
+</script>
 
 </body>
 
