@@ -10033,48 +10033,7 @@ def partner_order_action(request, order_id):
                 status=404
             )
 
-        # ----------------------------------------------------
-        # ORDER MUST STILL BE PENDING
-        # ----------------------------------------------------
-
-        if order.status != "REQUEST_SUBMITTED":
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        "This order has already been "
-                        "processed."
-                    ),
-                    "status": order.status
-                },
-                status=409
-            )
-
-        # ----------------------------------------------------
-        # ACCEPT
-        # ----------------------------------------------------
-
-        if action == "ACCEPT":
-
-            order.status = "ACCEPTED"
-
-            # Use normal save() so your existing Order.save()
-            # logic continues to run.
-            order.save()
-
-            # Tell Partner App to cancel remaining order alerts.
-            transaction.on_commit(
-                lambda: notify_partner_order_alert_cancelled(order)
-            )
-
-            # Stay on the same order-detail page.
-            return redirect(
-                "partner_order_detail",
-                order_id=order.id
-            )
-
-        # ----------------------------------------------------
+                # ----------------------------------------------------
         # IN PROGRESS
         # ----------------------------------------------------
 
@@ -10098,13 +10057,56 @@ def partner_order_action(request, order_id):
             order.status = "PICKED_UP"
 
             # Order.save() will automatically set picked_at
-            # and send the existing customer notification.
+            # and run the existing customer notification logic.
             order.save()
 
             return redirect(
                 "partner_order_detail",
                 order_id=order.id
             )
+
+
+        # ----------------------------------------------------
+        # ACCEPT / REJECT MUST STILL BE PENDING
+        # ----------------------------------------------------
+
+        if order.status != "REQUEST_SUBMITTED":
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "This order has already been "
+                        "processed."
+                    ),
+                    "status": order.status
+                },
+                status=409
+            )
+
+
+        # ----------------------------------------------------
+        # ACCEPT
+        # ----------------------------------------------------
+
+        if action == "ACCEPT":
+
+            order.status = "ACCEPTED"
+
+            # Use normal save() so your existing Order.save()
+            # logic continues to run.
+            order.save()
+
+            # Tell Partner App to cancel remaining order alerts.
+            transaction.on_commit(
+                lambda: notify_partner_order_alert_cancelled(order)
+            )
+
+            return redirect(
+                "partner_order_detail",
+                order_id=order.id
+            )
+
 
         # ----------------------------------------------------
         # REJECT
@@ -10121,7 +10123,6 @@ def partner_order_action(request, order_id):
                 lambda: notify_partner_order_alert_cancelled(order)
             )
 
-            # Stay on the same order-detail page.
             return redirect(
                 "partner_order_detail",
                 order_id=order.id
