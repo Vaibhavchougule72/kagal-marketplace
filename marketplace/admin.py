@@ -379,6 +379,7 @@ class OrderAdmin(admin.ModelAdmin):
                 "total",
                 "payment_method",
                 "payment_id",
+                "commission_percent",
             )
         }),
 
