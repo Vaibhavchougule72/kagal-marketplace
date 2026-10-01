@@ -1643,6 +1643,7 @@ def checkout(request):
 
                     order = Order.objects.create(
                         store=store,
+                        commission_percent=store.commission_percent,
                         customer_name=name,
                         phone=phone,
                         address=address,
@@ -1788,6 +1789,7 @@ def checkout(request):
                 # ALWAYS CREATE NEW PENDING ORDER
                 pending = PendingOrder.objects.create(
                     store_id=store_id,
+                    commission_percent=store.commission_percent,
 
                     customer_name=name,
                     phone=phone,
@@ -2072,6 +2074,7 @@ def razorpay_webhook(request):
             # -----------------------------------
             order = Order.objects.create(
                 store_id=pending.store_id,
+                commission_percent=pending.commission_percent,
                 customer_name=pending.customer_name,
                 phone=pending.phone,
                 address=pending.address,
@@ -2362,6 +2365,7 @@ logger = logging.getLogger(__name__)
 
                     order = Order.objects.create(
                         store_id=pending.store_id,
+                        commission_percent=pending.commission_percent,
                         customer_name=pending.customer_name,
                         phone=pending.phone,
                         address=pending.address,
@@ -4242,7 +4246,7 @@ def admin_dashboard(request):
         for order in delivered_orders:
 
             store_percent = (
-                order.store.commission_percent or 0
+                order.commission_percent or 0
             )
 
             commission = (
@@ -4651,13 +4655,45 @@ def store_dashboard(request):
                     (Decimal(original_price) - Decimal(customer_price)) * qty
                 )
 
-        commission_percent = (
-            Decimal(store.commission_percent) / Decimal(100)
+        platform_commission = Decimal("0")
+
+        for order in orders:
+
+            order_commission_percent = (
+                Decimal(order.commission_percent or 0)
+                / Decimal("100")
+            )
+
+            order_original_sales = Decimal("0")
+
+            for item in order.items.all():
+
+                qty = item.quantity
+
+                original_price = (
+                    item.original_price
+                    if item.original_price
+                    else item.price
+                )
+
+                order_original_sales += (
+                    Decimal(original_price) * qty
+                )
+
+            platform_commission += (
+                order_original_sales *
+                order_commission_percent
+            )
+
+        platform_earn = (
+            platform_commission - discount_sales
         )
 
-        platform_commission = (
-            original_sales * commission_percent
+        store_payout = (
+            original_sales - platform_commission
         )
+
+        loss = discount_sales
 
         platform_earn = (
             platform_commission - discount_sales
@@ -5681,7 +5717,7 @@ def income_expense_dashboard(request):
 
             total_commission += (
                 order.subtotal *
-                order.store.commission_percent
+                order.commission_percent
             ) / 100
 
     total_expense = sum(
@@ -5807,16 +5843,22 @@ def store_orders_dashboard(request):
         or 0
     )
 
-    commission_percent = 0
+    platform_fee = 0
+
+    for order in orders:
+
+        platform_fee += (
+            order.subtotal *
+            order.commission_percent
+        ) / 100
+
+    store_income = total_sales - platform_fee
+
+    commission_percent = None
 
     if selected_store:
-        commission_percent = (
-            selected_store.commission_percent
-        )
+        commission_percent = selected_store.commission_percent
 
-    platform_fee = (
-        total_sales * commission_percent
-    ) / 100 if commission_percent else 0
 
     store_income = total_sales - platform_fee
 
@@ -5936,19 +5978,21 @@ def store_orders_pdf(request):
         or 0
     )
 
-    commission_percent = 0
+    platform_fee = 0
 
-    if selected_store:
+    for order in orders:
 
-        commission_percent = (
-            selected_store.commission_percent
-        )
-
-    platform_fee = (
-        total_sales * commission_percent
-    ) / 100 if commission_percent else 0
+        platform_fee += (
+            order.subtotal *
+            order.commission_percent
+        ) / 100
 
     store_income = total_sales - platform_fee
+
+    commission_percent = None
+
+    if selected_store:
+        commission_percent = selected_store.commission_percent
 
     # =====================================
     # PDF SETUP
@@ -10548,13 +10592,22 @@ def partner_summary(request):
     # PLATFORM COMMISSION
     # -----------------------------
 
+    platform_commission = Decimal("0")
+
+    for order in orders:
+
+        order_commission = (
+            Decimal(order.commission_percent or 0)
+        )
+
+        platform_commission += (
+            Decimal(order.subtotal)
+            * order_commission
+        ) / Decimal("100")
+
     commission_percent = (
         store.commission_percent or Decimal("0")
     )
-
-    platform_commission = (
-        total_sales * commission_percent
-    ) / Decimal("100")
 
     # -----------------------------
     # STORE INCOME

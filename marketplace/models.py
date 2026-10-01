@@ -215,6 +215,13 @@ class Order(models.Model):
 
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
 
+    commission_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text="Commission percentage applicable when this order was placed"
+    )
+
     customer_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=10, db_index=True)
     address = models.TextField()
@@ -611,6 +618,13 @@ import uuid
 class PendingOrder(models.Model):
 
     store_id = models.IntegerField()
+
+    commission_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text="Commission percentage applicable when this pending order was created"
+    )
 
     customer_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=10, db_index=True)
