@@ -17,6 +17,8 @@ from django.http import HttpResponse
 from .models import Order
 from .models import Complaint, ComplaintPhoto
 
+from django.contrib.auth.models import User
+
 def download_customer_csv(modeladmin, request, queryset):
 
     response = HttpResponse(
@@ -400,6 +402,20 @@ class OrderAdmin(admin.ModelAdmin):
 
         
     )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+
+        if db_field.name == "assigned_delivery":
+            kwargs["queryset"] = User.objects.filter(
+                deliverypartnerprofile__isnull=False,
+                deliverypartnerprofile__is_active=True
+            ).distinct()
+
+        return super().formfield_for_foreignkey(
+            db_field,
+            request,
+            **kwargs
+        )
 
     # 🔥 CRITICAL DEBUG PART
     def get_queryset(self, request):
