@@ -673,8 +673,6 @@ class BundleAdmin(admin.ModelAdmin):
     inlines = [BundleItemInline]
 from .models import Coupon
 
-admin.site.register(Coupon)
-
 from .models import DeliveryPartnerProfile
 
 admin.site.register(DeliveryPartnerProfile)
