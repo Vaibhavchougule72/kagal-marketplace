@@ -11094,7 +11094,7 @@ def customer_coupons(request):
             "customer": customer,
             "coupon_data": coupon_data,
             "show_navbar": False,
-            "simple_navbar": True,
+            "simple_navbar": False,
             "show_floating_cart": False,
         }
     )
