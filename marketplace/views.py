@@ -143,7 +143,7 @@ def get_cart_details(cart):
             product = products.get(int(item_id))
             if not product:
                 continue
-            price = product.discount_price or product.price
+            price = product.customer_price
 
         else:
             bundle_id = int(item_id.split("_")[1])
@@ -889,7 +889,9 @@ def view_cart(request):
                     continue
 
                 original_price = product.price
-                final_price = product.discount_price or product.price
+                store_price = product.effective_store_price
+                loka_extra = product.loka_extra
+                final_price = product.customer_price
 
                 line_total = final_price * qty
                 subtotal += line_total
@@ -905,7 +907,15 @@ def view_cart(request):
                     "product": product,
                     "name": product.name,
                     "quantity": qty,
+
+                    # Customer-facing price
                     "price": final_price,
+                    "customer_price": final_price,
+
+                    # Internal pricing information
+                    "store_price": store_price,
+                    "loka_extra": loka_extra,
+
                     "subtotal": line_total
                 })
 
@@ -1164,13 +1174,19 @@ def checkout(request):
             if not product:
                 continue
 
-            final_price = product.discount_price or product.price
+            store_price = product.effective_store_price
+            loka_extra = product.loka_extra
+            customer_price = product.customer_price
 
             items.append({
                 "name": product.name,
-                "price": final_price,
+                "price": customer_price,
+                "store_price": store_price,
+                "loka_extra": loka_extra,
+                "original_price": product.price,
+                "discount_amount": product.price - store_price,
                 "quantity": qty,
-                "subtotal": final_price * qty
+                "subtotal": customer_price * qty,
             })
 
         # BUNDLE
@@ -1515,55 +1531,156 @@ def checkout(request):
                 try:
 
                     coupon = Coupon.objects.get(
-                        code=coupon_code.strip(),
+                        code=coupon_code.strip().upper(),
                         is_active=True
                     )
+
+                    # -----------------------------------
+                    # CUSTOMER-SPECIFIC COUPON CHECK
+                    # -----------------------------------
+
+                    if coupon.customer:
+
+                        if coupon.customer.phone != phone:
+
+                            context["error"] = (
+                                "This coupon is not available for your account."
+                            )
+
+                            return render(
+                                request,
+                                "checkout.html",
+                                context
+                            )
+
+                    # -----------------------------------
+                    # COUPON USAGE LIMIT
+                    # -----------------------------------
 
                     if coupon.used_count >= coupon.usage_limit:
 
                         context["error"] = "Coupon fully used"
 
-                        return render(request, "checkout.html", context)
+                        return render(
+                            request,
+                            "checkout.html",
+                            context
+                        )
+
+                    # -----------------------------------
+                    # CHECK IF CUSTOMER ALREADY USED IT
+                    # -----------------------------------
 
                     already_used = CouponUsage.objects.filter(
                         coupon=coupon,
                         phone=phone
                     ).exists()
 
-                    # APPLY DISCOUNT IMMEDIATELY
+                    if already_used:
 
-                    if coupon.discount_type == "PERCENTAGE":
+                        context["error"] = "Coupon already used"
+
+                        return render(
+                            request,
+                            "checkout.html",
+                            context
+                        )
+
+                    # -----------------------------------
+                    # MINIMUM ORDER VALUE
+                    # -----------------------------------
+
+                    if subtotal < coupon.min_order_value:
+
+                        context["error"] = (
+                            f"Minimum order ₹{coupon.min_order_value} "
+                            "required for this coupon."
+                        )
+
+                        return render(
+                            request,
+                            "checkout.html",
+                            context
+                        )
+
+                    # -----------------------------------
+                    # COUPON VALIDITY
+                    # -----------------------------------
+
+                    now = timezone.now()
+
+                    if now < coupon.valid_from:
+
+                        context["error"] = "This coupon is not active yet."
+
+                        return render(
+                            request,
+                            "checkout.html",
+                            context
+                        )
+
+                    if now > coupon.valid_to:
+
+                        context["error"] = "This coupon has expired."
+
+                        return render(
+                            request,
+                            "checkout.html",
+                            context
+                        )
+
+                    # -----------------------------------
+                    # CALCULATE COUPON DISCOUNT
+                    # -----------------------------------
+
+                    if coupon.discount_type == "PERCENT":
 
                         discount = (
                             subtotal *
                             Decimal(str(coupon.discount_value))
                         ) / Decimal("100")
 
-                    elif coupon.discount_type == "FIXED":
+                        # Apply maximum discount cap
+                        if coupon.max_discount:
+
+                            discount = min(
+                                discount,
+                                Decimal(str(coupon.max_discount))
+                            )
+
+                    elif coupon.discount_type == "FLAT":
 
                         discount = Decimal(
                             str(coupon.discount_value)
                         )
 
+                    else:
+
+                        context["error"] = "Invalid coupon discount type."
+
+                        return render(
+                            request,
+                            "checkout.html",
+                            context
+                        )
+
+                    # -----------------------------------
                     # SAFETY
+                    # -----------------------------------
+
                     if discount > subtotal:
+
                         discount = subtotal
-
-                    print("COUPON TYPE:", coupon.discount_type)
-                    print("COUPON VALUE:", coupon.discount_value)
-                    print("DISCOUNT APPLIED:", discount)
-
-                    if already_used:
-
-                        context["error"] = "Coupon already used"
-
-                        return render(request, "checkout.html", context)
 
                 except Coupon.DoesNotExist:
 
                     context["error"] = "Invalid coupon"
 
-                    return render(request, "checkout.html", context)
+                    return render(
+                        request,
+                        "checkout.html",
+                        context
+                    )
 
             # Prevent over discount
             if discount > subtotal:
@@ -1690,20 +1807,30 @@ def checkout(request):
                             
                             product = products_map.get(int(item_id))
                             if product:
-                                final_price = product.discount_price or product.price
+                                store_price = product.effective_store_price
+                                loka_extra = product.loka_extra
+                                customer_price = product.customer_price
+
                                 OrderItem.objects.create(
                                     order=order,
                                     product=product,
                                     quantity=qty,
-                                    #customer price
-                                    price=final_price,
 
-                                    # actual store price
+                                    # Customer actually pays
+                                    price=customer_price,
+
+                                    # Actual store selling price
+                                    store_price=store_price,
+
+                                    # LOKA's automatic extra
+                                    loka_extra=loka_extra,
+
+                                    # Original product price before store discount
                                     original_price=product.price,
 
-                                    # platform discount
+                                    # Store discount only — NOT LOKA Extra
                                     discount_amount=(
-                                        product.price - final_price
+                                        product.price - store_price
                                     )
                                 )
 
@@ -2160,20 +2287,59 @@ def razorpay_webhook(request):
                     if not product:
                         continue
 
-                    final_price = (
-                        product.discount_price
-                        or product.price
+                    # IMPORTANT:
+                    # Use the price snapshot captured at checkout.
+                    # Do NOT recalculate price from the current Product.
+
+                    customer_price = Decimal(
+                        str(item.get("price", 0))
+                    )
+
+                    store_price = Decimal(
+                        str(item.get("store_price", 0))
+                    )
+
+                    loka_extra = Decimal(
+                        str(item.get("loka_extra", 0))
+                    )
+
+                    original_price = Decimal(
+                        str(
+                            item.get(
+                                "original_price",
+                                product.price
+                            )
+                        )
+                    )
+
+                    discount_amount = Decimal(
+                        str(
+                            item.get(
+                                "discount_amount",
+                                original_price - store_price
+                            )
+                        )
                     )
 
                     OrderItem.objects.create(
                         order=order,
                         product=product,
                         quantity=qty,
-                        price=final_price,
-                        original_price=product.price,
-                        discount_amount=(
-                            product.price - final_price
-                        )
+
+                        # Customer-paid price captured at checkout
+                        price=customer_price,
+
+                        # Store price captured at checkout
+                        store_price=store_price,
+
+                        # LOKA Extra captured at checkout
+                        loka_extra=loka_extra,
+
+                        # Original price captured at checkout
+                        original_price=original_price,
+
+                        # Store discount only
+                        discount_amount=discount_amount
                     )
 
                 # BUNDLE
@@ -2386,15 +2552,59 @@ logger = logging.getLogger(__name__)
                     for item_id, item in cart_items["items"].items():
 
                         if str(item_id).isdigit():
+
                             try:
-                                product = Product.objects.get(id=int(item_id))
+                                product = Product.objects.get(
+                                    id=int(item_id)
+                                )
+
+                                quantity = int(
+                                    item.get("quantity", 1)
+                                )
+
+                                customer_price = Decimal(
+                                    str(item.get("price", 0))
+                                )
+
+                                store_price = Decimal(
+                                    str(item.get("store_price", 0))
+                                )
+
+                                loka_extra = Decimal(
+                                    str(item.get("loka_extra", 0))
+                                )
+
+                                original_price = Decimal(
+                                    str(
+                                        item.get(
+                                            "original_price",
+                                            product.price
+                                        )
+                                    )
+                                )
+
+                                discount_amount = Decimal(
+                                    str(
+                                        item.get(
+                                            "discount_amount",
+                                            original_price - store_price
+                                        )
+                                    )
+                                )
+
                                 OrderItem.objects.create(
                                     order=order,
                                     product=product,
-                                    price=Decimal(str(item.get("price", 0))),
-                                    quantity=int(item.get("quantity", 1))
+                                    quantity=quantity,
+
+                                    price=customer_price,
+                                    store_price=store_price,
+                                    loka_extra=loka_extra,
+                                    original_price=original_price,
+                                    discount_amount=discount_amount
                                 )
-                            except:
+
+                            except Exception:
                                 continue
 
                         elif str(item_id).startswith("bundle_"):
@@ -4249,10 +4459,24 @@ def admin_dashboard(request):
                 order.commission_percent or 0
             )
 
+            store_subtotal = Decimal("0.00")
+
+            for item in order.items.all():
+
+                store_price = (
+                    item.store_price
+                    if item.store_price is not None
+                    else item.price
+                )
+
+                store_subtotal += (
+                    Decimal(store_price) * item.quantity
+                )
+
             commission = (
-                Decimal(order.subtotal)
+                store_subtotal
                 * Decimal(store_percent)
-            ) / Decimal(100)
+            ) / Decimal("100")
 
             platform_commission += commission
 
@@ -4412,6 +4636,24 @@ def apply_coupon(request):
             code=code,
             is_active=True
         )
+
+        # -----------------------------------
+        # CUSTOMER OWNERSHIP CHECK
+        # -----------------------------------
+
+        if coupon.customer:
+
+            if not phone:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Please login to use this coupon."
+                })
+
+            if coupon.customer.phone != phone:
+                return JsonResponse({
+                    "success": False,
+                    "message": "This coupon is not available for your account."
+                })
 
     except Coupon.DoesNotExist:
 
@@ -4622,9 +4864,21 @@ def store_dashboard(request):
             created_at__date__range=(start_date, end_date)
         )
 
-        sales = orders.aggregate(
-            Sum("subtotal")
-        )["subtotal__sum"] or 0
+        sales = Decimal("0.00")
+
+        for order in orders:
+
+            for item in order.items.all():
+
+                store_price = (
+                    item.store_price
+                    if item.store_price is not None
+                    else item.price
+                )
+
+                sales += (
+                    Decimal(store_price) * item.quantity
+                )
 
         order_count = orders.count()
 
@@ -4641,18 +4895,25 @@ def store_dashboard(request):
 
                 original_price = (
                     item.original_price
-                    if item.original_price
+                    if item.original_price is not None
                     else item.price
                 )
 
-                customer_price = item.price
+                store_price = (
+                    item.store_price
+                    if item.store_price is not None
+                    else item.price
+                )
 
                 original_sales += (
                     Decimal(original_price) * qty
                 )
 
                 discount_sales += (
-                    (Decimal(original_price) - Decimal(customer_price)) * qty
+                    (
+                        Decimal(original_price)
+                        - Decimal(store_price)
+                    ) * qty
                 )
 
         platform_commission = Decimal("0")
@@ -4664,24 +4925,24 @@ def store_dashboard(request):
                 / Decimal("100")
             )
 
-            order_original_sales = Decimal("0")
+            order_store_sales = Decimal("0")
 
             for item in order.items.all():
 
                 qty = item.quantity
 
-                original_price = (
-                    item.original_price
-                    if item.original_price
+                store_price = (
+                    item.store_price
+                    if item.store_price is not None
                     else item.price
                 )
 
-                order_original_sales += (
-                    Decimal(original_price) * qty
+                order_store_sales += (
+                    Decimal(store_price) * qty
                 )
 
             platform_commission += (
-                order_original_sales *
+                order_store_sales *
                 order_commission_percent
             )
 
@@ -10598,12 +10859,26 @@ def partner_summary(request):
 
         order_commission = (
             Decimal(order.commission_percent or 0)
+            / Decimal("100")
         )
 
+        order_store_sales = Decimal("0.00")
+
+        for item in order.items.all():
+
+            store_price = (
+                item.store_price
+                if item.store_price is not None
+                else item.price
+            )
+
+            order_store_sales += (
+                Decimal(store_price) * item.quantity
+            )
+
         platform_commission += (
-            Decimal(order.subtotal)
-            * order_commission
-        ) / Decimal("100")
+            order_store_sales * order_commission
+        )
 
     commission_percent = (
         store.commission_percent or Decimal("0")
@@ -10755,3 +11030,71 @@ def partner_product_delete(request, product_id):
     return JsonResponse({
         "success": True
     })
+
+def customer_coupons(request):
+    """
+    Display coupons assigned to the logged-in customer.
+    """
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return redirect("customer_login")
+
+    coupons = (
+        Coupon.objects
+        .filter(
+            customer=customer,
+            is_active=True
+        )
+        .order_by("-created_at")
+    )
+
+    coupon_data = []
+
+    for coupon in coupons:
+
+        used = CouponUsage.objects.filter(
+            coupon=coupon,
+            phone=customer.phone
+        ).exists()
+
+        expired = (
+            timezone.now() > coupon.valid_to
+        )
+
+        not_started = (
+            timezone.now() < coupon.valid_from
+        )
+
+        if used:
+            status = "USED"
+
+        elif expired:
+            status = "EXPIRED"
+
+        elif not_started:
+            status = "UPCOMING"
+
+        else:
+            status = "AVAILABLE"
+
+        coupon_data.append({
+            "coupon": coupon,
+            "used": used,
+            "expired": expired,
+            "not_started": not_started,
+            "status": status,
+        })
+
+    return render(
+        request,
+        "customer_coupons.html",
+        {
+            "customer": customer,
+            "coupon_data": coupon_data,
+            "show_navbar": False,
+            "simple_navbar": True,
+            "show_floating_cart": False,
+        }
+    )

@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+
+<style>
+
+.coupons-page {
+    min-height: 100vh;
+    background: #FAF7F2;
+    padding-bottom: 40px;
+}
+
+.coupons-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(
+        150deg,
+        #1A3A16 0%,
+        #2D5A27 55%,
+        #3A2010 100%
+    );
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.coupons-back {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.coupons-title {
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.coupons-container {
+    max-width: 520px;
+    margin: auto;
+    padding: 16px 14px;
+}
+
+.coupon-card {
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 14px;
+    border: 1px solid #E2E9E0;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(26,58,22,0.07);
+}
+
+.coupon-top {
+    padding: 17px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.coupon-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 13px;
+    background: #FDF1EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+
+.coupon-code {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1A3A16;
+    letter-spacing: 1px;
+}
+
+.coupon-description {
+    font-size: 12px;
+    color: #7D897B;
+    margin-top: 3px;
+}
+
+.coupon-discount {
+    padding: 13px 17px;
+    background: #F7FAF6;
+    border-top: 1px dashed #DCE5D9;
+    border-bottom: 1px dashed #DCE5D9;
+}
+
+.coupon-discount strong {
+    font-size: 18px;
+    color: #E8621A;
+}
+
+.coupon-info {
+    padding: 13px 17px;
+    font-size: 11px;
+    color: #7D897B;
+}
+
+.coupon-use-btn {
+    display: block;
+    margin: 0 17px 17px;
+    padding: 11px;
+    border-radius: 10px;
+    text-align: center;
+    background: #2D5A27;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.coupon-used {
+    margin: 0 17px 17px;
+    padding: 11px;
+    border-radius: 10px;
+    text-align: center;
+    background: #EEF1ED;
+    color: #7C867A;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.coupon-expired {
+    margin: 0 17px 17px;
+    padding: 11px;
+    border-radius: 10px;
+    text-align: center;
+    background: #FDECEC;
+    color: #B33A3A;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.empty-coupons {
+    text-align: center;
+    padding: 70px 20px;
+}
+
+.empty-coupons-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.empty-coupons-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #2D5A27;
+}
+
+.empty-coupons-text {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #899487;
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="coupons-page">
+
+    <div class="coupons-nav">
+
+        <a href="{% url 'customer_profile' %}"
+           class="coupons-back">
+            ‹
+        </a>
+
+        <span class="coupons-title">
+            My Coupons
+        </span>
+
+    </div>
+
+
+    <div class="coupons-container">
+
+        {% if coupon_data %}
+
+            {% for item in coupon_data %}
+
+                {% with coupon=item.coupon %}
+
+                <div class="coupon-card">
+
+                    <div class="coupon-top">
+
+                        <div class="coupon-icon">
+                            🏷️
+                        </div>
+
+                        <div>
+
+                            <div class="coupon-code">
+                                {{ coupon.code }}
+                            </div>
+
+                            {% if coupon.description %}
+                                <div class="coupon-description">
+                                    {{ coupon.description }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="coupon-discount">
+
+                        <strong>
+
+                            {% if coupon.discount_type == "PERCENT" %}
+
+                                {{ coupon.discount_value|floatformat:0 }}% OFF
+
+                            {% else %}
+
+                                ₹{{ coupon.discount_value|floatformat:0 }} OFF
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="coupon-info">
+
+                        Minimum order:
+                        ₹{{ coupon.min_order_value|floatformat:0 }}
+
+                        {% if coupon.max_discount %}
+                            <br>
+                            Maximum discount:
+                            ₹{{ coupon.max_discount|floatformat:0 }}
+                        {% endif %}
+
+                        <br>
+
+                        Valid till:
+                        {{ coupon.valid_to|date:"d M Y" }}
+
+                    </div>
+
+
+                    {% if item.status == "AVAILABLE" %}
+
+                        <a href="/"
+                           class="coupon-use-btn">
+
+                            USE NOW
+
+                        </a>
+
+                    {% elif item.status == "USED" %}
+
+                        <div class="coupon-used">
+                            ✓ COUPON USED
+                        </div>
+
+                    {% elif item.status == "EXPIRED" %}
+
+                        <div class="coupon-expired">
+                            COUPON EXPIRED
+                        </div>
+
+                    {% else %}
+
+                        <div class="coupon-used">
+                            COMING SOON
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                {% endwith %}
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-coupons">
+
+                <div class="empty-coupons-icon">
+                    🏷️
+                </div>
+
+                <div class="empty-coupons-title">
+                    No Coupons Yet
+                </div>
+
+                <div class="empty-coupons-text">
+                    Your exclusive LOKA offers will appear here.
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -121,6 +121,47 @@ class Product(models.Model):
         blank=True,
         null=True
     )
+
+    @property
+    def effective_store_price(self):
+        """
+        Actual selling price of the store item before LOKA Extra.
+        Uses discount_price when available.
+        """
+        return self.discount_price or self.price
+
+    @property
+    def loka_extra(self):
+        """
+        Automatically calculated LOKA Extra.
+
+        < ₹100       → ₹5
+        ₹100–₹200    → ₹10
+        ₹201–₹300    → ₹15
+        > ₹300       → ₹20
+        """
+        store_price = Decimal(str(self.effective_store_price))
+
+        if store_price < Decimal("100"):
+            return Decimal("5.00")
+
+        elif store_price <= Decimal("200"):
+            return Decimal("10.00")
+
+        elif store_price <= Decimal("300"):
+            return Decimal("15.00")
+
+        return Decimal("20.00")
+
+    @property
+    def customer_price(self):
+        """
+        Final price displayed/charged to the customer.
+        """
+        return (
+            Decimal(str(self.effective_store_price))
+            + self.loka_extra
+        )
     
     hero_priority = models.IntegerField(default=0)
 
@@ -569,6 +610,21 @@ class OrderItem(models.Model):
         decimal_places=2
     )
 
+    # actual store selling price before LOKA Extra
+    store_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    # LOKA Extra per unit
+    loka_extra = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
     # actual store price
     original_price = models.DecimalField(
         max_digits=10,
@@ -772,12 +828,25 @@ class CustomerRisk(models.Model):
     def __str__(self):
         return self.phone
     
-
 class Coupon(models.Model):
 
-    code = models.CharField(max_length=20, unique=True)
+    customer = models.ForeignKey(
+        "Customer",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="coupons"
+    )
 
-    description = models.CharField(max_length=200, blank=True)
+    code = models.CharField(
+        max_length=20,
+        unique=True
+    )
+
+    description = models.CharField(
+        max_length=200,
+        blank=True
+    )
 
     discount_type = models.CharField(
         max_length=10,
@@ -787,23 +856,44 @@ class Coupon(models.Model):
         ]
     )
 
-    discount_value = models.DecimalField(max_digits=6, decimal_places=2)
+    discount_value = models.DecimalField(
+        max_digits=6,
+        decimal_places=2
+    )
 
-    min_order_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    min_order_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
 
-    max_discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    max_discount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
 
-    usage_limit = models.IntegerField(default=1)
+    usage_limit = models.IntegerField(
+        default=1
+    )
 
-    used_count = models.IntegerField(default=0)
+    used_count = models.IntegerField(
+        default=0
+    )
 
     valid_from = models.DateTimeField()
 
     valid_to = models.DateTimeField()
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
 
     def __str__(self):
         return self.code

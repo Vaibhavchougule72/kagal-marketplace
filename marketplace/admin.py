@@ -18,6 +18,7 @@ from .models import Order
 from .models import Complaint, ComplaintPhoto
 
 from django.contrib.auth.models import User
+from .models import Coupon, Customer
 
 def download_customer_csv(modeladmin, request, queryset):
 
@@ -1000,3 +1001,116 @@ class PartnerDeviceTokenAdmin(admin.ModelAdmin):
         "store__name",
         "token",
     )
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "code",
+        "customer",
+        "discount_display",
+        "min_order_value",
+        "used_count",
+        "usage_limit",
+        "valid_from",
+        "valid_to",
+        "is_active",
+    )
+
+    list_filter = (
+        "discount_type",
+        "is_active",
+        "valid_from",
+        "valid_to",
+    )
+
+    search_fields = (
+        "code",
+        "description",
+        "customer__name",
+        "customer__phone",
+    )
+
+    autocomplete_fields = (
+        "customer",
+    )
+
+    readonly_fields = (
+        "used_count",
+        "created_at",
+    )
+
+    ordering = (
+        "-created_at",
+    )
+
+    fieldsets = (
+        (
+            "Customer",
+            {
+                "fields": (
+                    "customer",
+                )
+            }
+        ),
+
+        (
+            "Coupon Details",
+            {
+                "fields": (
+                    "code",
+                    "description",
+                    "is_active",
+                )
+            }
+        ),
+
+        (
+            "Discount",
+            {
+                "fields": (
+                    "discount_type",
+                    "discount_value",
+                    "min_order_value",
+                    "max_discount",
+                )
+            }
+        ),
+
+        (
+            "Usage",
+            {
+                "fields": (
+                    "usage_limit",
+                    "used_count",
+                )
+            }
+        ),
+
+        (
+            "Validity",
+            {
+                "fields": (
+                    "valid_from",
+                    "valid_to",
+                )
+            }
+        ),
+
+        (
+            "System",
+            {
+                "fields": (
+                    "created_at",
+                )
+            }
+        ),
+    )
+
+    def discount_display(self, obj):
+        if obj.discount_type == "PERCENT":
+            return f"{obj.discount_value}%"
+        return f"₹{obj.discount_value}"
+
+    discount_display.short_description = "Discount"

@@ -414,6 +414,11 @@ urlpatterns = [
         views.partner_product_delete,
         name="partner_product_delete",
     ),
+    path(
+        "profile/coupons/",
+        views.customer_coupons,
+        name="customer_coupons"
+    ),
 ]
 
 

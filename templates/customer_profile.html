@@ -357,18 +357,30 @@
         <div class="profile-menu-arrow">›</div>
       </a>
 
-      <button type="button" class="profile-menu-item"
-              onclick="showProfileComingSoon('Coupons')">
-        <div class="profile-menu-icon orange">🏷️</div>
-        <div class="profile-menu-text">
-          <span class="profile-menu-title">
-            Coupons
-            <span class="coming-soon-badge">COMING SOON</span>
-          </span>
-          <span class="profile-menu-subtitle">View your available offers</span>
-        </div>
-        <div class="profile-menu-arrow">›</div>
-      </button>
+      <a href="{% url 'customer_coupons' %}"
+        class="profile-menu-item">
+
+          <div class="profile-menu-icon orange">
+              🏷️
+          </div>
+
+          <div class="profile-menu-text">
+
+              <span class="profile-menu-title">
+                  Coupons
+              </span>
+
+              <span class="profile-menu-subtitle">
+                  View your available offers
+              </span>
+
+          </div>
+
+          <div class="profile-menu-arrow">
+              ›
+          </div>
+
+      </a>
 
       <button type="button" class="profile-menu-item"
               onclick="showProfileComingSoon('My Journey')">
