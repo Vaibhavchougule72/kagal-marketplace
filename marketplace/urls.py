@@ -419,6 +419,11 @@ urlpatterns = [
         views.customer_coupons,
         name="customer_coupons"
     ),
+    path(
+        "available-coupons/",
+        views.available_coupons,
+        name="available_coupons"
+    ),
 ]
 
 

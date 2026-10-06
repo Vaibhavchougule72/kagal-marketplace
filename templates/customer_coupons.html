@@ -22,6 +22,10 @@
         padding-top: 0 !important;
     }
 
+* {
+    box-sizing: border-box;
+}
+
 .coupons-page {
     min-height: 100vh;
     background: #FAF7F2;
@@ -66,102 +70,150 @@
 .coupons-container {
     max-width: 520px;
     margin: auto;
-    padding: 16px 14px;
+    padding: 18px 14px;
 }
 
-.coupon-card {
-    background: white;
-    border-radius: 16px;
-    margin-bottom: 14px;
-    border: 1px solid #E2E9E0;
+/* ============================= */
+/* TEAR-OFF TICKET */
+/* ============================= */
+
+.coupon-ticket {
+    position: relative;
+    background: #1A3A16;
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 20px 20px 18px;
+    text-align: center;
     overflow: hidden;
-    box-shadow: 0 3px 15px rgba(26,58,22,0.07);
+    margin-bottom: 16px;
+    box-shadow: 0 10px 26px rgba(26, 58, 22, 0.18);
 }
 
-.coupon-top {
-    padding: 17px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
+.coupon-ticket::before,
+.coupon-ticket::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #FAF7F2;
+    transform: translateY(-50%);
 }
 
-.coupon-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    border-radius: 13px;
-    background: #FDF1EB;
+.coupon-ticket::before {
+    left: -14px;
+}
+
+.coupon-ticket::after {
+    right: -14px;
+}
+
+.coupon-ticket.inactive {
+    background: #4A524C;
+    opacity: 0.72;
+}
+
+.ticket-top {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 23px;
+    gap: 9px;
+    margin-bottom: 4px;
 }
 
-.coupon-code {
+.ticket-icon {
     font-size: 17px;
+}
+
+.ticket-discount {
+    font-family: inherit;
+    font-size: 24px;
     font-weight: 800;
-    color: #1A3A16;
-    letter-spacing: 1px;
-}
-
-.coupon-description {
-    font-size: 12px;
-    color: #7D897B;
-    margin-top: 3px;
-}
-
-.coupon-discount {
-    padding: 13px 17px;
-    background: #F7FAF6;
-    border-top: 1px dashed #DCE5D9;
-    border-bottom: 1px dashed #DCE5D9;
-}
-
-.coupon-discount strong {
-    font-size: 18px;
+    letter-spacing: -0.3px;
     color: #E8621A;
 }
 
-.coupon-info {
-    padding: 13px 17px;
-    font-size: 11px;
-    color: #7D897B;
+.coupon-ticket.inactive .ticket-discount {
+    color: #d9d9d9;
 }
 
-.coupon-use-btn {
+.ticket-description {
+    font-size: 12px;
+    opacity: 0.78;
+    margin: 0 0 16px;
+}
+
+.ticket-perforation {
+    border-top: 2px dashed rgba(255, 255, 255, 0.28);
+    margin: 0 -20px 14px;
+}
+
+.ticket-code-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    opacity: 0.6;
+    margin: 0 0 7px;
+}
+
+.ticket-code {
     display: block;
-    margin: 0 17px 17px;
-    padding: 11px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    text-align: center;
+    padding: 11px;
+    margin-bottom: 11px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-family: "Courier New", monospace;
+}
+
+.ticket-info {
+    font-size: 10.5px;
+    opacity: 0.68;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.ticket-use-btn {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    background: #E8621A;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.ticket-use-btn:active {
+    transform: scale(0.98);
+}
+
+.ticket-use-btn.copied {
     background: #2D5A27;
-    color: white;
-    text-decoration: none;
+}
+
+.ticket-status {
+    width: 100%;
+    border-radius: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
     font-size: 13px;
     font-weight: 700;
 }
 
-.coupon-used {
-    margin: 0 17px 17px;
-    padding: 11px;
-    border-radius: 10px;
-    text-align: center;
-    background: #EEF1ED;
-    color: #7C867A;
-    font-size: 13px;
-    font-weight: 700;
+.coupon-ticket.inactive .ticket-status {
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.coupon-expired {
-    margin: 0 17px 17px;
-    padding: 11px;
-    border-radius: 10px;
-    text-align: center;
-    background: #FDECEC;
-    color: #B33A3A;
-    font-size: 13px;
-    font-weight: 700;
-}
+/* ============================= */
+/* EMPTY */
+/* ============================= */
 
 .empty-coupons {
     text-align: center;
@@ -183,6 +235,12 @@
     margin-top: 6px;
     font-size: 12px;
     color: #899487;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ticket-use-btn {
+        transition: none;
+    }
 }
 
 </style>
@@ -216,34 +274,15 @@
 
                 {% with coupon=item.coupon %}
 
-                <div class="coupon-card">
+                <div class="coupon-ticket {% if item.status != 'AVAILABLE' %}inactive{% endif %}">
 
-                    <div class="coupon-top">
+                    <div class="ticket-top">
 
-                        <div class="coupon-icon">
+                        <span class="ticket-icon">
                             🏷️
-                        </div>
+                        </span>
 
-                        <div>
-
-                            <div class="coupon-code">
-                                {{ coupon.code }}
-                            </div>
-
-                            {% if coupon.description %}
-                                <div class="coupon-description">
-                                    {{ coupon.description }}
-                                </div>
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="coupon-discount">
-
-                        <strong>
+                        <span class="ticket-discount">
 
                             {% if coupon.discount_type == "PERCENT" %}
 
@@ -255,54 +294,77 @@
 
                             {% endif %}
 
-                        </strong>
+                        </span>
 
                     </div>
 
 
-                    <div class="coupon-info">
+                    {% if coupon.description %}
 
-                        Minimum order:
-                        ₹{{ coupon.min_order_value|floatformat:0 }}
+                        <p class="ticket-description">
+                            {{ coupon.description }}
+                        </p>
+
+                    {% else %}
+
+                        <p class="ticket-description">
+                            &nbsp;
+                        </p>
+
+                    {% endif %}
+
+
+                    <div class="ticket-perforation"></div>
+
+                    <p class="ticket-code-label">
+                        COUPON CODE
+                    </p>
+
+                    <span class="ticket-code">
+                        {{ coupon.code }}
+                    </span>
+
+                    <div class="ticket-info">
+
+                        Minimum order: ₹{{ coupon.min_order_value|floatformat:0 }}
 
                         {% if coupon.max_discount %}
                             <br>
-                            Maximum discount:
-                            ₹{{ coupon.max_discount|floatformat:0 }}
+                            Maximum discount: ₹{{ coupon.max_discount|floatformat:0 }}
                         {% endif %}
 
                         <br>
 
-                        Valid till:
-                        {{ coupon.valid_to|date:"d M Y" }}
+                        Valid till: {{ coupon.valid_to|date:"d M Y" }}
 
                     </div>
 
 
                     {% if item.status == "AVAILABLE" %}
 
-                        <a href="/"
-                           class="coupon-use-btn">
-
+                        <button
+                            type="button"
+                            class="ticket-use-btn"
+                            data-code="{{ coupon.code }}"
+                        >
                             USE NOW
-
-                        </a>
+                        </button>
 
                     {% elif item.status == "USED" %}
 
-                        <div class="coupon-used">
+                        <div class="ticket-status">
                             ✓ COUPON USED
                         </div>
 
                     {% elif item.status == "EXPIRED" %}
 
-                        <div class="coupon-expired">
+                        <div class="ticket-status">
                             COUPON EXPIRED
                         </div>
 
                     {% else %}
 
-                        <div class="coupon-used">
+                        <div class="ticket-status">
                             COMING SOON
                         </div>
 
@@ -337,5 +399,66 @@
     </div>
 
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    async function copyText(text) {
+
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+
+        // fallback for non-HTTPS / older browsers
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        document.body.removeChild(helper);
+    }
+
+    document.querySelectorAll(".ticket-use-btn").forEach(function (button) {
+
+        button.addEventListener("click", async function () {
+
+            const code = button.dataset.code;
+
+            if (!code) {
+                return;
+            }
+
+            const originalText = button.textContent;
+
+            try {
+
+                await copyText(code);
+
+                button.textContent = "COPIED " + code;
+                button.classList.add("copied");
+
+            } catch (error) {
+
+                console.error("Failed to copy coupon code:", error);
+
+                button.textContent = "COULDN'T COPY — TRY AGAIN";
+            }
+
+            setTimeout(function () {
+                button.textContent = originalText;
+                button.classList.remove("copied");
+            }, 1800);
+
+        });
+
+    });
+
+});
+</script>
 
 {% endblock %}

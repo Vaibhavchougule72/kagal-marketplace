@@ -143,15 +143,15 @@ class Product(models.Model):
         store_price = Decimal(str(self.effective_store_price))
 
         if store_price < Decimal("100"):
-            return Decimal("5.00")
+            return Decimal("0.00")
 
         elif store_price <= Decimal("200"):
-            return Decimal("10.00")
+            return Decimal("0.00")
 
         elif store_price <= Decimal("300"):
-            return Decimal("15.00")
+            return Decimal("0.00")
 
-        return Decimal("20.00")
+        return Decimal("00.00")
 
     @property
     def customer_price(self):

@@ -23,6 +23,7 @@ from .models import Coupon, CustomerReferral, CustomerReferral, LokaMoneyAccount
 from django.core.cache import cache
 from decimal import Decimal, ROUND_HALF_UP
 from django.urls import reverse
+from django.db.models import F
 from .models import BundleItem
 # from .sms_service import send_sms   ❌ comment
 
@@ -4762,6 +4763,110 @@ def apply_coupon(request):
         "discount": float(discount),
         "message": "Coupon applied"
 
+    })
+
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db.models import Q
+
+from .models import Coupon, CouponUsage, Customer
+
+
+def available_coupons(request):
+
+    phone = request.GET.get("phone", "").strip()
+    search = request.GET.get("q", "").strip().upper()
+
+    if not phone:
+        return JsonResponse({
+            "success": True,
+            "coupons": []
+        })
+
+    now = timezone.now()
+
+    # -------------------------------------------------
+    # FIND CUSTOMER
+    # -------------------------------------------------
+
+    customer = Customer.objects.filter(
+        phone=phone
+    ).first()
+
+    # -------------------------------------------------
+    # PUBLIC + CUSTOMER-SPECIFIC COUPONS
+    # -------------------------------------------------
+
+    coupon_filter = Q(customer__isnull=True)
+
+    if customer:
+        coupon_filter |= Q(customer=customer)
+
+    coupons = Coupon.objects.filter(
+        coupon_filter,
+        is_active=True,
+        valid_from__lte=now,
+        valid_to__gte=now,
+    )
+
+    # -------------------------------------------------
+    # SEARCH / AUTOCOMPLETE
+    # -------------------------------------------------
+
+    if search:
+        coupons = coupons.filter(
+            code__istartswith=search
+        )
+
+    # -------------------------------------------------
+    # REMOVE FULLY USED COUPONS
+    # -------------------------------------------------
+
+    coupons = coupons.filter(
+        used_count__lt=F("usage_limit")
+    )
+
+    # -------------------------------------------------
+    # REMOVE COUPONS ALREADY USED BY THIS CUSTOMER
+    # -------------------------------------------------
+
+    used_coupon_ids = CouponUsage.objects.filter(
+        phone=phone
+    ).values_list(
+        "coupon_id",
+        flat=True
+    )
+
+    coupons = coupons.exclude(
+        id__in=used_coupon_ids
+    )
+
+    coupons = coupons.order_by("code")
+
+    # -------------------------------------------------
+    # RESPONSE
+    # -------------------------------------------------
+
+    data = []
+
+    for coupon in coupons:
+
+        if coupon.discount_type == "PERCENT":
+            discount_text = f"{coupon.discount_value}% OFF"
+
+        else:
+            discount_text = f"₹{coupon.discount_value} OFF"
+
+        data.append({
+            "code": coupon.code,
+            "description": coupon.description,
+            "discount": discount_text,
+            "min_order": float(coupon.min_order_value),
+        })
+
+    return JsonResponse({
+        "success": True,
+        "coupons": data
     })
 
 from django.db.models import Sum, Avg

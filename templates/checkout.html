@@ -555,6 +555,120 @@
     opacity: 0.85;
 }
 
+/* ── SMART COUPON PICKER ── */
+
+.co-coupon-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.co-coupon-input {
+    width: 100%;
+    margin-bottom: 0;
+    padding-right: 38px;
+}
+
+.co-coupon-chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #7A8A78;
+    pointer-events: none;
+    transition: transform .18s ease;
+}
+
+.co-coupon-wrapper.open .co-coupon-chevron {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.co-coupon-suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #fff;
+    border: 0.5px solid #DCE6DA;
+    border-radius: 11px;
+    box-shadow: 0 8px 24px rgba(26,58,22,.12);
+    z-index: 9999;
+    overflow: hidden;
+    display: none;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.co-coupon-wrapper.open .co-coupon-suggestions {
+    display: block;
+}
+
+.co-coupon-suggestion {
+    width: 100%;
+    border: none;
+    background: #fff;
+    padding: 11px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    border-bottom: 0.5px solid #EEF2ED;
+}
+
+.co-coupon-suggestion:last-child {
+    border-bottom: none;
+}
+
+.co-coupon-suggestion:hover,
+.co-coupon-suggestion:active {
+    background: #F4F8F2;
+}
+
+.co-coupon-code {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1A3A16;
+    letter-spacing: .06em;
+}
+
+.co-coupon-details {
+    font-size: 10px;
+    color: #7A8A78;
+    margin-top: 3px;
+}
+
+.co-coupon-discount {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #2D6B27;
+    background: #EAF5E8;
+    padding: 4px 7px;
+    border-radius: 6px;
+}
+
+.co-coupon-empty {
+    padding: 14px;
+    text-align: center;
+    font-size: 11px;
+    color: #9AA899;
+}
+
+.co-coupon-loading {
+    padding: 13px;
+    text-align: center;
+    font-size: 11px;
+    color: #9AA899;
+}
+
+.co-coupon-row {
+    align-items: flex-start;
+}
+
   @keyframes co-spin { to { transform: rotate(360deg); } }
 </style>
 
@@ -639,11 +753,40 @@
         <div class="co-card-head"><span>{% trans "Coupon code" %}</span></div>
         <div class="co-card-body">
           <div class="co-coupon-row">
-            <input type="text" id="coupon_code" name="coupon_code"
-                   class="co-coupon-input" placeholder="{% trans 'Enter code' %}">
-            <button type="button" class="co-coupon-btn" onclick="applyCoupon()">{% trans "Apply" %}</button>
-          </div>
-          <div id="coupon_message" class="co-coupon-msg"></div>
+
+            <div class="co-coupon-wrapper" id="couponWrapper">
+
+                <input
+                    type="text"
+                    id="coupon_code"
+                    name="coupon_code"
+                    class="co-coupon-input"
+                    placeholder="{% trans 'Enter or select coupon code' %}"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    spellcheck="false"
+                >
+
+                <span class="co-coupon-chevron">⌄</span>
+
+                <div
+                    id="couponSuggestions"
+                    class="co-coupon-suggestions"
+                ></div>
+
+            </div>
+
+            <button
+                type="button"
+                class="co-coupon-btn"
+                onclick="applyCoupon()"
+            >
+                {% trans "Apply" %}
+            </button>
+
+        </div>
+
+        <div id="coupon_message" class="co-coupon-msg"></div>
         </div>
       </div>
 
@@ -810,6 +953,14 @@ const lokaMoneyMax = 15;
 
 let appliedDiscount = 0;
 let currentDeliveryFee = 0;
+
+
+/* =====================================================
+   COUPON AUTOCOMPLETE VARIABLES
+   ===================================================== */
+
+let availableCoupons = [];
+let couponRequestTimer = null;
 
 let freeDeliveryUnlocked =
     "{{ free_delivery_order|yesno:'true,false' }}" === "true";
@@ -1063,6 +1214,171 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('user_name'))    nameInput.value    = localStorage.getItem('user_name');
   if (localStorage.getItem('user_phone'))   phoneInput.value   = localStorage.getItem('user_phone');
   if (localStorage.getItem('user_address')) addressInput.value = localStorage.getItem('user_address');
+  /* =====================================================
+   SMART COUPON AUTOCOMPLETE
+   ===================================================== */
+
+  var couponInput =
+      document.getElementById('coupon_code');
+
+  var couponWrapper =
+      document.getElementById('couponWrapper');
+
+  var couponSuggestions =
+      document.getElementById('couponSuggestions');
+
+
+  /* ---------------------------------------------
+    OPEN COUPON DROPDOWN
+  --------------------------------------------- */
+
+  couponInput.addEventListener(
+      'focus',
+      function() {
+
+          couponWrapper.classList.add('open');
+
+          const phone =
+              document.getElementById(
+                  'phoneInput'
+              ).value.trim();
+
+          if (
+              /^[6-9]\d{9}$/.test(phone)
+          ) {
+
+              loadAvailableCoupons(
+                  couponInput.value.trim()
+              );
+
+          } else {
+
+              couponSuggestions.innerHTML = `
+                  <div class="co-coupon-empty">
+                      Enter your mobile number to see available coupons.
+                  </div>
+              `;
+
+          }
+
+      }
+  );
+
+
+  /* ---------------------------------------------
+    TYPING → FILTER / LOAD
+  --------------------------------------------- */
+
+  couponInput.addEventListener(
+      'input',
+      function() {
+
+          const search =
+              this.value.trim();
+
+          couponWrapper.classList.add('open');
+
+
+          /*
+          * If coupons are already loaded,
+          * filter immediately.
+          */
+
+          if (availableCoupons.length) {
+
+              renderCouponSuggestions(search);
+
+          }
+
+
+          /*
+          * Also ask backend for matching
+          * coupons.
+          */
+
+          clearTimeout(
+              couponRequestTimer
+          );
+
+          couponRequestTimer =
+              setTimeout(function() {
+
+                  loadAvailableCoupons(
+                      search
+                  );
+
+              }, 200);
+
+      }
+  );
+
+
+  /* ---------------------------------------------
+    PHONE CHANGE → RELOAD COUPONS
+  --------------------------------------------- */
+
+  phoneInput.addEventListener(
+      'input',
+      function() {
+
+          const phone =
+              this.value.trim();
+
+          clearTimeout(
+              couponRequestTimer
+          );
+
+
+          if (
+              /^[6-9]\d{9}$/.test(phone)
+          ) {
+
+              couponRequestTimer =
+                  setTimeout(function() {
+
+                      loadAvailableCoupons(
+                          couponInput.value.trim()
+                      );
+
+                  }, 250);
+
+          } else {
+
+              availableCoupons = [];
+
+              couponSuggestions.innerHTML = `
+                  <div class="co-coupon-empty">
+                      Enter your mobile number to see available coupons.
+                  </div>
+              `;
+
+          }
+
+      }
+  );
+
+
+  /* ---------------------------------------------
+    CLICK OUTSIDE → CLOSE
+  --------------------------------------------- */
+
+  document.addEventListener(
+      'click',
+      function(event) {
+
+          if (
+              couponWrapper &&
+              !couponWrapper.contains(event.target)
+          ) {
+
+              couponWrapper.classList.remove(
+                  'open'
+              );
+
+          }
+
+      }
+  );
 
   // =====================================================
   // LINK SAVED PHONE WITH FCM TOKEN
