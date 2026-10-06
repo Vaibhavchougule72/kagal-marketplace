@@ -962,6 +962,196 @@ let currentDeliveryFee = 0;
 let availableCoupons = [];
 let couponRequestTimer = null;
 
+/* =====================================================
+   LOAD AVAILABLE COUPONS
+   ===================================================== */
+
+function loadAvailableCoupons(search = '') {
+
+    const phoneInput =
+        document.getElementById('phoneInput');
+
+    const couponSuggestions =
+        document.getElementById('couponSuggestions');
+
+    const phone =
+        phoneInput.value.trim();
+
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+
+        couponSuggestions.innerHTML = `
+            <div class="co-coupon-empty">
+                Enter your valid mobile number to see available coupons.
+            </div>
+        `;
+
+        return;
+    }
+
+    couponSuggestions.innerHTML = `
+        <div class="co-coupon-loading">
+            Loading available coupons...
+        </div>
+    `;
+
+    fetch(
+        '/available-coupons/?phone=' +
+        encodeURIComponent(phone) +
+        '&q=' +
+        encodeURIComponent(search)
+    )
+    .then(function(response) {
+
+        if (!response.ok) {
+            throw new Error('Coupon API error');
+        }
+
+        return response.json();
+
+    })
+    .then(function(data) {
+
+        if (!data.success) {
+
+            availableCoupons = [];
+
+            couponSuggestions.innerHTML = `
+                <div class="co-coupon-empty">
+                    No coupons available.
+                </div>
+            `;
+
+            return;
+        }
+
+        availableCoupons = data.coupons || [];
+
+        renderCouponSuggestions(search);
+
+    })
+    .catch(function(error) {
+
+        console.error(
+            'Coupon loading error:',
+            error
+        );
+
+        availableCoupons = [];
+
+        couponSuggestions.innerHTML = `
+            <div class="co-coupon-empty">
+                Unable to load coupons. Please try again.
+            </div>
+        `;
+
+    });
+}
+
+
+/* =====================================================
+   RENDER COUPON SUGGESTIONS
+   ===================================================== */
+
+function renderCouponSuggestions(search = '') {
+
+    const couponSuggestions =
+        document.getElementById('couponSuggestions');
+
+    const couponWrapper =
+        document.getElementById('couponWrapper');
+
+    const query =
+        search.trim().toUpperCase();
+
+    const filteredCoupons =
+        availableCoupons.filter(function(coupon) {
+
+            return !query ||
+                coupon.code
+                    .toUpperCase()
+                    .includes(query);
+
+        });
+
+    if (!filteredCoupons.length) {
+
+        couponSuggestions.innerHTML = `
+            <div class="co-coupon-empty">
+                No matching coupons available.
+            </div>
+        `;
+
+        couponWrapper.classList.add('open');
+
+        return;
+    }
+
+    couponSuggestions.innerHTML =
+        filteredCoupons.map(function(coupon) {
+
+            return `
+                <button
+                    type="button"
+                    class="co-coupon-suggestion"
+                    data-code="${coupon.code}"
+                >
+
+                    <div>
+                        <div class="co-coupon-code">
+                            ${coupon.code}
+                        </div>
+
+                        <div class="co-coupon-details">
+                            ${coupon.description || ''}
+                            ${coupon.min_order
+                                ? ' · Min ₹' + coupon.min_order
+                                : ''}
+                        </div>
+                    </div>
+
+                    <div class="co-coupon-discount">
+                        ${coupon.discount}
+                    </div>
+
+                </button>
+            `;
+
+        }).join('');
+
+    couponWrapper.classList.add('open');
+
+
+    /* ---------------------------------------------
+       CLICK COUPON
+    --------------------------------------------- */
+
+    couponSuggestions
+        .querySelectorAll('.co-coupon-suggestion')
+        .forEach(function(button) {
+
+            button.addEventListener(
+                'click',
+                function() {
+
+                    const code =
+                        this.getAttribute('data-code');
+
+                    document.getElementById(
+                        'coupon_code'
+                    ).value = code;
+
+                    couponWrapper.classList.remove(
+                        'open'
+                    );
+
+                    applyCoupon();
+
+                }
+            );
+
+        });
+}
+
 let freeDeliveryUnlocked =
     "{{ free_delivery_order|yesno:'true,false' }}" === "true";
 
@@ -1214,6 +1404,15 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('user_name'))    nameInput.value    = localStorage.getItem('user_name');
   if (localStorage.getItem('user_phone'))   phoneInput.value   = localStorage.getItem('user_phone');
   if (localStorage.getItem('user_address')) addressInput.value = localStorage.getItem('user_address');
+  
+  /* Load coupons for previously saved phone */
+
+  if (
+      /^[6-9]\d{9}$/.test(phoneInput.value.trim())
+  ) {
+      loadAvailableCoupons('');
+  }
+  
   /* =====================================================
    SMART COUPON AUTOCOMPLETE
    ===================================================== */
