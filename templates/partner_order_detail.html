@@ -428,9 +428,7 @@
 
                 <div class="item-price">
 
-                    {% widthratio item.price 1 item.quantity as item_total %}
-
-                    ₹{{ item_total|floatformat:2 }}
+                    ₹{{ item.item_total|floatformat:2 }}
 
                 </div>
 

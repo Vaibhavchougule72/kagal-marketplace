@@ -610,6 +610,10 @@ class OrderItem(models.Model):
         decimal_places=2
     )
 
+    @property
+    def item_total(self):
+        return self.price * self.quantity
+
     # actual store selling price before LOKA Extra
     store_price = models.DecimalField(
         max_digits=10,
