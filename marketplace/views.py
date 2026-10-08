@@ -10545,9 +10545,8 @@ def partner_order_detail(request, order_id):
     store = profile.store
 
     # --------------------------------------------------------
-    # IMPORTANT SECURITY CHECK
-    #
-    # The order MUST belong to this partner's store.
+    # SECURITY CHECK
+    # Order MUST belong to this partner's store.
     # --------------------------------------------------------
 
     order = get_object_or_404(
@@ -10561,6 +10560,33 @@ def partner_order_detail(request, order_id):
         store=store
     )
 
+    # --------------------------------------------------------
+    # PREPARE DISPLAY PRICE
+    #
+    # Existing orders may have OrderItem.price = 0.
+    # If that happens, use the current product customer price.
+    # New orders with a valid stored price continue using
+    # the stored order price.
+    # --------------------------------------------------------
+
+    for item in order.items.all():
+
+        if item.price and item.price > 0:
+
+            item.display_price = item.price
+
+        elif item.product:
+
+            item.display_price = item.product.customer_price
+
+        elif item.bundle:
+
+            item.display_price = item.bundle.price
+
+        else:
+
+            item.display_price = 0
+
     return render(
         request,
         "partner_order_detail.html",
@@ -10573,7 +10599,6 @@ def partner_order_detail(request, order_id):
             "simple_navbar": False,
         }
     )
-
 # ============================================================
 # PARTNER ACCEPT / REJECT ORDER
 # ============================================================
