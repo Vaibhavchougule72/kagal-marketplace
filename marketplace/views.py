@@ -1906,8 +1906,68 @@ def checkout(request):
                     return obj
 
 
+                # -----------------------------------
+                # CREATE COMPLETE PRICE SNAPSHOT
+                # FOR UPI ORDER
+                # -----------------------------------
+
+                cart_snapshot = copy.deepcopy(cart)
+
+                for item_id, cart_item in cart_snapshot["items"].items():
+
+                    qty = safe_qty(
+                        cart_item.get("quantity", 1)
+                    )
+
+                    # -------------------------
+                    # PRODUCT
+                    # -------------------------
+
+                    if item_id.isdigit():
+
+                        product = products_map.get(
+                            int(item_id)
+                        )
+
+                        if not product:
+                            continue
+
+                        store_price = product.effective_store_price
+                        loka_extra = product.loka_extra
+                        customer_price = product.customer_price
+
+                        cart_item["price"] = customer_price
+                        cart_item["store_price"] = store_price
+                        cart_item["loka_extra"] = loka_extra
+                        cart_item["original_price"] = product.price
+                        cart_item["discount_amount"] = (
+                            product.price - store_price
+                        )
+
+                    # -------------------------
+                    # BUNDLE
+                    # -------------------------
+
+                    elif item_id.startswith("bundle_"):
+
+                        bundle = bundles_map.get(
+                            int(item_id.split("_")[1])
+                        )
+
+                        if not bundle:
+                            continue
+
+                        cart_item["price"] = bundle.price
+                        cart_item["store_price"] = bundle.price
+                        cart_item["loka_extra"] = Decimal("0")
+                        cart_item["original_price"] = bundle.price
+                        cart_item["discount_amount"] = Decimal("0")
+
+
+                # Convert Decimal values to JSON-safe values
+
                 safe_cart = convert_decimals(
-                    copy.deepcopy(cart)
+                    cart_snapshot
                 )
 
                 safe_items = convert_decimals(
