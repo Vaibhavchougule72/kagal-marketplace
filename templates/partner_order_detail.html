@@ -428,7 +428,11 @@
 
                 <div class="item-price">
 
-                    ₹{{ item.display_price|floatformat:2 }}
+                    <div class="item-price">
+
+                        ₹{{ item.display_item_total|floatformat:2 }}
+
+                    </div>
 
                 </div>
 

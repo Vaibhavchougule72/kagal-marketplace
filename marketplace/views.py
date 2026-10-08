@@ -10587,6 +10587,12 @@ def partner_order_detail(request, order_id):
 
             item.display_price = 0
 
+
+        # Total price for this item
+        item.display_item_total = (
+            item.display_price * item.quantity
+        )
+
     return render(
         request,
         "partner_order_detail.html",
