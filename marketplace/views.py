@@ -10229,16 +10229,143 @@ def partner_dashboard(request):
     )
 
     # ========================================================
-    # TODAY'S STORE ORDERS
+    # ORDER DATE FILTER
     # ========================================================
 
     today = timezone.localdate()
+
+    selected_filter = request.GET.get(
+        "order_filter",
+        "today"
+    )
+
+    start_date = today
+    end_date = today
+
+    filter_label = "Today's Orders"
+
+    # --------------------------------------------------------
+    # TODAY
+    # --------------------------------------------------------
+
+    if selected_filter == "today":
+
+        start_date = today
+        end_date = today
+
+        filter_label = "Today's Orders"
+
+    # --------------------------------------------------------
+    # THIS WEEK
+    # Monday -> Sunday
+    # --------------------------------------------------------
+
+    elif selected_filter == "week":
+
+        start_date = today - timedelta(
+            days=today.weekday()
+        )
+
+        end_date = start_date + timedelta(days=6)
+
+        filter_label = "This Week's Orders"
+
+    # --------------------------------------------------------
+    # THIS MONTH
+    # --------------------------------------------------------
+
+    elif selected_filter == "month":
+
+        start_date = today.replace(day=1)
+
+        if today.month == 12:
+
+            next_month = today.replace(
+                year=today.year + 1,
+                month=1,
+                day=1
+            )
+
+        else:
+
+            next_month = today.replace(
+                month=today.month + 1,
+                day=1
+            )
+
+        end_date = next_month - timedelta(days=1)
+
+        filter_label = "This Month's Orders"
+
+    # --------------------------------------------------------
+    # CUSTOM DATE RANGE
+    # --------------------------------------------------------
+
+    elif selected_filter == "custom":
+
+        custom_start = request.GET.get(
+            "start_date"
+        )
+
+        custom_end = request.GET.get(
+            "end_date"
+        )
+
+        try:
+
+            if custom_start:
+                start_date = datetime.strptime(
+                    custom_start,
+                    "%Y-%m-%d"
+                ).date()
+
+            if custom_end:
+                end_date = datetime.strptime(
+                    custom_end,
+                    "%Y-%m-%d"
+                ).date()
+
+            # If only one date is supplied
+            if custom_start and not custom_end:
+                end_date = start_date
+
+            if custom_end and not custom_start:
+                start_date = end_date
+
+            # Prevent reversed range
+            if start_date > end_date:
+
+                start_date, end_date = (
+                    end_date,
+                    start_date
+                )
+
+            filter_label = (
+                f"{start_date.strftime('%d %b %Y')}"
+                f" - "
+                f"{end_date.strftime('%d %b %Y')}"
+            )
+
+        except (ValueError, TypeError):
+
+            # Invalid custom date → default to today
+            selected_filter = "today"
+
+            start_date = today
+            end_date = today
+
+            filter_label = "Today's Orders"
+
+    # ========================================================
+    # GET FILTERED ORDERS
+    # ========================================================
 
     orders = (
         Order.objects
         .filter(
             store=store,
-            created_at__date=today
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
         )
         .select_related("store")
         .prefetch_related(
@@ -10249,7 +10376,7 @@ def partner_dashboard(request):
     )
 
     # ========================================================
-    # TODAY'S ORDER COUNTS
+    # FILTERED ORDER COUNTS
     # ========================================================
 
     total_orders = orders.count()
@@ -10269,28 +10396,32 @@ def partner_dashboard(request):
     # ========================================================
     # STORE DAILY ORDER NUMBER
     # ========================================================
-    #
-    # Example:
-    #
-    # First order today  -> 1
-    # Second order today -> 2
-    # Third order today  -> 3
-    #
-    # This number is only for this store and this day.
-    # It is NOT the global Order.id.
-    # ========================================================
 
-    today_orders = list(orders)
+    filtered_orders = list(orders)
 
-    for number, order in enumerate(today_orders, start=1):
-        order.store_day_order_number = number
+    for order in filtered_orders:
+
+        # Order number must remain based on
+        # that particular calendar day.
+
+        daily_order_count = Order.objects.filter(
+            store=store,
+            created_at__date=order.created_at.date(),
+            created_at__lt=order.created_at
+        ).count()
+
+        order.store_day_order_number = (
+            daily_order_count + 1
+        )
 
     # ========================================================
     # DISPLAY ORDERS
     # ========================================================
 
     recent_orders = list(
-        reversed(today_orders[-30:])
+        reversed(
+            filtered_orders[-30:]
+        )
     )
 
     # ========================================================
@@ -10298,8 +10429,11 @@ def partner_dashboard(request):
     # ========================================================
 
     try:
+
         store_is_open = store.is_open()
+
     except Exception:
+
         store_is_open = False
 
     # ========================================================
@@ -10307,25 +10441,42 @@ def partner_dashboard(request):
     # ========================================================
 
     context = {
+
         "profile": profile,
+
         "store": store,
 
         # Counts
         "total_orders": total_orders,
+
         "new_orders": new_orders,
+
         "accepted_orders": accepted_orders,
+
         "failed_orders": failed_orders,
+
         "products": products,
 
         # Orders
         "recent_orders": recent_orders,
+
+        # Filter
+        "selected_filter": selected_filter,
+
+        "start_date": start_date,
+
+        "end_date": end_date,
+
+        "filter_label": filter_label,
 
         # Store status
         "store_is_open": store_is_open,
 
         # Existing layout settings
         "show_navbar": False,
+
         "show_floating_cart": False,
+
         "simple_navbar": False,
     }
 

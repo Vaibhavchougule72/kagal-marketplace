@@ -285,6 +285,74 @@
                 12px;
         }
 
+        .orders-heading-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .order-filter-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .order-filter-select,
+        .custom-date {
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .order-filter-select {
+            min-width: 130px;
+            cursor: pointer;
+        }
+
+        .custom-date {
+            display: none;
+        }
+
+        .custom-date-btn {
+            display: none;
+            height: 40px;
+            padding: 0 14px;
+            border: none;
+            border-radius: 8px;
+            background: #1f6b45;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .orders-heading-row {
+                align-items: flex-start;
+            }
+
+            .order-filter-form {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .order-filter-select {
+                width: 100%;
+            }
+
+            .custom-date {
+                flex: 1;
+                min-width: 140px;
+            }
+        }
+
 
         /* ============================= */
         /* ORDERS */
@@ -664,11 +732,70 @@
     <!-- ORDERS -->
     <!-- ================================= -->
 
-    <div
-        id="orders"
-        class="section-title"
-    >
-        Today's Orders
+    <div class="orders-heading-row">
+
+        <form
+            method="GET"
+            action="{% url 'partner_dashboard' %}"
+            class="order-filter-form"
+            id="orderFilterForm"
+        >
+
+            <select
+                name="order_filter"
+                id="orderFilter"
+                class="order-filter-select"
+            >
+                <option value="today" {% if selected_filter == "today" %}selected{% endif %}>
+                    Today
+                </option>
+
+                <option value="week" {% if selected_filter == "week" %}selected{% endif %}>
+                    This Week
+                </option>
+
+                <option value="month" {% if selected_filter == "month" %}selected{% endif %}>
+                    This Month
+                </option>
+
+                <option value="custom" {% if selected_filter == "custom" %}selected{% endif %}>
+                    Custom
+                </option>
+            </select>
+
+            <input
+                type="date"
+                name="start_date"
+                id="startDate"
+                class="custom-date"
+                value="{{ start_date|date:'Y-m-d' }}"
+            >
+
+            <input
+                type="date"
+                name="end_date"
+                id="endDate"
+                class="custom-date"
+                value="{{ end_date|date:'Y-m-d' }}"
+            >
+
+            <button
+                type="submit"
+                id="customDateBtn"
+                class="custom-date-btn"
+            >
+                Apply
+            </button>
+
+        </form>
+
+        <div
+            id="orders"
+            class="section-title"
+        >
+            {{ filter_label }}
+        </div>
+
     </div>
 
 
@@ -799,6 +926,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 300);
 
 });
+
+const orderFilter = document.getElementById("orderFilter");
+const startDate = document.getElementById("startDate");
+const endDate = document.getElementById("endDate");
+const customDateBtn = document.getElementById("customDateBtn");
+const orderFilterForm = document.getElementById("orderFilterForm");
+
+function updateOrderFilterUI() {
+    if (orderFilter.value === "custom") {
+        startDate.style.display = "block";
+        endDate.style.display = "block";
+        customDateBtn.style.display = "block";
+    } else {
+        startDate.style.display = "none";
+        endDate.style.display = "none";
+        customDateBtn.style.display = "none";
+    }
+}
+
+orderFilter.addEventListener("change", function () {
+
+    if (this.value === "custom") {
+        updateOrderFilterUI();
+    } else {
+        orderFilterForm.submit();
+    }
+
+});
+
+updateOrderFilterUI();
+
 </script>
 
 </body>
