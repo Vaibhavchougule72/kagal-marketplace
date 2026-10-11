@@ -910,169 +910,99 @@ body{
 .sd-bottom-pad { height: 32px; }
 
 .product-sheet-overlay{
-
     position:fixed;
-
     inset:0;
-
     background:rgba(0,0,0,.45);
-
     display:flex;
-
     align-items:flex-end;
-
     opacity:0;
-
     pointer-events:none;
-
     transition:.25s;
-
     z-index:99999;
-
 }
 
 .product-sheet-overlay.show{
-
     opacity:1;
-
     pointer-events:auto;
-
 }
 
 .product-sheet{
-
     width:100%;
-
     background:#fff;
-
     border-radius:24px 24px 0 0;
-
     padding:20px;
-
     transform:translateY(100%);
-
     transition:.25s;
-
 }
 
 .product-sheet-overlay.show .product-sheet{
-
     transform:translateY(0);
-
 }
 
 .sheet-close{
-
     float:right;
-
     width:36px;
-
     height:36px;
-
     border:none;
-
     border-radius:50%;
-
     background:#eee;
-
     cursor:pointer;
-
 }
 
 #sheetImage{
-
     width:100%;
-
     height:220px;
-
     object-fit:cover;
-
     border-radius:16px;
-
     margin-top:15px;
-
 }
 
 #sheetName{
-
     margin:15px 0 8px;
-
     font-size:22px;
-
 }
 
 #sheetDescription{
-
     color:#666;
-
     margin-bottom:15px;
-
 }
 
 .sheet-price{
-
     font-size:24px;
-
     font-weight:bold;
-
     color:#2d7a3a;
-
 }
 
 .sheet-footer{
-
     margin-top:20px;
-
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
-
 }
 
 .sheet-stepper{
-
     display:flex;
-
     align-items:center;
-
     gap:12px;
-
 }
 
 .sheet-stepper button{
-
     width:36px;
-
     height:36px;
-
     border:none;
-
     border-radius:50%;
-
     background:#2d7a3a;
-
     color:white;
-
     font-size:20px;
-
 }
 
 #sheetAddBtn{
-
     background:#2d7a3a;
-
     color:#fff;
-
     border:none;
-
     padding:12px 28px;
-
     border-radius:30px;
-
     font-weight:700;
-
 }
 
 .sd-food-section {
@@ -1139,6 +1069,210 @@ body{
     .sd-prod-name { font-size: 13px; }
     .sd-prod-price { font-size: 14px; }
 }
+</style>
+
+
+<!-- ══════════════════════════════════════════
+     ALL FOOD ITEMS — TWO-COLUMN PHOTO GRID
+     (kept after the main styles so these rules win)
+══════════════════════════════════════════ -->
+<style>
+
+/* the list becomes the grid (works whether cards sit directly in it
+   or inside Veg / Non-Veg section wrappers) */
+.sd-product-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 10px;
+}
+
+.sd-product-list .sd-food-section,
+.sd-product-list .sd-empty {
+    grid-column: 1 / -1;
+}
+
+.sd-product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 10px;
+}
+
+.sd-food-section {
+    margin-bottom: 20px;
+}
+
+/* ── Card: photo on top, details below ── */
+.sd-product-card {
+    position: relative;
+    display: block;
+    padding: 0;
+    gap: 0;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,.07);
+}
+
+.sd-product-card:hover {
+    transform: none;
+    box-shadow: 0 6px 16px rgba(0,0,0,.11);
+}
+
+.sd-prod-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 110px;
+    border-radius: 16px 16px 0 0;
+    font-size: 40px;
+}
+
+.sd-prod-details {
+    padding: 20px 10px 11px;
+}
+
+.sd-prod-name {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.25;
+    min-height: 32px;
+    margin-bottom: 4px;
+}
+
+.sd-prod-store {
+    display: none;
+}
+
+.sd-prod-price-row {
+    flex-wrap: wrap;
+    gap: 2px 6px;
+}
+
+.sd-prod-price {
+    font-size: 14px;
+}
+
+.sd-prod-original {
+    font-size: 11px;
+}
+
+/* ── Discount tag: top-right corner of the photo ── */
+.sd-prod-discount {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    background: #E8621A;
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 7px;
+    text-transform: uppercase;
+}
+
+/* ── Veg / Non-Veg mark: top-left corner of the photo ── */
+.sd-photo-veg {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.22);
+}
+
+.sd-photo-veg::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+
+.sd-photo-veg::after {
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+}
+
+.sd-photo-veg.veg::before    { border-color: #198754; }
+.sd-photo-veg.veg::after     { background: #198754; }
+.sd-photo-veg.nonveg::before { border-color: #dc3545; }
+.sd-photo-veg.nonveg::after  { background: #dc3545; }
+
+/* ── Floating ADD button on the photo's bottom edge ── */
+.sd-product-card .sd-add-btn {
+    position: absolute;
+    top: 97px;
+    right: 8px;
+    z-index: 2;
+    width: auto;
+    height: auto;
+    padding: 7px 16px;
+    border-radius: 11px;
+    font-size: 0;               /* hides the old "+" */
+    box-shadow: 0 4px 10px rgba(0,0,0,.22);
+}
+
+.sd-product-card .sd-add-btn::after {
+    content: "ADD";
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .3px;
+}
+
+.sd-product-card .sd-add-btn:disabled {
+    box-shadow: none;
+}
+
+.sd-product-card .sd-add-btn:disabled::after {
+    content: "Soon";
+}
+
+/* ── Quantity stepper takes the same floating spot ── */
+.sd-product-card .sd-qty-stepper {
+    position: absolute;
+    top: 97px;
+    right: 8px;
+    z-index: 2;
+    background: #fff;
+    border: 1.5px solid #2d7a3a;
+    border-radius: 11px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.22);
+}
+
+.sd-product-card .sd-qty-btn {
+    width: 27px;
+    height: 28px;
+}
+
+.sd-product-card .sd-qty-count {
+    min-width: 18px;
+    font-size: 12px;
+}
+
+/* ── Unavailable products: dim the photo and details, keep the Soon button clear ── */
+.sd-product-card:has(.sd-add-btn:disabled) .sd-prod-img-wrap,
+.sd-product-card:has(.sd-add-btn:disabled) .sd-prod-details {
+    opacity: .55;
+}
+
+.sd-prod-unavailable {
+    margin-top: 4px;
+}
+
 </style>
 
 <!-- ══════════════════════════════════════════
@@ -1290,14 +1424,14 @@ body{
 {% endif %}
 
 <!-- ══════════════════════════════════════════
-     ALL FOOD ITEMS — Search + Filter + List
+     ALL FOOD ITEMS — Search + Filter + Grid
 ══════════════════════════════════════════ -->
 <div class="sd-all-section">
 
     <div class="sd-all-title">All Food Items</div>
 
     <!-- Subcategory Navigation -->
-    
+
     <div class="sd-subcategory-scroll" id="sd-subcategory-scroll">
 
         <button
@@ -1317,7 +1451,7 @@ body{
         {% endfor %}
 
     </div>
-    
+
 
     <!-- Search + Filter toggle -->
     <form method="GET" id="sd-filter-form">
@@ -1327,7 +1461,7 @@ body{
             name="subcategory"
             id="sd-subcategory-input"
             value="{{ selected_subcategory }}">
-        
+
         <input
             type="hidden"
             name="food_type"
@@ -1818,6 +1952,68 @@ sheetAddBtn.onclick = function () {
     });
 
 };
+</script>
+
+<!-- ══════════════════════════════════════════
+     JS — Veg / Non-Veg mark on each product photo
+══════════════════════════════════════════ -->
+<script>
+/* Uses the card's data-food-type if the partial provides it, otherwise reads it
+   from the Veg / Non-Veg section the card sits in. Re-runs automatically after
+   every AJAX filter / search refresh. */
+(function () {
+
+    var list = document.getElementById("sd-product-list");
+
+    if (!list) return;
+
+    function tagVegMarks() {
+
+        list.querySelectorAll(".sd-product-card").forEach(function (card) {
+
+            var wrap = card.querySelector(".sd-prod-img-wrap");
+
+            if (!wrap || wrap.querySelector(".sd-photo-veg")) return;
+
+            var type = card.dataset.foodType || "";
+
+            if (!type) {
+
+                var section = card.closest(".sd-food-section");
+
+                var indicator = section
+                    ? section.querySelector(".sd-food-indicator")
+                    : null;
+
+                if (indicator) {
+                    type = indicator.classList.contains("nonveg-indicator")
+                        ? "NON_VEG"
+                        : "VEG";
+                }
+            }
+
+            if (!type) return;
+
+            var mark = document.createElement("span");
+
+            mark.className = "sd-photo-veg " +
+                (type.toUpperCase().indexOf("NON") === 0 ? "nonveg" : "veg");
+
+            mark.setAttribute("aria-label",
+                mark.classList.contains("nonveg") ? "Non-vegetarian" : "Vegetarian");
+
+            wrap.appendChild(mark);
+        });
+    }
+
+    tagVegMarks();
+
+    new MutationObserver(tagVegMarks).observe(list, {
+        childList: true,
+        subtree: true
+    });
+
+})();
 </script>
 
 {% endblock %}

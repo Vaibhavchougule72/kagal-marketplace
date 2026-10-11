@@ -429,6 +429,18 @@ def store_detail(request, store_id):
             selected_subcategory = ""
             selected_subcategory_id = None
 
+    # Get the selected subcategory name for empty-state messages
+    selected_subcategory_name = ""
+
+    if selected_subcategory_id:
+        selected_subcategory_name = (
+            store_subcategories
+            .filter(id=selected_subcategory_id)
+            .values_list("name", flat=True)
+            .first()
+            or ""
+        )
+
 
     # Selected food type: All, Veg, or Non-Veg
     selected_food_type = request.GET.get("food_type", "").upper()
@@ -522,17 +534,14 @@ def store_detail(request, store_id):
     ).order_by("-id")[:10]
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-
-        return render(
-            request,
-            "partials/store_products.html",
-            {
-                "products": products,
-                "veg_products": veg_products,
-                "non_veg_products": non_veg_products,
-                "other_products": other_products,
-            }
-        )
+        return render(request, "partials/store_products.html", {
+            "products": products,
+            "veg_products": veg_products,
+            "non_veg_products": non_veg_products,
+            "other_products": other_products,
+            "selected_food_type": selected_food_type,
+            "selected_subcategory_name": selected_subcategory_name,
+        })
 
     return render(request, "store_detail.html", {
         "store": store,
@@ -545,6 +554,7 @@ def store_detail(request, store_id):
         "store_subcategories": store_subcategories,
         "selected_subcategory": selected_subcategory,
         "selected_food_type": selected_food_type,
+        "selected_subcategory_name": selected_subcategory_name,
         "show_floating_cart": True,
         # FILTER VALUES
         "query": query,
