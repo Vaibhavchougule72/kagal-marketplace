@@ -1,13 +1,10 @@
-{% if veg_products %}
+{% if veg_products or selected_food_type == "VEG" %}
 <!-- ========================= -->
 <!-- VEG SECTION -->
 <!-- ========================= -->
 
 <div class="sd-food-section">
-    <h3 class="sd-food-section-title">
-        <span class="sd-food-indicator veg-indicator"></span>
-        Veg
-    </h3>
+    
 
     <div class="sd-product-grid">
         {% for product in veg_products %}
@@ -17,7 +14,7 @@
                  data-price="{{ product.discount_price|default:product.price }}"
                  data-description="{{ product.description|default:'No description available' }}"
                  data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
-                 data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+                 data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
 
                 <div class="sd-prod-img-wrap">
                     {% if product.image %}
@@ -44,14 +41,14 @@
                         {% endif %}
                     </div>
 
-                    {% if not product.available_now %}
+                    {% if not product.is_available_now %}
                         <div class="sd-prod-unavailable">
                             Unavailable now
                         </div>
                     {% endif %}
                 </div>
 
-                {% if product.available_now %}
+                {% if product.is_available_now %}
                     <button class="sd-add-btn add-to-cart-btn"
                             data-id="{{ product.id }}"
                             aria-label="Add {{ product.name }}">+</button>
@@ -75,16 +72,12 @@
 </div>
 {% endif %}
 
-{% if non_veg_products %}
+{% if non_veg_products or selected_food_type == "NON_VEG" %}
 <!-- ========================= -->
 <!-- NON-VEG SECTION -->
 <!-- ========================= -->
 
 <div class="sd-food-section">
-    <h3 class="sd-food-section-title">
-        <span class="sd-food-indicator nonveg-indicator"></span>
-        Non-Veg
-    </h3>
 
     <div class="sd-product-grid">
         {% for product in non_veg_products %}
@@ -94,7 +87,7 @@
                  data-price="{{ product.discount_price|default:product.price }}"
                  data-description="{{ product.description|default:'No description available' }}"
                  data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
-                 data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+                 data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
 
                 <div class="sd-prod-img-wrap">
                     {% if product.image %}
@@ -121,14 +114,14 @@
                         {% endif %}
                     </div>
 
-                    {% if not product.available_now %}
+                    {% if not product.is_available_now %}
                         <div class="sd-prod-unavailable">
                             Unavailable now
                         </div>
                     {% endif %}
                 </div>
 
-                {% if product.available_now %}
+                {% if product.is_available_now %}
                     <button class="sd-add-btn add-to-cart-btn"
                             data-id="{{ product.id }}"
                             aria-label="Add {{ product.name }}">+</button>
@@ -142,9 +135,17 @@
         {% empty %}
             <div class="sd-empty">
                 <div class="sd-empty-icon">🍗</div>
-                <div class="sd-empty-text">No Non-Veg items available</div>
+
+                <div class="sd-empty-text">
+                    {% if selected_subcategory_name %}
+                        There are no non-veg items in {{ selected_subcategory_name }}
+                    {% else %}
+                        There are no non-veg items in this store
+                    {% endif %}
+                </div>
+
                 <div class="sd-empty-sub">
-                    Try another subcategory or check back later.
+                    Please try another food type or subcategory.
                 </div>
             </div>
         {% endfor %}
@@ -173,7 +174,7 @@
                  data-price="{{ product.discount_price|default:product.price }}"
                  data-description="{{ product.description|default:'No description available' }}"
                  data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
-                 data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+                 data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
 
                 <div class="sd-prod-img-wrap">
                     {% if product.image %}
@@ -200,14 +201,14 @@
                         {% endif %}
                     </div>
 
-                    {% if not product.available_now %}
+                    {% if not product.is_available_now %}
                         <div class="sd-prod-unavailable">
                             Unavailable now
                         </div>
                     {% endif %}
                 </div>
 
-                {% if product.available_now %}
+                {% if product.is_available_now %}
                     <button class="sd-add-btn add-to-cart-btn"
                             data-id="{{ product.id }}"
                             aria-label="Add {{ product.name }}">+</button>
