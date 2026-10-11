@@ -19,6 +19,8 @@ from .models import Complaint, ComplaintPhoto
 
 from django.contrib.auth.models import User
 from .models import Coupon, Customer
+from django import forms
+from django.core.exceptions import ValidationError
 
 def download_customer_csv(modeladmin, request, queryset):
 
@@ -321,9 +323,60 @@ def get_optional_cell(row, column):
 
     return str(value).strip()
 
+class ProductAdminForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["subcategory"].queryset = SubCategory.objects.none()
+
+        category_id = None
+
+        # When the form is submitted, use the selected category.
+        if self.data.get(self.add_prefix("category")):
+            category_id = self.data.get(self.add_prefix("category"))
+
+        # When editing an existing product, use its saved category.
+        elif self.instance and self.instance.pk and self.instance.category_id:
+            category_id = self.instance.category_id
+
+        if category_id:
+            self.fields["subcategory"].queryset = (
+                SubCategory.objects.filter(
+                    category_id=category_id,
+                    is_active=True,
+                ).order_by("priority", "name")
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        category = cleaned_data.get("category")
+        subcategory = cleaned_data.get("subcategory")
+
+        if (
+            subcategory
+            and category
+            and subcategory.category_id != category.id
+        ):
+            self.add_error(
+                "subcategory",
+                "Select a subcategory belonging to the chosen category.",
+            )
+
+        return cleaned_data
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
+
+    def get_changelist_form(self, request, **kwargs):
+        kwargs.setdefault("form", ProductAdminForm)
+        return super().get_changelist_form(request, **kwargs)
 
     list_display = (
         'name',
@@ -343,6 +396,8 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     list_editable = (
+        'subcategory',
+        'food_type',
         'price',
         'unavailable_10_12',
         'unavailable_12_3',
