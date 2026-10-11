@@ -107,9 +107,124 @@ class BannerAdmin(admin.ModelAdmin):
     )
 
 
+@admin.action(description="Create predefined LOKA subcategories")
+def create_loka_subcategories(modeladmin, request, queryset):
+    from django.contrib import messages
+    from django.core.exceptions import PermissionDenied
+    from django.db import transaction
+
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    subcategory_map = {
+        "Breakfast & Chinese": [
+            "Rice",
+            "Noodle",
+            "Starters",
+            "Chinese",
+            "Breakfast",
+            "Roti",
+            "Main Course",
+            "Thali",
+            "Dal",
+        ],
+        "Icecream & Shakes": [
+            "Ice-creams",
+            "Shakes",
+            "Soda",
+            "Lassi and Rabdi",
+            "Mocktails",
+        ],
+        "Cafe Snacks": [
+            "Pizza",
+            "Fries",
+            "Momos",
+            "Maggie",
+            "Nuggets",
+            "Rolls",
+            "Pasta",
+            "Sandwiches",
+            "Beverages",
+            "Burgers",
+        ],
+        "Meals": [
+            "Main-course",
+            "Starters",
+            "Roti",
+            "Rice",
+        ],
+        "Chat & Bhel": [
+            "Maggie",
+            "Bhel",
+            "Chat",
+        ],
+    }
+
+    missing_categories = [
+        name
+        for name in subcategory_map
+        if not Category.objects.filter(name=name).exists()
+    ]
+
+    if missing_categories:
+        modeladmin.message_user(
+            request,
+            "No changes made. Missing categories: "
+            + ", ".join(missing_categories),
+            level=messages.ERROR,
+        )
+        return
+
+    created_count = 0
+    existing_count = 0
+
+    try:
+        with transaction.atomic():
+            for category_name, names in subcategory_map.items():
+                category = Category.objects.get(name=category_name)
+
+                for priority, name in enumerate(names, start=1):
+                    _, created = SubCategory.objects.get_or_create(
+                        category=category,
+                        name=name,
+                        defaults={
+                            "priority": priority,
+                            "is_active": True,
+                        },
+                    )
+
+                    if created:
+                        created_count += 1
+                    else:
+                        existing_count += 1
+
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception(
+            "Failed to create LOKA subcategories"
+        )
+
+        modeladmin.message_user(
+            request,
+            "Subcategory creation failed. No partial changes were committed. "
+            "Check the application logs for details.",
+            level=messages.ERROR,
+        )
+        return
+
+    modeladmin.message_user(
+        request,
+        f"Completed successfully. Created: {created_count}; "
+        f"already existed: {existing_count}.",
+        level=messages.SUCCESS,
+    )
+
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
+    actions = [create_loka_subcategories]
 
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
