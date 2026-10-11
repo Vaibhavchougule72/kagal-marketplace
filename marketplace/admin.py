@@ -16,7 +16,7 @@ from .models import Customer
 from django.http import HttpResponse
 from .models import Order
 from .models import Complaint, ComplaintPhoto
-
+from django.forms.models import BaseInlineFormSet
 from django.contrib.auth.models import User
 from .models import Coupon, Customer
 from django import forms
@@ -222,15 +222,69 @@ def create_loka_subcategories(modeladmin, request, queryset):
         level=messages.SUCCESS,
     )
 
+class SubCategoryInlineFormSet(BaseInlineFormSet):
+
+    def clean(self):
+        super().clean()
+
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            if form.cleaned_data.get("DELETE") and form.instance.pk:
+                if form.instance.products.exists():
+                    raise ValidationError(
+                        f'Cannot delete subcategory '
+                        f'"{form.instance.name}" because it is '
+                        f'assigned to existing products. '
+                        f'Deactivate it instead.'
+                    )
+
+class SubCategoryInline(admin.TabularInline):
+    model = SubCategory
+    formset = SubCategoryInlineFormSet
+    extra = 1
+    fields = ("name", "priority", "is_active")
+    ordering = ("priority", "name")
+    show_change_link = True
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+    
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ("name", "subcategory_count", "subcategory_names")
+    search_fields = ("name",)
+    inlines = [SubCategoryInline]
     actions = [create_loka_subcategories]
+
+    @admin.display(description="Subcategories")
+    def subcategory_count(self, obj):
+        return obj.subcategories.count()
+
+    @admin.display(description="Subcategory names")
+    def subcategory_names(self, obj):
+        names = obj.subcategories.order_by("priority", "name").values_list(
+            "name", flat=True
+        )
+        names = list(names)
+
+        if not names:
+            return "No subcategories"
+
+        preview = ", ".join(names[:5])
+
+        if len(names) > 5:
+            preview += f", +{len(names) - 5} more"
+
+        return preview
+
 
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
-
     list_display = (
         "name",
         "category",
@@ -256,6 +310,8 @@ class SubCategoryAdmin(admin.ModelAdmin):
 class StoreTimingInline(admin.TabularInline):
     model = StoreTiming
     extra = 1
+    def has_delete_permission(self, request, obj=None):
+        return True
 
 class StoreHolidayInline(admin.TabularInline):
     model = StoreHoliday
