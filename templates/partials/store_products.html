@@ -1,56 +1,224 @@
-{% for product in products %}
-    <div class="sd-product-card"
-    data-id="{{ product.id }}"
-    data-name="{{ product.name }}"
-    data-price="{{ product.discount_price|default:product.price }}"
-    data-description="{{ product.description|default:'No description available' }}"
-    data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
-    data-available="{% if product.is_available_now %}true{% else %}false{% endif %}">
+{% if veg_products %}
+<!-- ========================= -->
+<!-- VEG SECTION -->
+<!-- ========================= -->
 
-        <!-- Image -->
-            <div class="sd-prod-img-wrap">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-                {% else %}
-                    🍽️
-                {% endif %}
-            </div>
+<div class="sd-food-section">
+    <h3 class="sd-food-section-title">
+        <span class="sd-food-indicator veg-indicator"></span>
+        Veg
+    </h3>
 
-            <!-- Info -->
-            <div class="sd-prod-details">
-                <div class="sd-prod-name">{{ product.name }}</div>
+    <div class="sd-product-grid">
+        {% for product in veg_products %}
+            <div class="sd-product-card"
+                 data-id="{{ product.id }}"
+                 data-name="{{ product.name }}"
+                 data-price="{{ product.discount_price|default:product.price }}"
+                 data-description="{{ product.description|default:'No description available' }}"
+                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+                 data-available="{data-available="{% if product.available_now %}true{% else %}false{% endif %}"% if product.is_available_now %}true{% else %}false{% endif %}">
 
-                <div class="sd-prod-price-row">
-                    <span class="sd-prod-price">₹{{ product.discount_price|default:product.price|floatformat:0 }}</span>
-                    {% if product.discount_price %}
-                        <span class="sd-prod-original">₹{{ product.price|floatformat:0 }}</span>
-                        {% with product.price|add:"0" as orig %}
-                        <span class="sd-prod-discount">
-                            {{ product.price|add:"-0"|floatformat:0 }}
-                        </span>
-                        {% endwith %}
+                <div class="sd-prod-img-wrap">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                             alt="{{ product.name }}"
+                             loading="lazy">
+                    {% else %}
+                        🍽️
                     {% endif %}
                 </div>
 
-                {% if not product.is_available_now %}
-                    <div class="sd-prod-unavailable">Unavailable now</div>
+                <div class="sd-prod-details">
+                    <div class="sd-prod-name">{{ product.name }}</div>
+
+                    <div class="sd-prod-price-row">
+                        <span class="sd-prod-price">
+                            ₹{{ product.discount_price|default:product.price|floatformat:0 }}
+                        </span>
+
+                        {% if product.discount_price %}
+                            <span class="sd-prod-original">
+                                ₹{{ product.price|floatformat:0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if not product.available_now %}
+                        <div class="sd-prod-unavailable">
+                            Unavailable now
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if product.available_now %}
+                    <button class="sd-add-btn add-to-cart-btn"
+                            data-id="{{ product.id }}"
+                            aria-label="Add {{ product.name }}">+</button>
+                {% else %}
+                    <button class="sd-add-btn"
+                            disabled
+                            aria-label="Unavailable"
+                            style="background:#d1d5db">–</button>
                 {% endif %}
             </div>
-
-            <!-- Add button / stepper -->
-            {% if product.is_available_now %}
-                <button class="sd-add-btn add-to-cart-btn"
-                        data-id="{{ product.id }}"
-                        aria-label="Add {{ product.name }}">+</button>
-            {% else %}
-                <button class="sd-add-btn" disabled aria-label="Unavailable" style="background:#d1d5db">–</button>
-            {% endif %}
-
-        </div>
         {% empty %}
-        <div class="sd-empty">
-            <div class="sd-empty-icon">🔍</div>
-            <div class="sd-empty-text">No products found</div>
-            <div class="sd-empty-sub">Try a different search or clear filters</div>
-        </div>
+            <div class="sd-empty">
+                <div class="sd-empty-icon">🥗</div>
+                <div class="sd-empty-text">No Veg items available</div>
+                <div class="sd-empty-sub">
+                    Try another subcategory or check back later.
+                </div>
+            </div>
         {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if non_veg_products %}
+<!-- ========================= -->
+<!-- NON-VEG SECTION -->
+<!-- ========================= -->
+
+<div class="sd-food-section">
+    <h3 class="sd-food-section-title">
+        <span class="sd-food-indicator nonveg-indicator"></span>
+        Non-Veg
+    </h3>
+
+    <div class="sd-product-grid">
+        {% for product in non_veg_products %}
+            <div class="sd-product-card"
+                 data-id="{{ product.id }}"
+                 data-name="{{ product.name }}"
+                 data-price="{{ product.discount_price|default:product.price }}"
+                 data-description="{{ product.description|default:'No description available' }}"
+                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+                 data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+
+                <div class="sd-prod-img-wrap">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                             alt="{{ product.name }}"
+                             loading="lazy">
+                    {% else %}
+                        🍽️
+                    {% endif %}
+                </div>
+
+                <div class="sd-prod-details">
+                    <div class="sd-prod-name">{{ product.name }}</div>
+
+                    <div class="sd-prod-price-row">
+                        <span class="sd-prod-price">
+                            ₹{{ product.discount_price|default:product.price|floatformat:0 }}
+                        </span>
+
+                        {% if product.discount_price %}
+                            <span class="sd-prod-original">
+                                ₹{{ product.price|floatformat:0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if not product.available_now %}
+                        <div class="sd-prod-unavailable">
+                            Unavailable now
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if product.available_now %}
+                    <button class="sd-add-btn add-to-cart-btn"
+                            data-id="{{ product.id }}"
+                            aria-label="Add {{ product.name }}">+</button>
+                {% else %}
+                    <button class="sd-add-btn"
+                            disabled
+                            aria-label="Unavailable"
+                            style="background:#d1d5db">–</button>
+                {% endif %}
+            </div>
+        {% empty %}
+            <div class="sd-empty">
+                <div class="sd-empty-icon">🍗</div>
+                <div class="sd-empty-text">No Non-Veg items available</div>
+                <div class="sd-empty-sub">
+                    Try another subcategory or check back later.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+
+<!-- ========================= -->
+<!-- OTHER ITEMS SECTION -->
+<!-- ========================= -->
+
+{% if other_products %}
+<div class="sd-food-section">
+    <h3 class="sd-food-section-title">
+        <span class="sd-food-indicator"></span>
+        Other Items
+    </h3>
+
+    <div class="sd-product-grid">
+        {% for product in other_products %}
+            <div class="sd-product-card"
+                 data-id="{{ product.id }}"
+                 data-name="{{ product.name }}"
+                 data-price="{{ product.discount_price|default:product.price }}"
+                 data-description="{{ product.description|default:'No description available' }}"
+                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+                 data-available="{% if product.available_now %}true{% else %}false{% endif %}">
+
+                <div class="sd-prod-img-wrap">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                             alt="{{ product.name }}"
+                             loading="lazy">
+                    {% else %}
+                        🍽️
+                    {% endif %}
+                </div>
+
+                <div class="sd-prod-details">
+                    <div class="sd-prod-name">{{ product.name }}</div>
+
+                    <div class="sd-prod-price-row">
+                        <span class="sd-prod-price">
+                            ₹{{ product.discount_price|default:product.price|floatformat:0 }}
+                        </span>
+
+                        {% if product.discount_price %}
+                            <span class="sd-prod-original">
+                                ₹{{ product.price|floatformat:0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if not product.available_now %}
+                        <div class="sd-prod-unavailable">
+                            Unavailable now
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if product.available_now %}
+                    <button class="sd-add-btn add-to-cart-btn"
+                            data-id="{{ product.id }}"
+                            aria-label="Add {{ product.name }}">+</button>
+                {% else %}
+                    <button class="sd-add-btn"
+                            disabled
+                            aria-label="Unavailable"
+                            style="background:#d1d5db">–</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

@@ -441,6 +441,53 @@ body{
     box-shadow: 0 2px 10px rgba(0,0,0,.04);
 }
 
+/* ── SUBCATEGORY NAVIGATION ───────────────── */
+.sd-subcategory-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 1px 12px;
+    margin-bottom: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sd-subcategory-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.sd-subcategory-btn {
+    flex-shrink: 0;
+    padding: 9px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .2s ease;
+    font-family: inherit;
+}
+
+.sd-subcategory-btn:hover {
+    border-color: #2d7a3a;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.sd-subcategory-btn.active {
+    background: #2d7a3a;
+    border-color: #2d7a3a;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(45, 122, 58, .2);
+}
+
+.sd-subcategory-btn:active {
+    transform: scale(.97);
+}
+
 .sd-all-title {
     font-size: 17px;
     font-weight: 800;
@@ -628,6 +675,12 @@ body{
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.sd-product-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
 
 .sd-product-card {
@@ -951,6 +1004,59 @@ body{
 
 }
 
+.sd-food-section {
+    margin-bottom: 24px;
+}
+
+.sd-food-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.sd-food-indicator {
+    width: 12px;
+    height: 12px;
+    border: 2px solid;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.veg-indicator {
+    border-color: #198754;
+}
+
+.veg-indicator::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #198754;
+}
+
+.nonveg-indicator {
+    border-color: #dc3545;
+}
+
+.nonveg-indicator::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #dc3545;
+}
+
+.sd-product-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
 /* ── MOBILE ──────────────────────────────── */
 @media (max-width: 576px) {
     .sd-hero { height: 220px; }
@@ -1119,8 +1225,38 @@ body{
 
     <div class="sd-all-title">All Food Items</div>
 
+    <!-- Subcategory Navigation -->
+    
+    <div class="sd-subcategory-scroll" id="sd-subcategory-scroll">
+
+        <button
+            type="button"
+            class="sd-subcategory-btn {% if not selected_subcategory %}active{% endif %}"
+            data-subcategory="">
+            All
+        </button>
+
+        {% for subcategory in store_subcategories %}
+        <button
+            type="button"
+            class="sd-subcategory-btn {% if selected_subcategory == subcategory.id|stringformat:'s' %}active{% endif %}"
+            data-subcategory="{{ subcategory.id }}">
+            {{ subcategory.name }}
+        </button>
+        {% endfor %}
+
+    </div>
+    
+
     <!-- Search + Filter toggle -->
     <form method="GET" id="sd-filter-form">
+
+        <input
+            type="hidden"
+            name="subcategory"
+            id="sd-subcategory-input"
+            value="{{ selected_subcategory }}">
+
         <div class="sd-search-row">
             <div class="sd-search-box">
                 <span class="sd-search-icon">🔍</span>
@@ -1319,8 +1455,38 @@ body{
 
 })();
 
+/* ── Subcategory button navigation ── */
+const subcategoryButtons = document.querySelectorAll(
+    ".sd-subcategory-btn"
+);
+
 const filterForm =
     document.getElementById("sd-filter-form");
+
+const subcategoryInput = document.getElementById(
+    "sd-subcategory-input"
+);
+
+subcategoryButtons.forEach(function(button) {
+    button.addEventListener("click", function() {
+
+        if (!filterForm || !subcategoryInput) return;
+
+        subcategoryInput.value =
+            button.getAttribute("data-subcategory") || "";
+
+        subcategoryButtons.forEach(function(item) {
+            item.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        // Preserve search, price, and sorting filters.
+        filterForm.requestSubmit();
+    });
+});
+
+
 
 const productList =
     document.getElementById("sd-product-list");

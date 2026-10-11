@@ -11,7 +11,7 @@ import math
 import re
 from django.conf import settings
 from django.contrib import messages
-from .models import Category, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead, Expense
+from .models import Category, SubCategory, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead, Expense
 from .cart import Cart
 from django.contrib.auth.models import User
 from .models import Bundle, StoreTiming
@@ -400,6 +400,35 @@ def store_detail(request, store_id):
     # REBUILD FROM CACHE
     # =========================
     store = get_object_or_404(Store, id=data["store_id"])
+
+    # =========================
+    # SUBCATEGORY NAVIGATION
+    # =========================
+    store_subcategories = SubCategory.objects.filter(
+        category=store.category,
+        is_active=True,
+        products__store=store,
+        products__is_active=True,
+    ).distinct().order_by("priority", "name")
+
+    selected_subcategory = request.GET.get("subcategory", "")
+
+    # Validate the selected subcategory
+    try:
+        selected_subcategory_id = int(selected_subcategory)
+    except (TypeError, ValueError):
+        selected_subcategory_id = None
+        selected_subcategory = ""
+
+    if selected_subcategory_id:
+        if store_subcategories.filter(
+            id=selected_subcategory_id
+        ).exists():
+            selected_subcategory = str(selected_subcategory_id)
+        else:
+            selected_subcategory = ""
+            selected_subcategory_id = None
+
     # =========================
     # FILTER VALUES
     # =========================
@@ -409,14 +438,21 @@ def store_detail(request, store_id):
     sort = request.GET.get("sort")
 
     products = Product.objects.filter(
-        id__in=data["product_ids"]
+        id__in=data["product_ids"],
+        is_active=True
     ).select_related(
         "category",
-        "store"
+        "store",
+        "subcategory"
     )
-    for product in products:
+    
+    # Filter products by the selected subcategory
+    if selected_subcategory_id:
+        products = products.filter(
+            subcategory_id=selected_subcategory_id
+        )
 
-        product.available_now = product.is_available_now()
+    
     
     # =========================
     # SEARCH
@@ -454,6 +490,18 @@ def store_detail(request, store_id):
     else:
         products = products.order_by("-id")
 
+    for product in products:
+        product.available_now = product.is_available_now()
+
+    # =========================
+    # VEG / NON-VEG GROUPS
+    # =========================
+    veg_products = products.filter(food_type="VEG")
+    non_veg_products = products.filter(food_type="NON_VEG")
+    other_products = products.filter(
+        Q(food_type__isnull=True) | Q(food_type="")
+    )
+
     bundles = Bundle.objects.filter(
         id__in=data["bundle_ids"],
         is_active=True
@@ -463,13 +511,17 @@ def store_detail(request, store_id):
         store=store,
         is_featured=True
     ).order_by("-id")[:10]
+
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 
         return render(
             request,
             "partials/store_products.html",
             {
-                "products": products
+                "products": products,
+                "veg_products": veg_products,
+                "non_veg_products": non_veg_products,
+                "other_products": other_products,
             }
         )
 
@@ -477,7 +529,12 @@ def store_detail(request, store_id):
         "store": store,
         "featured_products": featured_products,
         "products": products,
+        "veg_products": veg_products,
+        "non_veg_products": non_veg_products,
+        "other_products": other_products,
         "bundles": bundles,
+        "store_subcategories": store_subcategories,
+        "selected_subcategory": selected_subcategory,
         "show_floating_cart": True,
         # FILTER VALUES
         "query": query,
