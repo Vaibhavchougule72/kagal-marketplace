@@ -17,7 +17,7 @@
                  data-price="{{ product.discount_price|default:product.price }}"
                  data-description="{{ product.description|default:'No description available' }}"
                  data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
-                 data-available="{data-available="{% if product.available_now %}true{% else %}false{% endif %}"% if product.is_available_now %}true{% else %}false{% endif %}">
+                 data-available="{% if product.available_now %}true{% else %}false{% endif %}">
 
                 <div class="sd-prod-img-wrap">
                     {% if product.image %}
