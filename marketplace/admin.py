@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Store, Product, Order, OrderItem
+from .models import Category, SubCategory, Store, Product, Order, OrderItem
 from django.urls import path
 from django.utils.html import format_html
 from .views import generate_delivery_pdf, generate_store_pdf
@@ -111,6 +111,31 @@ class BannerAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
+@admin.register(SubCategory)
+class SubCategoryAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "name",
+        "category",
+        "priority",
+        "is_active",
+    )
+
+    list_filter = (
+        "category",
+        "is_active",
+    )
+
+    search_fields = (
+        "name",
+        "category__name",
+    )
+
+    list_editable = (
+        "priority",
+        "is_active",
+    )
+
 class StoreTimingInline(admin.TabularInline):
     model = StoreTiming
     extra = 1
@@ -155,6 +180,7 @@ from .forms import ProductUploadForm
 
 from .models import (
     Category,
+    SubCategory,
     Store,
     Product,
     Order,
@@ -172,12 +198,24 @@ logger = logging.getLogger(__name__)
 from django.core.files import File
 import os
 
+def get_optional_cell(row, column):
+    value = row.get(column, "")
+
+    if pd.isna(value):
+        return ""
+
+    return str(value).strip()
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
 
     list_display = (
         'name',
         'store',
+        'category',
+        'subcategory',
+        'food_type',
         'price',
         'is_hero',
         'discount_price',
@@ -196,7 +234,16 @@ class ProductAdmin(admin.ModelAdmin):
         'unavailable_3_630',
         'unavailable_630_9',
     )
-    list_filter = ('store', 'is_active', 'is_hero','is_featured')
+
+    list_filter = (
+        'store',
+        'category',
+        'subcategory',
+        'food_type',
+        'is_active',
+        'is_hero',
+        'is_featured',
+    )
     search_fields = ('name',)
 
     def get_urls(self):
@@ -243,16 +290,53 @@ class ProductAdmin(admin.ModelAdmin):
                                 name=str(row["category"]).strip()
                             )
 
+                            subcategory_name = get_optional_cell(
+                                row,
+                                "subcategory"
+                            )
+
+                            food_type_value = get_optional_cell(
+                                row,
+                                "food_type"
+                            ).upper().replace("-", "_").replace(" ", "_")
+
+                            subcategory = None
+
+                            if subcategory_name:
+                                subcategory = SubCategory.objects.get(
+                                    name=subcategory_name,
+                                    category=category,
+                                    is_active=True
+                                )
+
+                            food_type_map = {
+                                "": "",
+                                "VEG": "VEG",
+                                "NON_VEG": "NON_VEG",
+                            }
+
+                            if food_type_value not in food_type_map:
+                                raise ValueError(
+                                    "food_type must be Veg, Non-Veg, "
+                                    "or blank."
+                                )
+
                             product = Product(
                                 name=str(row["name"]).strip(),
                                 store=store,
                                 category=category,
+                                subcategory=subcategory,
+                                food_type=food_type_map[food_type_value],
                                 price=row["price"],
-                                description=str(row.get("description", "")).strip(),
+                                description=str(
+                                    row.get("description", "")
+                                ).strip(),
                                 is_featured=row["is_featured"],
                                 is_active=row["is_active"],
                                 upi_only=row["upi_only"]
                             )
+
+                            product.full_clean()
 
                             image_path = str(row.get("image_path", "")).strip()
 

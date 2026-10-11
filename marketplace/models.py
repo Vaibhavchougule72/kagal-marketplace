@@ -6,6 +6,7 @@ from cloudinary.models import CloudinaryField
 from decimal import Decimal
 from .firebase import send_push_notification
 from firebase_admin import messaging
+from django.core.exceptions import ValidationError
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -14,6 +15,37 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class SubCategory(models.Model):
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="subcategories"
+    )
+
+    name = models.CharField(max_length=100)
+
+    priority = models.PositiveIntegerField(
+        default=0,
+        help_text="Controls the display order of subcategories"
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Product Subcategory"
+        verbose_name_plural = "Product Subcategories"
+        ordering = ["priority", "name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["category", "name"],
+                name="unique_subcategory_per_category"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
+
+    
 class Store(models.Model):
     name = models.CharField(max_length=200)
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
@@ -111,6 +143,28 @@ class Product(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    subcategory = models.ForeignKey(
+        SubCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="products"
+    )
+
+    FOOD_TYPE_CHOICES = [
+        ("VEG", "Veg"),
+        ("NON_VEG", "Non-Veg"),
+    ]
+
+    food_type = models.CharField(
+        max_length=10,
+        choices=FOOD_TYPE_CHOICES,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="Select whether this product is Veg or Non-Veg."
+    )
      # ✅ HERO SETTINGS
     is_hero = models.BooleanField(default=False)
     offer_text = models.CharField(max_length=100, blank=True, null=True)
@@ -232,6 +286,21 @@ class Product(models.Model):
 
         # Outside product availability schedule
         return True
+
+    def clean(self):
+        super().clean()
+
+        if (
+            self.subcategory_id
+            and self.category_id
+            and self.subcategory.category_id != self.category_id
+        ):
+            raise ValidationError({
+                "subcategory": (
+                    "The selected subcategory must belong "
+                    "to the selected product category."
+                )
+            })
 
     def __str__(self):
         return self.name
