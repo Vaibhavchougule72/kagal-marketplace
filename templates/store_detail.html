@@ -502,6 +502,77 @@ body{
     margin-bottom: 14px;
 }
 
+/* Veg / Non-Veg filter buttons */
+.sd-food-type-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: -4px 0 14px;
+}
+
+.sd-food-type-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 7px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .2s ease;
+}
+
+.sd-food-type-btn.active {
+    background: #f0fdf4;
+    border-color: #2d7a3a;
+    color: #166534;
+    box-shadow: 0 2px 6px rgba(45, 122, 58, .12);
+}
+
+.sd-food-type-btn:active {
+    transform: scale(.97);
+}
+
+.sd-food-type-dot {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.veg-dot {
+    border-color: #198754;
+}
+
+.veg-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #198754;
+}
+
+.nonveg-dot {
+    border-color: #dc3545;
+}
+
+.nonveg-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #dc3545;
+}
+
 .sd-search-box {
     flex: 1;
     display: flex;
@@ -1256,6 +1327,12 @@ body{
             name="subcategory"
             id="sd-subcategory-input"
             value="{{ selected_subcategory }}">
+        
+        <input
+            type="hidden"
+            name="food_type"
+            id="sd-food-type-input"
+            value="{{ selected_food_type }}">
 
         <div class="sd-search-row">
             <div class="sd-search-box">
@@ -1271,6 +1348,34 @@ body{
             <button type="button" class="sd-filter-toggle" id="sd-filter-toggle-btn" aria-expanded="false">
                 ⚙ Filter
             </button>
+        </div>
+
+        <!-- Veg / Non-Veg Filter Buttons -->
+        <div class="sd-food-type-filter" id="sd-food-type-filter">
+
+            <button
+                type="button"
+                class="sd-food-type-btn {% if not selected_food_type %}active{% endif %}"
+                data-food-type="">
+                All
+            </button>
+
+            <button
+                type="button"
+                class="sd-food-type-btn sd-veg-btn {% if selected_food_type == 'VEG' %}active{% endif %}"
+                data-food-type="VEG">
+                <span class="sd-food-type-dot veg-dot"></span>
+                Veg
+            </button>
+
+            <button
+                type="button"
+                class="sd-food-type-btn sd-nonveg-btn {% if selected_food_type == 'NON_VEG' %}active{% endif %}"
+                data-food-type="NON_VEG">
+                <span class="sd-food-type-dot nonveg-dot"></span>
+                Non-Veg
+            </button>
+
         </div>
 
         <!-- Collapsible filter panel -->
@@ -1466,6 +1571,32 @@ const filterForm =
 const subcategoryInput = document.getElementById(
     "sd-subcategory-input"
 );
+
+const foodTypeInput = document.getElementById(
+    "sd-food-type-input"
+);
+
+const foodTypeButtons = document.querySelectorAll(
+    ".sd-food-type-btn"
+);
+
+foodTypeButtons.forEach(function(button) {
+    button.addEventListener("click", function() {
+
+        if (!filterForm || !foodTypeInput) return;
+
+        foodTypeInput.value =
+            button.getAttribute("data-food-type") || "";
+
+        foodTypeButtons.forEach(function(item) {
+            item.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        filterForm.requestSubmit();
+    });
+});
 
 subcategoryButtons.forEach(function(button) {
     button.addEventListener("click", function() {

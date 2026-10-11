@@ -429,6 +429,13 @@ def store_detail(request, store_id):
             selected_subcategory = ""
             selected_subcategory_id = None
 
+
+    # Selected food type: All, Veg, or Non-Veg
+    selected_food_type = request.GET.get("food_type", "").upper()
+
+    if selected_food_type not in ("VEG", "NON_VEG"):
+        selected_food_type = ""
+
     # =========================
     # FILTER VALUES
     # =========================
@@ -452,6 +459,8 @@ def store_detail(request, store_id):
             subcategory_id=selected_subcategory_id
         )
 
+    if selected_food_type:
+        products = products.filter(food_type=selected_food_type)
     
     
     # =========================
@@ -535,6 +544,7 @@ def store_detail(request, store_id):
         "bundles": bundles,
         "store_subcategories": store_subcategories,
         "selected_subcategory": selected_subcategory,
+        "selected_food_type": selected_food_type,
         "show_floating_cart": True,
         # FILTER VALUES
         "query": query,
