@@ -128,7 +128,8 @@
         }
 
         input,
-        textarea {
+        textarea,
+        select {
             width: 100%;
             padding: 11px;
 
@@ -315,6 +316,20 @@
 
             {% csrf_token %}
 
+            {% if error_message %}
+                <div style="
+                    background: #fff0f0;
+                    color: #c62828;
+                    padding: 12px;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                    font-size: 13px;
+                    font-weight: 700;
+                ">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+
 
             <!-- PRODUCT NAME -->
 
@@ -348,6 +363,26 @@
                     disabled
                 >
 
+            </div>
+
+            <!-- SUBCATEGORY -->
+            <div class="field">
+                <label for="subcategory">Subcategory</label>
+
+                <select name="subcategory" id="subcategory">
+                    <option value="">No Subcategory</option>
+
+                    {% for subcategory in subcategories %}
+                        <option
+                            value="{{ subcategory.id }}"
+                            {% if product.subcategory_id == subcategory.id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ subcategory.name }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
 
 
@@ -404,6 +439,25 @@
                     name="description"
                 >{{ product.description }}</textarea>
 
+            </div>
+
+            <!-- FOOD TYPE -->
+            <div class="field">
+                <label for="food_type">Food Type</label>
+
+                <select name="food_type" id="food_type" required>
+                    <option value="">Select Food Type</option>
+
+                    <option value="VEG"
+                        {% if product.food_type == "VEG" %}selected{% endif %}>
+                        🟢 Veg
+                    </option>
+
+                    <option value="NON_VEG"
+                        {% if product.food_type == "NON_VEG" %}selected{% endif %}>
+                        🔴 Non-Veg
+                    </option>
+                </select>
             </div>
 
 

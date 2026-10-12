@@ -384,6 +384,36 @@
 
         </div>
 
+        <!-- SUBCATEGORY -->
+
+        <div class="field">
+
+            <label for="subcategory">
+                Subcategory
+            </label>
+
+            <select
+                name="subcategory"
+                id="subcategory"
+                disabled
+            >
+                <option value="">
+                    Select Subcategory
+                </option>
+
+                {% for subcategory in subcategories %}
+                    <option
+                        value="{{ subcategory.id }}"
+                        data-category="{{ subcategory.category_id }}"
+                    >
+                        {{ subcategory.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
 
         <!-- PRICE -->
 
@@ -436,6 +466,35 @@
                 name="description"
                 placeholder="Enter product description"
             ></textarea>
+
+        </div>
+
+        <!-- FOOD TYPE -->
+
+        <div class="field">
+
+            <label for="food_type">
+                Food Type
+            </label>
+
+            <select
+                name="food_type"
+                id="food_type"
+                required
+            >
+                <option value="">
+                    Select Food Type
+                </option>
+
+                <option value="VEG">
+                    🟢 Veg
+                </option>
+
+                <option value="NON_VEG">
+                    🔴 Non-Veg
+                </option>
+
+            </select>
 
         </div>
 
@@ -601,6 +660,54 @@
     </form>
 
 </main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const categorySelect = document.querySelector(
+        'select[name="category"]'
+    );
+
+    const subcategorySelect = document.querySelector(
+        'select[name="subcategory"]'
+    );
+
+    if (!categorySelect || !subcategorySelect) {
+        return;
+    }
+
+    const subcategoryOptions = Array.from(
+        subcategorySelect.options
+    ).slice(1);
+
+    function updateSubcategories() {
+
+        const selectedCategory = categorySelect.value;
+
+        subcategorySelect.value = "";
+        subcategorySelect.disabled = !selectedCategory;
+
+        subcategoryOptions.forEach(function (option) {
+
+            const belongsToCategory =
+                option.dataset.category === selectedCategory;
+
+            option.hidden = !belongsToCategory;
+            option.disabled = !belongsToCategory;
+
+        });
+
+    }
+
+    categorySelect.addEventListener(
+        "change",
+        updateSubcategories
+    );
+
+    updateSubcategories();
+
+});
+</script>
 
 </body>
 

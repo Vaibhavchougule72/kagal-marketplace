@@ -64,6 +64,7 @@ from .notification_service import notify_store_partner_new_order
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .firebase import notify_partner_order_alert_cancelled
+from .models import SubCategory
 
 MAX_CART_QTY = 50
 
@@ -10961,39 +10962,73 @@ def partner_product_edit(request, product_id):
         store=store
     )
 
-    if request.method == "POST":
+    # Active subcategories belonging to this product's category
+    subcategories = SubCategory.objects.filter(
+        category=product.category,
+        is_active=True
+    ).order_by("priority", "name")
 
+    if request.method == "POST":
+        # -----------------------------
+        # SUBCATEGORY
+        # -----------------------------
+        subcategory_id = request.POST.get("subcategory", "").strip()
+
+        if subcategory_id:
+            subcategory = get_object_or_404(
+                SubCategory,
+                id=subcategory_id,
+                category=product.category,
+                is_active=True
+            )
+            product.subcategory = subcategory
+        else:
+            product.subcategory = None
+
+
+        # -----------------------------
+        # FOOD TYPE
+        # -----------------------------
+        food_type = request.POST.get("food_type", "").strip().upper()
+
+        if food_type not in ("VEG", "NON_VEG"):
+            return render(
+                request,
+                "partner_product_edit.html",
+                {
+                    "product": product,
+                    "store": store,
+                    "subcategories": subcategories,
+                    "error_message": "Please select Veg or Non-Veg."
+                },
+                status=400
+            )
+
+        product.food_type = food_type
         product.name = request.POST.get("name", "").strip()
         product.price = request.POST.get("price") or product.price
         product.discount_price = (
-            request.POST.get("discount_price")
-            or None
+            request.POST.get("discount_price") or None
         )
         product.description = request.POST.get(
             "description",
             ""
         ).strip()
 
-        product.is_active = (
-            request.POST.get("is_active") == "on"
-        )
+       
 
-        product.upi_only = (
-            request.POST.get("upi_only") == "on"
-        )
+        product.is_active = request.POST.get("is_active") == "on"
+        product.upi_only = request.POST.get("upi_only") == "on"
 
         product.unavailable_10_12 = (
             request.POST.get("unavailable_10_12") == "on"
         )
-
         product.unavailable_12_3 = (
             request.POST.get("unavailable_12_3") == "on"
         )
-
         product.unavailable_3_630 = (
             request.POST.get("unavailable_3_630") == "on"
         )
-
         product.unavailable_630_9 = (
             request.POST.get("unavailable_630_9") == "on"
         )
@@ -11003,7 +11038,13 @@ def partner_product_edit(request, product_id):
 
         product.save()
 
+        messages.success(request, "Product updated successfully.")
         return redirect("partner_dashboard")
+
+    subcategories = SubCategory.objects.filter(
+        category=product.category,
+        is_active=True
+    ).order_by("priority", "name")
 
     return render(
         request,
@@ -11011,9 +11052,9 @@ def partner_product_edit(request, product_id):
         {
             "product": product,
             "store": store,
+            "subcategories": subcategories,
         }
     )
-
 
 @login_required
 def partner_store_details(request):
@@ -11389,6 +11430,9 @@ def partner_product_add(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
         category_id = request.POST.get("category")
+        subcategory_id = request.POST.get("subcategory")
+        food_type = request.POST.get("food_type", "").upper()
+
         price = request.POST.get("price") or 0
         discount_price = request.POST.get("discount_price") or None
         description = request.POST.get("description", "").strip()
@@ -11398,10 +11442,28 @@ def partner_product_add(request):
             id=category_id
         )
 
+        # Validate food type
+        if food_type not in ("VEG", "NON_VEG"):
+            messages.error(request, "Please select Veg or Non-Veg.")
+            return redirect("partner_product_add")
+
+        # Validate subcategory belongs to the selected category
+        subcategory = None
+
+        if subcategory_id:
+            subcategory = get_object_or_404(
+                SubCategory,
+                id=subcategory_id,
+                category=category,
+                is_active=True
+            )
+
         product = Product(
             name=name,
             store=store,
             category=category,
+            subcategory=subcategory,
+            food_type=food_type,
             price=price,
             discount_price=discount_price,
             description=description,
@@ -11422,9 +11484,18 @@ def partner_product_add(request):
 
         product.save()
 
+        messages.success(request, "Product added successfully.")
         return redirect("partner_products")
 
     categories = Category.objects.all().order_by("name")
+
+    subcategories = SubCategory.objects.filter(
+        is_active=True
+    ).select_related("category").order_by(
+        "category__name",
+        "priority",
+        "name"
+    )
 
     return render(
         request,
@@ -11432,6 +11503,7 @@ def partner_product_add(request):
         {
             "store": store,
             "categories": categories,
+            "subcategories": subcategories,
         }
     )
 
