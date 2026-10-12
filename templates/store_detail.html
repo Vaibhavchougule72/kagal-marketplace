@@ -471,6 +471,66 @@ body{
     font-family: inherit;
 }
 
+/* ── SUBCATEGORY SCROLL INDICATOR ─────────── */
+
+.sd-subcategory-wrapper {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.sd-subcategory-scroll {
+    padding-right: 36px;
+    scroll-behavior: smooth;
+    scroll-padding-left: 4px;
+    overscroll-behavior-x: contain;
+}
+
+/* Right arrow */
+.sd-subcategory-arrow {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    z-index: 3;
+
+    width: 34px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 0 22px 22px 0;
+
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.75),
+        #ffffff 35%
+    );
+
+    color: #2d7a3a;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.sd-subcategory-arrow:active {
+    transform: scale(0.94);
+}
+
+.sd-subcategory-arrow.hidden {
+    display: none;
+}
+
+.sd-subcategory-arrow:focus-visible {
+    outline: 2px solid #2d7a3a;
+    outline-offset: -3px;
+}
+
 .sd-subcategory-btn:hover {
     border-color: #2d7a3a;
     background: #f0fdf4;
@@ -1430,25 +1490,37 @@ body{
 
     <div class="sd-all-title">All Food Items</div>
 
+
     <!-- Subcategory Navigation -->
+    <div class="sd-subcategory-wrapper">
 
-    <div class="sd-subcategory-scroll" id="sd-subcategory-scroll">
+        <div class="sd-subcategory-scroll" id="sd-subcategory-scroll">
+
+            <button
+                type="button"
+                class="sd-subcategory-btn {% if not selected_subcategory %}active{% endif %}"
+                data-subcategory="">
+                All
+            </button>
+
+            {% for subcategory in store_subcategories %}
+            <button
+                type="button"
+                class="sd-subcategory-btn {% if selected_subcategory == subcategory.id|stringformat:'s' %}active{% endif %}"
+                data-subcategory="{{ subcategory.id }}">
+                {{ subcategory.name }}
+            </button>
+            {% endfor %}
+
+        </div>
 
         <button
             type="button"
-            class="sd-subcategory-btn {% if not selected_subcategory %}active{% endif %}"
-            data-subcategory="">
-            All
+            id="sd-subcategory-arrow"
+            class="sd-subcategory-arrow"
+            aria-label="Show more subcategories">
+            &rsaquo;
         </button>
-
-        {% for subcategory in store_subcategories %}
-        <button
-            type="button"
-            class="sd-subcategory-btn {% if selected_subcategory == subcategory.id|stringformat:'s' %}active{% endif %}"
-            data-subcategory="{{ subcategory.id }}">
-            {{ subcategory.name }}
-        </button>
-        {% endfor %}
 
     </div>
 
@@ -2013,6 +2085,62 @@ sheetAddBtn.onclick = function () {
         subtree: true
     });
 
+})();
+</script>
+
+<script>
+(function () {
+    const scrollContainer = document.getElementById(
+        "sd-subcategory-scroll"
+    );
+
+    const arrowButton = document.getElementById(
+        "sd-subcategory-arrow"
+    );
+
+    if (!scrollContainer || !arrowButton) return;
+
+    function updateArrowVisibility() {
+        const hasOverflow =
+            scrollContainer.scrollWidth >
+            scrollContainer.clientWidth + 2;
+
+        const reachedEnd =
+            scrollContainer.scrollLeft +
+            scrollContainer.clientWidth >=
+            scrollContainer.scrollWidth - 3;
+
+        arrowButton.classList.toggle(
+            "hidden",
+            !hasOverflow || reachedEnd
+        );
+    }
+
+    arrowButton.addEventListener("click", function () {
+        scrollContainer.scrollBy({
+            left: Math.max(
+                150,
+                scrollContainer.clientWidth * 0.65
+            ),
+            behavior: "smooth"
+        });
+    });
+
+    scrollContainer.addEventListener(
+        "scroll",
+        updateArrowVisibility,
+        { passive: true }
+    );
+
+    window.addEventListener(
+        "resize",
+        updateArrowVisibility
+    );
+
+    // Recheck after the page layout is ready.
+    requestAnimationFrame(updateArrowVisibility);
+
+    window.addEventListener("load", updateArrowVisibility);
 })();
 </script>
 
