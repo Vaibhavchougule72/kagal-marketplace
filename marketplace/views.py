@@ -3865,7 +3865,12 @@ def cancel_order(request, order_id):
         if order.is_refunded:
             return redirect("order_tracking", order_id=order.id)
 
-        client = razorpay.Client(...)
+        client = razorpay.Client(
+            auth=(
+                settings.RAZORPAY_KEY_ID,
+                settings.RAZORPAY_KEY_SECRET
+            )
+        )
 
         refund_amount = to_paise(order.total)
 
