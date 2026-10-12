@@ -469,10 +469,38 @@
 
         <div class="filter-row">
 
+            <!-- Existing Sort Filter -->
             <select id="sortFilter" class="filter-select">
                 <option value="default">Sort: Default</option>
                 <option value="az">A → Z</option>
                 <option value="za">Z → A</option>
+            </select>
+
+        </div>
+
+        <!-- NEW: Subcategory Filter -->
+        <div class="filter-row">
+
+            <select id="subcategoryFilter" class="filter-select">
+                <option value="all">All Subcategories</option>
+
+                {% for subcategory in subcategories %}
+                    <option value="{{ subcategory.id }}">
+                        {{ subcategory.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <!-- NEW: Food Type Filter -->
+        <div class="filter-row">
+
+            <select id="foodTypeFilter" class="filter-select">
+                <option value="all">All Food Types</option>
+                <option value="VEG">🟢 Veg</option>
+                <option value="NON_VEG">🔴 Non-Veg</option>
             </select>
 
         </div>
@@ -512,6 +540,8 @@
                 <div
                     class="product-card"
                     data-name="{{ product.name|lower }}"
+                    data-subcategory="{% if product.subcategory_id %}{{ product.subcategory_id }}{% else %}none{% endif %}"
+                    data-food-type="{{ product.food_type|default:'' }}"
                     data-inactive="{% if not product.is_active %}true{% else %}false{% endif %}"
                     data-unavailable="{% if product.partner_unavailable %}true{% else %}false{% endif %}"
                 >
@@ -684,6 +714,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const sortFilter = document.getElementById("sortFilter");
     const statusTabs = document.getElementById("statusTabs");
 
+    const subcategoryFilter = document.getElementById("subcategoryFilter");
+    const foodTypeFilter = document.getElementById("foodTypeFilter");
     const productsList = document.querySelector(".products-list");
 
     if (!productsList) return;
@@ -738,50 +770,77 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedSort =
             sortFilter.value;
 
-        const cards =
-            Array.from(
-                productsList.querySelectorAll(".product-card")
-            );
+        const selectedSubcategory =
+            subcategoryFilter.value;
+
+        const selectedFoodType =
+            foodTypeFilter.value;
+
+        const cards = Array.from(
+            productsList.querySelectorAll(".product-card")
+        );
 
         cards.forEach(function (card) {
 
             const productName =
-                card.dataset.name.toLowerCase();
+                (card.dataset.name || "").toLowerCase();
+
+            const productSubcategory =
+                card.dataset.subcategory || "none";
+
+            const productFoodType =
+                (card.dataset.foodType || "").toUpperCase();
 
             const status =
                 getProductStatus(card);
 
+            // Search filter
             const matchesSearch =
                 productName.includes(searchText);
 
+            // Existing status filter
             const matchesStatus =
                 currentStatus === "all" ||
                 currentStatus === status;
 
-            card.style.display =
-                matchesSearch && matchesStatus
-                    ? ""
-                    : "none";
+            // Subcategory filter
+            const matchesSubcategory =
+                selectedSubcategory === "all" ||
+                productSubcategory === selectedSubcategory;
+
+            // Veg / Non-Veg filter
+            const matchesFoodType =
+                selectedFoodType === "all" ||
+                productFoodType === selectedFoodType;
+
+            // Combine all filters
+            const shouldShow =
+                matchesSearch &&
+                matchesStatus &&
+                matchesSubcategory &&
+                matchesFoodType;
+
+            card.style.display = shouldShow ? "" : "none";
         });
 
-        const visibleCards =
-            cards.filter(function (card) {
-                return card.style.display !== "none";
-            });
+        // Sort only the visible products
+        const visibleCards = cards.filter(function (card) {
+            return card.style.display !== "none";
+        });
 
         if (selectedSort === "az") {
 
             visibleCards.sort(function (a, b) {
-                return a.dataset.name.localeCompare(
-                    b.dataset.name
+                return (a.dataset.name || "").localeCompare(
+                    b.dataset.name || ""
                 );
             });
 
         } else if (selectedSort === "za") {
 
             visibleCards.sort(function (a, b) {
-                return b.dataset.name.localeCompare(
-                    a.dataset.name
+                return (b.dataset.name || "").localeCompare(
+                    a.dataset.name || ""
                 );
             });
         }
@@ -797,6 +856,16 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
     sortFilter.addEventListener(
+        "change",
+        filterAndSortProducts
+    );
+
+    subcategoryFilter.addEventListener(
+        "change",
+        filterAndSortProducts
+    );
+
+    foodTypeFilter.addEventListener(
         "change",
         filterAndSortProducts
     );

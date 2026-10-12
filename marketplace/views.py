@@ -11390,7 +11390,11 @@ def partner_summary(request):
 @login_required
 def partner_products(request):
 
-    profile = getattr(request.user, "store_partner_profile", None)
+    profile = getattr(
+        request.user,
+        "store_partner_profile",
+        None
+    )
 
     if not profile or not profile.is_active:
         logout(request)
@@ -11401,8 +11405,29 @@ def partner_products(request):
     products = (
         Product.objects
         .filter(store=store)
-        .select_related("category")
-        .order_by("category__name", "name")
+        .select_related(
+            "category",
+            "subcategory"
+        )
+        .order_by(
+            "category__name",
+            "name"
+        )
+    )
+
+    # Only show subcategories that have products
+    # belonging to this store.
+    subcategories = (
+        SubCategory.objects
+        .filter(
+            is_active=True,
+            products__store=store
+        )
+        .distinct()
+        .order_by(
+            "priority",
+            "name"
+        )
     )
 
     return render(
@@ -11411,11 +11436,13 @@ def partner_products(request):
         {
             "store": store,
             "products": products,
+            "subcategories": subcategories,
             "simple_navbar": False,
             "show_navbar": False,
             "show_floating_cart": False,
         }
     )
+
 
 @login_required
 def partner_product_add(request):
