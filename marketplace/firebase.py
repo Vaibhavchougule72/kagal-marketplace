@@ -121,6 +121,10 @@ def send_push_notification(
 # BULK PUSH NOTIFICATIONS
 # =====================================================
 
+# =====================================================
+# BULK PUSH NOTIFICATIONS
+# =====================================================
+
 def send_bulk_push_notifications(
     tokens,
     title,
@@ -139,7 +143,9 @@ def send_bulk_push_notifications(
     }
     """
 
-    tokens = list(set(filter(None, tokens)))
+    tokens = list(dict.fromkeys(
+        token for token in tokens if token
+    ))
 
     if not tokens:
         return {
@@ -148,9 +154,14 @@ def send_bulk_push_notifications(
             "invalid_tokens": [],
         }
 
+    if not firebase_admin._apps:
+        raise RuntimeError(
+            "Firebase is not initialized. "
+            "Check the FIREBASE_CREDENTIALS environment variable."
+        )
+
     success = 0
     failed = 0
-
     invalid_tokens = []
 
     notification = messaging.Notification(
@@ -160,21 +171,27 @@ def send_bulk_push_notifications(
 
     android = _android_config(high_priority)
 
-    for batch in _chunk_list(tokens, 500):
+    message_data = {
+        "title": str(title),
+        "body": str(body),
+    }
+
+    if data:
+        message_data.update({
+            str(key): str(value)
+            for key, value in data.items()
+        })
+
+    for batch_number, batch in enumerate(
+        _chunk_list(tokens, 500),
+        start=1,
+    ):
 
         multicast = messaging.MulticastMessage(
-
             tokens=batch,
-
             notification=notification,
-
             android=android,
-
-            data={
-                "title": str(title),
-                "body": str(body),
-                **(data or {}),
-            },
+            data=message_data,
         )
 
         try:
@@ -184,8 +201,16 @@ def send_bulk_push_notifications(
             )
 
             success += response.success_count
-
             failed += response.failure_count
+
+            logger.info(
+                "FCM batch %s completed. "
+                "Total tokens: %s, successful: %s, failed: %s",
+                batch_number,
+                len(batch),
+                response.success_count,
+                response.failure_count,
+            )
 
             for token, result in zip(
                 batch,
@@ -198,31 +223,44 @@ def send_bulk_push_notifications(
                 exception = result.exception
 
                 logger.warning(
-                    "Failed token %s : %s",
-                    token,
+                    "FCM delivery failed for token "
+                    "(batch=%s): %s",
+                    batch_number,
                     exception,
                 )
 
+                # Remove only tokens Firebase explicitly
+                # identifies as no longer registered.
                 if isinstance(
                     exception,
                     messaging.UnregisteredError,
                 ):
                     invalid_tokens.append(token)
 
-        except Exception as e:
+        except Exception:
 
+            # Preserve the full exception traceback.
             logger.exception(
-                "Bulk notification batch failed: %s",
-                e,
+                "FCM batch %s failed. "
+                "Token count: %s",
+                batch_number,
+                len(batch),
             )
 
             failed += len(batch)
 
-    return {
+    result = {
         "success": success,
         "failed": failed,
         "invalid_tokens": invalid_tokens,
     }
+
+    logger.info(
+        "FCM campaign sending finished: %s",
+        result,
+    )
+
+    return result
 
 
 # ============================================================
