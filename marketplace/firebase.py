@@ -13,7 +13,12 @@ logger = logging.getLogger(__name__)
 # FIREBASE INITIALIZATION
 # =====================================================
 
+firebase_credentials_path = os.getenv("FIREBASE_CREDENTIALS_FILE")
 firebase_json = os.getenv("FIREBASE_CREDENTIALS")
+
+if firebase_credentials_path:
+    with open(firebase_credentials_path, "r", encoding="utf-8") as f:
+        firebase_json = f.read()
 
 if firebase_json:
     try:

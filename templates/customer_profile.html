@@ -382,18 +382,23 @@
 
       </a>
 
-      <button type="button" class="profile-menu-item"
-              onclick="showProfileComingSoon('My Journey')">
+      <a href="{% url 'my_journey' %}" class="profile-menu-item">
+
         <div class="profile-menu-icon purple">🏆</div>
+
         <div class="profile-menu-text">
           <span class="profile-menu-title">
             My Journey
-            <span class="coming-soon-badge">COMING SOON</span>
           </span>
-          <span class="profile-menu-subtitle">Your journey with LOKA</span>
+
+          <span class="profile-menu-subtitle">
+            Track your orders and unlock rewards
+          </span>
         </div>
+
         <div class="profile-menu-arrow">›</div>
-      </button>
+
+      </a>
 
     </div>
 

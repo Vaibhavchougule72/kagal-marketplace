@@ -1,0 +1,877 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    .journey-page {
+        min-height: 100vh;
+        background: #FAF7F2;
+        padding-bottom: 35px;
+        color: #1A2E19;
+    }
+
+    .journey-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 15px;
+        background: linear-gradient(
+            135deg,
+            #1A3A16,
+            #2D5A27
+        );
+        color: white;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.10);
+    }
+
+    .journey-back {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        font-size: 23px;
+        flex-shrink: 0;
+    }
+
+    .journey-back:hover {
+        color: white;
+    }
+
+    .journey-nav-title {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .journey-container {
+        width: 100%;
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 16px 14px;
+    }
+
+    /* HERO */
+
+    .journey-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 24px 20px;
+        margin-bottom: 17px;
+        border-radius: 20px;
+        background: linear-gradient(
+            135deg,
+            #2D5A27,
+            #163A16
+        );
+        color: white;
+        box-shadow: 0 8px 24px rgba(26, 58, 22, 0.20);
+    }
+
+    .journey-hero::after {
+        content: "";
+        position: absolute;
+        width: 170px;
+        height: 170px;
+        right: -65px;
+        top: -75px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        pointer-events: none;
+    }
+
+    .journey-hero-label {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 7px;
+        color: #F7C58A;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+    }
+
+    .journey-hero h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 8px;
+        color: white;
+        font-size: 25px;
+        line-height: 1.25;
+        font-weight: 800;
+    }
+
+    .journey-hero-description {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* ORDER COUNT */
+
+    .journey-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .journey-stat {
+        padding: 17px 14px;
+        background: white;
+        border: 1px solid #E0E8DF;
+        border-radius: 15px;
+        box-shadow: 0 3px 12px rgba(26, 58, 22, 0.04);
+    }
+
+    .journey-stat-label {
+        margin-bottom: 7px;
+        color: #7D8B7B;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .journey-stat-value {
+        color: #2D5A27;
+        font-size: 27px;
+        line-height: 1.2;
+        font-weight: 800;
+    }
+
+    .journey-stat-caption {
+        margin-top: 5px;
+        color: #8A9788;
+        font-size: 10px;
+    }
+
+    /* PROGRESS */
+
+    .journey-progress-card {
+        padding: 18px;
+        margin-bottom: 24px;
+        background: white;
+        border: 1px solid #E0E8DF;
+        border-radius: 16px;
+    }
+
+    .journey-progress-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .journey-progress-heading h2 {
+        margin: 0;
+        color: #1A3A16;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .journey-progress-percent {
+        color: #2D5A27;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .journey-progress-track {
+        width: 100%;
+        height: 10px;
+        overflow: hidden;
+        border-radius: 20px;
+        background: #EAF0E8;
+    }
+
+    .journey-progress-fill {
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(
+            90deg,
+            #2D5A27,
+            #78A85F
+        );
+        transition: width 0.4s ease;
+    }
+
+    .journey-progress-caption {
+        margin: 10px 0 0;
+        color: #7D8B7B;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    /* SECTION */
+
+    .journey-section-heading {
+        margin: 0 0 5px;
+        color: #1A3A16;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .journey-section-description {
+        margin: 0 0 17px;
+        color: #879284;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    /* MILESTONE CARDS */
+
+    .journey-milestone {
+        position: relative;
+        display: flex;
+        gap: 13px;
+        padding: 17px 14px;
+        margin-bottom: 12px;
+        background: white;
+        border: 1px solid #E0E8DF;
+        border-radius: 16px;
+        box-shadow: 0 3px 12px rgba(26, 58, 22, 0.035);
+    }
+
+    .journey-milestone.earned {
+        border-color: #BBD5B5;
+        background: #FCFFFB;
+    }
+
+    .journey-milestone.locked {
+        background: #FFFFFF;
+    }
+
+    .journey-milestone-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 49px;
+        height: 49px;
+        min-width: 49px;
+        border-radius: 14px;
+        background: #EAF2E8;
+        font-size: 23px;
+    }
+
+    .journey-milestone.locked .journey-milestone-icon {
+        background: #F1F1ED;
+        filter: grayscale(0.35);
+    }
+
+    .journey-milestone-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .journey-milestone-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 5px;
+    }
+
+    .journey-milestone-title {
+        margin: 0;
+        color: #1A3A16;
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1.4;
+    }
+
+    .journey-milestone.locked .journey-milestone-title {
+        color: #657363;
+    }
+
+    .journey-status {
+        display: inline-block;
+        padding: 4px 7px;
+        border-radius: 20px;
+        font-size: 9px;
+        font-weight: 800;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .journey-status.completed {
+        background: #E4F4E1;
+        color: #28752D;
+    }
+
+    .journey-status.unlocked {
+        background: #FFF0DF;
+        color: #B95A12;
+    }
+
+    .journey-status.locked-status {
+        background: #F0F1ED;
+        color: #858B80;
+    }
+
+    .journey-status.processing {
+        background: #E8F0FF;
+        color: #315FA8;
+    }
+
+    .journey-milestone-description {
+        margin: 0;
+        color: #7C8879;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .journey-order-badge {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #F4F7F1;
+        color: #4D6B47;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    /* COUPON CODE */
+
+    .journey-coupon-code {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 9px 10px;
+        border: 1px dashed #D9A16B;
+        border-radius: 9px;
+        background: #FFF8F0;
+    }
+
+    .journey-coupon-code strong {
+        color: #A94E0C;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+        overflow-wrap: anywhere;
+    }
+
+    .journey-coupon-copy {
+        padding: 5px 9px;
+        border: 0;
+        border-radius: 6px;
+        background: #E8621A;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .journey-coupon-copy:hover {
+        background: #C94F11;
+    }
+
+    /* NEXT MILESTONE */
+
+    .journey-next-card {
+        padding: 17px;
+        margin: 20px 0;
+        border: 1px solid #F3D1B5;
+        border-radius: 15px;
+        background: linear-gradient(
+            135deg,
+            #FFF8F0,
+            #FFFFFF
+        );
+    }
+
+    .journey-next-label {
+        margin-bottom: 6px;
+        color: #C45A16;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+    }
+
+    .journey-next-title {
+        margin: 0 0 5px;
+        color: #1A3A16;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .journey-next-description {
+        margin: 0;
+        color: #7C8879;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .journey-complete-card {
+        padding: 21px 17px;
+        margin-top: 20px;
+        border: 1px solid #C7DDBE;
+        border-radius: 16px;
+        background: #F0F8ED;
+        text-align: center;
+    }
+
+    .journey-complete-icon {
+        margin-bottom: 7px;
+        font-size: 34px;
+    }
+
+    .journey-complete-card h3 {
+        margin: 0 0 7px;
+        color: #1F6127;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .journey-complete-card p {
+        margin: 0;
+        color: #567252;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .journey-bottom-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .journey-bottom-link {
+        display: block;
+        padding: 12px 10px;
+        border: 1px solid #DDE7D9;
+        border-radius: 11px;
+        background: white;
+        color: #2D5A27;
+        text-align: center;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .journey-bottom-link:hover {
+        color: #1A3A16;
+        background: #F4F8F1;
+        text-decoration: none;
+    }
+
+    .journey-footer {
+        margin-top: 23px;
+        color: #9AA899;
+        text-align: center;
+        font-size: 11px;
+    }
+
+    .journey-footer strong {
+        color: #2D5A27;
+    }
+
+    @media (max-width: 380px) {
+        .journey-milestone {
+            gap: 10px;
+            padding: 14px 11px;
+        }
+
+        .journey-milestone-icon {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            font-size: 20px;
+        }
+
+        .journey-milestone-title {
+            font-size: 13px;
+        }
+
+        .journey-status {
+            font-size: 8px;
+            padding: 4px 6px;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="journey-page">
+
+    <!-- NAVIGATION -->
+    <div class="journey-nav">
+        <a
+            href="{% url 'customer_profile' %}"
+            class="journey-back"
+            aria-label="Back to profile"
+        >
+            &#8249;
+        </a>
+
+        <span class="journey-nav-title">
+            My Journey
+        </span>
+    </div>
+
+
+    <div class="journey-container">
+
+        <!-- HERO -->
+        <div class="journey-hero">
+            <p class="journey-hero-label">
+                YOUR LOKA STORY
+            </p>
+
+            <h1>
+                {% if customer.name %}
+                    Hey {{ customer.name|truncatechars:25 }}! 👋
+                {% else %}
+                    Your LOKA Journey! 👋
+                {% endif %}
+            </h1>
+
+            <p class="journey-hero-description">
+                Every delivered order brings you closer to exciting
+                rewards. Keep ordering and enjoy more with LOKA!
+            </p>
+        </div>
+
+
+        <!-- SUMMARY -->
+        <div class="journey-summary">
+
+            <div class="journey-stat">
+                <div class="journey-stat-label">
+                    ORDERS DELIVERED
+                </div>
+
+                <div class="journey-stat-value">
+                    {{ delivered_count }}
+                </div>
+
+                <div class="journey-stat-caption">
+                    Successfully completed orders
+                </div>
+            </div>
+
+            <div class="journey-stat">
+                <div class="journey-stat-label">
+                    JOURNEY GOAL
+                </div>
+
+                <div class="journey-stat-value">
+                    {% if delivered_count >= 10 %}
+                        10/10
+                    {% else %}
+                        {{ delivered_count }}/10
+                    {% endif %}
+                </div>
+
+                <div class="journey-stat-caption">
+                    {% if journey_complete %}
+                        Goal completed! 🎉
+                    {% else %}
+                        Keep going for more rewards
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- PROGRESS BAR -->
+        <div class="journey-progress-card">
+
+            <div class="journey-progress-heading">
+                <h2>Your Progress</h2>
+
+                <span class="journey-progress-percent">
+                    {{ journey_progress }}%
+                </span>
+            </div>
+
+            <div
+                class="journey-progress-track"
+                role="progressbar"
+                aria-label="Journey progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ journey_progress }}"
+            >
+                <div
+                    class="journey-progress-fill"
+                    data-progress="{{ journey_progress }}"
+                ></div>
+            </div>
+
+            <p class="journey-progress-caption">
+                {% if journey_complete %}
+                    You've completed your first 10 delivered orders.
+                    Thank you for choosing LOKA!
+                {% elif next_milestone %}
+                    Your next reward milestone is order
+                    {{ next_milestone.number }}.
+                {% else %}
+                    Keep enjoying your LOKA favourites!
+                {% endif %}
+            </p>
+
+        </div>
+
+
+        <!-- MILESTONES -->
+        <h2 class="journey-section-heading">
+            Your Reward Milestones 🏆
+        </h2>
+
+        <p class="journey-section-description">
+            Rewards are unlocked based on successfully delivered
+            orders. Cancelled and failed orders don't count.
+        </p>
+
+
+        {% for milestone in milestones %}
+
+            <div class="journey-milestone
+                {% if milestone.earned %}earned{% else %}locked{% endif %}">
+
+                <div class="journey-milestone-icon">
+                    {{ milestone.icon }}
+                </div>
+
+                <div class="journey-milestone-content">
+
+                    <div class="journey-milestone-top">
+
+                        <h3 class="journey-milestone-title">
+                            {{ milestone.title }}
+                        </h3>
+
+                        {% if milestone.status_label == "Completed" %}
+
+                            <span class="journey-status completed">
+                                ✓ COMPLETED
+                            </span>
+
+                        {% elif milestone.status_label == "Reward Unlocked" %}
+
+                            <span class="journey-status unlocked">
+                                🎉 UNLOCKED
+                            </span>
+
+                        {% elif milestone.status_label == "Processing" %}
+
+                            <span class="journey-status processing">
+                                PROCESSING
+                            </span>
+
+                        {% else %}
+
+                            <span class="journey-status locked-status">
+                                🔒 LOCKED
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <p class="journey-milestone-description">
+                        {{ milestone.description }}
+                    </p>
+
+                    <span class="journey-order-badge">
+                        ORDER {{ milestone.number }}
+                    </span>
+
+
+                    {% if milestone.reward.coupon %}
+
+                        <div class="journey-coupon-code">
+
+                            <strong>
+                                {{ milestone.reward.coupon.code }}
+                            </strong>
+
+                            <button
+                                type="button"
+                                class="journey-coupon-copy"
+                                onclick="copyJourneyCoupon(
+                                    '{{ milestone.reward.coupon.code|escapejs }}',
+                                    this
+                                )"
+                            >
+                                COPY CODE
+                            </button>
+
+                        </div>
+
+                        <p class="journey-milestone-description"
+                           style="margin-top: 7px;">
+
+                            Minimum order: ₹199 · Valid for 7 days
+                            from issue date.
+
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+
+        <!-- NEXT MILESTONE -->
+        {% if next_milestone %}
+
+            <div class="journey-next-card">
+
+                <div class="journey-next-label">
+                    YOUR NEXT MILESTONE
+                </div>
+
+                <h3 class="journey-next-title">
+                    {{ next_milestone.icon }}
+                    {{ next_milestone.title }}
+                </h3>
+
+                <p class="journey-next-description">
+
+                    Complete {{ orders_to_next_milestone }}
+                    more delivered order(s) to reach this milestone.
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- JOURNEY COMPLETE -->
+        {% if journey_complete %}
+
+            <div class="journey-complete-card">
+
+                <div class="journey-complete-icon">
+                    🎉
+                </div>
+
+                <h3>10 Orders Completed!</h3>
+
+                <p>
+                    You've reached your first 10 delivered orders
+                    with LOKA. Thank you for being part of our journey!
+                </p>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- QUICK LINKS -->
+        <div class="journey-bottom-links">
+
+            <a
+                href="{% url 'my_orders' %}"
+                class="journey-bottom-link"
+            >
+                📦 My Orders
+            </a>
+
+            <a
+                href="{% url 'customer_coupons' %}"
+                class="journey-bottom-link"
+            >
+                🏷️ My Coupons
+            </a>
+
+        </div>
+
+
+        <div class="journey-footer">
+            <strong>LOKA</strong> · Kagal's food delivery service
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const progressBar = document.querySelector(
+        ".journey-progress-fill"
+    );
+
+    if (progressBar) {
+        const progress = Math.max(
+            0,
+            Math.min(
+                100,
+                Number(progressBar.dataset.progress) || 0
+            )
+        );
+
+        progressBar.style.width = progress + "%";
+    }
+});
+
+function copyJourneyCoupon(code, button) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(function () {
+            showCouponCopied(button);
+        }).catch(function () {
+            fallbackCopyJourneyCoupon(code, button);
+        });
+    } else {
+        fallbackCopyJourneyCoupon(code, button);
+    }
+}
+
+function fallbackCopyJourneyCoupon(code, button) {
+    const input = document.createElement("textarea");
+    input.value = code;
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+
+    document.body.appendChild(input);
+    input.select();
+
+    try {
+        document.execCommand("copy");
+        showCouponCopied(button);
+    } catch (error) {
+        alert("Your coupon code is: " + code);
+    }
+
+    input.remove();
+}
+
+function showCouponCopied(button) {
+    const originalText = button.innerText;
+
+    button.innerText = "COPIED!";
+
+    setTimeout(function () {
+        button.innerText = originalText;
+    }, 1500);
+}
+</script>
+
+{% endblock %}

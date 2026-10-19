@@ -267,3 +267,110 @@ def send_bulk_notifications(
         "successful": success,
         "failed": failed,
     }
+
+
+def process_notification_campaign(campaign_id):
+    """
+    Process an existing notification campaign in the background.
+    """
+
+    campaign = NotificationCampaign.objects.get(
+        pk=campaign_id
+    )
+
+    try:
+        recipients = get_recipients(
+            campaign.audience,
+            campaign.phone,
+        )
+
+        tokens = list(
+            set(
+                recipients.exclude(
+                    token__isnull=True
+                ).exclude(
+                    token=""
+                ).values_list(
+                    "token",
+                    flat=True,
+                )
+            )
+        )
+
+        campaign.total_recipients = len(tokens)
+        campaign.status = "sending"
+        campaign.save(
+            update_fields=[
+                "total_recipients",
+                "status",
+            ]
+        )
+
+        if not tokens:
+            campaign.successful = 0
+            campaign.failed = 0
+            campaign.status = "completed"
+            campaign.save(
+                update_fields=[
+                    "successful",
+                    "failed",
+                    "status",
+                ]
+            )
+
+            return {
+                "campaign_id": campaign.id,
+                "total": 0,
+                "successful": 0,
+                "failed": 0,
+            }
+
+        result = send_bulk_push_notifications(
+            tokens=tokens,
+            title=campaign.title,
+            body=campaign.message,
+            high_priority=campaign.high_priority,
+        )
+
+        invalid_tokens = result.get(
+            "invalid_tokens",
+            [],
+        )
+
+        if invalid_tokens:
+            DeviceToken.objects.filter(
+                token__in=invalid_tokens
+            ).delete()
+
+        success = result["success"]
+        failed = result["failed"]
+
+        campaign.successful = success
+        campaign.failed = failed
+        campaign.status = (
+            "completed"
+            if success > 0
+            else "failed"
+        )
+
+        campaign.save(
+            update_fields=[
+                "successful",
+                "failed",
+                "status",
+            ]
+        )
+
+        return {
+            "campaign_id": campaign.id,
+            "total": len(tokens),
+            "successful": success,
+            "failed": failed,
+        }
+
+    except Exception:
+        campaign.status = "failed"
+        campaign.save(
+            update_fields=["status"]
+        )
+        raise

@@ -15,7 +15,7 @@ from .views import (
 
 urlpatterns = [
     path('', views.home, name='home'),
-    
+
 
     path('stores/', views.all_stores, name='all_stores'),
     path('store/<int:store_id>/', views.store_detail, name='store_detail'),
@@ -334,6 +334,13 @@ urlpatterns = [
         name="loka_money_data"
     ),
     path("profile/", views.customer_profile, name="customer_profile"),
+
+    path(
+        "profile/my-journey/",
+        views.my_journey,
+        name="my_journey",
+    ),
+
     path(
         "profile/referral-program/",
         views.referral_program,

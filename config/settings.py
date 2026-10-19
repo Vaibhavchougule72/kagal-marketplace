@@ -14,6 +14,14 @@ from pathlib import Path
 import os
 from decouple import config
 
+from pathlib import Path
+from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
+
+
 OTP_ENABLED = False
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -98,10 +106,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 import dj_database_url
 
 DATABASES = {
-'default': dj_database_url.config(
-default=f"sqlite:///{BASE_DIR}/db.sqlite3",
-conn_max_age=600
-)
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR}/db.sqlite3",
+        conn_max_age=600
+    )
 }
 
 
@@ -161,24 +169,57 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+# ============================================================
+# REDIS CACHE CONFIGURATION
+# ============================================================
+
 REDIS_URL = os.environ.get("REDIS_URL")
 
 if REDIS_URL:
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://127.0.0.1:6379/1",
+            "LOCATION": REDIS_URL,
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            }
+            },
+            "KEY_PREFIX": "loka",
+            "TIMEOUT": 300,
         }
     }
 else:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "loka-local-cache",
         }
     }
+
+# ============================================================
+# CELERY CONFIGURATION
+# ============================================================
+
+if REDIS_URL:
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
+else:
+    CELERY_BROKER_URL = None
+    CELERY_RESULT_BACKEND = None
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 300
+CELERY_TASK_SOFT_TIME_LIMIT = 270
+
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "visibility_timeout": 360,
+}
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True

@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 import secrets
 import string
+from .models import NotificationCampaign, NotificationJob
 from django.db.models import Q
 from decimal import Decimal
 from django.utils import timezone
@@ -25,6 +26,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.urls import reverse
 from django.db.models import F
 from .models import BundleItem
+from .tasks import send_customer_notification_campaign
 # from .sms_service import send_sms   ❌ comment
 
 from decimal import Decimal, ROUND_HALF_UP
@@ -49,7 +51,7 @@ from django.db.models import Sum
 from datetime import datetime
 import traceback
 from .models import OfferSlider
-from .models import Customer, CustomerOTP
+from .models import Customer, CustomerOTP, CustomerJourneyReward
 from django.db import IntegrityError, transaction
 from django.contrib.auth.hashers import make_password, check_password
 from .services.whatsapp_service import send_login_otp as send_whatsapp_login_otp
@@ -465,7 +467,7 @@ def store_detail(request, store_id):
         "store",
         "subcategory"
     )
-    
+
     # Filter products by the selected subcategory
     if selected_subcategory_id:
         products = products.filter(
@@ -474,8 +476,8 @@ def store_detail(request, store_id):
 
     if selected_food_type:
         products = products.filter(food_type=selected_food_type)
-    
-    
+
+
     # =========================
     # SEARCH
     # =========================
@@ -577,7 +579,7 @@ def add_bundle_to_cart(request, bundle_id):
             "success": False,
             "error": "Store is currently closed"
         })
-    
+
     cart = request.session.get('cart', {
         'store_id': None,
         'items': {}
@@ -611,7 +613,7 @@ def add_bundle_to_cart(request, bundle_id):
     request.session.modified = True
 
     cart_count = sum(item['quantity'] for item in cart['items'].values())
-    
+
 
     return JsonResponse({
         "success": True,
@@ -743,7 +745,7 @@ def add_to_cart(request, product_id):
             "store_name": product.store.name,
             "product_id": product.id
         })
-    
+
     if not cart.get('store_id'):
         cart['store_id'] = product.store.id
 
@@ -943,7 +945,7 @@ def view_cart(request):
         cart["items"] = cleaned_items
         request.session["cart"] = cart
         request.session.modified = True
-        
+
 
         # =========================
         # BUILD CART ITEMS
@@ -979,7 +981,7 @@ def view_cart(request):
                 if product.discount_price:
                     total_savings += (original_price - final_price) * qty
 
-                
+
 
                 items.append({
                     "key": item_id,
@@ -1064,7 +1066,7 @@ def view_cart(request):
             remaining_for_min_order = Decimal("0")
             remaining_amount = max(Decimal("0"), FREE_DELIVERY - subtotal)
 
-        
+
         cross_sell_threshold = Decimal("249")
 
         show_cross_sell = (
@@ -1226,7 +1228,7 @@ def checkout(request):
             "error": "Cart contains items from multiple stores",
             "show_floating_cart": False
         })
-    
+
     if not store_ids:
 
         context["error"] = "Cart is empty"
@@ -1396,7 +1398,7 @@ def checkout(request):
     # =========================
     if request.method == "POST":
         try:
-            
+
             name = request.POST.get("name")
             phone = request.POST.get("phone", "").strip()
             confirm_phone = request.POST.get("confirm_phone") == "on"
@@ -1491,7 +1493,7 @@ def checkout(request):
             if not re.match(r'^[6-9]\d{9}$', phone):
                 context["error"] = "Invalid phone number"
                 return render(request, "checkout.html", context)
-            
+
 
             if not confirm_phone:
                 context["error"] = "Please confirm mobile number"
@@ -1505,7 +1507,7 @@ def checkout(request):
                 context["error"] = "Only UPI allowed for selected items"
                 return render(request, "checkout.html", context)
 
-            
+
             if not latitude or not longitude:
                 context["error"] = "Select delivery location"
                 return render(request, "checkout.html", context)
@@ -1835,7 +1837,7 @@ def checkout(request):
 
                 with transaction.atomic():
 
-                    
+
 
                     order = Order.objects.create(
                         store=store,
@@ -1883,7 +1885,7 @@ def checkout(request):
                         qty = safe_qty(item.get("quantity", 1))
 
                         if item_id.isdigit():
-                            
+
                             product = products_map.get(int(item_id))
                             if product:
                                 store_price = product.effective_store_price
@@ -2134,7 +2136,7 @@ def checkout(request):
                 logger.info(f"RAZORPAY_ORDER_ID: {razorpay_order_id}")
                 logger.info(f"PENDING_ID: {pending.id}")
                 logger.info("=====================================")
-                
+
                 request.session["customer_phone"] = phone
                 from django.urls import reverse
 
@@ -2819,7 +2821,7 @@ logger = logging.getLogger(__name__)
             'simple_navbar': True,
             "show_floating_cart": False
         })'''
-  
+
 # =====================================================
 # RESEND OTP
 # =====================================================
@@ -3219,7 +3221,7 @@ def search_products(request):
                 "show_floating_cart": True,
                 "show_navbar": False,
                 "simple_navbar": False
-                
+
             })
 
         store_filter = request.GET.get("store")
@@ -3379,7 +3381,7 @@ def search_products(request):
             "show_navbar": False,
             "simple_navbar": False,
             "show_floating_cart": True
-            
+
         })
 
     # =====================================================
@@ -3491,7 +3493,7 @@ def calculate_delivery(request):
     latitude = request.GET.get("latitude")
     longitude = request.GET.get("longitude")
     cart = request.session.get('cart', {'items': {}})
-    
+
     subtotal = get_cart_details(cart)
 
     phone = request.GET.get("phone", "").strip()
@@ -3521,7 +3523,7 @@ def calculate_delivery(request):
             "total": 0,
             "distance": 0
         })
-    
+
     latitude = float(latitude)
     longitude = float(longitude)
     subtotal = Decimal(subtotal)
@@ -4276,7 +4278,7 @@ def generate_delivery_pdf(request, order_id):
         f"<b>Phone:</b> {order.phone}  |  <a href='{call_link}' color='blue'>Call Now</a>",
         styles['Normal']
     ))
-    
+
     elements.append(Paragraph(f"<b>Store:</b> {order.store.name}", styles['Normal']))
 
     elements.append(Spacer(1, 0.2 * inch))
@@ -4510,7 +4512,7 @@ import random
     order.save()
 
     customer_msg = f"Your delivery OTP is {otp}. Share with delivery partner."
-    
+
     partner_msg = f"Order #{order.id} delivery OTP is {otp}. Collect from customer."
 
     try:
@@ -4755,7 +4757,7 @@ def admin_dashboard(request):
 
             status=500
         )
-    
+
 from .models import Coupon
 from .models import CouponUsage
 
@@ -5454,6 +5456,150 @@ def credit_loka_money(customer, amount, description, order=None):
 
     return transaction_record
 
+def process_journey_reward(order):
+    """
+    Process a customer's My Journey reward after an order
+    is successfully delivered.
+
+    Milestones:
+      1  -> ₹20 LOKA Money
+      3  -> ₹20 coupon
+      5  -> Existing free-delivery benefit
+      7  -> ₹30 LOKA Money
+      10 -> Existing free-delivery benefit
+    """
+
+    if order.status != "DELIVERED":
+        return
+
+    reward_config = {
+        1: {
+            "type": CustomerJourneyReward.LOKA_MONEY,
+            "amount": Decimal("20.00"),
+        },
+        3: {
+            "type": CustomerJourneyReward.COUPON,
+            "amount": Decimal("20.00"),
+        },
+        5: {
+            "type": CustomerJourneyReward.FREE_DELIVERY,
+            "amount": Decimal("0.00"),
+        },
+        7: {
+            "type": CustomerJourneyReward.LOKA_MONEY,
+            "amount": Decimal("30.00"),
+        },
+        10: {
+            "type": CustomerJourneyReward.FREE_DELIVERY,
+            "amount": Decimal("0.00"),
+        },
+    }
+
+    with transaction.atomic():
+
+        # Lock the customer record to reduce the risk of
+        # duplicate rewards from simultaneous order updates.
+        customer = (
+            Customer.objects
+            .select_for_update()
+            .filter(phone=order.phone)
+            .first()
+        )
+
+        if not customer:
+            return
+
+        # Count only successfully delivered orders.
+        delivered_count = Order.objects.filter(
+            phone=order.phone,
+            status="DELIVERED"
+        ).count()
+
+        if delivered_count not in reward_config:
+            return
+
+        config = reward_config[delivered_count]
+
+        # One reward record per customer per milestone.
+        reward, created = (
+            CustomerJourneyReward.objects.get_or_create(
+                customer=customer,
+                milestone_number=delivered_count,
+                defaults={
+                    "reward_type": config["type"],
+                    "reward_amount": config["amount"],
+                    "source_order": order,
+                }
+            )
+        )
+
+        # If this milestone has already been processed,
+        # don't issue the reward again.
+        if not created:
+            return
+
+        # -----------------------------------------
+        # REWARD 1: LOKA MONEY
+        # -----------------------------------------
+        if config["type"] == CustomerJourneyReward.LOKA_MONEY:
+
+            credit_loka_money(
+                customer=customer,
+                amount=config["amount"],
+                description=(
+                    f"My Journey reward - "
+                    f"{delivered_count} delivered orders"
+                ),
+                order=order
+            )
+
+        # -----------------------------------------
+        # REWARD 2: COUPON
+        # -----------------------------------------
+        elif config["type"] == CustomerJourneyReward.COUPON:
+
+            coupon_code = (
+                f"J{delivered_count}"
+                f"{customer.phone[-4:]}"
+                f"{secrets.token_hex(3).upper()}"
+            )
+
+            now = timezone.now()
+
+            coupon = Coupon.objects.create(
+                customer=customer,
+                code=coupon_code,
+                description=(
+                    f"My Journey reward - "
+                    f"₹{config['amount']} off"
+                ),
+                discount_type="FLAT",
+                discount_value=config["amount"],
+                min_order_value=Decimal("199.00"),
+                max_discount=config["amount"],
+                usage_limit=1,
+                valid_from=now,
+                valid_to=now + timedelta(days=7),
+                is_active=True,
+            )
+
+            reward.coupon = coupon
+            reward.save(update_fields=["coupon"])
+
+        # -----------------------------------------
+        # REWARD 3: FREE DELIVERY
+        # -----------------------------------------
+        elif config["type"] == CustomerJourneyReward.FREE_DELIVERY:
+
+            # The existing checkout logic already applies
+            # free delivery to the 5th and 10th orders.
+            # Mark the milestone as used only after this
+            # order has successfully been delivered.
+            reward.status = CustomerJourneyReward.USED
+
+            reward.save(update_fields=["status"])
+
+
 def debit_loka_money(customer, amount, order):
     amount = Decimal(str(amount))
 
@@ -5584,6 +5730,7 @@ def rider_update_status(request, order_id, new_status):
 
     if new_status == "DELIVERED":
         reward_referral_for_delivered_order(order)
+        process_journey_reward(order)
 
     messages.success(request, f"Order #{order.id} updated to {new_status}")
 
@@ -7013,7 +7160,7 @@ def orders_dashboard(request):
             "monetary": monetary,
             "segment": segment,
         })
-    
+
     champion_count = sum(
         1 for c in customer_rfm
         if c["segment"] == "Champion"
@@ -7085,7 +7232,7 @@ def orders_dashboard(request):
 def orders_dashboard_customers(request):
 
     segment = request.GET.get("segment")
-    
+
 
     customers = (
         Order.objects
@@ -7238,7 +7385,7 @@ def cross_sell_popup(request):
             """,
             status=500
         )
-    
+
 
 def replace_cart(request, product_id):
 
@@ -7379,51 +7526,87 @@ def notification_dashboard_data(request):
 @staff_member_required
 @require_POST
 def send_notification(request):
-
     logger.info("===== SEND NOTIFICATION =====")
 
     try:
-
         data = json.loads(request.body)
 
-        logger.info(f"Incoming Data: {data}")
+        title = data.get("title", "").strip()
+        message = data.get("message", "").strip()
+        audience = data.get("audience", "").strip()
+        phone = data.get("phone")
+        high_priority = data.get("high_priority", False)
+        save_history = data.get("save_history", True)
 
-        result = send_bulk_notifications(
+        if not title or not message or not audience:
+            return JsonResponse({
+                "success": False,
+                "message": "Title, message, and audience are required.",
+            }, status=400)
 
-            title=data["title"],
-            message=data["message"],
-            audience=data["audience"],
-            phone=data.get("phone"),
-            high_priority=data.get("high_priority", False),
-            save_history=data.get("save_history", True),
-            created_by=request.user
+        valid_audiences = {
+            "all", "new", "repeat", "inactive", "phone"
+        }
 
+        if audience not in valid_audiences:
+            return JsonResponse({
+                "success": False,
+                "message": "Invalid notification audience.",
+            }, status=400)
+
+        if audience == "phone" and not phone:
+            return JsonResponse({
+                "success": False,
+                "message": "Phone number is required.",
+            }, status=400)
+
+        with transaction.atomic():
+            campaign = NotificationCampaign.objects.create(
+                title=title,
+                message=message,
+                audience=audience,
+                phone=phone,
+                high_priority=high_priority,
+                save_history=save_history,
+                status="sending",
+                total_recipients=0,
+                created_by=request.user,
+            )
+
+            job = NotificationJob.objects.create(
+                campaign=campaign,
+                status="pending",
+            )
+
+        logger.info(
+            "Notification campaign %s queued as job %s.",
+            campaign.id,
+            job.id,
         )
 
-        logger.info(f"Notification Result: {result}")
-
         return JsonResponse({
-
             "success": True,
+            "queued": True,
+            "campaign_id": campaign.id,
+            "job_id": job.id,
+            "total": 0,
+            "successful": 0,
+            "failed": 0,
+            "message": "Notification campaign queued for processing.",
+        }, status=202)
 
-            **result
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid JSON request.",
+        }, status=400)
 
-        })
-
-    except Exception as e:
-
+    except Exception:
         logger.exception("SEND NOTIFICATION FAILED")
 
-        print("=" * 80)
-        print("SEND NOTIFICATION ERROR")
-        traceback.print_exc()
-        print("=" * 80)
-
         return JsonResponse({
-
             "success": False,
-            "message": str(e)
-
+            "message": "Could not queue the notification campaign.",
         }, status=500)
 
 
@@ -8859,7 +9042,7 @@ def resend_login_otp(request):
             },
             status=400
         )
-    
+
     # ============================================================
     # GOOGLE PLAY REVIEWER LOGIN
     # ============================================================
@@ -8894,7 +9077,7 @@ def resend_login_otp(request):
         .first()
     )
 
-    
+
     # --------------------------------------------------------
     # 6-HOUR OTP LIMIT
     # --------------------------------------------------------
@@ -9103,6 +9286,138 @@ def customer_profile(request):
         "customer_profile.html",
         {
             "customer": customer,
+            "show_navbar": False,
+            "simple_navbar": True,
+            "show_floating_cart": False,
+        }
+    )
+
+def my_journey(request):
+    """
+    Display the logged-in customer's My Journey rewards
+    and progress toward the first 10 delivered orders.
+    """
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return redirect("customer_login")
+
+    # Count only successfully delivered orders.
+    delivered_count = Order.objects.filter(
+        phone=customer.phone,
+        status="DELIVERED"
+    ).count()
+
+    # Reward milestones for the first 10 delivered orders.
+    milestones = [
+        {
+            "number": 1,
+            "title": "Welcome Reward",
+            "description": "Earn ₹20 LOKA Money",
+            "reward_type": "LOKA_MONEY",
+            "amount": Decimal("20.00"),
+            "icon": "💰",
+        },
+        {
+            "number": 3,
+            "title": "Coupon Reward",
+            "description": "Get a ₹20 coupon",
+            "reward_type": "COUPON",
+            "amount": Decimal("20.00"),
+            "icon": "🎟️",
+        },
+        {
+            "number": 5,
+            "title": "Free Delivery",
+            "description": "Enjoy free delivery",
+            "reward_type": "FREE_DELIVERY",
+            "amount": Decimal("0.00"),
+            "icon": "🛵",
+        },
+        {
+            "number": 7,
+            "title": "Bonus Reward",
+            "description": "Earn ₹30 LOKA Money",
+            "reward_type": "LOKA_MONEY",
+            "amount": Decimal("30.00"),
+            "icon": "🎁",
+        },
+        {
+            "number": 10,
+            "title": "Free Delivery",
+            "description": "Enjoy free delivery",
+            "reward_type": "FREE_DELIVERY",
+            "amount": Decimal("0.00"),
+            "icon": "🏆",
+        },
+    ]
+
+    # Fetch the rewards already recorded for this customer.
+    rewards = CustomerJourneyReward.objects.filter(
+        customer=customer
+    ).select_related("coupon", "source_order")
+
+    rewards_by_milestone = {
+        reward.milestone_number: reward
+        for reward in rewards
+    }
+
+    # Attach reward information and progress status.
+    for milestone in milestones:
+        reward = rewards_by_milestone.get(
+            milestone["number"]
+        )
+
+        milestone["reward"] = reward
+        milestone["earned"] = reward is not None
+
+        if reward:
+            milestone["status_label"] = (
+                "Completed"
+                if reward.status == CustomerJourneyReward.USED
+                else "Reward Unlocked"
+            )
+        elif delivered_count >= milestone["number"]:
+            # The order count reached the milestone, but no reward
+            # record exists. This should not normally happen.
+            milestone["status_label"] = "Processing"
+        else:
+            milestone["status_label"] = "Locked"
+
+    # Find the next reward milestone.
+    next_milestone = next(
+        (
+            milestone
+            for milestone in milestones
+            if milestone["number"] > delivered_count
+        ),
+        None
+    )
+
+    # Progress toward completing 10 delivered orders.
+    journey_progress = min(
+        delivered_count * 10,
+        100
+    )
+
+    orders_to_next_milestone = (
+        next_milestone["number"] - delivered_count
+        if next_milestone
+        else 0
+    )
+
+    return render(
+        request,
+        "my_journey.html",
+        {
+            "customer": customer,
+            "delivered_count": delivered_count,
+            "milestones": milestones,
+            "next_milestone": next_milestone,
+            "journey_progress": journey_progress,
+            "orders_to_next_milestone": orders_to_next_milestone,
+            "journey_complete": delivered_count >= 10,
             "show_navbar": False,
             "simple_navbar": True,
             "show_floating_cart": False,
@@ -10862,7 +11177,7 @@ def partner_order_action(request, order_id):
                 "partner_order_detail",
                 order_id=order.id
             )
-                
+
 
 @login_required
 def partner_logout(request):
@@ -11015,7 +11330,7 @@ def partner_product_edit(request, product_id):
             ""
         ).strip()
 
-       
+
 
         product.is_active = request.POST.get("is_active") == "on"
         product.upi_only = request.POST.get("upi_only") == "on"

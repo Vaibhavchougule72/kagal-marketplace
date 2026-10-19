@@ -1658,7 +1658,95 @@ class CustomerReferral(models.Model):
             f"{self.referred_customer.phone}"
         )
 
-    
+class CustomerJourneyReward(models.Model):
+
+    LOKA_MONEY = "LOKA_MONEY"
+    COUPON = "COUPON"
+    FREE_DELIVERY = "FREE_DELIVERY"
+
+    REWARD_TYPES = [
+        (LOKA_MONEY, "LOKA Money"),
+        (COUPON, "Coupon"),
+        (FREE_DELIVERY, "Free Delivery"),
+    ]
+
+    ISSUED = "ISSUED"
+    USED = "USED"
+    EXPIRED = "EXPIRED"
+
+    REWARD_STATUSES = [
+        (ISSUED, "Issued"),
+        (USED, "Used"),
+        (EXPIRED, "Expired"),
+    ]
+
+    customer = models.ForeignKey(
+        "Customer",
+        on_delete=models.CASCADE,
+        related_name="journey_rewards"
+    )
+
+    milestone_number = models.PositiveSmallIntegerField()
+
+    reward_type = models.CharField(
+        max_length=20,
+        choices=REWARD_TYPES
+    )
+
+    reward_amount = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    source_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="journey_rewards"
+    )
+
+    coupon = models.ForeignKey(
+        "Coupon",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="journey_rewards"
+    )
+
+    status = models.CharField(
+        max_length=10,
+        choices=REWARD_STATUSES,
+        default=ISSUED
+    )
+
+    issued_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["milestone_number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["customer", "milestone_number"],
+                name="unique_customer_journey_milestone"
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.customer.phone} - "
+            f"Order milestone {self.milestone_number} - "
+            f"{self.get_reward_type_display()}"
+        )
+
+
+
 class CustomerOTP(models.Model):
     phone = models.CharField(
         max_length=10,
@@ -1731,3 +1819,46 @@ class FavoriteOrder(models.Model):
         return f"Favorite Order #{self.order.id} - {self.customer.phone}"
 
 
+class NotificationJob(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+    ]
+
+    campaign = models.OneToOneField(
+        NotificationCampaign,
+        on_delete=models.CASCADE,
+        related_name="job",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True,
+    )
+
+    attempts = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    error_message = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Notification Job #{self.pk} - {self.status}"
