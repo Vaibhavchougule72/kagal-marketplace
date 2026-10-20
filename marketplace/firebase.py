@@ -4,7 +4,9 @@ import os
 
 import firebase_admin
 from firebase_admin import credentials, messaging
-
+import time
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import Timeout
 
 logger = logging.getLogger(__name__)
 
@@ -199,60 +201,59 @@ def send_bulk_push_notifications(
             data=message_data,
         )
 
-        try:
+        max_attempts = 3
 
-            response = messaging.send_each_for_multicast(
-                multicast
-            )
-
-            success += response.success_count
-            failed += response.failure_count
-
-            logger.info(
-                "FCM batch %s completed. "
-                "Total tokens: %s, successful: %s, failed: %s",
-                batch_number,
-                len(batch),
-                response.success_count,
-                response.failure_count,
-            )
-
-            for token, result in zip(
-                batch,
-                response.responses,
-            ):
-
-                if result.success:
-                    continue
-
-                exception = result.exception
-
-                logger.warning(
-                    "FCM delivery failed for token "
-                    "(batch=%s): %s",
-                    batch_number,
-                    exception,
+        for attempt in range(1, max_attempts + 1):
+            try:
+                response = messaging.send_each_for_multicast(
+                    multicast
                 )
 
-                # Remove only tokens Firebase explicitly
-                # identifies as no longer registered.
-                if isinstance(
-                    exception,
-                    messaging.UnregisteredError,
-                ):
-                    invalid_tokens.append(token)
+                success += response.success_count
+                failed += response.failure_count
 
-        except Exception:
+                logger.info(
+                    "FCM batch %s completed. "
+                    "Total tokens: %s, successful: %s, failed: %s",
+                    batch_number,
+                    len(batch),
+                    response.success_count,
+                    response.failure_count,
+                )
 
-            # Preserve the full exception traceback.
-            logger.exception(
-                "FCM batch %s failed. "
-                "Token count: %s",
-                batch_number,
-                len(batch),
-            )
+                for token, result in zip(batch, response.responses):
+                    if result.success:
+                        continue
 
-            failed += len(batch)
+                    exception = result.exception
+
+                    logger.warning(
+                        "FCM delivery failed for token "
+                        "(batch=%s): %s",
+                        batch_number,
+                        exception,
+                    )
+
+                    if isinstance(
+                        exception,
+                        messaging.UnregisteredError,
+                    ):
+                        invalid_tokens.append(token)
+
+                break
+
+            except Exception as exc:
+                logger.exception(
+                    "FCM batch %s failed on attempt %s/%s",
+                    batch_number,
+                    attempt,
+                    max_attempts,
+                )
+
+                if attempt < max_attempts:
+                    time.sleep(2 ** attempt)
+                else:
+                    failed += len(batch)
 
     result = {
         "success": success,
