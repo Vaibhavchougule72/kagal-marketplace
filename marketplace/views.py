@@ -1051,7 +1051,7 @@ def view_cart(request):
 
         # 🔥 FREE DELIVERY PROGRESS
         MIN_ORDER = Decimal("99")
-        FREE_DELIVERY = Decimal("99")
+        FREE_DELIVERY = Decimal("999")
 
         if subtotal < MIN_ORDER:
             progress_percent = (subtotal / MIN_ORDER) * 100
@@ -1556,7 +1556,7 @@ def checkout(request):
 
                 delivery_fee = Decimal(0)
 
-            elif subtotal >= 99:
+            elif subtotal >= 999:
 
                 delivery_fee = Decimal(0)
 
@@ -3545,7 +3545,7 @@ def calculate_delivery(request):
     if free_delivery:
         delivery_fee = Decimal(0)
 
-    elif subtotal >= 99:
+    elif subtotal >= 999:
         delivery_fee = Decimal(0)
 
     else:
