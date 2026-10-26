@@ -357,8 +357,7 @@ def home(request):
         "offer_sliders": offer_sliders,
         "featured_stores": featured_stores,
         "show_floating_cart": True,
-        "show_navbar": False,
-        "simple_navbar": False,
+        
     })
 # =====================================================
 # STORES
