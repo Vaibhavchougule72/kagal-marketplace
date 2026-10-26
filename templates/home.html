@@ -44,23 +44,6 @@ body .premium-navbar.lh-home-nav-hidden {
     display: none !important;
 }
 
-/* base.html reserves vertical room for its fixed navbar. Since this page hides
-   that navbar and renders its controls inside the hero, remove that reservation
-   on the homepage so the green hero starts at the top of the content area. */
-@media (max-width: 991.98px) {
-    body:has(.lh-page) {
-        padding-top: 0 !important;
-    }
-
-    body:has(.lh-page) main,
-    body:has(.lh-page) #main-content,
-    body:has(.lh-page) .main-content,
-    body:has(.lh-page) .content-wrapper {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-}
-
 /* phone: the navbar sits on the hero, then pins as a dark band when you scroll */
 @media (max-width: 991.98px) {
     body .premium-navbar.lh-nav-over-hero:not(.lh-nav-scrolled) {
@@ -845,14 +828,13 @@ body .premium-navbar #lokaWalletBtn svg {
 @media (max-width: 991.98px) {
     .lh-page {
         padding-bottom: 8px;
-        margin-top: 0 !important;
     }
 
     /* Keep the top sections in a tight, predictable vertical stack. */
     .lh-top {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 4px;
         margin: 0;
         padding: 0;
     }
@@ -867,14 +849,46 @@ body .premium-navbar #lokaWalletBtn svg {
         margin: 0;
     }
 
-    .lh-hero--over {
-        padding-bottom: 30px;
+    /* Keep LOKA logo and Cart / Wallet / Profile buttons in one top row. */
+    .lh-hero-header {
+        display: flex;
+        width: 100%;
+        min-height: 40px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 0 0 14px;
     }
 
-    /* Keep the offer close to the hero without a large blank gap. */
+    .lh-hero-header .navbar-brand {
+        display: inline-flex;
+        align-items: center;
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    .lh-hero-header .loka-navbar-actions {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 7px;
+        margin-left: auto;
+        white-space: nowrap;
+    }
+
+    .lh-hero-header .loka-nav-icon-btn {
+        flex: 0 0 38px;
+    }
+
+    .lh-hero--over {
+        padding-bottom: 20px;
+    }
+
+    /* Keep the offer slider close to both the hero and the next section. */
     .lh-offer {
         margin-top: -26px;
-        margin-bottom: 0;
+        margin-bottom: -8px;
     }
 
     .lh-offer .container,
