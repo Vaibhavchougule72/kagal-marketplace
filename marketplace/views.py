@@ -1,3 +1,4 @@
+#python manage.py process_notification_jobs --interval 5
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 import secrets
