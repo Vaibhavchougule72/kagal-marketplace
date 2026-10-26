@@ -1,1152 +1,237 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load static %}
-
-{% block extra_css %}
-<style>
-.page-wrapper,
-    .main-content {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    .mi-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    html,
-    body,
-    .lh-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-/* =====================================================
-   HOME — WARM LOKA BRAND
-   Everything is prefixed lh- and scoped under .lh-page so
-   it cannot clash with loka-theme.css.
-===================================================== */
-
-/* ── NAVBAR (this page only) ─────────────────────
-   base.html is untouched. These rules restyle its Cart / Wallet / Profile
-   buttons (pill wallet, round cart + profile) and the script at the bottom
-   of this file adds the balance and the "Get the App" link. */
-body .premium-navbar {
-    background: linear-gradient(150deg, #1A3A16, #2D5A27 55%, #3A2010);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border-bottom: 0;
-    box-shadow: 0 4px 14px rgba(0,0,0,.16);
-}
-
-/* The home page places the existing navbar controls inside the hero instead. */
-body .premium-navbar.lh-home-nav-hidden {
-    display: none !important;
-}
-
-/* phone: the navbar sits on the hero, then pins as a dark band when you scroll */
-@media (max-width: 991.98px) {
-    body .premium-navbar.lh-nav-over-hero:not(.lh-nav-scrolled) {
-        background: transparent;
-        box-shadow: none;
-    }
-}
-
-body .premium-navbar .navbar-brand {
-    font-weight: 800;
-    letter-spacing: -.01em;
-}
-
-body .premium-navbar .navbar-brand::before {
-    content: "🌿";
-    margin-right: 6px;
-}
-
-body .premium-navbar .loka-navbar-actions {
-    gap: 8px;
-}
-
-body .premium-navbar .loka-nav-icon-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.13);
-    border: 1px solid rgba(255,255,255,.2);
-}
-
-body .premium-navbar .loka-nav-icon-btn svg {
-    width: 19px;
-    height: 19px;
-}
-
-body .premium-navbar .loka-nav-cart-badge {
-    top: -4px;
-    right: -4px;
-    min-width: 17px;
-    height: 17px;
-    padding: 0 4px;
-    font-size: 9px;
-    line-height: 14px;
-    background: #E8621A;
-    border: 1.5px solid #1A3A16;
-}
-
-/* profile: gold circle (initial letter when the customer name is known) */
-body .premium-navbar #lokaProfileBtn {
-    background: #F7C58A;
-    border-color: transparent;
-    color: #3A2010;
-}
-
-.lh-profile-initial {
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-/* wallet: pill with a gold coin and the balance */
-body .premium-navbar #lokaWalletBtn {
-    width: auto;
-    min-width: 38px;
-    padding: 0 5px;
-    border-radius: 20px;
-    gap: 6px;
-}
-
-body .premium-navbar #lokaWalletBtn.lh-has-amt {
-    padding: 0 12px 0 5px;
-}
-
-body .premium-navbar #lokaWalletBtn svg {
-    display: none;
-}
-
-.lh-coin {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: #F7C58A;
-    color: #3A2010;
-    font-size: 13px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.lh-wallet-text {
-    display: none;
-    font-size: 12px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-.lh-has-amt .lh-wallet-text {
-    display: inline;
-}
-
-.lh-wallet-label,
-.lh-wallet-sym {
-    display: none;
-}
-
-/* desktop: "Get the App" link */
-.lh-nav-app {
-    display: none;
-    align-items: center;
-    gap: 5px;
-    margin-right: 6px;
-    color: #fff;
-    text-decoration: none;
-    font-size: 12.5px;
-    font-weight: 700;
-    opacity: .92;
-    white-space: nowrap;
-}
-
-.lh-nav-app:hover {
-    color: #fff;
-    opacity: 1;
-}
-
-.lh-page {
-    color: #1A2E19;
-    padding-bottom: 12px;
-}
-
-/* ── HERO (greeting + search) ───────────────────── */
-.lh-hero {
-    position: relative;
-    z-index: 20;
-    background: linear-gradient(150deg, #1A3A16, #2D5A27 55%, #3A2010);
-    color: #fff;
-    padding: 10px 0 22px;
-    border-radius: 0 0 24px 24px;
-}
-
-.lh-hero-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    min-height: 40px;
-    margin-bottom: 14px;
-}
-
-.lh-hero-header .navbar-brand {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    color: #fff !important;
-    font-size: 18px;
-    font-weight: 800;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.lh-hero-header .navbar-brand::before {
-    content: "🌿";
-    margin-right: 5px;
-}
-
-.lh-hero-header .loka-navbar-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 7px;
-    margin-left: auto;
-}
-
-.lh-hero-header .loka-nav-icon-btn {
-    width: 38px;
-    height: 38px;
-    flex-shrink: 0;
-    color: #fff;
-    background: rgba(255,255,255,.13);
-    border: 1px solid rgba(255,255,255,.24);
-    border-radius: 50%;
-}
-
-.lh-hero-header .loka-nav-icon-btn svg {
-    width: 19px;
-    height: 19px;
-}
-
-.lh-hero-header .loka-nav-cart-badge {
-    top: -4px;
-    right: -4px;
-    background: #E8621A;
-    border: 1.5px solid #1A3A16;
-}
-
-.lh-hero-header #lokaProfileBtn {
-    background: #F7C58A;
-    border-color: transparent;
-    color: #3A2010;
-}
-
-.lh-hero-header #lokaWalletBtn {
-    width: auto;
-    min-width: 38px;
-    min-height: 34px;
-    padding: 0 5px;
-    border-radius: 20px;
-    gap: 6px;
-}
-
-.lh-hero-header #lokaWalletBtn svg {
-    display: none;
-}
-
-.lh-hero-header #lokaWalletBtn.lh-has-amt {
-    padding: 0 8px 0 5px;
-}
-
-.lh-hero-header .lh-nav-app {
-    display: none !important;
-}
-
-.lh-hero--over {
-    padding-bottom: 36px;
-}
-
-.lh-greet {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1.3px;
-    color: #F7C58A;
-}
-
-.lh-hero-title {
-    margin: 6px 0 14px;
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1.25;
-    color: #fff;
-}
-
-.lh-t1,
-.lh-t2 {
-    display: block;
-}
-
-.lh-search {
-    position: relative;
-    margin: 0;
-}
-
-.lh-search-input {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    border: 0;
-    border-radius: 16px;
-    padding: 13px 16px 13px 44px;
-    font-size: 14px;
-    color: #1A2E19;
-    outline: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,.14);
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%239AA899' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 15px center;
-}
-
-.lh-search-input::placeholder {
-    color: #9AA899;
-}
-
-/* live suggestions (filled by the script in base.html) */
-.lh-page .lh-search .home-suggestion-box {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    z-index: 50;
-    max-height: 280px;
-    overflow-y: auto;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 12px 30px rgba(0,0,0,.2);
-    color: #1A2E19;
-    display: none;
-}
-
-/* ── OFFER SLIDER (overlaps the hero) ───────────── */
-.lh-offer {
-    position: relative;
-    z-index: 5;
-    margin-top: -36px;
-}
-
-.lh-offer .carousel-inner {
-    border-radius: 18px;
-    box-shadow: 0 12px 26px rgba(232,98,26,.22);
-}
-
-.lh-offer-img {
-    display: block;
-    width: 100%;
-    height: auto;
-}
-
-.lh-offer .lh-offer-dots {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 8px;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    z-index: 2;
-}
-
-.lh-offer .lh-offer-dots [data-bs-target] {
-    width: 6px;
-    height: 6px;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 6px;
-    background: rgba(255,255,255,.6);
-    opacity: 1;
-    text-indent: 0;
-    transition: width .2s ease, background .2s ease;
-}
-
-.lh-offer .lh-offer-dots [data-bs-target].active {
-    width: 18px;
-    background: #fff;
-}
-
-/* ── DOWNLOAD APP STRIP ─────────────────────────── */
-.lh-dl {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 14px;
-    padding: 9px 9px 9px 14px;
-    background: #fff;
-    border: 1px solid #E2E9E0;
-    border-radius: 16px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.lh-page .lh-dl a {
-    background: #E8621A;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 10px;
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-/* ── SECTIONS ───────────────────────────────────── */
-.lh-section {
-    margin-top: 16px;
-}
-
-.lh-title {
-    margin: 0 0 9px;
-    font-size: 17px;
-    font-weight: 800;
-    color: #1A2E19;
-}
-
-/* ── CATEGORIES ─────────────────────────────────── */
-.lh-cat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
-
-.lh-page a.lh-cat {
-    display: block;
-    text-align: center;
-    text-decoration: none;
-    color: #1A2E19;
-}
-
-.lh-cat-img {
-    position: relative;
-    width: 100%;
-    padding-top: 100%;
-    background: #fff;
-    border: 1px solid #E2E9E0;
-    border-radius: 16px;
-    box-shadow: 0 3px 9px rgba(26,58,22,.05);
-    overflow: hidden;
-}
-
-.lh-cat-img img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.lh-cat-ph {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-}
-
-.lh-cat-name {
-    margin-top: 6px;
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1.25;
-}
-
-/* ── COMBOS ─────────────────────────────────────── */
-.lh-combo-row {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 2px 2px 6px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-}
-
-.lh-combo-row::-webkit-scrollbar {
-    display: none;
-}
-
-.lh-page .lh-combo.combo-card {
-    flex: 0 0 150px;
-    width: 150px;
-    min-width: 150px;
-    max-width: 150px;
-    height: auto;
-    margin: 0;
-    padding: 0;
-    display: block;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    background: #fff;
-    border: 1px solid #E2E9E0;
-    border-radius: 16px;
-    box-shadow: none;
-    transform: none;
-}
-
-.lh-combo-img {
-    position: relative;
-    height: 96px;
-    background: #FDF1EB;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 34px;
-}
-
-.lh-combo-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.lh-combo-tag {
-    position: absolute;
-    top: 7px;
-    right: 7px;
-    z-index: 2;
-    background: #ffeb3b;
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 6px;
-}
-
-.lh-combo-body {
-    padding: 9px 10px 11px;
-}
-
-
-.lh-combo-name {
-    min-height: 32px;
-    font-size: 12.5px;
-    font-weight: 700;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.lh-combo-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-}
-
-.lh-combo-price {
-    font-size: 15px;
-    font-weight: 800;
-    color: #1A2E19;
-}
-
-.lh-page .lh-add {
-    width: auto;
-    height: auto;
-    border: 0;
-    border-radius: 9px;
-    padding: 6px 14px;
-    background: #E8621A;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: none;
-}
-
-.lh-page .lh-add:active {
-    transform: scale(.95);
-}
-
-/* ── FEATURED STORES ────────────────────────────── */
-.lh-store-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-}
-
-.lh-page a.lh-store {
-    display: block;
-    background: #fff;
-    border: 1px solid #E2E9E0;
-    border-radius: 18px;
-    overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-    box-shadow: 0 4px 14px rgba(26,58,22,.06);
-    transition: transform .15s ease, box-shadow .15s ease;
-}
-
-.lh-page a.lh-store:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(26,58,22,.12);
-    color: inherit;
-}
-
-/* .featured-store-image is kept because base.html cycles its images */
-.lh-page .lh-store .featured-store-image {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 150px;
-    margin: 0;
-    border-radius: 0;
-    background: #FDF1EB;
-    overflow: hidden;
-}
-
-.lh-page .lh-store .featured-store-image img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    display: block !important;
-    transition: opacity .5s ease;
-}
-
-.lh-page .lh-store .featured-store-image img.active-slide {
-    opacity: 1;
-}
-
-.lh-store-ph {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 44px;
-}
-
-.lh-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
-    background: #E8621A;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 8px;
-}
-
-.lh-store-info {
-    padding: 12px 14px 14px;
-}
-
-.lh-store-name {
-    font-size: 15px;
-    font-weight: 800;
-    color: #1A2E19;
-}
-
-.lh-store-meta {
-    display: flex;
-    gap: 14px;
-    margin-top: 5px;
-    font-size: 12px;
-    color: #7D897B;
-}
-
-.lh-store-offer {
-    margin-top: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #E8621A;
-}
-
-/* ── LARGER SCREENS ─────────────────────────────── */
-@media (max-width: 380px) {
-    .lh-hero-header {
-        gap: 6px;
-    }
-
-    .lh-hero-header .navbar-brand {
-        font-size: 16px;
-    }
-
-    .lh-hero-header .loka-navbar-actions {
-        gap: 5px;
-    }
-
-    .lh-hero-header .loka-nav-icon-btn {
-        width: 34px;
-        height: 34px;
-    }
-}
-
-@media (min-width: 768px) {
-
-    .lh-hero-title {
-        font-size: 28px;
-    }
-
-    .lh-page .lh-combo.combo-card {
-        flex-basis: 175px;
-        width: 175px;
-        min-width: 175px;
-        max-width: 175px;
-    }
-
-    .lh-store-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 992px) {
-
-    .lh-store-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* ── DESKTOP: gradient navbar, then greeting + search + categories on the
-      left and the offer banner on the right (no big gradient hero) ───── */
-@media (min-width: 992px) {
-
-    .lh-nav-app {
-        display: flex;
-    }
-
-    body .premium-navbar #lokaWalletBtn.lh-has-amt .lh-wallet-label,
-    body .premium-navbar #lokaWalletBtn.lh-has-amt .lh-wallet-sym {
-        display: inline;
-    }
-
-    .lh-top {
-        display: grid;
-        grid-template-columns: 1.4fr 1fr;
-        grid-template-areas:
-            "hero offer"
-            "cats offer"
-            "cats dl";
-        gap: 12px 24px;
-        align-items: start;
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 14px 14px 0;
-    }
-
-    .lh-top .container {
-        max-width: none;
-        padding: 0;
-    }
-
-    .lh-hero {
-        grid-area: hero;
-        background: linear-gradient(150deg, #1A3A16, #2D5A27 55%, #3A2010);
-        color: #fff;
-        padding: 12px 0 20px;
-        border-radius: 0 0 20px 20px;
-    }
-
-    .lh-hero-header {
-        margin: 0 14px 14px;
-    }
-
-    .lh-hero > .container {
-        padding: 0 14px;
-    }
-
-    .lh-hero--over {
-        padding-bottom: 0;
-    }
-
-    .lh-greet {
-        color: #F7C58A;
-    }
-
-    .lh-hero-title {
-        color: #fff;
-        font-size: 26px;
-    }
-
-    .lh-t2 {
-        margin-top: 4px;
-        font-size: 13px;
-        font-weight: 500;
-        color: rgba(255,255,255,.82);
-    }
-
-    .lh-search-input {
-        border: 1px solid #E2E9E0;
-        box-shadow: none;
-    }
-
-    .lh-offer {
-        grid-area: offer;
-        margin-top: 0;
-    }
-
-    .lh-dl-sec {
-        grid-area: dl;
-    }
-
-    .lh-dl {
-        margin-top: 0;
-    }
-
-    .lh-cats-sec {
-        grid-area: cats;
-        margin-top: 0;
-    }
-}
-
-
-/* ── COMPACT MOBILE/TABLET SECTION SPACING ─────────────────── */
-@media (max-width: 991.98px) {
-    .lh-page {
-        padding-bottom: 8px;
-    }
-
-    /* Keep the top sections in a tight, predictable vertical stack. */
-    .lh-top {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin: 0;
-        padding: 0;
-    }
-
-    .lh-top > section {
-        min-height: 0;
-        margin-bottom: 0 !important;
-    }
-
-    .lh-hero {
-        padding: 10px 0 22px;
-        margin: 0;
-    }
-
-    /* Keep LOKA logo and Cart / Wallet / Profile buttons in one top row. */
-    .lh-hero-header {
-        display: flex;
-        width: 100%;
-        min-height: 40px;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin: 0 0 14px;
-    }
-
-    .lh-hero-header .navbar-brand {
-        display: inline-flex;
-        align-items: center;
-        flex: 0 1 auto;
-        min-width: 0;
-    }
-
-    .lh-hero-header .loka-navbar-actions {
-        display: flex;
-        flex: 0 0 auto;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 7px;
-        margin-left: auto;
-        white-space: nowrap;
-    }
-
-    .lh-hero-header .loka-nav-icon-btn {
-        flex: 0 0 38px;
-    }
-
-    .lh-hero--over {
-        padding-bottom: 20px;
-    }
-
-    /* Keep the offer slider close to both the hero and the next section. */
-    .lh-offer {
-        margin-top: -26px;
-        margin-bottom: -8px;
-    }
-
-    .lh-offer .container,
-    .lh-dl-sec .container,
-    .lh-cats-sec .container {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    .lh-dl-sec {
-        margin: 0 !important;
-        padding: 0;
-    }
-
-    .lh-dl {
-        margin: 0;
-    }
-
-    .lh-cats-sec {
-        margin-top: 2px !important;
-        padding-top: 0;
-    }
-
-    .lh-section {
-        margin-top: 16px;
-    }
-
-    .lh-title {
-        margin-bottom: 8px;
-    }
-}
-
-</style>
-{% endblock %}
-
-
 {% block content %}
 
-<div class="lh-page">
+<!-- STICKY HOME SEARCH -->
 
-<div class="lh-top">
+<section class="home-search-sticky">
 
-<!-- HERO: greeting + search -->
-<section class="lh-hero {% if offer_sliders %}lh-hero--over{% endif %}">
+<div class="container">
 
-    <div class="container">
+<form method="GET"
+      action="{% url 'search_products' %}"
+      class="position-relative">
 
-        <div class="lh-hero-header" id="lhHeroHeader" aria-label="LOKA navigation"></div>
+    <input
+        class="home-search-input"
+        type="search"
+        id="homeSearchInput"
+        name="q"
+        placeholder="Search for food, snacks..."
+        autocomplete="off">
 
-        <div class="lh-greet" id="lhGreeting">GOOD EVENING</div>
-
-        <h1 class="lh-hero-title">
-            <span class="lh-t1">Hungry{% if customer.name %}, {{ customer.name|truncatechars:18 }}{% endif %}? 👋</span>
-            <span class="lh-t2">Order from Kagal's own stores</span>
-        </h1>
-
-        <form method="GET"
-              action="{% url 'search_products' %}"
-              class="lh-search">
-
-            <input
-                class="lh-search-input"
-                type="search"
-                id="homeSearchInput"
-                name="q"
-                placeholder="Search for food, snacks..."
-                autocomplete="off">
-
-            <div id="homeSuggestionBox"
-                 class="home-suggestion-box">
-            </div>
-
-        </form>
-
+    <div id="homeSuggestionBox"
+         class="home-suggestion-box">
     </div>
+
+</form>
+
+</div>
 
 </section>
 
-<!-- OFFER SLIDER -->
+ <!-- OFFER SLIDER -->
+
 {% if offer_sliders %}
 
-<section class="lh-offer">
+<section class="offer-slider-section">
 
-    <div class="container">
+<div class="container">
 
-        <div id="lokaOfferCarousel"
-             class="carousel slide"
-             data-bs-ride="carousel"
-             data-bs-interval="2000">
+<div id="lokaOfferCarousel"
+     class="carousel slide"
+     data-bs-ride="carousel"
+     data-bs-interval="2000">
 
-            <div class="carousel-inner">
+    <div class="carousel-inner">
 
-                {% for offer in offer_sliders %}
+        {% for offer in offer_sliders %}
 
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
 
-                    {% if offer.image %}
-                    <img src="{{ offer.image.url }}"
-                         class="lh-offer-img"
-                         alt="{{ offer.title }}">
-                    {% endif %}
+            <div class="offer-card-wrapper">
 
-                </div>
-
-                {% endfor %}
+                {% if offer.image %}
+                <img src="{{ offer.image.url }}"
+                     class="offer-slider-image"
+                     alt="{{ offer.title }}">
+                {% endif %}
 
             </div>
-
-            {% if offer_sliders|length > 1 %}
-            <div class="carousel-indicators lh-offer-dots">
-
-                {% for offer in offer_sliders %}
-                <button type="button"
-                        data-bs-target="#lokaOfferCarousel"
-                        data-bs-slide-to="{{ forloop.counter0 }}"
-                        class="{% if forloop.first %}active{% endif %}"
-                        aria-label="Offer {{ forloop.counter }}">
-                </button>
-                {% endfor %}
-
-            </div>
-            {% endif %}
 
         </div>
 
+        {% endfor %}
+
     </div>
+
+</div>
+
+</div>
 
 </section>
 
 {% endif %}
 
-<!-- DOWNLOAD APP STRIP -->
-<section class="lh-dl-sec">
+<!-- DOWNLOAD APP SECTION -->
+<section class="py-2">
 
-    <div class="container">
+<div class="container">
 
-        <div class="lh-dl">
+<div class="loka-download-mini text-center">
 
-            <span>📲 Download LOKA App</span>
+    <span class="download-mini-text">
+        📲 Download LOKA App
+    </span>
 
-            <a href="{% url 'download_app' %}">Download</a>
+    <a href="{% url 'download_app' %}"
+       class="download-mini-btn">
 
-        </div>
+        Download
 
-    </div>
+    </a>
+
+</div>
+
+</div>
 
 </section>
 
 <!-- CATEGORIES -->
-<section class="lh-section lh-cats-sec" id="categories">
-
+<section class="category-section" id="categories">
     <div class="container">
 
-        <h3 class="lh-title">Category</h3>
+        <h3 class="section-title">
+            Category
+        </h3>
 
-        <div class="lh-cat-grid">
+
+        <div class="row g-4">
 
             {% for category in categories %}
+            <div class="col-3 col-sm-3 col-md-3 col-lg-2">
 
-            <a href="{% url 'category_stores' category.id %}"
-               class="lh-cat">
+                <a href="{% url 'category_stores' category.id %}" 
+                   class="category-link">
 
-                <div class="lh-cat-img">
-                    {% if category.image %}
-                        <img src="{{ category.image.url }}"
-                             alt="{{ category.name }}"
-                             loading="lazy">
-                    {% else %}
-                        <div class="lh-cat-ph">🍽️</div>
-                    {% endif %}
-                </div>
+                    <div class="blinkit-category-card">
 
-                <div class="lh-cat-name">
-                    {{ category.name }}
-                </div>
+                        <div class="category-image-wrapper">
+                            {% if category.image.url %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
 
-            </a>
+                            {% endif %}
 
+                        </div>
+
+                        <div class="category-title">
+                            {{ category.name }}
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
             {% endfor %}
 
         </div>
 
     </div>
-
 </section>
-
-</div><!-- /lh-top -->
 
 {% if combos %}
 
 <!-- COMBOS -->
-<section class="lh-section">
+<section class="combo-section">
 
-    <div class="container">
+<div class="container">
 
-        <h3 class="lh-title">Combos</h3>
+<div class="combo-container">
 
-        <div class="lh-combo-row">
+<h3 class="section-title">
+    Combos
+</h3>
 
-            {% for combo in combos %}
+<div class="combo-row">
 
-            <div class="lh-combo combo-card"
-                 data-id="{{ combo.id }}"
-                 data-name="{{ combo.name }}"
-                 data-price="{{ combo.price }}"
-                 data-items='[
-                    {% for item in combo.items.all %}
-                        {
-                            "name": "{{ item.product.name|escapejs }}",
-                            "qty": "{{ item.quantity }}",
-                            "price": "{{ item.product.price }}"
-                        }{% if not forloop.last %},{% endif %}
-                    {% endfor %}
-                    ]'>
+{% for combo in combos %}
 
-                <div class="lh-combo-img">
+<div class="combo-col">
 
-                    <span class="lh-combo-tag">For You</span>
+<div class="combo-card"
+     data-id="{{ combo.id }}"
+     data-name="{{ combo.name }}"
+     data-price="{{ combo.price }}"
+     data-items='[
+        {% for item in combo.items.all %}
+            {
+                "name": "{{ item.product.name|escapejs }}",
+                "qty": "{{ item.quantity }}",
+                "price": "{{ item.product.price }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+        ]'>
 
-                    {% if combo.image %}
-                    <img src="{{ combo.image.url }}"
-                         alt="{{ combo.name }}"
-                         loading="lazy">
-                    {% else %}
-                    🍽️
-                    {% endif %}
+<div class="combo-image position-relative">
+    <div style="
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:#ffeb3b;
+    color:#000;
+    padding:3px 8px;
+    font-size:11px;
+    font-weight:600;
+    border-radius:6px;
+    z-index:10;
+">
+    For You
+</div>
 
-                </div>
+{% if combo.image.url %}
+<img src="{{ combo.image.url }}" loading="lazy">
+{% endif %}
 
-                <div class="lh-combo-body">
+</div>
 
-                    <div class="lh-combo-name">
-                        {{ combo.name }}
-                    </div>
+<div class="combo-body">
 
-                    <div class="lh-combo-bottom">
+    <div class="combo-name">
+        {{ combo.name }}
+    </div>
 
-                        <span class="lh-combo-price">
-                            ₹{{ combo.price|floatformat:0 }}
-                        </span>
+    <div class="combo-bottom">
 
-                        <button type="button"
-                                class="lh-add add-bundle-btn"
-                                data-id="{{ combo.id }}">
-                            ADD
-                        </button>
+        <div class="combo-price">
 
-                    </div>
-
-                </div>
-
+            <div style="color:red;font-size:16px;font-weight:700;">
+                ₹{{ combo.price|floatformat:0 }}
             </div>
-
-            {% endfor %}
 
         </div>
 
+        <button class="combo-add-btn add-bundle-btn"
+            data-id="{{ combo.id }}">
+            ADD
+        </button>
+
     </div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
 
 </section>
 
@@ -1154,72 +239,93 @@ body .premium-navbar #lokaWalletBtn svg {
 
 {% if featured_stores %}
 
-<!-- FEATURED STORES -->
-<section class="lh-section">
+<section class="featured-store-section">
 
-    <div class="container">
+<div class="container">
 
-        <h3 class="lh-title">Featured</h3>
+<h3 class="section-title">
+    Featured
+</h3>
 
-        <div class="lh-store-grid">
+<div class="featured-store-slider">
 
-            {% for store in featured_stores %}
+{% for store in featured_stores %}
 
-            <a href="{% url 'store_detail' store.id %}"
-               class="lh-store">
+<a href="{% url 'store_detail' store.id %}"
+   class="featured-store-card">
 
-                <div class="featured-store-image">
+    <div class="featured-store-image">
+        <div class="featured-badge">
+            Featured
+        </div>
 
-                    <span class="lh-badge">Featured</span>
+        {% for product in store.featured_products %}
 
-                    {% for product in store.featured_products %}
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}"
-                             alt="{{ product.name }}"
-                             {% if forloop.first %}class="active-slide"{% endif %}
-                             loading="lazy">
-                        {% endif %}
-                    {% empty %}
-                        <div class="lh-store-ph">🍽️</div>
-                    {% endfor %}
+            {% if forloop.first %}
 
-                </div>
+            <img src="{{ product.image.url }}"
+                 class="active-slide">
 
-                <div class="lh-store-info">
+            {% else %}
 
-                    <div class="lh-store-name">
-                        {{ store.name }}
-                    </div>
+            {% if product.image %}
+            <img src="{{ product.image.url }}">
+            {% endif %}
 
-                    <div class="lh-store-meta">
+            <div class="featured-dots">
 
-                        <span>⏱ 35-40 min</span>
+                <span></span>
 
-                        {% if store.average_rating %}
-                        <span>⭐ {{ store.average_rating|floatformat:1 }}</span>
-                        {% endif %}
+                <span></span>
 
-                    </div>
+                <span></span>
 
-                    <div class="lh-store-offer">
-                        🎉 Special Offers Available
-                    </div>
+                <span></span>
 
-                </div>
+            </div>
 
-            </a>
+            {% endif %}
 
-            {% endfor %}
+        {% endfor %}
 
+    </div>
+
+    <div class="featured-store-info">
+
+        <div class="featured-store-name">
+            {{ store.name }}
+        </div>
+
+        <div class="featured-meta">
+
+            <span>
+                ⏱ 35-40 min
+            </span>
+
+            <span>
+                ⭐ {{ store.average_rating|floatformat:1 }}
+            </span>
+
+        </div>
+
+        <div class="featured-offer">
+
+            🎉 Special Offers Available
         </div>
 
     </div>
 
+</a>
+
+{% endfor %}
+
+</div>
+
+</div>
+
 </section>
 
 {% endif %}
-
-</div><!-- /lh-page -->
 
 <!-- FOOTER -->
 <footer class="loka-footer">
@@ -1762,143 +868,5 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 
-<script>
-/* Time-based greeting + make sure every featured store shows an image */
-document.addEventListener("DOMContentLoaded", function(){
-
-    const greeting = document.getElementById("lhGreeting");
-
-    if(greeting){
-
-        const hour = new Date().getHours();
-
-        let text = "GOOD EVENING";
-
-        if(hour < 5){
-            text = "GOOD NIGHT";
-        }else if(hour < 12){
-            text = "GOOD MORNING";
-        }else if(hour < 17){
-            text = "GOOD AFTERNOON";
-        }else if(hour >= 21){
-            text = "GOOD NIGHT";
-        }
-
-        greeting.textContent = text;
-    }
-
-    document.querySelectorAll(".lh-store .featured-store-image").forEach(function(box){
-
-        const images = box.querySelectorAll("img");
-
-        if(images.length && !box.querySelector("img.active-slide")){
-            images[0].classList.add("active-slide");
-        }
-
-    });
-
-});
-</script>
-
-<script>
-/* Navbar on this page: sits on the hero, pins when scrolling, wallet pill with
-   balance, "Get the App" link, profile initial. Every existing handler in
-   base.html (cart, LOKA Money window, profile) keeps working. */
-(function () {
-
-    var nav = document.querySelector(".premium-navbar");
-    var heroHeader = document.getElementById("lhHeroHeader");
-
-    if (!nav || !heroHeader) return;
-
-    /* Move the real navbar elements, rather than cloning them, so existing
-       cart, wallet and profile event handlers remain attached. */
-    var brand = nav.querySelector(".navbar-brand");
-    var actions = nav.querySelector(".loka-navbar-actions");
-
-    if (brand) heroHeader.appendChild(brand);
-    if (actions) heroHeader.appendChild(actions);
-
-    nav.classList.add("lh-home-nav-hidden");
-
-    /* Get the App (hidden on small hero header; available elsewhere if styled) */
-
-    if (actions) {
-
-        var app = document.createElement("a");
-
-        app.className = "lh-nav-app";
-        app.href = "{% url 'download_app' %}";
-        app.textContent = "📲 Get the App";
-
-        actions.insertBefore(app, actions.firstChild);
-    }
-
-
-    /* Wallet pill */
-    var wallet = document.getElementById("lokaWalletBtn");
-
-    if (wallet) {
-        wallet.insertAdjacentHTML(
-            "beforeend",
-            '<span class="lh-coin">₹</span>' +
-            '<span class="lh-wallet-text">' +
-                '<span class="lh-wallet-label">Wallet · </span>' +
-                '<span class="lh-wallet-sym">₹</span>' +
-                '<span class="lh-wallet-amt"></span>' +
-            '</span>'
-        );
-
-        var walletAmount = wallet.querySelector(".lh-wallet-amt");
-
-        if (walletAmount) {
-            fetch("{% url 'loka_money_data' %}", {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                },
-                credentials: "same-origin"
-            })
-            .then(function (response) {
-                return response.ok ? response.json() : null;
-            })
-            .then(function (data) {
-                if (!data || !data.success) return;
-
-                var balance = parseFloat(data.balance || 0);
-
-                walletAmount.textContent =
-                    (balance % 1 === 0)
-                        ? String(balance)
-                        : balance.toFixed(2);
-
-                wallet.classList.add("lh-has-amt");
-            })
-            .catch(function (error) {
-                console.error("Unable to load LOKA Money balance:", error);
-            });
-        }
-    }
-
-
-    /* Profile: initial letter when the customer name is available */
-    var initial = "{{ customer.name|default:''|slice:':1'|upper|escapejs }}";
-    var profile = document.getElementById("lokaProfileBtn");
-
-    if (profile && initial) {
-
-        var icon = profile.querySelector("svg");
-
-        if (icon) icon.style.display = "none";
-
-        var letter = document.createElement("span");
-
-        letter.className = "lh-profile-initial";
-        letter.textContent = initial;
-
-        profile.appendChild(letter);
-    }
-
-})();
-</script>
-
 {% endblock %}
+
