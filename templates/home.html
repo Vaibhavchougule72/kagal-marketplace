@@ -807,6 +807,72 @@ body .premium-navbar #lokaWalletBtn svg {
     }
 }
 
+
+/* ── COMPACT MOBILE/TABLET SECTION SPACING ─────────────────── */
+@media (max-width: 991.98px) {
+    .lh-page {
+        padding-bottom: 8px;
+    }
+
+    /* Keep the top sections in a tight, predictable vertical stack. */
+    .lh-top {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .lh-top > section {
+        min-height: 0;
+        margin-bottom: 0 !important;
+    }
+
+    .lh-hero {
+        padding: 10px 0 22px;
+        margin: 0;
+    }
+
+    .lh-hero--over {
+        padding-bottom: 30px;
+    }
+
+    /* Keep the offer close to the hero without a large blank gap. */
+    .lh-offer {
+        margin-top: -26px;
+        margin-bottom: 0;
+    }
+
+    .lh-offer .container,
+    .lh-dl-sec .container,
+    .lh-cats-sec .container {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .lh-dl-sec {
+        margin: 0 !important;
+        padding: 0;
+    }
+
+    .lh-dl {
+        margin: 0;
+    }
+
+    .lh-cats-sec {
+        margin-top: 2px !important;
+        padding-top: 0;
+    }
+
+    .lh-section {
+        margin-top: 16px;
+    }
+
+    .lh-title {
+        margin-bottom: 8px;
+    }
+}
+
 </style>
 {% endblock %}
 
