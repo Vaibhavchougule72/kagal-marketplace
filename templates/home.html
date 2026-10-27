@@ -4,317 +4,821 @@
 {% block content %}
 
 <style>
-/* ============ LOKA HOME — all rules scoped under .lk-home ============ */
-.lk-home{--g:#1f7a3d;--gd:#1a3a16;--o:#e8621a;--ink:#1c2a1f;--mut:#6b7280;--r:24px;color:var(--ink);padding-bottom:8px}
-.lk-home *{box-sizing:border-box}
-.lk-wrap{max-width:1200px;margin:0 auto;padding:0 16px}
-.lk-sec{margin-top:32px}
-.lk-sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
-.lk-home .lk-sec-title{font-size:clamp(20px,4.6vw,28px);font-weight:800;margin:0;letter-spacing:-.01em;line-height:1.15}
-.lk-sec-sub{margin:3px 0 0;color:var(--mut);font-size:14px}
-.lk-viewall{color:var(--g);font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
-.lk-scroll{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:6px}
-.lk-scroll::-webkit-scrollbar{display:none}
-
-/* ---- Hero ---- */
-.lk-hero{position:relative;overflow:hidden;border-radius:var(--r);margin-top:12px;display:grid;grid-template-columns:1.3fr .7fr;min-height:300px;
-  background:linear-gradient(100deg,#fffaf0 0%,#fdf0d6 55%,#f5d6a0 100%)}
-.lk-hero-copy{position:relative;z-index:2;padding:28px 0 28px 28px}
-.lk-eyebrow{font-size:12px;letter-spacing:.14em;color:#5c5a4e;font-weight:600}
-.lk-hero h1{margin:10px 0 14px;font-size:clamp(26px,5.2vw,46px);font-weight:800;line-height:1.08;letter-spacing:-.02em}
-.lk-hero h1 span{color:var(--g)}
-.lk-perks{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;font-weight:600;margin-bottom:18px}
-.lk-perks span{display:inline-flex;align-items:center;gap:6px}
-.lk-search{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:6px 6px 6px 18px;max-width:560px;box-shadow:0 6px 20px rgba(26,58,22,.12)}
-.lk-search-ico{font-size:20px;color:var(--ink)}
-.lk-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:15px;padding:10px 0}
-.lk-search button{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;background:var(--g);color:#fff;font-size:18px;font-weight:700;cursor:pointer}
-.lk-search button:focus-visible,.lk-search input:focus-visible{outline:2px solid var(--o);outline-offset:2px}
-.lk-hero-art{position:relative;z-index:1}
-.lk-hero-dish{position:absolute;right:6%;top:50%;transform:translateY(-52%);font-size:clamp(110px,20vw,210px);line-height:1;filter:drop-shadow(0 14px 18px rgba(0,0,0,.2))}
-.lk-script{position:absolute;right:20px;top:16px;text-align:right;font-family:"Segoe Script","Bradley Hand","Brush Script MT",cursive;font-size:18px;line-height:1.15;color:#3b3a30}
-.lk-order-badge{position:absolute;right:18px;bottom:18px;width:112px;height:112px;border-radius:50%;background:var(--o);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:.04em;line-height:1.2;box-shadow:0 8px 18px rgba(232,98,26,.4)}
-.lk-order-badge strong{font-size:15px}
-
-/* ---- Promo pair ---- */
-.lk-promos{display:grid;grid-template-columns:1.9fr 1fr;gap:16px;margin-top:16px}
-.lk-offer-frame{position:relative;padding-top:40%;border-radius:var(--r);overflow:hidden;background:#fdecd6}
-.lk-offer-frame img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
-.lk-home .carousel-indicators{position:static;margin:12px 0 0;justify-content:center}
-.lk-home .carousel-indicators [data-bs-target]{width:8px;height:8px;border:0;border-radius:50%;background:#cdd6cf;opacity:1;margin:0 4px;padding:0;transition:width .2s}
-.lk-home .carousel-indicators .active{width:22px;border-radius:999px;background:var(--g)}
-.lk-free{border-radius:var(--r);padding:20px;background:linear-gradient(135deg,#e8f6ea,#d6eedb);display:flex;flex-direction:column;justify-content:space-between;gap:14px;position:relative;overflow:hidden}
-.lk-free h3{margin:0;font-size:clamp(22px,3.4vw,30px);font-weight:800;line-height:1.1}
-.lk-free p{margin:6px 0 0;font-size:13px;color:#4b5a4e}
-.lk-free-art{position:absolute;right:14px;top:14px;font-size:64px;line-height:1}
-.lk-pill-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--gd);color:#fff;border-radius:999px;padding:10px 20px;font-weight:700;font-size:14px;text-decoration:none}
-.lk-pill-btn:hover{color:#fff}
-
-/* ---- Categories ---- */
-.lk-cats{gap:18px}
-.lk-cat{flex:0 0 auto;width:84px;text-align:center;text-decoration:none;color:var(--ink);scroll-snap-align:start}
-.lk-cat:hover{color:var(--ink)}
-.lk-cat-img{width:84px;height:84px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--g)}
-.lk-cat-img img{width:100%;height:100%;object-fit:cover;display:block}
-.lk-cat-name{margin-top:8px;font-size:13px;font-weight:600;line-height:1.2}
-.lk-tint-0{background:#dff1e4}.lk-tint-1{background:#fde6d8}.lk-tint-2{background:#fdf1d6}
-
-/* ---- Combos ---- */
-.lk-combos{position:relative;display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:center;background:#e9f5ea;border-radius:var(--r);padding:20px}
-.lk-combos p{margin:8px 0 0;color:#4b5a4e;font-size:15px;line-height:1.45}
-.lk-combo-row{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding:2px 44px 6px 2px}
-.lk-combo-row::-webkit-scrollbar{display:none}
-.lk-combo-card{flex:0 0 200px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 14px rgba(26,58,22,.08);cursor:pointer;scroll-snap-align:start}
-.lk-combo-img{position:relative;padding-top:70%;background:#f1f3ee}
-.lk-combo-img img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
-.lk-tag{position:absolute;top:8px;left:8px;z-index:1;background:#fcc12d;color:#3b2a00;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
-.lk-combo-body{padding:10px 12px 12px}
-.lk-combo-name{font-weight:700;font-size:15px;line-height:1.25;min-height:19px}
-.lk-combo-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
-.lk-price{color:#d92d20;font-weight:800;font-size:18px}
-.lk-mrp{color:#9ca3af;text-decoration:line-through;font-size:12px;font-weight:500;margin-left:4px}
-.lk-home .add-bundle-btn{border:1.5px solid var(--g);background:#fff;color:var(--g);border-radius:10px;padding:5px 16px;font-weight:800;font-size:13px;line-height:1.4;box-shadow:none;cursor:pointer}
-.lk-home .add-bundle-btn:active{background:var(--g);color:#fff}
-.lk-next{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:var(--ink);font-size:22px;line-height:1;box-shadow:0 4px 12px rgba(0,0,0,.15);cursor:pointer}
-
-/* ---- Restaurants ---- */
-.lk-store{flex:0 0 220px;background:#fff;border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 4px 16px rgba(0,0,0,.07);scroll-snap-align:start}
-.lk-store:hover{color:inherit}
-.lk-store-img{position:relative;padding-top:68%;background:#efe8dc}
-.lk-store-img img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
-.lk-store-fallback{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px}
-.lk-chip{position:absolute;bottom:8px;z-index:1;background:rgba(255,255,255,.96);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}
-.lk-chip-l{left:8px}.lk-chip-r{right:8px}
-.lk-store-info{padding:10px 12px 12px}
-.lk-store-name{font-weight:800;font-size:15px;line-height:1.25}
-.lk-offer-pill{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:#fdecec;color:#c0262d;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
-
-/* ---- Responsive ---- */
-@media (min-width:768px){
-  .lk-wrap{padding:0 24px}
-  .lk-cat{width:104px}.lk-cat-img{width:104px;height:104px;font-size:34px}
-  .lk-cats{gap:22px}
-  .lk-combo-card{flex-basis:210px}
-  .lk-store{flex-basis:230px}
+/* LOKA editorial home design — scoped to the homepage content */
+:root {
+    --loka-cream: #f7f2e8;
+    --loka-green: #103f2b;
+    --loka-orange: #ff5428;
+    --loka-ink: #123e2c;
+    --loka-muted: #72766f;
+    --loka-card: #fffefd;
 }
-@media (max-width:767px){
-  .lk-hero{grid-template-columns:1fr;min-height:0}
-  .lk-hero-copy{padding:22px 150px 22px 20px}
-  .lk-hero-art{position:absolute;top:0;right:0;bottom:0;width:170px}
-  .lk-hero-dish{right:-24px;top:34%;font-size:120px}
-  .lk-script,.lk-order-badge{display:none}
-  .lk-hero-copy .lk-perks{display:none}
-  .lk-search{margin-right:-130px;max-width:none}
-  .lk-promos{grid-template-columns:1fr}
-  .lk-offer-frame{padding-top:46%}
-  .lk-free{flex-direction:row;align-items:center;padding:14px 16px}
-  .lk-free-art{position:static;font-size:44px}
-  .lk-combos{grid-template-columns:1fr;padding:16px}
-  .lk-combo-card{flex-basis:170px}
-  .lk-store{flex-basis:190px}
+body {
+    background: var(--loka-cream);
 }
-@media (prefers-reduced-motion:reduce){.lk-home .carousel-indicators [data-bs-target]{transition:none}}
+.home-search-sticky {
+    background: rgba(247,242,232,.97);
+    border-bottom: 1px solid rgba(16,63,43,.10);
+    padding: 9px 0 11px;
+    z-index: 100;
+}
+.home-search-sticky .container,
+.offer-slider-section .container,
+.category-section .container,
+.combo-section .container,
+.featured-store-section .container {
+    max-width: 1160px;
+}
+.home-search-input {
+    width: 100%;
+    min-height: 49px;
+    padding: 0 20px 0 52px;
+    border: 1px solid #e1e3dc;
+    border-radius: 999px;
+    background: #fffefd;
+    color: var(--loka-green);
+    font-size: 16px;
+    box-shadow: none;
+    outline: none;
+}
+.home-search-input:focus {
+    border-color: rgba(16,63,43,.48);
+    box-shadow: 0 0 0 3px rgba(16,63,43,.07);
+}
+.home-search-sticky form:before {
+    content: "⌕";
+    position: absolute;
+    z-index: 2;
+    left: 19px;
+    top: 4px;
+    color: #527361;
+    font-size: 30px;
+    line-height: 38px;
+    pointer-events: none;
+}
+.offer-slider-section {
+    padding: 18px 0 4px;
+}
+.offer-card-wrapper {
+    overflow: hidden;
+    border-radius: 34px;
+    background: #e8dfd0;
+}
+.offer-slider-image {
+    display: block;
+    width: 100%;
+    height: clamp(270px, 39vw, 470px);
+    object-fit: cover;
+    border-radius: 34px;
+}
+#lokaOfferCarousel .carousel-indicators { margin-bottom: 14px; }
+#lokaOfferCarousel .carousel-indicators [data-bs-target] {
+    width: 8px; height: 8px; border: 0; border-radius: 99px;
+}
+.loka-download-mini {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 4px;
+    padding: 12px 14px;
+    border: 1px solid #d9dfd8;
+    border-radius: 16px;
+    background: rgba(255,255,255,.88);
+    text-align: left !important;
+}
+.download-mini-text {
+    color: var(--loka-green);
+    font-size: 15px;
+    font-weight: 650;
+}
+.download-mini-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 0 21px;
+    border-radius: 999px;
+    background: var(--loka-green);
+    color: white !important;
+    text-decoration: none;
+    font-weight: 650;
+    white-space: nowrap;
+    transition: transform .2s ease, background .2s ease;
+}
+.download-mini-btn:after { content: "→"; font-size: 19px; }
+.download-mini-btn:hover { background: #0a3020; transform: translateY(-1px); }
+.category-section,
+.combo-section,
+.featured-store-section {
+    padding: 30px 0 20px;
+}
+.editorial-section-heading { margin: 0 0 22px; }
+.editorial-eyebrow {
+    margin-bottom: 10px;
+    color: #c93612;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+}
+.editorial-title {
+    max-width: 760px;
+    margin: 0;
+    color: var(--loka-green);
+    font-size: clamp(32px, 5vw, 54px);
+    line-height: .99;
+    font-weight: 800;
+    letter-spacing: -.045em;
+}
+.editorial-title em {
+    color: var(--loka-orange);
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -.055em;
+}
+.mobile-break { display: none; }
+
+/* Categories */
+.category-section .row {
+    --bs-gutter-x: 12px;
+    --bs-gutter-y: 22px;
+}
+.category-link {
+    display: block;
+    height: 100%;
+    color: var(--loka-green) !important;
+    text-decoration: none !important;
+    text-align: center;
+}
+.blinkit-category-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.category-image-wrapper {
+    width: min(100%, 112px);
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #e5ddcf;
+    box-shadow: 0 2px 0 rgba(16,63,43,.04);
+    transition: transform .22s ease;
+}
+.category-link:hover .category-image-wrapper { transform: translateY(-3px); }
+.category-image-wrapper img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.category-title {
+    max-width: 120px;
+    color: #103f2b;
+    font-size: 14px;
+    font-weight: 550;
+    line-height: 1.25;
+}
+
+/* Combo carousel/cards */
+.combo-section .combo-container { overflow: visible; }
+.combo-row {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 2px 2px 12px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+.combo-row::-webkit-scrollbar { display: none; }
+.combo-col {
+    flex: 0 0 clamp(285px, 34vw, 370px);
+    min-width: 0;
+    scroll-snap-align: start;
+}
+.combo-card {
+    height: 100%;
+    overflow: hidden;
+    border: 0;
+    border-radius: 30px;
+    background: var(--loka-card);
+    box-shadow: 0 10px 28px rgba(39,48,35,.045);
+    cursor: pointer;
+}
+.combo-image {
+    margin: 13px 13px 0;
+    overflow: hidden;
+    border-radius: 22px;
+    aspect-ratio: 1.34 / 1;
+    background: #e9e1d5;
+}
+.combo-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.combo-image > div {
+    top: 13px !important;
+    left: 13px !important;
+    right: auto !important;
+    padding: 6px 14px !important;
+    border-radius: 999px !important;
+    background: #ffcf4a !important;
+    color: #153c2b !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+.combo-body { padding: 18px 22px 22px; }
+.combo-name {
+    margin-bottom: 15px;
+    color: var(--loka-green);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+.combo-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.combo-price div {
+    color: #e92f26 !important;
+    font-size: 25px !important;
+    font-weight: 800 !important;
+}
+.combo-add-btn {
+    min-width: 112px;
+    min-height: 47px;
+    padding: 0 20px;
+    border: 2px solid var(--loka-green);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--loka-green);
+    font-size: 14px;
+    font-weight: 700;
+    transition: background .2s ease, color .2s ease;
+}
+.combo-add-btn:before { content: "+"; margin-right: 9px; font-size: 20px; font-weight: 400; }
+.combo-add-btn:hover { background: var(--loka-green); color: #fff; }
+
+/* Featured kitchens */
+.featured-store-slider {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 2px 2px 14px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+.featured-store-slider::-webkit-scrollbar { display: none; }
+.featured-store-card {
+    flex: 0 0 min(100%, 430px);
+    min-width: 0;
+    padding: 14px;
+    overflow: hidden;
+    border-radius: 32px;
+    background: var(--loka-card);
+    color: var(--loka-green) !important;
+    text-decoration: none !important;
+    box-shadow: 0 10px 28px rgba(39,48,35,.045);
+    scroll-snap-align: start;
+}
+.featured-store-image {
+    position: relative;
+    height: clamp(220px, 28vw, 290px);
+    overflow: hidden;
+    border-radius: 23px;
+    background: #e7ded0;
+}
+.featured-store-image > img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+.featured-store-image > img.active-slide { opacity: 1; }
+.featured-badge {
+    position: absolute;
+    z-index: 3;
+    top: 14px;
+    left: 14px;
+    padding: 7px 15px;
+    border-radius: 999px;
+    background: var(--loka-green);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+}
+.featured-dots {
+    position: absolute;
+    z-index: 3;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+}
+.featured-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 99px;
+    background: rgba(255,255,255,.6);
+}
+.featured-dots span:first-child { width: 28px; background: #fff; }
+.featured-store-info { padding: 20px 10px 10px; }
+.featured-store-name {
+    margin-bottom: 12px;
+    color: var(--loka-green);
+    font-size: 23px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+.featured-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    color: #575e58;
+    font-size: 15px;
+}
+.featured-offer {
+    margin-top: 16px;
+    padding: 12px 15px;
+    border-radius: 15px;
+    background: #ffeadf;
+    color: #bd3515;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* Footer: warm, rounded, forest-green panel */
+.loka-footer {
+    margin-top: 28px;
+    padding: 48px 0 26px;
+    border-radius: 48px 48px 0 0;
+    background: var(--loka-green);
+    color: #f9f5eb;
+}
+.loka-footer-inner { width: min(100% - 32px, 1160px); margin: 0 auto; }
+.loka-footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 38px;
+}
+.loka-footer-logo { color: #fff; font-size: 25px; font-weight: 850; letter-spacing: -.04em; }
+.loka-footer-logo:after { content: "."; color: var(--loka-orange); }
+.loka-footer-tagline { margin-top: 13px; color: rgba(255,255,255,.82); font-size: 17px; }
+.loka-footer-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 24px;
+    border-radius: 999px;
+    background: var(--loka-orange);
+    color: white !important;
+    text-decoration: none !important;
+    font-weight: 700;
+}
+.loka-footer-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 16px;
+}
+.loka-footer-card {
+    padding: 25px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 27px;
+    background: rgba(255,255,255,.07);
+}
+.loka-footer-card-icon { margin-bottom: 16px; color: #ff8a62; font-size: 23px; }
+.loka-footer-card-title { margin-bottom: 15px; color: #fff; font-size: 20px; font-weight: 750; }
+.loka-footer-card-link {
+    display: block;
+    width: fit-content;
+    margin-top: 10px;
+    color: rgba(255,255,255,.78) !important;
+    text-decoration: none !important;
+    font-size: 15px;
+}
+.loka-footer-card-link:hover { color: #fff !important; }
+.loka-footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.17);
+}
+.loka-footer-copy { color: rgba(255,255,255,.65); font-size: 12px; }
+.loka-footer-trust { display: flex; flex-wrap: wrap; gap: 8px; }
+.loka-trust-pill {
+    padding: 6px 10px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 999px;
+    color: rgba(255,255,255,.82);
+    font-size: 11px;
+}
+
+/* Dialog uses the same brand palette */
+#comboModal .modal-content { overflow: hidden; border: 0; border-radius: 24px; }
+#comboModal .modal-header { border-bottom-color: #eee8de; }
+#comboModal .modal-title { color: var(--loka-green); font-weight: 750; }
+#comboModal .btn-close { border-radius: 50%; background-color: #f3eee4; }
+#popupBanner > div { border-radius: 25px !important; }
+#popupAddBtn { border: 0 !important; border-radius: 999px !important; background: var(--loka-orange) !important; }
+
+@media (max-width: 767.98px) {
+    .home-search-sticky { padding: 8px 0 10px; }
+    .home-search-input { min-height: 48px; font-size: 15px; }
+    .offer-slider-section { padding-top: 17px; }
+    .offer-card-wrapper, .offer-slider-image { border-radius: 32px; }
+    .offer-slider-image { height: 300px; }
+    .loka-download-mini { margin-top: 14px; padding: 10px 12px; }
+    .download-mini-text { max-width: 170px; line-height: 1.4; }
+    .download-mini-btn { min-height: 40px; padding: 0 17px; font-size: 14px; }
+    .category-section, .combo-section, .featured-store-section { padding: 28px 0 15px; }
+    .editorial-section-heading { margin-bottom: 21px; }
+    .editorial-eyebrow { font-size: 11px; letter-spacing: .27em; margin-bottom: 11px; }
+    .editorial-title { font-size: clamp(34px, 8.8vw, 43px); line-height: .98; }
+    .mobile-break { display: initial; }
+    .category-section .row { --bs-gutter-x: 8px; --bs-gutter-y: 23px; }
+    .category-section .col-3 { padding-left: 4px; padding-right: 4px; }
+    .category-image-wrapper { width: min(100%, 90px); }
+    .category-title { max-width: 90px; font-size: 13px; }
+    .combo-row { gap: 15px; margin-right: -12px; padding-right: 12px; }
+    .combo-col { flex-basis: 84%; }
+    .combo-card { border-radius: 29px; }
+    .combo-image { margin: 13px 13px 0; aspect-ratio: 1.2 / 1; border-radius: 21px; }
+    .combo-body { padding: 17px 20px 22px; }
+    .combo-name { font-size: 20px; }
+    .combo-price div { font-size: 24px !important; }
+    .featured-store-slider { gap: 14px; margin-right: -12px; padding-right: 12px; }
+    .featured-store-card { flex-basis: 100%; padding: 13px; border-radius: 31px; }
+    .featured-store-image { height: 255px; border-radius: 22px; }
+    .featured-store-info { padding: 19px 10px 10px; }
+    .featured-store-name { font-size: 22px; }
+    .featured-offer { font-size: 14px; }
+    .loka-footer { margin-top: 25px; padding: 42px 0 25px; border-radius: 43px 43px 0 0; }
+    .loka-footer-inner { width: calc(100% - 34px); }
+    .loka-footer-top { display: block; margin-bottom: 35px; }
+    .loka-footer-tagline { font-size: 16px; }
+    .loka-footer-download-btn { margin-top: 20px; padding: 14px 22px; font-size: 16px; }
+    .loka-footer-cards { grid-template-columns: 1fr; gap: 14px; }
+    .loka-footer-card { padding: 25px 28px; border-radius: 28px; }
+    .loka-footer-bottom { align-items: flex-start; flex-direction: column; gap: 13px; }
+}
+@media (min-width: 768px) {
+    .category-section .col-md-3 { flex: 0 0 16.666667%; max-width: 16.666667%; }
+}
 </style>
 
-<div class="lk-home">
 
-<!-- HERO + SEARCH -->
-<section class="lk-sec" style="margin-top:0">
-  <div class="lk-wrap">
-    <div class="lk-hero">
-      <div class="lk-hero-copy">
-        <div class="lk-eyebrow">DELICIOUS FOOD, HAPPIER DAYS</div>
-        <h1>Your Favourite Food,<br><span>Just Around the Corner!</span></h1>
-        <div class="lk-perks">
-          <span>⚡ Fast Delivery</span>
-          <span>🍃 Fresh &amp; Tasty</span>
-          <span>🧡 Support Local</span>
-        </div>
-        <form method="GET" action="{% url 'search_products' %}" class="lk-search loka-hero-search">
-          <span class="lk-search-ico" aria-hidden="true">⌕</span>
-          <input class="home-search-input" type="search" id="homeSearchInput" name="q"
-                 placeholder="Search for food, snacks, restaurants..." autocomplete="off">
-          <button type="submit" aria-label="Search">→</button>
-          <div id="homeSuggestionBox" class="home-suggestion-box"></div>
-        </form>
-      </div>
-      <div class="lk-hero-art" aria-hidden="true">
-        <div class="lk-script">Good<br>Food<br>Good<br>Mood ♡</div>
-        <!-- Swap the emoji for a real photo: <img class="lk-hero-dish-img" src="..."> -->
-        <div class="lk-hero-dish">🍛</div>
-        <a class="lk-order-badge" href="#categories" tabindex="-1">ORDER<br>DELICIOUS<br><strong>FOOD NOW ↗</strong></a>
-      </div>
+<!-- STICKY HOME SEARCH -->
+
+<section class="home-search-sticky">
+
+<div class="container">
+
+<form method="GET"
+      action="{% url 'search_products' %}"
+      class="position-relative">
+
+    <input
+        class="home-search-input"
+        type="search"
+        id="homeSearchInput"
+        name="q"
+        placeholder="Search for food, snacks..."
+        autocomplete="off">
+
+    <div id="homeSuggestionBox"
+         class="home-suggestion-box">
     </div>
 
-    <!-- PROMO PAIR: offer slider + free delivery -->
-    <div class="lk-promos">
-      <div>
-        {% if offer_sliders %}
-        <div id="lokaOfferCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
-          <div class="carousel-inner">
-            {% for offer in offer_sliders %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-              <div class="lk-offer-frame">
+</form>
+
+</div>
+
+</section>
+
+ <!-- OFFER SLIDER -->
+
+{% if offer_sliders %}
+
+<section class="offer-slider-section">
+
+<div class="container">
+
+<div id="lokaOfferCarousel"
+     class="carousel slide"
+     data-bs-ride="carousel"
+     data-bs-interval="2000">
+
+    <div class="carousel-inner">
+
+        {% for offer in offer_sliders %}
+
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+
+            <div class="offer-card-wrapper">
+
                 {% if offer.image %}
-                <img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy">
+                <img src="{{ offer.image.url }}"
+                     class="offer-slider-image"
+                     alt="{{ offer.title }}">
                 {% endif %}
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-          {% if offer_sliders|length > 1 %}
-          <div class="carousel-indicators">
-            {% for offer in offer_sliders %}
-            <button type="button" data-bs-target="#lokaOfferCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
-                    {% if forloop.first %}class="active" aria-current="true"{% endif %}
-                    aria-label="Offer {{ forloop.counter }}"></button>
-            {% endfor %}
-          </div>
-          {% endif %}
-        </div>
-        {% endif %}
-      </div>
 
-      <div class="lk-free">
-        <div>
-          <h3>Free<br>Delivery</h3>
-          <p>On selected restaurants</p>
+            </div>
+
         </div>
-        <span class="lk-free-art" aria-hidden="true">🛵</span>
-        <a class="lk-pill-btn" href="#featured-restaurants">Order Now <span aria-hidden="true">→</span></a>
-      </div>
+
+        {% endfor %}
+
     </div>
-  </div>
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
+
+<!-- DOWNLOAD APP SECTION -->
+<section class="py-2">
+
+<div class="container">
+
+<div class="loka-download-mini text-center">
+
+    <span class="download-mini-text">
+        📲 Download LOKA App
+    </span>
+
+    <a href="{% url 'download_app' %}"
+       class="download-mini-btn">
+
+        Download
+
+    </a>
+
+</div>
+
+</div>
+
 </section>
 
 <!-- CATEGORIES -->
-<section class="lk-sec category-section" id="categories">
-  <div class="lk-wrap">
-    <div class="lk-sec-head">
-      <h3 class="lk-sec-title">Explore Categories</h3>
-    </div>
-    <div class="lk-scroll lk-cats">
-      {% for category in categories %}
-      <a href="{% url 'category_stores' category.id %}" class="lk-cat">
-        <div class="lk-cat-img {% cycle 'lk-tint-0' 'lk-tint-1' 'lk-tint-2' %}">
-          {% if category.image %}
-          <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
-          {% else %}
-          {{ category.name|slice:":1" }}
-          {% endif %}
+<section class="category-section" id="categories">
+    <div class="container">
+
+        <div class="editorial-section-heading">
+            <div class="editorial-eyebrow">01 — CATEGORY</div>
+            <h2 class="editorial-title">What are you <em>craving?</em></h2>
         </div>
-        <div class="lk-cat-name">{{ category.name }}</div>
-      </a>
-      {% endfor %}
+
+
+        <div class="row g-4">
+
+            {% for category in categories %}
+            <div class="col-3 col-sm-3 col-md-3 col-lg-2">
+
+                <a href="{% url 'category_stores' category.id %}" 
+                   class="category-link">
+
+                    <div class="blinkit-category-card">
+
+                        <div class="category-image-wrapper">
+                            {% if category.image.url %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="category-title">
+                            {{ category.name }}
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
     </div>
-  </div>
 </section>
+
+{% if combos %}
 
 <!-- COMBOS -->
-{% if combos %}
-<section class="lk-sec">
-  <div class="lk-wrap">
-    <div class="lk-combos">
-      <div>
-        <h3 class="lk-sec-title">Special Combos<br>For You</h3>
-        <p>Delicious combos at great prices. Perfect for every craving!</p>
-      </div>
+<section class="combo-section">
 
-      <div class="lk-combo-row" id="lkComboRow">
-        {% for combo in combos %}
-        <div class="lk-combo-card"
-             data-id="{{ combo.id }}"
-             data-name="{{ combo.name }}"
-             data-price="{{ combo.price }}"
-             data-items='[
-                {% for item in combo.items.all %}
-                {
-                    "name": "{{ item.product.name|escapejs }}",
-                    "qty": "{{ item.quantity }}",
-                    "price": "{{ item.product.price }}"
-                }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-             ]'>
-          <div class="lk-combo-img">
-            <span class="lk-tag">For You</span>
-            {% if combo.image %}
-            <img src="{{ combo.image.url }}" alt="{{ combo.name }}" loading="lazy">
-            {% endif %}
-          </div>
-          <div class="lk-combo-body">
-            <div class="lk-combo-name">{{ combo.name }}</div>
-            <div class="lk-combo-foot">
-              <div>
-                <span class="lk-price">₹{{ combo.price|floatformat:0 }}</span>
-                {% if combo.original_price %}<span class="lk-mrp">₹{{ combo.original_price|floatformat:0 }}</span>{% endif %}
-              </div>
-              <button type="button" class="add-bundle-btn" data-id="{{ combo.id }}">ADD</button>
-            </div>
-          </div>
-        </div>
+<div class="container">
+
+<div class="combo-container">
+
+<div class="editorial-section-heading">
+    <div class="editorial-eyebrow">02 — COMBOS</div>
+    <h2 class="editorial-title">Bundled, <em>better<br class="mobile-break"> together.</em></h2>
+</div>
+
+<div class="combo-row">
+
+{% for combo in combos %}
+
+<div class="combo-col">
+
+<div class="combo-card"
+     data-id="{{ combo.id }}"
+     data-name="{{ combo.name }}"
+     data-price="{{ combo.price }}"
+     data-items='[
+        {% for item in combo.items.all %}
+            {
+                "name": "{{ item.product.name|escapejs }}",
+                "qty": "{{ item.quantity }}",
+                "price": "{{ item.product.price }}"
+            }{% if not forloop.last %},{% endif %}
         {% endfor %}
-      </div>
+        ]'>
 
-      <button type="button" class="lk-next" id="lkComboNext" aria-label="Scroll combos">›</button>
-    </div>
-  </div>
-</section>
+<div class="combo-image position-relative">
+    <div style="
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:#ffeb3b;
+    color:#000;
+    padding:3px 8px;
+    font-size:11px;
+    font-weight:600;
+    border-radius:6px;
+    z-index:10;
+">
+    For You
+</div>
+
+{% if combo.image.url %}
+<img src="{{ combo.image.url }}" loading="lazy">
 {% endif %}
 
-<!-- FEATURED RESTAURANTS -->
+</div>
+
+<div class="combo-body">
+
+    <div class="combo-name">
+        {{ combo.name }}
+    </div>
+
+    <div class="combo-bottom">
+
+        <div class="combo-price">
+
+            <div style="color:red;font-size:16px;font-weight:700;">
+                ₹{{ combo.price|floatformat:0 }}
+            </div>
+
+        </div>
+
+        <button class="combo-add-btn add-bundle-btn"
+            data-id="{{ combo.id }}">
+            ADD
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+{% endif %}
+
 {% if featured_stores %}
-<section class="lk-sec featured-store-section" id="featured-restaurants">
-  <div class="lk-wrap">
-    <div class="lk-sec-head">
-      <div>
-        <h3 class="lk-sec-title">Featured Restaurants Near You</h3>
-        <p class="lk-sec-sub">Top picks from Kagal and nearby areas</p>
-      </div>
-      <a class="lk-viewall" href="#featured-restaurants">View All <span aria-hidden="true">→</span></a>
-    </div>
 
-    <div class="lk-scroll">
-      {% for store in featured_stores %}
-      <a href="{% url 'store_detail' store.id %}" class="lk-store">
-        <div class="lk-store-img">
-          {% for product in store.featured_products %}
-            {% if forloop.first and product.image %}
-            <img src="{{ product.image.url }}" alt="{{ store.name }}" loading="lazy">
+<section class="featured-store-section">
+
+<div class="container">
+
+<div class="editorial-section-heading">
+    <div class="editorial-eyebrow">03 — FEATURED</div>
+    <h2 class="editorial-title">Kitchens worth <em>the<br class="mobile-break"> detour.</em></h2>
+</div>
+
+<div class="featured-store-slider">
+
+{% for store in featured_stores %}
+
+<a href="{% url 'store_detail' store.id %}"
+   class="featured-store-card">
+
+    <div class="featured-store-image">
+        <div class="featured-badge">
+            Featured
+        </div>
+
+        {% for product in store.featured_products %}
+
+            {% if forloop.first %}
+
+            <img src="{{ product.image.url }}"
+                 class="active-slide">
+
+            {% else %}
+
+            {% if product.image %}
+            <img src="{{ product.image.url }}">
             {% endif %}
-          {% empty %}
-            <div class="lk-store-fallback" aria-hidden="true">🍽️</div>
-          {% endfor %}
-          <span class="lk-chip lk-chip-l">★ {{ store.average_rating|floatformat:1 }}</span>
-          <span class="lk-chip lk-chip-r">35–40 mins</span>
-        </div>
-        <div class="lk-store-info">
-          <div class="lk-store-name">{{ store.name }}</div>
-          <div class="lk-offer-pill">🎉 Special Offers Available</div>
-        </div>
-      </a>
-      {% endfor %}
+
+            <div class="featured-dots">
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+            </div>
+
+            {% endif %}
+
+        {% endfor %}
+
     </div>
-  </div>
+
+    <div class="featured-store-info">
+
+        <div class="featured-store-name">
+            {{ store.name }}
+        </div>
+
+        <div class="featured-meta">
+
+            <span>
+                ⏱ 35-40 min
+            </span>
+
+            <span>
+                ⭐ {{ store.average_rating|floatformat:1 }}
+            </span>
+
+        </div>
+
+        <div class="featured-offer">
+
+            🎉 Special Offers Available
+        </div>
+
+    </div>
+
+</a>
+
+{% endfor %}
+
+</div>
+
+</div>
+
 </section>
+
 {% endif %}
-
-<!-- APP DOWNLOAD STRIP -->
-<section class="lk-sec loka-download-strip">
-  <div class="container">
-    <div class="loka-download-mini">
-      <div class="loka-download-copy"><span class="loka-download-icon">▣</span><span><strong>Order faster with the LOKA app</strong><small>Your favourite local food, just a tap away.</small></span></div>
-      <a href="{% url 'download_app' %}" class="download-mini-btn">Download App <span aria-hidden="true">→</span></a>
-    </div>
-  </div>
-</section>
-
-</div><!-- /.lk-home -->
 
 <!-- FOOTER -->
 <footer class="loka-footer">
     <div class="loka-footer-inner">
 
+        <!-- TOP ROW: Logo + Download -->
         <div class="loka-footer-top">
             <div>
                 <div class="loka-footer-logo">🌿 LOKA</div>
@@ -325,7 +829,10 @@
             </a>
         </div>
 
+        <!-- CARD GRID -->
         <div class="loka-footer-cards">
+
+            <!-- Help Card -->
             <div class="loka-footer-card">
                 <div class="loka-footer-card-icon">🙋</div>
                 <div class="loka-footer-card-title">Help</div>
@@ -333,18 +840,24 @@
                 <a href="{% url 'return_policy' %}" class="loka-footer-card-link">Return Policy</a>
                 <a href="{% url 'delivery_info' %}" class="loka-footer-card-link">Delivery Info</a>
             </div>
+
+            <!-- Legal Card -->
             <div class="loka-footer-card">
                 <div class="loka-footer-card-icon">🔒</div>
                 <div class="loka-footer-card-title">Legal</div>
                 <a href="{% url 'privacy_policy' %}" class="loka-footer-card-link">Privacy Policy</a>
             </div>
+
+            <!-- Contact Card -->
             <div class="loka-footer-card">
                 <div class="loka-footer-card-icon">📞</div>
                 <div class="loka-footer-card-title">Contact</div>
                 <a href="tel:+917038984687" class="loka-footer-card-link">+91 7038984687</a>
             </div>
+
         </div>
 
+        <!-- BOTTOM: Copyright + Trust Badges -->
         <div class="loka-footer-bottom">
             <div class="loka-footer-copy">© 2026 LOKA – Online Store. All rights reserved.</div>
             <div class="loka-footer-trust">
@@ -358,64 +871,103 @@
 </footer>
 
 <!-- COMBO MODAL -->
+
 <div class="modal fade" id="comboModal">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="comboTitle"></h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="comboItems"></div>
-      </div>
-    </div>
-  </div>
+
+<div class="modal-dialog modal-dialog-centered">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h5 class="modal-title" id="comboTitle"></h5>
+
+<button class="btn-close" data-bs-dismiss="modal"></button>
+
 </div>
 
+<div class="modal-body">
+
+<div id="comboItems"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
 <script>
+
 document.addEventListener("DOMContentLoaded", function(){
 
-    // Combo detail modal (tap the card, not the ADD button)
-    document.querySelectorAll(".lk-combo-card").forEach(card => {
+    document.querySelectorAll(".combo-card").forEach(card => {
+
         card.addEventListener("click", function(e){
-            if(e.target.closest(".add-bundle-btn")) return;
+
+            // ✅ Prevent modal when clicking ADD button
+            if(e.target.closest(".add-bundle-btn")){
+                return;
+            }
+
+            // ✅ Get combo data
+            const comboName = this.dataset.name;
 
             let items = [];
+
             try{
                 items = JSON.parse(this.dataset.items);
             }catch(err){
-                console.error("Combo parse error:", err, this.dataset.items);
+                console.error(
+                    "Combo parse error:",
+                    err,
+                    this.dataset.items
+                );
             }
 
-            document.getElementById("comboTitle").innerText = this.dataset.name;
+            // ✅ Set modal title
+            document.getElementById("comboTitle").innerText = comboName;
 
+            // ✅ Build product list
             let html = "";
+
             items.forEach(item => {
+
                 html += `
                     <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
                         <div>
-                            <strong>${item.name}</strong><br>
-                            <small class="text-muted">Qty: ${item.qty}</small>
+                            <strong>${item.name}</strong>
+                            <br>
+                            <small class="text-muted">
+                                Qty: ${item.qty}
+                            </small>
                         </div>
-                        <div class="fw-bold">₹${item.price}</div>
-                    </div>`;
+
+                        <div class="fw-bold">
+                            ₹${item.price}
+                        </div>
+
+                    </div>
+                `;
             });
+
+            // ✅ Inject items
             document.getElementById("comboItems").innerHTML = html;
 
-            new bootstrap.Modal(document.getElementById("comboModal")).show();
+            // ✅ Open Bootstrap modal
+            const modal = new bootstrap.Modal(
+                document.getElementById("comboModal")
+            );
+
+            modal.show();
+
         });
+
     });
 
-    // Next arrow on the combos row
-    const comboRow = document.getElementById("lkComboRow");
-    const comboNext = document.getElementById("lkComboNext");
-    if(comboRow && comboNext){
-        comboNext.addEventListener("click", function(){
-            const atEnd = comboRow.scrollLeft + comboRow.clientWidth >= comboRow.scrollWidth - 8;
-            comboRow.scrollTo({ left: atEnd ? 0 : comboRow.scrollLeft + 220, behavior: "smooth" });
-        });
-    }
 });
+
 </script>
 
 {% if popup_banner %}
@@ -517,21 +1069,32 @@ justify-content:center;
 document.addEventListener("DOMContentLoaded", function(){
 
     const popup = document.getElementById("popupBanner");
+
+    // unique session key
     const popupKey = "loka_popup_seen";
 
     if(popup){
+
         // show only once per session
         if(!sessionStorage.getItem(popupKey)){
+
             setTimeout(() => {
+
                 popup.style.display = "flex";
+
+                // mark as shown
                 sessionStorage.setItem(popupKey, "1");
+
             }, 1200);
+
         }
+
     }
 
 });
 </script>
 <script>
+
 document.addEventListener("DOMContentLoaded", function(){
 
     const popupBtn = document.getElementById("popupAddBtn");
@@ -563,6 +1126,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             // CLOSE POPUP
             const popup = document.getElementById("popupBanner");
+
             if(popup){
                 popup.style.display = "none";
             }
@@ -572,21 +1136,29 @@ document.addEventListener("DOMContentLoaded", function(){
 
             // OPEN CART
             document.getElementById("cartPanel").classList.add("open");
+
             document.getElementById("cartOverlay").classList.add("active");
+
             document.body.style.overflow = "hidden";
 
             // LOAD CART CONTENT
             fetch("/cart/", {
-                headers: { "X-Requested-With": "XMLHttpRequest" }
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
             })
             .then(res => res.text())
             .then(html => {
+
                 document.getElementById("cartContent").innerHTML = html;
+
             });
 
             // ANALYTICS
             if(typeof gtag === "function"){
-                gtag('event', 'popup_add_to_cart', { item_id: productId });
+                gtag('event', 'popup_add_to_cart', {
+                    item_id: productId
+                });
             }
 
         })
@@ -597,7 +1169,191 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 
 });
+
 </script>
 {% endif %}
 
+<script>
+document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
+
+    const id = this.dataset.id;
+
+    fetch(`/add-to-cart/${id}/?source=home`)
+    .then(res => res.json())
+    .then(data => {
+
+        if(data){
+
+            // CLOSE POPUP
+            const popup = document.getElementById("popupBanner");
+
+            if(popup){
+                popup.style.display = "none";
+            }
+
+            refreshCartBadge();
+
+            // OPEN CART PANEL
+            document.getElementById("cartPanel").classList.add("open");
+
+            document.getElementById("cartOverlay").classList.add("active");
+
+            document.body.style.overflow = "hidden";
+
+            // LOAD UPDATED CART
+            fetch("/cart/", {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById("cartContent").innerHTML = html;
+
+            });
+
+        }
+
+    });
+
+});
+</script>
+
+<script>
+
+document.querySelector(".banner-order-btn")?.addEventListener("click", function(){
+
+    const id = this.dataset.id;
+
+    const type = this.dataset.type;
+
+    let url = "";
+
+    if(type === "bundle"){
+        url = `/add-bundle/${id}/`;
+    }else{
+        url = `/add-to-cart/${id}/?source=banner`;
+    }
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+
+        refreshCartBadge();
+
+        document.getElementById("cartPanel").classList.add("open");
+
+        document.getElementById("cartOverlay").classList.add("active");
+
+        document.body.style.overflow = "hidden";
+
+        fetch("/cart/", {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(res => res.text())
+        .then(html => {
+
+            document.getElementById("cartContent").innerHTML = html;
+
+        });
+
+    });
+
+});
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const slider =
+        document.querySelector(".featured-slider");
+
+    if(!slider) return;
+
+    const cards =
+        slider.querySelectorAll(".featured-card");
+
+    const prevBtn =
+        document.querySelector(".featured-prev");
+
+    const nextBtn =
+        document.querySelector(".featured-next");
+
+    function updateCenterCard(){
+
+        let activeCard = null;
+
+        let minDistance = Infinity;
+
+        const center =
+            slider.scrollLeft +
+            slider.clientWidth / 2;
+
+        cards.forEach(card => {
+
+            const cardCenter =
+                card.offsetLeft +
+                card.offsetWidth / 2;
+
+            const distance =
+                Math.abs(center - cardCenter);
+
+            if(distance < minDistance){
+
+                minDistance = distance;
+
+                activeCard = card;
+            }
+
+        });
+
+        cards.forEach(card =>
+            card.classList.remove("active")
+        );
+
+        activeCard?.classList.add("active");
+    }
+
+    nextBtn?.addEventListener("click", () => {
+
+        slider.scrollBy({
+            left: cards[0].offsetWidth,
+            behavior:"smooth"
+        });
+
+    });
+
+    prevBtn?.addEventListener("click", () => {
+
+        slider.scrollBy({
+            left: -cards[0].offsetWidth,
+            behavior:"smooth"
+        });
+
+    });
+
+    slider.addEventListener("scroll", function(){
+
+        updateCenterCard();
+
+        const half =
+            slider.scrollWidth / 2;
+
+        if(slider.scrollLeft >= half){
+
+            slider.scrollLeft =
+                slider.scrollLeft - half;
+        }
+
+    });
+
+    updateCenterCard();
+
+});
+</script>
+
 {% endblock %}
+
