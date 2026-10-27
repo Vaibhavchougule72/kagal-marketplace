@@ -3,288 +3,318 @@
 {% load static %}
 {% block content %}
 
-<!-- PREMIUM HOME HERO + SEARCH -->
-<section class="loka-home-hero">
-    <div class="container">
-        <div class="loka-hero-panel">
-            <div class="loka-hero-copy">
-                <div class="loka-hero-eyebrow">DELICIOUS FOOD. HAPPIER DAYS.</div>
-                <h1>Your Favourite Food,<br><span>Just Around the Corner!</span></h1>
-                <div class="loka-hero-benefits">
-                    <span><b>⚡</b> Fast Delivery</span>
-                    <span><b>🍃</b> Fresh &amp; Tasty</span>
-                    <span><b>♥</b> Support Local</span>
-                </div>
-                <form method="GET" action="{% url 'search_products' %}" class="loka-hero-search">
-                    <span class="loka-search-symbol" aria-hidden="true">⌕</span>
-                    <input class="home-search-input" type="search" id="homeSearchInput" name="q"
-                           placeholder="Search for food, snacks, restaurants..." autocomplete="off">
-                    <button type="submit" aria-label="Search">→</button>
-                    <div id="homeSuggestionBox" class="home-suggestion-box"></div>
-                </form>
-            </div>
-            <div class="loka-hero-food-art" aria-hidden="true">
-                <div class="loka-hero-food-glow"></div>
-                <div class="loka-hero-food-emoji">🍛</div>
-                <div class="loka-hero-sticker">GOOD FOOD<br><strong>GOOD MOOD</strong> ♡</div>
-                <div class="loka-hero-order-sticker">ORDER<br>DELICIOUS<br><strong>FOOD NOW</strong> ↗</div>
-            </div>
-        </div>
-    </div>
-</section>
+<style>
+/* ============ LOKA HOME — all rules scoped under .lk-home ============ */
+.lk-home{--g:#1f7a3d;--gd:#1a3a16;--o:#e8621a;--ink:#1c2a1f;--mut:#6b7280;--r:24px;color:var(--ink);padding-bottom:8px}
+.lk-home *{box-sizing:border-box}
+.lk-wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+.lk-sec{margin-top:32px}
+.lk-sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.lk-home .lk-sec-title{font-size:clamp(20px,4.6vw,28px);font-weight:800;margin:0;letter-spacing:-.01em;line-height:1.15}
+.lk-sec-sub{margin:3px 0 0;color:var(--mut);font-size:14px}
+.lk-viewall{color:var(--g);font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.lk-scroll{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+.lk-scroll::-webkit-scrollbar{display:none}
 
-<!-- OFFER SLIDER -->
-{% if offer_sliders %}
-<section class="offer-slider-section loka-home-offers">
-    <div class="container">
+/* ---- Hero ---- */
+.lk-hero{position:relative;overflow:hidden;border-radius:var(--r);margin-top:12px;display:grid;grid-template-columns:1.3fr .7fr;min-height:300px;
+  background:linear-gradient(100deg,#fffaf0 0%,#fdf0d6 55%,#f5d6a0 100%)}
+.lk-hero-copy{position:relative;z-index:2;padding:28px 0 28px 28px}
+.lk-eyebrow{font-size:12px;letter-spacing:.14em;color:#5c5a4e;font-weight:600}
+.lk-hero h1{margin:10px 0 14px;font-size:clamp(26px,5.2vw,46px);font-weight:800;line-height:1.08;letter-spacing:-.02em}
+.lk-hero h1 span{color:var(--g)}
+.lk-perks{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;font-weight:600;margin-bottom:18px}
+.lk-perks span{display:inline-flex;align-items:center;gap:6px}
+.lk-search{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:6px 6px 6px 18px;max-width:560px;box-shadow:0 6px 20px rgba(26,58,22,.12)}
+.lk-search-ico{font-size:20px;color:var(--ink)}
+.lk-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:15px;padding:10px 0}
+.lk-search button{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;background:var(--g);color:#fff;font-size:18px;font-weight:700;cursor:pointer}
+.lk-search button:focus-visible,.lk-search input:focus-visible{outline:2px solid var(--o);outline-offset:2px}
+.lk-hero-art{position:relative;z-index:1}
+.lk-hero-dish{position:absolute;right:6%;top:50%;transform:translateY(-52%);font-size:clamp(110px,20vw,210px);line-height:1;filter:drop-shadow(0 14px 18px rgba(0,0,0,.2))}
+.lk-script{position:absolute;right:20px;top:16px;text-align:right;font-family:"Segoe Script","Bradley Hand","Brush Script MT",cursive;font-size:18px;line-height:1.15;color:#3b3a30}
+.lk-order-badge{position:absolute;right:18px;bottom:18px;width:112px;height:112px;border-radius:50%;background:var(--o);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:.04em;line-height:1.2;box-shadow:0 8px 18px rgba(232,98,26,.4)}
+.lk-order-badge strong{font-size:15px}
+
+/* ---- Promo pair ---- */
+.lk-promos{display:grid;grid-template-columns:1.9fr 1fr;gap:16px;margin-top:16px}
+.lk-offer-frame{position:relative;padding-top:40%;border-radius:var(--r);overflow:hidden;background:#fdecd6}
+.lk-offer-frame img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
+.lk-home .carousel-indicators{position:static;margin:12px 0 0;justify-content:center}
+.lk-home .carousel-indicators [data-bs-target]{width:8px;height:8px;border:0;border-radius:50%;background:#cdd6cf;opacity:1;margin:0 4px;padding:0;transition:width .2s}
+.lk-home .carousel-indicators .active{width:22px;border-radius:999px;background:var(--g)}
+.lk-free{border-radius:var(--r);padding:20px;background:linear-gradient(135deg,#e8f6ea,#d6eedb);display:flex;flex-direction:column;justify-content:space-between;gap:14px;position:relative;overflow:hidden}
+.lk-free h3{margin:0;font-size:clamp(22px,3.4vw,30px);font-weight:800;line-height:1.1}
+.lk-free p{margin:6px 0 0;font-size:13px;color:#4b5a4e}
+.lk-free-art{position:absolute;right:14px;top:14px;font-size:64px;line-height:1}
+.lk-pill-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--gd);color:#fff;border-radius:999px;padding:10px 20px;font-weight:700;font-size:14px;text-decoration:none}
+.lk-pill-btn:hover{color:#fff}
+
+/* ---- Categories ---- */
+.lk-cats{gap:18px}
+.lk-cat{flex:0 0 auto;width:84px;text-align:center;text-decoration:none;color:var(--ink);scroll-snap-align:start}
+.lk-cat:hover{color:var(--ink)}
+.lk-cat-img{width:84px;height:84px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--g)}
+.lk-cat-img img{width:100%;height:100%;object-fit:cover;display:block}
+.lk-cat-name{margin-top:8px;font-size:13px;font-weight:600;line-height:1.2}
+.lk-tint-0{background:#dff1e4}.lk-tint-1{background:#fde6d8}.lk-tint-2{background:#fdf1d6}
+
+/* ---- Combos ---- */
+.lk-combos{position:relative;display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:center;background:#e9f5ea;border-radius:var(--r);padding:20px}
+.lk-combos p{margin:8px 0 0;color:#4b5a4e;font-size:15px;line-height:1.45}
+.lk-combo-row{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding:2px 44px 6px 2px}
+.lk-combo-row::-webkit-scrollbar{display:none}
+.lk-combo-card{flex:0 0 200px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 14px rgba(26,58,22,.08);cursor:pointer;scroll-snap-align:start}
+.lk-combo-img{position:relative;padding-top:70%;background:#f1f3ee}
+.lk-combo-img img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
+.lk-tag{position:absolute;top:8px;left:8px;z-index:1;background:#fcc12d;color:#3b2a00;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
+.lk-combo-body{padding:10px 12px 12px}
+.lk-combo-name{font-weight:700;font-size:15px;line-height:1.25;min-height:19px}
+.lk-combo-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.lk-price{color:#d92d20;font-weight:800;font-size:18px}
+.lk-mrp{color:#9ca3af;text-decoration:line-through;font-size:12px;font-weight:500;margin-left:4px}
+.lk-home .add-bundle-btn{border:1.5px solid var(--g);background:#fff;color:var(--g);border-radius:10px;padding:5px 16px;font-weight:800;font-size:13px;line-height:1.4;box-shadow:none;cursor:pointer}
+.lk-home .add-bundle-btn:active{background:var(--g);color:#fff}
+.lk-next{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:var(--ink);font-size:22px;line-height:1;box-shadow:0 4px 12px rgba(0,0,0,.15);cursor:pointer}
+
+/* ---- Restaurants ---- */
+.lk-store{flex:0 0 220px;background:#fff;border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 4px 16px rgba(0,0,0,.07);scroll-snap-align:start}
+.lk-store:hover{color:inherit}
+.lk-store-img{position:relative;padding-top:68%;background:#efe8dc}
+.lk-store-img img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
+.lk-store-fallback{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px}
+.lk-chip{position:absolute;bottom:8px;z-index:1;background:rgba(255,255,255,.96);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}
+.lk-chip-l{left:8px}.lk-chip-r{right:8px}
+.lk-store-info{padding:10px 12px 12px}
+.lk-store-name{font-weight:800;font-size:15px;line-height:1.25}
+.lk-offer-pill{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:#fdecec;color:#c0262d;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
+
+/* ---- Responsive ---- */
+@media (min-width:768px){
+  .lk-wrap{padding:0 24px}
+  .lk-cat{width:104px}.lk-cat-img{width:104px;height:104px;font-size:34px}
+  .lk-cats{gap:22px}
+  .lk-combo-card{flex-basis:210px}
+  .lk-store{flex-basis:230px}
+}
+@media (max-width:767px){
+  .lk-hero{grid-template-columns:1fr;min-height:0}
+  .lk-hero-copy{padding:22px 150px 22px 20px}
+  .lk-hero-art{position:absolute;top:0;right:0;bottom:0;width:170px}
+  .lk-hero-dish{right:-24px;top:34%;font-size:120px}
+  .lk-script,.lk-order-badge{display:none}
+  .lk-hero-copy .lk-perks{display:none}
+  .lk-search{margin-right:-130px;max-width:none}
+  .lk-promos{grid-template-columns:1fr}
+  .lk-offer-frame{padding-top:46%}
+  .lk-free{flex-direction:row;align-items:center;padding:14px 16px}
+  .lk-free-art{position:static;font-size:44px}
+  .lk-combos{grid-template-columns:1fr;padding:16px}
+  .lk-combo-card{flex-basis:170px}
+  .lk-store{flex-basis:190px}
+}
+@media (prefers-reduced-motion:reduce){.lk-home .carousel-indicators [data-bs-target]{transition:none}}
+</style>
+
+<div class="lk-home">
+
+<!-- HERO + SEARCH -->
+<section class="lk-sec" style="margin-top:0">
+  <div class="lk-wrap">
+    <div class="lk-hero">
+      <div class="lk-hero-copy">
+        <div class="lk-eyebrow">DELICIOUS FOOD, HAPPIER DAYS</div>
+        <h1>Your Favourite Food,<br><span>Just Around the Corner!</span></h1>
+        <div class="lk-perks">
+          <span>⚡ Fast Delivery</span>
+          <span>🍃 Fresh &amp; Tasty</span>
+          <span>🧡 Support Local</span>
+        </div>
+        <form method="GET" action="{% url 'search_products' %}" class="lk-search loka-hero-search">
+          <span class="lk-search-ico" aria-hidden="true">⌕</span>
+          <input class="home-search-input" type="search" id="homeSearchInput" name="q"
+                 placeholder="Search for food, snacks, restaurants..." autocomplete="off">
+          <button type="submit" aria-label="Search">→</button>
+          <div id="homeSuggestionBox" class="home-suggestion-box"></div>
+        </form>
+      </div>
+      <div class="lk-hero-art" aria-hidden="true">
+        <div class="lk-script">Good<br>Food<br>Good<br>Mood ♡</div>
+        <!-- Swap the emoji for a real photo: <img class="lk-hero-dish-img" src="..."> -->
+        <div class="lk-hero-dish">🍛</div>
+        <a class="lk-order-badge" href="#categories" tabindex="-1">ORDER<br>DELICIOUS<br><strong>FOOD NOW ↗</strong></a>
+      </div>
+    </div>
+
+    <!-- PROMO PAIR: offer slider + free delivery -->
+    <div class="lk-promos">
+      <div>
+        {% if offer_sliders %}
         <div id="lokaOfferCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
-            <div class="carousel-inner">
-                {% for offer in offer_sliders %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <div class="offer-card-wrapper">
-                        {% if offer.image %}
-                        <img src="{{ offer.image.url }}" class="offer-slider-image" alt="{{ offer.title }}" loading="lazy">
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
+          <div class="carousel-inner">
+            {% for offer in offer_sliders %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="lk-offer-frame">
+                {% if offer.image %}
+                <img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy">
+                {% endif %}
+              </div>
             </div>
-            {% if offer_sliders|length > 1 %}
-            <button class="carousel-control-prev loka-carousel-control" type="button" data-bs-target="#lokaOfferCarousel" data-bs-slide="prev" aria-label="Previous offer"><span aria-hidden="true">‹</span></button>
-            <button class="carousel-control-next loka-carousel-control" type="button" data-bs-target="#lokaOfferCarousel" data-bs-slide="next" aria-label="Next offer"><span aria-hidden="true">›</span></button>
-            {% endif %}
+            {% endfor %}
+          </div>
+          {% if offer_sliders|length > 1 %}
+          <div class="carousel-indicators">
+            {% for offer in offer_sliders %}
+            <button type="button" data-bs-target="#lokaOfferCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+                    {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                    aria-label="Offer {{ forloop.counter }}"></button>
+            {% endfor %}
+          </div>
+          {% endif %}
         </div>
-    </div>
-</section>
-{% endif %}
+        {% endif %}
+      </div>
 
-<!-- COMPACT APP DOWNLOAD STRIP -->
-<section class="loka-download-strip">
-    <div class="container">
-        <div class="loka-download-mini">
-            <div class="loka-download-copy"><span class="loka-download-icon">▣</span><span><strong>Order faster with the LOKA app</strong><small>Your favourite local food, just a tap away.</small></span></div>
-            <a href="{% url 'download_app' %}" class="download-mini-btn">Download App <span aria-hidden="true">→</span></a>
+      <div class="lk-free">
+        <div>
+          <h3>Free<br>Delivery</h3>
+          <p>On selected restaurants</p>
         </div>
+        <span class="lk-free-art" aria-hidden="true">🛵</span>
+        <a class="lk-pill-btn" href="#featured-restaurants">Order Now <span aria-hidden="true">→</span></a>
+      </div>
     </div>
+  </div>
 </section>
 
 <!-- CATEGORIES -->
-<section class="category-section" id="categories">
-    <div class="container">
-
-        <h3 class="section-title">
-            Category
-        </h3>
-
-
-        <div class="row g-3 loka-category-grid">
-
-            {% for category in categories %}
-            <div class="col-3 col-sm-3 col-md-3 col-lg-2">
-
-                <a href="{% url 'category_stores' category.id %}" 
-                   class="category-link">
-
-                    <div class="blinkit-category-card">
-
-                        <div class="category-image-wrapper">
-                            {% if category.image.url %}
-                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
-
-                            {% endif %}
-
-                        </div>
-
-                        <div class="category-title">
-                            {{ category.name }}
-                        </div>
-
-                    </div>
-
-                </a>
-
-            </div>
-            {% endfor %}
-
-        </div>
-
+<section class="lk-sec category-section" id="categories">
+  <div class="lk-wrap">
+    <div class="lk-sec-head">
+      <h3 class="lk-sec-title">Explore Categories</h3>
     </div>
+    <div class="lk-scroll lk-cats">
+      {% for category in categories %}
+      <a href="{% url 'category_stores' category.id %}" class="lk-cat">
+        <div class="lk-cat-img {% cycle 'lk-tint-0' 'lk-tint-1' 'lk-tint-2' %}">
+          {% if category.image %}
+          <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+          {% else %}
+          {{ category.name|slice:":1" }}
+          {% endif %}
+        </div>
+        <div class="lk-cat-name">{{ category.name }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
 </section>
-
-{% if combos %}
 
 <!-- COMBOS -->
-<section class="combo-section">
+{% if combos %}
+<section class="lk-sec">
+  <div class="lk-wrap">
+    <div class="lk-combos">
+      <div>
+        <h3 class="lk-sec-title">Special Combos<br>For You</h3>
+        <p>Delicious combos at great prices. Perfect for every craving!</p>
+      </div>
 
-<div class="container">
-
-<div class="combo-container loka-combo-layout">
-
-<div class="loka-combo-intro"><span class="loka-section-kicker">MORE TASTE, BETTER VALUE</span><h3 class="section-title">Special Combos<br>For You</h3><p>Delicious combos at great prices. Perfect for every craving!</p></div>
-
-<div class="combo-row loka-combo-cards">
-
-{% for combo in combos %}
-
-<div class="combo-col">
-
-<div class="combo-card"
-     data-id="{{ combo.id }}"
-     data-name="{{ combo.name }}"
-     data-price="{{ combo.price }}"
-     data-items='[
-        {% for item in combo.items.all %}
-            {
-                "name": "{{ item.product.name|escapejs }}",
-                "qty": "{{ item.quantity }}",
-                "price": "{{ item.product.price }}"
-            }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-        ]'>
-
-<div class="combo-image position-relative">
-    <div class="loka-combo-badge">For You</div>
-
-{% if combo.image.url %}
-<img src="{{ combo.image.url }}" alt="{{ combo.name }}" loading="lazy">
-{% endif %}
-
-</div>
-
-<div class="combo-body">
-
-    <div class="combo-name">
-        {{ combo.name }}
-    </div>
-
-    <div class="combo-bottom">
-
-        <div class="combo-price">
-
-            <div style="color:red;font-size:16px;font-weight:700;">
-                ₹{{ combo.price|floatformat:0 }}
+      <div class="lk-combo-row" id="lkComboRow">
+        {% for combo in combos %}
+        <div class="lk-combo-card"
+             data-id="{{ combo.id }}"
+             data-name="{{ combo.name }}"
+             data-price="{{ combo.price }}"
+             data-items='[
+                {% for item in combo.items.all %}
+                {
+                    "name": "{{ item.product.name|escapejs }}",
+                    "qty": "{{ item.quantity }}",
+                    "price": "{{ item.product.price }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+             ]'>
+          <div class="lk-combo-img">
+            <span class="lk-tag">For You</span>
+            {% if combo.image %}
+            <img src="{{ combo.image.url }}" alt="{{ combo.name }}" loading="lazy">
+            {% endif %}
+          </div>
+          <div class="lk-combo-body">
+            <div class="lk-combo-name">{{ combo.name }}</div>
+            <div class="lk-combo-foot">
+              <div>
+                <span class="lk-price">₹{{ combo.price|floatformat:0 }}</span>
+                {% if combo.original_price %}<span class="lk-mrp">₹{{ combo.original_price|floatformat:0 }}</span>{% endif %}
+              </div>
+              <button type="button" class="add-bundle-btn" data-id="{{ combo.id }}">ADD</button>
             </div>
-
+          </div>
         </div>
+        {% endfor %}
+      </div>
 
-        <button class="combo-add-btn add-bundle-btn"
-            data-id="{{ combo.id }}">
-            ADD
-        </button>
-
+      <button type="button" class="lk-next" id="lkComboNext" aria-label="Scroll combos">›</button>
     </div>
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-</div>
-
+  </div>
 </section>
-
 {% endif %}
 
+<!-- FEATURED RESTAURANTS -->
 {% if featured_stores %}
-
-<section class="featured-store-section" id="featured-restaurants">
-
-<div class="container">
-
-<div class="loka-section-heading loka-featured-heading"><div><span class="loka-section-kicker">LOCAL FAVOURITES</span><h3 class="section-title">Featured Restaurants Near You</h3><p>Top picks from Kagal and nearby areas</p></div><a class="loka-view-all" href="#featured-restaurants">View All <span>→</span></a></div>
-
-<div class="featured-store-slider">
-
-{% for store in featured_stores %}
-
-<a href="{% url 'store_detail' store.id %}"
-   class="featured-store-card">
-
-    <div class="featured-store-image">
-        <div class="featured-badge">
-            Featured
-        </div>
-
-        {% for product in store.featured_products %}
-
-            {% if forloop.first %}
-
-            <img src="{{ product.image.url }}"
-                 class="active-slide">
-
-            {% else %}
-
-            {% if product.image %}
-            <img src="{{ product.image.url }}">
-            {% endif %}
-
-            <div class="featured-dots">
-
-                <span></span>
-
-                <span></span>
-
-                <span></span>
-
-                <span></span>
-
-            </div>
-
-            {% endif %}
-
-        {% endfor %}
-
+<section class="lk-sec featured-store-section" id="featured-restaurants">
+  <div class="lk-wrap">
+    <div class="lk-sec-head">
+      <div>
+        <h3 class="lk-sec-title">Featured Restaurants Near You</h3>
+        <p class="lk-sec-sub">Top picks from Kagal and nearby areas</p>
+      </div>
+      <a class="lk-viewall" href="#featured-restaurants">View All <span aria-hidden="true">→</span></a>
     </div>
 
-    <div class="featured-store-info">
-
-        <div class="featured-store-name">
-            {{ store.name }}
+    <div class="lk-scroll">
+      {% for store in featured_stores %}
+      <a href="{% url 'store_detail' store.id %}" class="lk-store">
+        <div class="lk-store-img">
+          {% for product in store.featured_products %}
+            {% if forloop.first and product.image %}
+            <img src="{{ product.image.url }}" alt="{{ store.name }}" loading="lazy">
+            {% endif %}
+          {% empty %}
+            <div class="lk-store-fallback" aria-hidden="true">🍽️</div>
+          {% endfor %}
+          <span class="lk-chip lk-chip-l">★ {{ store.average_rating|floatformat:1 }}</span>
+          <span class="lk-chip lk-chip-r">35–40 mins</span>
         </div>
-
-        <div class="featured-meta">
-
-            <span>
-                ⏱ 35-40 min
-            </span>
-
-            <span>
-                ⭐ {{ store.average_rating|floatformat:1 }}
-            </span>
-
+        <div class="lk-store-info">
+          <div class="lk-store-name">{{ store.name }}</div>
+          <div class="lk-offer-pill">🎉 Special Offers Available</div>
         </div>
-
-        <div class="featured-offer">
-
-            🎉 Special Offers Available
-        </div>
-
+      </a>
+      {% endfor %}
     </div>
+  </div>
+</section>
+{% endif %}
 
-</a>
-
-{% endfor %}
-
-</div>
-
-</div>
-
+<!-- APP DOWNLOAD STRIP -->
+<section class="lk-sec loka-download-strip">
+  <div class="container">
+    <div class="loka-download-mini">
+      <div class="loka-download-copy"><span class="loka-download-icon">▣</span><span><strong>Order faster with the LOKA app</strong><small>Your favourite local food, just a tap away.</small></span></div>
+      <a href="{% url 'download_app' %}" class="download-mini-btn">Download App <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
 </section>
 
-{% endif %}
+</div><!-- /.lk-home -->
 
 <!-- FOOTER -->
 <footer class="loka-footer">
     <div class="loka-footer-inner">
 
-        <!-- TOP ROW: Logo + Download -->
         <div class="loka-footer-top">
             <div>
                 <div class="loka-footer-logo">🌿 LOKA</div>
@@ -295,10 +325,7 @@
             </a>
         </div>
 
-        <!-- CARD GRID -->
         <div class="loka-footer-cards">
-
-            <!-- Help Card -->
             <div class="loka-footer-card">
                 <div class="loka-footer-card-icon">🙋</div>
                 <div class="loka-footer-card-title">Help</div>
@@ -306,24 +333,18 @@
                 <a href="{% url 'return_policy' %}" class="loka-footer-card-link">Return Policy</a>
                 <a href="{% url 'delivery_info' %}" class="loka-footer-card-link">Delivery Info</a>
             </div>
-
-            <!-- Legal Card -->
             <div class="loka-footer-card">
                 <div class="loka-footer-card-icon">🔒</div>
                 <div class="loka-footer-card-title">Legal</div>
                 <a href="{% url 'privacy_policy' %}" class="loka-footer-card-link">Privacy Policy</a>
             </div>
-
-            <!-- Contact Card -->
             <div class="loka-footer-card">
                 <div class="loka-footer-card-icon">📞</div>
                 <div class="loka-footer-card-title">Contact</div>
                 <a href="tel:+917038984687" class="loka-footer-card-link">+91 7038984687</a>
             </div>
-
         </div>
 
-        <!-- BOTTOM: Copyright + Trust Badges -->
         <div class="loka-footer-bottom">
             <div class="loka-footer-copy">© 2026 LOKA – Online Store. All rights reserved.</div>
             <div class="loka-footer-trust">
@@ -337,103 +358,64 @@
 </footer>
 
 <!-- COMBO MODAL -->
-
 <div class="modal fade" id="comboModal">
-
-<div class="modal-dialog modal-dialog-centered">
-
-<div class="modal-content">
-
-<div class="modal-header">
-
-<h5 class="modal-title" id="comboTitle"></h5>
-
-<button class="btn-close" data-bs-dismiss="modal"></button>
-
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="comboTitle"></h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="comboItems"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="modal-body">
-
-<div id="comboItems"></div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
 <script>
-
 document.addEventListener("DOMContentLoaded", function(){
 
-    document.querySelectorAll(".combo-card").forEach(card => {
-
+    // Combo detail modal (tap the card, not the ADD button)
+    document.querySelectorAll(".lk-combo-card").forEach(card => {
         card.addEventListener("click", function(e){
-
-            // ✅ Prevent modal when clicking ADD button
-            if(e.target.closest(".add-bundle-btn")){
-                return;
-            }
-
-            // ✅ Get combo data
-            const comboName = this.dataset.name;
+            if(e.target.closest(".add-bundle-btn")) return;
 
             let items = [];
-
             try{
                 items = JSON.parse(this.dataset.items);
             }catch(err){
-                console.error(
-                    "Combo parse error:",
-                    err,
-                    this.dataset.items
-                );
+                console.error("Combo parse error:", err, this.dataset.items);
             }
 
-            // ✅ Set modal title
-            document.getElementById("comboTitle").innerText = comboName;
+            document.getElementById("comboTitle").innerText = this.dataset.name;
 
-            // ✅ Build product list
             let html = "";
-
             items.forEach(item => {
-
                 html += `
                     <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-
                         <div>
-                            <strong>${item.name}</strong>
-                            <br>
-                            <small class="text-muted">
-                                Qty: ${item.qty}
-                            </small>
+                            <strong>${item.name}</strong><br>
+                            <small class="text-muted">Qty: ${item.qty}</small>
                         </div>
-
-                        <div class="fw-bold">
-                            ₹${item.price}
-                        </div>
-
-                    </div>
-                `;
+                        <div class="fw-bold">₹${item.price}</div>
+                    </div>`;
             });
-
-            // ✅ Inject items
             document.getElementById("comboItems").innerHTML = html;
 
-            // ✅ Open Bootstrap modal
-            const modal = new bootstrap.Modal(
-                document.getElementById("comboModal")
-            );
-
-            modal.show();
-
+            new bootstrap.Modal(document.getElementById("comboModal")).show();
         });
-
     });
 
+    // Next arrow on the combos row
+    const comboRow = document.getElementById("lkComboRow");
+    const comboNext = document.getElementById("lkComboNext");
+    if(comboRow && comboNext){
+        comboNext.addEventListener("click", function(){
+            const atEnd = comboRow.scrollLeft + comboRow.clientWidth >= comboRow.scrollWidth - 8;
+            comboRow.scrollTo({ left: atEnd ? 0 : comboRow.scrollLeft + 220, behavior: "smooth" });
+        });
+    }
 });
-
 </script>
 
 {% if popup_banner %}
@@ -535,32 +517,21 @@ justify-content:center;
 document.addEventListener("DOMContentLoaded", function(){
 
     const popup = document.getElementById("popupBanner");
-
-    // unique session key
     const popupKey = "loka_popup_seen";
 
     if(popup){
-
         // show only once per session
         if(!sessionStorage.getItem(popupKey)){
-
             setTimeout(() => {
-
                 popup.style.display = "flex";
-
-                // mark as shown
                 sessionStorage.setItem(popupKey, "1");
-
             }, 1200);
-
         }
-
     }
 
 });
 </script>
 <script>
-
 document.addEventListener("DOMContentLoaded", function(){
 
     const popupBtn = document.getElementById("popupAddBtn");
@@ -592,7 +563,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
             // CLOSE POPUP
             const popup = document.getElementById("popupBanner");
-
             if(popup){
                 popup.style.display = "none";
             }
@@ -602,29 +572,21 @@ document.addEventListener("DOMContentLoaded", function(){
 
             // OPEN CART
             document.getElementById("cartPanel").classList.add("open");
-
             document.getElementById("cartOverlay").classList.add("active");
-
             document.body.style.overflow = "hidden";
 
             // LOAD CART CONTENT
             fetch("/cart/", {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+                headers: { "X-Requested-With": "XMLHttpRequest" }
             })
             .then(res => res.text())
             .then(html => {
-
                 document.getElementById("cartContent").innerHTML = html;
-
             });
 
             // ANALYTICS
             if(typeof gtag === "function"){
-                gtag('event', 'popup_add_to_cart', {
-                    item_id: productId
-                });
+                gtag('event', 'popup_add_to_cart', { item_id: productId });
             }
 
         })
@@ -635,191 +597,7 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 
 });
-
 </script>
 {% endif %}
 
-<script>
-document.querySelector(".hero-add-btn")?.addEventListener("click", function(){
-
-    const id = this.dataset.id;
-
-    fetch(`/add-to-cart/${id}/?source=home`)
-    .then(res => res.json())
-    .then(data => {
-
-        if(data){
-
-            // CLOSE POPUP
-            const popup = document.getElementById("popupBanner");
-
-            if(popup){
-                popup.style.display = "none";
-            }
-
-            refreshCartBadge();
-
-            // OPEN CART PANEL
-            document.getElementById("cartPanel").classList.add("open");
-
-            document.getElementById("cartOverlay").classList.add("active");
-
-            document.body.style.overflow = "hidden";
-
-            // LOAD UPDATED CART
-            fetch("/cart/", {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-            .then(res => res.text())
-            .then(html => {
-
-                document.getElementById("cartContent").innerHTML = html;
-
-            });
-
-        }
-
-    });
-
-});
-</script>
-
-<script>
-
-document.querySelector(".banner-order-btn")?.addEventListener("click", function(){
-
-    const id = this.dataset.id;
-
-    const type = this.dataset.type;
-
-    let url = "";
-
-    if(type === "bundle"){
-        url = `/add-bundle/${id}/`;
-    }else{
-        url = `/add-to-cart/${id}/?source=banner`;
-    }
-
-    fetch(url)
-    .then(res => res.json())
-    .then(data => {
-
-        refreshCartBadge();
-
-        document.getElementById("cartPanel").classList.add("open");
-
-        document.getElementById("cartOverlay").classList.add("active");
-
-        document.body.style.overflow = "hidden";
-
-        fetch("/cart/", {
-            headers: {
-                "X-Requested-With": "XMLHttpRequest"
-            }
-        })
-        .then(res => res.text())
-        .then(html => {
-
-            document.getElementById("cartContent").innerHTML = html;
-
-        });
-
-    });
-
-});
-
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-
-    const slider =
-        document.querySelector(".featured-slider");
-
-    if(!slider) return;
-
-    const cards =
-        slider.querySelectorAll(".featured-card");
-
-    const prevBtn =
-        document.querySelector(".featured-prev");
-
-    const nextBtn =
-        document.querySelector(".featured-next");
-
-    function updateCenterCard(){
-
-        let activeCard = null;
-
-        let minDistance = Infinity;
-
-        const center =
-            slider.scrollLeft +
-            slider.clientWidth / 2;
-
-        cards.forEach(card => {
-
-            const cardCenter =
-                card.offsetLeft +
-                card.offsetWidth / 2;
-
-            const distance =
-                Math.abs(center - cardCenter);
-
-            if(distance < minDistance){
-
-                minDistance = distance;
-
-                activeCard = card;
-            }
-
-        });
-
-        cards.forEach(card =>
-            card.classList.remove("active")
-        );
-
-        activeCard?.classList.add("active");
-    }
-
-    nextBtn?.addEventListener("click", () => {
-
-        slider.scrollBy({
-            left: cards[0].offsetWidth,
-            behavior:"smooth"
-        });
-
-    });
-
-    prevBtn?.addEventListener("click", () => {
-
-        slider.scrollBy({
-            left: -cards[0].offsetWidth,
-            behavior:"smooth"
-        });
-
-    });
-
-    slider.addEventListener("scroll", function(){
-
-        updateCenterCard();
-
-        const half =
-            slider.scrollWidth / 2;
-
-        if(slider.scrollLeft >= half){
-
-            slider.scrollLeft =
-                slider.scrollLeft - half;
-        }
-
-    });
-
-    updateCenterCard();
-
-});
-</script>
-
 {% endblock %}
-
