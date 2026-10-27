@@ -5,7 +5,6 @@ from django.core.management.base import BaseCommand
 
 from marketplace.tasks import process_next_notification_job
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,13 +18,24 @@ class Command(BaseCommand):
             default=5,
             help="Seconds to wait when no jobs are pending.",
         )
+        parser.add_argument(
+            "--once",
+            action="store_true",
+            help="Process pending jobs until the queue is empty, then exit.",
+        )
 
     def handle(self, *args, **options):
         interval = max(1, options["interval"])
+        run_once = options["once"]
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Notification worker started. Polling every {interval} seconds."
+                "Notification worker started. "
+                + (
+                    "Processing pending jobs until the queue is empty."
+                    if run_once
+                    else f"Polling every {interval} seconds."
+                )
             )
         )
 
@@ -34,6 +44,14 @@ class Command(BaseCommand):
                 result = process_next_notification_job()
 
                 if result is None:
+                    if run_once:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                "No pending notification jobs. Worker finished."
+                            )
+                        )
+                        break
+
                     time.sleep(interval)
 
             except KeyboardInterrupt:
@@ -43,5 +61,11 @@ class Command(BaseCommand):
                 break
 
             except Exception:
-                logger.exception("Notification worker encountered an error.")
+                logger.exception(
+                    "Notification worker encountered an error."
+                )
+
+                if run_once:
+                    raise
+
                 time.sleep(interval)
