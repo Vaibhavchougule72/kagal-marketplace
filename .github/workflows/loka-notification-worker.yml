@@ -32,4 +32,7 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: "False"
           FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+          FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
+          FAST2SMS_WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.FAST2SMS_WHATSAPP_PHONE_NUMBER_ID }}
+
         run: python manage.py process_notification_jobs --once
