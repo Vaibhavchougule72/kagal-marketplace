@@ -702,6 +702,101 @@
 }
 
   @keyframes co-spin { to { transform: rotate(360deg); } }
+/* Highlight the location confirmation button */
+@keyframes locationConfirmGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(232, 98, 26, 0.5);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 18px 7px rgba(232, 98, 26, 0.65);
+        transform: scale(1.03);
+    }
+}
+
+#confirmLocationBtn.location-attention {
+    background: #E8621A !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+    animation: locationConfirmGlow 1s infinite;
+    font-weight: 800;
+    position: relative;
+    z-index: 5;
+}
+
+#confirmLocationBtn.location-attention:active {
+    transform: scale(0.97);
+}
+
+/* Location confirmation popup */
+.location-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000000;
+    background: rgba(0, 0, 0, 0.65);
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+}
+
+.location-popup-overlay.show {
+    display: flex;
+}
+
+.location-popup {
+    width: 100%;
+    max-width: 350px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+    animation: locationPopupAppear 0.25s ease-out;
+}
+
+@keyframes locationPopupAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.88);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.location-popup-icon {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.location-popup h3 {
+    color: #1A3A16;
+    font-size: 20px;
+    margin: 0 0 10px;
+    font-weight: 800;
+}
+
+.location-popup p {
+    color: #667463;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 20px;
+}
+
+.location-popup-btn {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    background: #E8621A;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
 </style>
 
 {% if error %}
@@ -781,12 +876,40 @@
           </button>
           <input type="hidden" name="latitude"  id="latitude">
           <input type="hidden" name="longitude" id="longitude">
+          <input type="hidden"
+            name="delivery_location_confirmed"
+            id="deliveryLocationConfirmedInput"
+            value="false">
           <div class="co-label address-label">
               {% trans "Landmark / House details" %}
           </div>
           <textarea name="address" id="addressInput" class="co-textarea"
                     placeholder="{% trans 'Flat No, Building, Landmark' %}"></textarea>
         </div>
+      </div>
+
+      <!-- Location confirmation popup -->
+      <div id="locationPopupOverlay" class="location-popup-overlay">
+          <div class="location-popup">
+
+              <div class="location-popup-icon">📍</div>
+
+              <h3>Confirm Your Location!</h3>
+
+              <p>
+                  Before placing your order, please confirm your exact
+                  delivery location on the map.<br><br>
+                  Tap the <strong>Confirm Delivery Location</strong>
+                  button to continue.
+              </p>
+
+              <button type="button"
+                      class="location-popup-btn"
+                      onclick="goToLocationConfirmation()">
+                  Show Me →
+              </button>
+
+          </div>
       </div>
 
       <!-- 3. COUPON -->
@@ -1291,6 +1414,14 @@ function setLocation(lat, lng) {
     // Any location change requires confirmation again.
     window.deliveryLocationConfirmed = false;
 
+    const confirmedInput = document.getElementById(
+        'deliveryLocationConfirmedInput'
+    );
+
+    if (confirmedInput) {
+        confirmedInput.value = 'false';
+    }
+
     const confirmBtn = document.getElementById('confirmLocationBtn');
 
     if (confirmBtn) {
@@ -1320,6 +1451,14 @@ function setLocation(lat, lng) {
 
         window.deliveryLocationConfirmed = false;
 
+        const confirmedInput = document.getElementById(
+            'deliveryLocationConfirmedInput'
+        );
+
+        if (confirmedInput) {
+            confirmedInput.value = 'false';
+        }
+
         const confirmBtn = document.getElementById('confirmLocationBtn');
 
         if (confirmBtn) {
@@ -1336,6 +1475,50 @@ function setLocation(lat, lng) {
 
         updateDelivery(pos.lat, pos.lng);
     });
+}
+
+function showLocationConfirmationPopup() {
+    const popup = document.getElementById('locationPopupOverlay');
+
+    if (popup) {
+        popup.classList.add('show');
+    }
+}
+
+function goToLocationConfirmation() {
+    const popup = document.getElementById('locationPopupOverlay');
+    const confirmBtn = document.getElementById('confirmLocationBtn');
+
+    // Close the popup.
+    if (popup) {
+        popup.classList.remove('show');
+    }
+
+    // Scroll to the location section.
+    const mapElement = document.getElementById('map');
+
+    if (mapElement) {
+        mapElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+
+    // Make the confirmation button visible and highlight it.
+    if (confirmBtn) {
+        confirmBtn.style.display = 'block';
+        confirmBtn.classList.add('location-attention');
+
+        confirmBtn.innerText = '📍 TAP HERE TO CONFIRM LOCATION';
+
+        // Move focus to the confirmation button.
+        setTimeout(function () {
+            confirmBtn.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }, 350);
+    }
 }
 
 function confirmDeliveryLocation() {
@@ -1355,6 +1538,19 @@ function confirmDeliveryLocation() {
 
     // Confirm the final selected map location.
     window.deliveryLocationConfirmed = true;
+
+    if (confirmBtn) {
+        confirmBtn.classList.remove('location-attention');
+        confirmBtn.innerText = '✅ Location Confirmed';
+    }
+
+    const confirmedInput = document.getElementById(
+        'deliveryLocationConfirmedInput'
+    );
+
+    if (confirmedInput) {
+        confirmedInput.value = 'true';
+    }
 
     if (mapError) {
         mapError.innerText = '✅ Delivery location confirmed!';
@@ -1858,6 +2054,15 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Form submit */
   var form      = document.getElementById('checkoutForm');
   var placeBtn  = document.getElementById('placeOrderBtn');
+  // Show location confirmation popup immediately on button tap.
+  placeBtn.addEventListener('click', function(e) {
+      if (window.deliveryLocationConfirmed !== true) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showLocationConfirmationPopup();
+      }
+  });
   var spinner   = document.getElementById('btnSpinner');
   var btnText   = document.getElementById('btnText');
 
@@ -1869,25 +2074,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Require confirmation of the final delivery location.
     if (window.deliveryLocationConfirmed !== true) {
         e.preventDefault();
+        e.stopImmediatePropagation();
 
-        const mapError = document.getElementById('mapError');
+        showLocationConfirmationPopup();
 
-        if (mapError) {
-            mapError.innerText =
-                '📍 Please select your exact delivery location on the map and confirm it before placing your order.';
-            mapError.style.display = 'block';
-        }
-
-        const mapElement = document.getElementById('map');
-
-        if (mapElement) {
-            mapElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-
-        return;
+        return false;
     }
 
     if (nameInput.value.trim().length < 3) {

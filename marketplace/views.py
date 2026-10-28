@@ -1409,6 +1409,18 @@ def checkout(request):
             latitude = request.POST.get("latitude")
             longitude = request.POST.get("longitude")
             coupon_code = request.POST.get("coupon_code")
+
+            # Require explicit delivery-location confirmation.
+            delivery_location_confirmed = (
+                request.POST.get("delivery_location_confirmed") == "true"
+            )
+
+            if not delivery_location_confirmed:
+                context["error"] = (
+                    "Please confirm your delivery location before placing your order."
+                )
+                return render(request, "checkout.html", context)
+            
             customer_note = cart.get("customer_note", "").strip()
             # -------------------------
             # LOKA MONEY
