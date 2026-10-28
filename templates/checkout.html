@@ -1412,8 +1412,8 @@ function setLocation(lat, lng) {
     document.getElementById('longitude').value = lng;
 
     // Preserve the selected location across checkout page reloads.
-    sessionStorage.setItem('checkoutDeliveryLat', String(lat));
-    sessionStorage.setItem('checkoutDeliveryLng', String(lng));
+    localStorage.setItem('checkoutDeliveryLat', String(lat));
+    localStorage.setItem('checkoutDeliveryLng', String(lng));
    
     // Any location change requires confirmation again.
     window.deliveryLocationConfirmed = false;
@@ -1456,12 +1456,12 @@ function setLocation(lat, lng) {
         const pos = marker.getLatLng();
 
         // Save the updated location after the customer moves the pin.
-        sessionStorage.setItem(
+        localStorage.setItem(
             'checkoutDeliveryLat',
             String(pos.lat)
         );
 
-        sessionStorage.setItem(
+        localStorage.setItem(
             'checkoutDeliveryLng',
             String(pos.lng)
         );
@@ -2072,9 +2072,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   /* Restore saved location or detect the current location */
-  const savedLat = sessionStorage.getItem('checkoutDeliveryLat');
-  const savedLng = sessionStorage.getItem('checkoutDeliveryLng');
-
+  const savedLat = localStorage.getItem('checkoutDeliveryLat');
+  const savedLng = localStorage.getItem('checkoutDeliveryLng');
+ 
   if (
       savedLat !== null &&
       savedLng !== null &&
