@@ -772,6 +772,13 @@
           </button>
           <div id="map"></div>
           <div class="co-map-error" id="mapError"></div>
+          <button type="button"
+                  id="confirmLocationBtn"
+                  class="co-loc-btn"
+                  onclick="confirmDeliveryLocation()"
+                  style="display: none; width: 100%; margin-top: 10px;">
+              ✅ Confirm Delivery Location
+          </button>
           <input type="hidden" name="latitude"  id="latitude">
           <input type="hidden" name="longitude" id="longitude">
           <div class="co-label address-label">
@@ -1265,47 +1272,168 @@ var marker;
 map.on('click', function(e) { setLocation(e.latlng.lat, e.latlng.lng); });
 
 function setLocation(lat, lng) {
-  if (marker) map.removeLayer(marker);
-  marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-  map.flyTo([lat, lng], 17, { duration: 0.6 });
-  document.getElementById('latitude').value  = lat;
-  document.getElementById('longitude').value = lng;
-  marker.on('dragend', function() {
-    var pos = marker.getLatLng();
-    updateDelivery(pos.lat, pos.lng);
-  });
-  updateDelivery(lat, lng);
+    if (marker) {
+        map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng], {
+        draggable: true
+    }).addTo(map);
+
+    // Zoom in so the customer can check the exact location.
+    map.flyTo([lat, lng], 18, {
+        duration: 0.6
+    });
+
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+
+    // Any location change requires confirmation again.
+    window.deliveryLocationConfirmed = false;
+
+    const confirmBtn = document.getElementById('confirmLocationBtn');
+
+    if (confirmBtn) {
+        confirmBtn.style.display = 'block';
+        confirmBtn.innerText = '📍 Confirm Delivery Location';
+        confirmBtn.style.backgroundColor = '';
+        confirmBtn.style.color = '';
+    }
+
+    const mapError = document.getElementById('mapError');
+
+    if (mapError) {
+        mapError.innerText =
+            '📍 Check the pin. Drag it to your exact delivery address, then confirm your location.';
+        mapError.style.display = 'block';
+    }
+
+    // Update delivery distance and charges.
+    updateDelivery(lat, lng);
+
+    // Update coordinates whenever the marker is dragged.
+    marker.on('dragend', function () {
+        const pos = marker.getLatLng();
+
+        document.getElementById('latitude').value = pos.lat;
+        document.getElementById('longitude').value = pos.lng;
+
+        window.deliveryLocationConfirmed = false;
+
+        const confirmBtn = document.getElementById('confirmLocationBtn');
+
+        if (confirmBtn) {
+            confirmBtn.innerText = '📍 Confirm Delivery Location';
+            confirmBtn.style.backgroundColor = '';
+            confirmBtn.style.color = '';
+        }
+
+        if (mapError) {
+            mapError.innerText =
+                '📍 Location changed. Please confirm your updated delivery location.';
+            mapError.style.display = 'block';
+        }
+
+        updateDelivery(pos.lat, pos.lng);
+    });
 }
 
+function confirmDeliveryLocation() {
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+    const mapError = document.getElementById('mapError');
+    const confirmBtn = document.getElementById('confirmLocationBtn');
+
+    if (!lat || !lng) {
+        if (mapError) {
+            mapError.innerText =
+                'Please select your delivery location on the map first.';
+            mapError.style.display = 'block';
+        }
+        return;
+    }
+
+    // Confirm the final selected map location.
+    window.deliveryLocationConfirmed = true;
+
+    if (mapError) {
+        mapError.innerText = '✅ Delivery location confirmed!';
+        mapError.style.display = 'block';
+    }
+
+    if (confirmBtn) {
+        confirmBtn.innerText = '✅ Location Confirmed';
+        confirmBtn.style.backgroundColor = '#2D5A27';
+        confirmBtn.style.color = '#ffffff';
+    }
+}
 
 function useCurrentLocation() {
     const btn = document.querySelector('.co-loc-btn');
+    const mapError = document.getElementById('mapError');
 
     btn.innerHTML = '📍 Getting location...';
     btn.disabled = true;
 
-  if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
-  document.getElementById('distanceInfo').innerText = 'Getting your location…';
-  navigator.geolocation.getCurrentPosition(
-    function(pos) {
-
-        setLocation(
-            pos.coords.latitude,
-            pos.coords.longitude
-        );
-
-        btn.innerHTML = '✅ Location selected';
-        btn.disabled = false;
-    },
-    function() {
-
+    if (!navigator.geolocation) {
         btn.innerHTML = '📍 Use my current location';
         btn.disabled = false;
+        alert('Geolocation is not supported by your browser.');
+        return;
+    }
 
-        alert('Turn on GPS and allow location permission.');
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
+    document.getElementById('distanceInfo').innerText =
+        'Getting your location…';
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            // Place the marker and zoom in on the detected location.
+            setLocation(lat, lng);
+
+            // Remember that the customer has not confirmed the location yet.
+            window.deliveryLocationConfirmed = false;
+
+            btn.innerHTML = '📍 Confirm your delivery location';
+            btn.disabled = false;
+
+            // Show a message asking the customer to verify the pin.
+            if (mapError) {
+                mapError.innerText =
+                    '📍 We found your location. Please check the map, ' +
+                    'drag the pin to your exact delivery address if needed, ' +
+                    'and confirm the location before placing your order.';
+
+                mapError.style.display = 'block';
+            }
+
+        },
+        function(error) {
+            btn.innerHTML = '📍 Use my current location';
+            btn.disabled = false;
+
+            let message = 'Unable to get your location. ';
+
+            if (error.code === 1) {
+                message += 'Please allow location permission in your browser.';
+            } else if (error.code === 2) {
+                message += 'Please turn on GPS or check your location settings.';
+            } else if (error.code === 3) {
+                message += 'Location request timed out. Please try again.';
+            } else {
+                message += 'Please try again or select your location on the map.';
+            }
+
+            alert(message);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+    );
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -1331,7 +1459,13 @@ function updateDelivery(lat, lng) {
     placeBtn.disabled = true;
     return;
   }
-  mapError.style.display = 'none';
+  if (window.deliveryLocationConfirmed === true) {
+      mapError.style.display = 'none';
+  } else {
+      mapError.innerText =
+          '📍 Check the pin. Drag it to your exact delivery address, then confirm your location.';
+      mapError.style.display = 'block';
+  }
   placeBtn.disabled = false;
 
   var phone = document.getElementById('phoneInput').value;
@@ -1731,6 +1865,30 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('hidden_discount').value = window.currentDiscount || 0;
 
     var valid = true;
+
+    // Require confirmation of the final delivery location.
+    if (window.deliveryLocationConfirmed !== true) {
+        e.preventDefault();
+
+        const mapError = document.getElementById('mapError');
+
+        if (mapError) {
+            mapError.innerText =
+                '📍 Please select your exact delivery location on the map and confirm it before placing your order.';
+            mapError.style.display = 'block';
+        }
+
+        const mapElement = document.getElementById('map');
+
+        if (mapElement) {
+            mapElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        return;
+    }
 
     if (nameInput.value.trim().length < 3) {
       nameInput.classList.add('is-invalid'); valid = false;
