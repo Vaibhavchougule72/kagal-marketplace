@@ -19,7 +19,7 @@ body { background: #fff; }
 
 /* ---------- Hero (green) ---------- */
 .lk-hero {
-    background: var(--loka-green);
+    background: var(--loka-bar);
     color: #fff;
     padding: calc(var(--navbar-height, 60px) + 2px) 0 28px;
 }
@@ -61,8 +61,8 @@ body { background: #fff; }
 /* ---------- Stacked offers ---------- */
 .lk-stack { position: relative; margin-top: 12px; padding-bottom: 30px; max-width: 760px; }
 .lk-stack::before, .lk-stack::after { content: ""; position: absolute; border-radius: 22px; }
-.lk-stack::before { left: 22px; right: 22px; top: 16px; bottom: 16px; background: var(--loka-green-mid); z-index: 0; }
-.lk-stack::after  { left: 12px; right: 12px; top: 10px; bottom: 23px; background: #2E7A55; z-index: 1; }
+.lk-stack::before { left: 22px; right: 22px; top: 16px; bottom: 16px; background: rgba(255,255,255,.10); z-index: 0; }
+.lk-stack::after  { left: 12px; right: 12px; top: 10px; bottom: 23px; background: rgba(255,255,255,.20); z-index: 1; }
 .lk-offer { position: relative; z-index: 2; }
 .lk-offer .carousel-inner { border-radius: 22px; background: var(--loka-orange); }
 .lk-offer-img {
@@ -76,7 +76,7 @@ body { background: #fff; }
 }
 .lk-offer .carousel-indicators [data-bs-target] {
     width: 6px; height: 6px; margin: 0; padding: 0; border: 0; border-radius: 3px;
-    background: #2E7A55; opacity: 1; text-indent: 0; transition: width .2s ease, background .2s ease;
+    background: rgba(255,255,255,.35); opacity: 1; text-indent: 0; transition: width .2s ease, background .2s ease;
 }
 .lk-offer .carousel-indicators .active { width: 22px; background: var(--loka-orange); }
 
