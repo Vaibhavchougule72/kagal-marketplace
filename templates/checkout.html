@@ -872,7 +872,7 @@
                   class="co-loc-btn"
                   onclick="confirmDeliveryLocation()"
                   style="display: none; width: 100%; margin-top: 10px;">
-              ✅ Confirm Delivery Location
+              ✅ Click Here to Confirm Delivery Location
           </button>
           <input type="hidden" name="latitude"  id="latitude">
           <input type="hidden" name="longitude" id="longitude">
@@ -2071,36 +2071,70 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   });
 
-  /* Restore saved location or detect the current location */
-  const savedLat = localStorage.getItem('checkoutDeliveryLat');
-  const savedLng = localStorage.getItem('checkoutDeliveryLng');
- 
-  if (
-      savedLat !== null &&
-      savedLng !== null &&
-      savedLat.trim() !== '' &&
-      savedLng.trim() !== '' &&
-      Number.isFinite(Number(savedLat)) &&
-      Number.isFinite(Number(savedLng))
-  ) {
-      // Restore the customer's previously selected location.
-      setLocation(Number(savedLat), Number(savedLng));
-  } else if (navigator.geolocation) {
-      // Detect the current location only if no location is saved.
-      navigator.geolocation.getCurrentPosition(
-          function(pos) {
-              setLocation(
-                  pos.coords.latitude,
-                  pos.coords.longitude
-              );
-          },
-          function() {},
-          {
-              enableHighAccuracy: true,
-              timeout: 8000
-          }
-      );
-  }
+  /* Automatically detect current location, with saved-location fallback */
+
+const savedLat = localStorage.getItem('checkoutDeliveryLat');
+const savedLng = localStorage.getItem('checkoutDeliveryLng');
+
+function restoreSavedLocation() {
+    if (
+        savedLat !== null &&
+        savedLng !== null &&
+        savedLat.trim() !== '' &&
+        savedLng.trim() !== '' &&
+        Number.isFinite(Number(savedLat)) &&
+        Number.isFinite(Number(savedLng))
+    ) {
+        setLocation(Number(savedLat), Number(savedLng));
+        return true;
+    }
+
+    return false;
+}
+
+if (navigator.geolocation) {
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(pos) {
+            // Prefer the customer's actual current location.
+            setLocation(
+                pos.coords.latitude,
+                pos.coords.longitude
+            );
+        },
+
+        function(error) {
+            console.warn(
+                'Location detection failed:',
+                error.code,
+                error.message
+            );
+
+            // Fall back to the last saved location.
+            const restored = restoreSavedLocation();
+
+            const mapError = document.getElementById('mapError');
+
+            if (!restored && mapError) {
+                mapError.innerText =
+                    'Unable to detect your location. Please allow location access or select your location on the map.';
+                mapError.style.display = 'block';
+            }
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+    );
+
+} else {
+
+    restoreSavedLocation();
+
+}
 
   /* Form submit */
   var form      = document.getElementById('checkoutForm');
@@ -2166,9 +2200,19 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
+    // Prevent duplicate order submissions.
     placeBtn.disabled = true;
+
+    // Display the processing animation.
     spinner.style.display = 'block';
     btnText.innerHTML = ' Processing…';
+
+    // Allow the WebView to render the spinner before submitting.
+    e.preventDefault();
+
+    setTimeout(function() {
+        HTMLFormElement.prototype.submit.call(form);
+    }, 150);
   });
 
   /* Auto-save lead */
