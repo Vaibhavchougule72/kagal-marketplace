@@ -2160,4 +2160,27 @@ document.querySelectorAll(
 });
 </script>
 
+{% if error == "Please confirm your delivery location before placing your order." %}
+<script>
+(function () {
+    function openLocationPopup() {
+        const popup = document.getElementById('locationPopupOverlay');
+
+        if (popup) {
+            popup.classList.add('show');
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            openLocationPopup
+        );
+    } else {
+        openLocationPopup();
+    }
+})();
+</script>
+{% endif %}
+
 {% endblock %}
