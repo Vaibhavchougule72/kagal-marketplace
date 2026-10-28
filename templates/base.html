@@ -17,15 +17,34 @@
     <meta charset="UTF-8">
     <title>LOKA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0F4D32">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/loka-theme.css' %}?v=23">
 
     <style>
+        /* =========================================================
+           LOKA BRAND TOKENS
+           ========================================================= */
+        :root {
+            --loka-green: #0F4D32;
+            --loka-green-deep: #0A3624;
+            --loka-green-mid: #17653F;
+            --loka-green-soft: #E8F2EC;
+            --loka-orange: #FF6A1A;
+            --loka-orange-deep: #E8560A;
+            --loka-orange-soft: #FFEDE0;
+            --bs-body-font-family: 'Baloo 2', 'Noto Sans Devanagari', sans-serif;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f7f5f2;
+            font-family: 'Baloo 2', 'Noto Sans Devanagari', sans-serif;
+            line-height: 1.3;
+            background-color: #ffffff;
+            color: var(--loka-green);
             opacity: 1;
             transition: opacity 0.4s ease-in;
             padding-top: 0;
@@ -33,6 +52,19 @@
 
         body.loaded {
             opacity: 1;
+        }
+
+        /* Brand-coloured Bootstrap success buttons */
+        .btn-success {
+            --bs-btn-bg: var(--loka-green);
+            --bs-btn-border-color: var(--loka-green);
+            --bs-btn-hover-bg: var(--loka-green-deep);
+            --bs-btn-hover-border-color: var(--loka-green-deep);
+            --bs-btn-active-bg: var(--loka-green-deep);
+            --bs-btn-active-border-color: var(--loka-green-deep);
+            --bs-btn-disabled-bg: #6c757d;
+            --bs-btn-disabled-border-color: #6c757d;
+            border-radius: 999px;
         }
 
         .card {
@@ -59,6 +91,10 @@
             justify-content: center;
             z-index: 99999;
             transition: opacity 0.3s ease;
+        }
+
+        .loader-overlay .spinner-border {
+            color: var(--loka-orange);
         }
 
         .loader-overlay.hidden {
@@ -107,10 +143,10 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: #28a745;
+            background: var(--loka-green);
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: 999px;
             display: none;
             z-index: 99999;
             animation: fadeInOut 2.5s ease forwards;
@@ -127,11 +163,10 @@
             padding-top: 0;
         }
 
-        /* Adjust navbar height */
+        /* Navbar: solid forest green so it flows into the green home header */
         .premium-navbar {
-            backdrop-filter: blur(14px);
-            background: rgba(12, 104, 63, 0.9);
-            border-bottom: 1px solid rgba(248, 244, 244, 0.05);
+            background: var(--loka-green);
+            border-bottom: 0;
             padding-top: calc(10px + env(safe-area-inset-top));
             padding-bottom: 10px;
             z-index: 9999;
@@ -142,27 +177,34 @@
             color: white !important;
         }
 
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
         .nav-link:hover {
-            color: #F39C12 !important; /* Orange hover */
+            color: var(--loka-orange) !important;
         }
 
 
         /* =========================================================
-           LOKA ICON NAVBAR
+           LOKA ICON NAVBAR  (cart, wallet, profile)
            ========================================================= */
         .loka-navbar-actions {
             display:flex;
             align-items:center;
-            gap:7px;
+            gap:8px;
             margin-left:auto;
         }
         .loka-nav-icon-btn {
             position:relative;
-            width:58px;
-            height:48px;
-            border:1px solid rgba(255,255,255,.22);
-            border-radius:10px;
-            background:rgba(255,255,255,.06);
+            width:40px;
+            height:40px;
+            border:0;
+            border-radius:50%;
+            background:var(--loka-green-mid);
             color:#fff;
             display:flex;
             align-items:center;
@@ -172,11 +214,11 @@
             transition:background .15s ease,transform .12s ease;
             -webkit-tap-highlight-color:transparent;
         }
-        .loka-nav-icon-btn:hover { background:rgba(255,255,255,.14); }
+        .loka-nav-icon-btn:hover { background:#1F7A4D; }
         .loka-nav-icon-btn:active { transform:scale(.94); }
         .loka-nav-icon-btn svg {
-            width:25px;
-            height:25px;
+            width:21px;
+            height:21px;
             stroke:currentColor;
             fill:none;
             stroke-width:1.8;
@@ -185,19 +227,19 @@
         }
         .loka-nav-cart-badge {
             position:absolute;
-            top:-5px;
-            right:-5px;
+            top:-4px;
+            right:-4px;
             min-width:19px;
             height:19px;
             padding:0 5px;
             border-radius:10px;
-            background:#e53935;
+            background:var(--loka-orange);
             color:#fff;
-            font-size:10px;
-            font-weight:700;
-            line-height:19px;
+            font-size:11px;
+            font-weight:600;
+            line-height:15px;
             text-align:center;
-            border:2px solid #0c683f;
+            border:2px solid var(--loka-green);
         }
         .loka-profile-wrap { position:relative; }
         .loka-profile-menu {
@@ -206,9 +248,9 @@
             right:0;
             width:190px;
             background:#fff;
-            border-radius:12px;
+            border-radius:16px;
             box-shadow:0 10px 30px rgba(0,0,0,.18);
-            border:1px solid #e7e7e7;
+            border:1px solid #D5E5DB;
             padding:7px;
             display:none;
             z-index:10001;
@@ -219,17 +261,17 @@
             align-items:center;
             gap:10px;
             width:100%;
-            padding:11px 12px;
-            border-radius:8px;
+            padding:10px 12px;
+            border-radius:10px;
             text-decoration:none;
-            color:#243424;
-            font-size:14px;
-            font-weight:600;
+            color:var(--loka-green);
+            font-size:15px;
+            font-weight:500;
         }
-        .loka-profile-menu a:hover { background:#f1f7f2; color:#198754; }
+        .loka-profile-menu a:hover { background:var(--loka-green-soft); color:var(--loka-green); }
         .loka-profile-menu a.logout { color:#dc3545; }
         .loka-profile-menu a.logout:hover { background:#fff1f1; color:#c82333; }
-        .loka-menu-divider { height:1px; background:#eee; margin:4px 7px; }
+        .loka-menu-divider { height:1px; background:#E8F2EC; margin:4px 7px; }
         .loka-wallet-modal {
             position:fixed;
             inset:0;
@@ -244,48 +286,48 @@
         .loka-wallet-card {
             width:min(340px,100%);
             background:#fff;
-            border-radius:18px;
+            border-radius:24px;
             padding:25px 22px 22px;
             text-align:center;
             box-shadow:0 15px 45px rgba(0,0,0,.22);
         }
         .loka-wallet-icon {
-            width:58px;
-            height:58px;
+            width:48px;
+            height:48px;
             margin:0 auto 13px;
             border-radius:50%;
-            background:#eef7f0;
-            color:#198754;
+            background:var(--loka-green-soft);
+            color:var(--loka-green);
             display:flex;
             align-items:center;
             justify-content:center;
         }
         .loka-wallet-icon svg {
-            width:28px;
-            height:28px;
+            width:26px;
+            height:26px;
             stroke:currentColor;
             fill:none;
             stroke-width:1.8;
             stroke-linecap:round;
             stroke-linejoin:round;
         }
-        .loka-wallet-card h5 { margin:0 0 7px; color:#183b22; font-weight:700; }
+        .loka-wallet-card h5 { margin:0 0 7px; color:var(--loka-green); font-weight:600; }
         .loka-wallet-card p { margin:0 0 18px; color:#777; font-size:13px; }
         .loka-wallet-close {
             width:100%;
             border:0;
-            border-radius:10px;
-            padding:11px 15px;
-            background:#198754;
+            border-radius:999px;
+            padding:10px 15px;
+            background:var(--loka-green);
             color:#fff;
-            font-weight:600;
+            font-weight:500;
         }
         @media (max-width:480px) {
             .premium-navbar { padding-left:10px !important; padding-right:10px !important; }
-            .loka-navbar-actions { gap:5px; }
-            .loka-nav-icon-btn { width:48px; height:44px; }
-            .loka-nav-icon-btn svg { width:23px; height:23px; }
-            .navbar-brand { font-size:1.1rem; }
+            .loka-navbar-actions { gap:6px; }
+            .loka-nav-icon-btn { width:38px; height:38px; }
+            .loka-nav-icon-btn svg { width:20px; height:20px; }
+            .navbar-brand { font-size:1.35rem; }
         }
 
         /* Smaller navbar on mobile */
@@ -296,10 +338,6 @@
         }
 
         
-
-        .navbar-brand {
-            font-size: 1.1rem;
-        }
 
         .navbar-collapse {
             background: #ffffff;
@@ -315,7 +353,7 @@
         }
 
         .navbar-collapse .nav-link:hover {
-            color: #198754 !important; /* green hover */
+            color: var(--loka-green) !important;
         }
     }
         /* Prevent content overlap */
@@ -333,7 +371,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: #198754;
+            background: var(--loka-orange);
             color: white;
             border: none;
             font-size: 22px;
@@ -354,7 +392,7 @@
             position: absolute;
             top: -5px;
             right: -5px;
-            background: red;
+            background: var(--loka-green);
             color: white;
             font-size: 12px;
             padding: 4px 7px;
