@@ -7592,32 +7592,22 @@ def send_notification(request):
                 status="pending",
             )
 
-        from .tasks import process_next_notification_job
-
-        result = process_next_notification_job()
-
-        if result is None:
-            return JsonResponse({
-                "success": False,
-                "message": "No pending notification job found.",
-            }, status=500)
-
-        if result.get("status") == "failed":
-            return JsonResponse({
-                "success": False,
-                "message": "Notification sending failed.",
-                "campaign_id": campaign.id,
-            }, status=500)
+        logger.info(
+            "Notification campaign %s queued as job %s.",
+            campaign.id,
+            job.id,
+        )
 
         return JsonResponse({
             "success": True,
-            "queued": False,
+            "queued": True,
             "campaign_id": campaign.id,
-            "total": result.get("total", 0),
-            "successful": result.get("successful", 0),
-            "failed": result.get("failed", 0),
-            "message": "Notification processing finished.",
-        })
+            "job_id": job.id,
+            "total": 0,
+            "successful": 0,
+            "failed": 0,
+            "message": "Notification campaign queued for processing.",
+        }, status=202)
 
     except json.JSONDecodeError:
         return JsonResponse({
