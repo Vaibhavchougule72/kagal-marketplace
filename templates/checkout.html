@@ -799,7 +799,7 @@
 }
 </style>
 
-{% if error %}
+{% if error and error != "Please confirm your delivery location before placing your order." %}
 <div style="padding:12px 14px 0;">
   <div class="co-alert">⚠ {{ error }}</div>
 </div>
@@ -2054,6 +2054,25 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Form submit */
   var form      = document.getElementById('checkoutForm');
   var placeBtn  = document.getElementById('placeOrderBtn');
+  // Stop checkout submission before the WebView can reload the page.
+  if (form) {
+      form.addEventListener('submit', function (e) {
+          const confirmedInput = document.getElementById(
+              'deliveryLocationConfirmedInput'
+          );
+
+          const isConfirmed =
+              confirmedInput && confirmedInput.value === 'true';
+
+          if (!isConfirmed) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+
+              showLocationConfirmationPopup();
+              return false;
+          }
+      }, true);
+  }
   // Show location confirmation popup immediately on button tap.
   placeBtn.addEventListener('click', function(e) {
       if (window.deliveryLocationConfirmed !== true) {
