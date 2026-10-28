@@ -1411,8 +1411,17 @@ function setLocation(lat, lng) {
     document.getElementById('latitude').value = lat;
     document.getElementById('longitude').value = lng;
 
+    // Preserve the selected location across checkout page reloads.
+    sessionStorage.setItem('checkoutDeliveryLat', String(lat));
+    sessionStorage.setItem('checkoutDeliveryLng', String(lng));
+   
     // Any location change requires confirmation again.
     window.deliveryLocationConfirmed = false;
+
+    sessionStorage.setItem(
+        'checkoutDeliveryConfirmed',
+        'false'
+    );
 
     const confirmedInput = document.getElementById(
         'deliveryLocationConfirmedInput'
@@ -1446,10 +1455,25 @@ function setLocation(lat, lng) {
     marker.on('dragend', function () {
         const pos = marker.getLatLng();
 
+        // Save the updated location after the customer moves the pin.
+        sessionStorage.setItem(
+            'checkoutDeliveryLat',
+            String(pos.lat)
+        );
+
+        sessionStorage.setItem(
+            'checkoutDeliveryLng',
+            String(pos.lng)
+        );
+
         document.getElementById('latitude').value = pos.lat;
         document.getElementById('longitude').value = pos.lng;
 
         window.deliveryLocationConfirmed = false;
+        sessionStorage.setItem(
+            'checkoutDeliveryConfirmed',
+            'false'
+        );
 
         const confirmedInput = document.getElementById(
             'deliveryLocationConfirmedInput'
@@ -1538,6 +1562,11 @@ function confirmDeliveryLocation() {
 
     // Confirm the final selected map location.
     window.deliveryLocationConfirmed = true;
+
+    sessionStorage.setItem(
+        'checkoutDeliveryConfirmed',
+        'true'
+    );
 
     if (confirmBtn) {
         confirmBtn.classList.remove('location-attention');
@@ -2042,13 +2071,35 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   });
 
-  /* Auto locate on load */
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function(pos) { setLocation(pos.coords.latitude, pos.coords.longitude); },
-      function() {},
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+  /* Restore saved location or detect the current location */
+  const savedLat = sessionStorage.getItem('checkoutDeliveryLat');
+  const savedLng = sessionStorage.getItem('checkoutDeliveryLng');
+
+  if (
+      savedLat !== null &&
+      savedLng !== null &&
+      savedLat.trim() !== '' &&
+      savedLng.trim() !== '' &&
+      Number.isFinite(Number(savedLat)) &&
+      Number.isFinite(Number(savedLng))
+  ) {
+      // Restore the customer's previously selected location.
+      setLocation(Number(savedLat), Number(savedLng));
+  } else if (navigator.geolocation) {
+      // Detect the current location only if no location is saved.
+      navigator.geolocation.getCurrentPosition(
+          function(pos) {
+              setLocation(
+                  pos.coords.latitude,
+                  pos.coords.longitude
+              );
+          },
+          function() {},
+          {
+              enableHighAccuracy: true,
+              timeout: 8000
+          }
+      );
   }
 
   /* Form submit */
