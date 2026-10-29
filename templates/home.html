@@ -84,6 +84,11 @@ body { background: #fff; }
 /* outgoing card swings away */
 .lk-offer .active.carousel-item-start { transform: translateX(-115%) rotate(-6deg); opacity: 0; }
 .lk-offer .active.carousel-item-end   { transform: translateX(115%) rotate(6deg); opacity: 0; }
+/* alternate: odd slides swing left, even slides swing right (class set by the script below) */
+.lk-offer.lk-out-left .active.carousel-item-start,
+.lk-offer.lk-out-left .active.carousel-item-end   { transform: translateX(-115%) rotate(-6deg); opacity: 0; }
+.lk-offer.lk-out-right .active.carousel-item-start,
+.lk-offer.lk-out-right .active.carousel-item-end  { transform: translateX(115%) rotate(6deg); opacity: 0; }
 .lk-offer-img {
     display: block; width: 100%;
     height: clamp(140px, 38vw, 320px);
@@ -249,7 +254,11 @@ body { background: #fff; }
     .lk-offer .carousel-item-next:not(.carousel-item-start),
     .lk-offer .carousel-item-prev:not(.carousel-item-end),
     .lk-offer .active.carousel-item-start,
-    .lk-offer .active.carousel-item-end { transform: none; }
+    .lk-offer .active.carousel-item-end,
+    .lk-offer.lk-out-left .active.carousel-item-start,
+    .lk-offer.lk-out-left .active.carousel-item-end,
+    .lk-offer.lk-out-right .active.carousel-item-start,
+    .lk-offer.lk-out-right .active.carousel-item-end { transform: none; }
     .lk-cat-img, .lk-feat, .lk-feat-img > img, .lk-dots span, .lk-offer .carousel-indicators [data-bs-target] { transition: none; }
 }
 </style>
@@ -511,6 +520,17 @@ body { background: #fff; }
     document.addEventListener("DOMContentLoaded", join);
     window.addEventListener("load", join);
     window.addEventListener("resize", join);
+})();
+
+/* Offer cards alternate: 1st swings left, 2nd swings right, 3rd left ... */
+(function () {
+    var c = document.getElementById("lokaOfferCarousel");
+    if (!c) return;
+    c.addEventListener("slide.bs.carousel", function (e) {
+        var right = e.from % 2 === 1;
+        c.classList.toggle("lk-out-right", right);
+        c.classList.toggle("lk-out-left", !right);
+    });
 })();
 
 /* Time-based greeting (no backend change needed) */
