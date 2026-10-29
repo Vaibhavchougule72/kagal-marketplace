@@ -2,192 +2,453 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOKA Partner Login</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
+
+        html, body { margin: 0; padding: 0; }
 
         body {
-            margin: 0;
             min-height: 100vh;
+            min-height: 100dvh;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #1D3F18;
+            color: #1A3A16;
+            display: flex;
+            justify-content: center;
+        }
 
-            font-family:
-                Arial,
-                sans-serif;
+        /* ── PAGE ── */
+        .lg-page {
+            width: 100%;
+            max-width: 440px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: #F5F5F0;
+        }
 
-            background: #f5f7f6;
+        /* ── HERO (same gradient as the app nav) ── */
+        .lg-hero {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
+            color: #fff;
+            text-align: center;
+            padding: 44px 24px 62px;
+        }
 
+        .lg-hero::before,
+        .lg-hero::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .06);
+        }
+
+        .lg-hero::before { width: 180px; height: 180px; top: -70px; right: -50px; }
+        .lg-hero::after  { width: 120px; height: 120px; bottom: -40px; left: -30px; }
+
+        .lg-hero > * { position: relative; z-index: 1; }
+
+        .lg-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .16);
+            border: 1px solid rgba(255, 255, 255, .3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             justify-content: center;
-
-            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .25);
         }
 
-        .login-box {
-            width: 100%;
-            max-width: 420px;
-
-            background: white;
-
-            border-radius: 20px;
-
-            padding: 32px 24px;
-
-            box-shadow:
-                0 10px 30px rgba(
-                    0,
-                    0,
-                    0,
-                    0.08
-                );
-        }
-
-        .logo {
-            text-align: center;
-
-            font-size: 32px;
-
+        .lg-brand {
+            font-size: 28px;
             font-weight: 800;
-
-            color: #227D57;
-
-            margin-bottom: 8px;
+            letter-spacing: .14em;
+            margin: 0;
         }
 
-        .subtitle {
-            text-align: center;
-
-            color: #777;
-
-            margin-bottom: 28px;
+        .lg-headline {
+            font-size: 19px;
+            font-weight: 700;
+            margin: 14px 0 4px;
         }
 
-        label {
+        .lg-tagline {
+            font-size: 13px;
+            color: rgba(255, 255, 255, .72);
+            margin: 0;
+        }
+
+        /* ── SHEET ── */
+        .lg-sheet {
+            flex: 1;
+            background: #F5F5F0;
+            border-radius: 26px 26px 0 0;
+            margin-top: -26px;
+            position: relative;
+            padding: 28px 22px 32px;
+        }
+
+        .lg-sheet h2 {
+            margin: 0 0 18px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1B5E20;
+        }
+
+        /* ── ERROR ── */
+        .lg-error {
+            background: #FDF1EB;
+            color: #C05018;
+            border: 1px solid #F5C9AE;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            font-size: 14px;
+            animation: lg-shake .45s ease;
+        }
+
+        @keyframes lg-shake {
+            0%, 100% { transform: translateX(0); }
+            20%      { transform: translateX(-7px); }
+            40%      { transform: translateX(7px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+
+        /* ── FIELDS ── */
+        .lg-label {
             display: block;
-
+            font-size: 13px;
             font-weight: 600;
-
+            color: #3D5A3A;
             margin-bottom: 7px;
         }
 
-        input {
-            width: 100%;
-
-            padding: 14px;
-
-            border: 1px solid #ddd;
-
-            border-radius: 10px;
-
-            font-size: 16px;
-
+        .lg-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 1.5px solid #DDE5DC;
+            border-radius: 14px;
+            height: 52px;
+            padding: 0 14px;
             margin-bottom: 18px;
-
-            outline: none;
+            transition: border-color .2s, box-shadow .2s;
         }
 
-        input:focus {
-            border-color: #227D57;
+        .lg-field:focus-within {
+            border-color: #2D5A27;
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, .12);
         }
 
-        button {
-            width: 100%;
+        .lg-field svg { flex-shrink: 0; color: #7A8A78; }
+        .lg-field:focus-within > svg { color: #2D5A27; }
 
-            padding: 14px;
-
+        .lg-field input {
+            flex: 1;
+            min-width: 0;
             border: none;
-
-            border-radius: 10px;
-
-            background: #227D57;
-
-            color: white;
-
-            font-size: 17px;
-
-            font-weight: 700;
-
-            cursor: pointer;
+            outline: none;
+            background: transparent;
+            font-size: 16px;
+            font-family: inherit;
+            color: #1A3A16;
+            padding: 0;
         }
 
-        .error {
-            background: #fff0f0;
+        .lg-field input::placeholder { color: #9AA899; }
 
-            color: #c62828;
+        .lg-eye {
+            border: none;
+            background: transparent;
+            padding: 6px;
+            margin-right: -6px;
+            cursor: pointer;
+            display: flex;
+            color: #7A8A78;
+        }
 
-            padding: 12px;
+        .lg-eye .lg-eye-off { display: none; }
+        .lg-eye.on .lg-eye-on  { display: none; }
+        .lg-eye.on .lg-eye-off { display: block; }
 
-            border-radius: 10px;
+        /* ── LOGIN BUTTON + CLICK EFFECT ── */
+        .lg-btn {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 54px;
+            border: none;
+            border-radius: 14px;
+            background: #E8621A;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 700;
+            font-family: inherit;
+            letter-spacing: .02em;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(232, 98, 26, .35);
+            transition: transform .15s ease, box-shadow .25s ease, background .25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-            margin-bottom: 18px;
+        .lg-btn:active { transform: scale(.97); }
 
-            font-size: 14px;
+        .lg-btn-label,
+        .lg-btn-loading {
+            transition: opacity .2s ease, transform .25s ease;
+        }
+
+        .lg-btn-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .lg-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, .35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: lg-spin .7s linear infinite;
+        }
+
+        @keyframes lg-spin { to { transform: rotate(360deg); } }
+
+        /* sweeping light bar while signing in */
+        .lg-btn::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 40%;
+            background: rgba(255, 255, 255, .85);
+            border-radius: 3px;
+            opacity: 0;
+        }
+
+        .lg-btn.loading {
+            background: #2D5A27;
+            box-shadow: 0 6px 16px rgba(45, 90, 39, .35);
+            pointer-events: none;
+        }
+
+        .lg-btn.loading .lg-btn-label   { opacity: 0; transform: translateY(-10px); }
+        .lg-btn.loading .lg-btn-loading { opacity: 1; transform: translateY(0); }
+
+        .lg-btn.loading::after {
+            opacity: 1;
+            animation: lg-sweep 1.2s ease-in-out infinite;
+        }
+
+        @keyframes lg-sweep {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(260%); }
+        }
+
+        /* ripple from the tap point */
+        .lg-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .45);
+            transform: scale(0);
+            animation: lg-ripple .6s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes lg-ripple { to { transform: scale(1); opacity: 0; } }
+
+        .lg-help {
+            text-align: center;
+            font-size: 13px;
+            color: #7A8A78;
+            margin-top: 20px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .lg-btn, .lg-btn-label, .lg-btn-loading { transition: none; }
+            .lg-spinner, .lg-btn.loading::after, .lg-error { animation: none; }
+            .lg-ripple { display: none; }
+        }
+
+        @media (min-width: 480px) {
+            body { align-items: center; background: #E9EDE6; padding: 24px; }
+            .lg-page {
+                min-height: 0;
+                border-radius: 26px;
+                overflow: hidden;
+                box-shadow: 0 16px 50px rgba(0, 0, 0, .18);
+            }
         }
     </style>
 </head>
 
 <body>
 
-<div class="login-box">
+<div class="lg-page">
 
-    <div class="logo">
-        LOKA
-    </div>
-
-    <div class="subtitle">
-        Store Partner
-    </div>
-
-    {% if error %}
-        <div class="error">
-            {{ error }}
+    <!-- HERO -->
+    <div class="lg-hero">
+        <div class="lg-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+                 stroke="#fff" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l1.5-5h15L21 9"></path>
+                <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"></path>
+                <path d="M5 12v8h14v-8"></path>
+                <path d="M10 20v-5h4v5"></path>
+            </svg>
         </div>
-    {% endif %}
+        <h1 class="lg-brand">LOKA</h1>
+        <div class="lg-headline">Manage your store</div>
+        <p class="lg-tagline">Orders, products, earnings</p>
+    </div>
 
-    <form method="POST">
+    <!-- SHEET -->
+    <div class="lg-sheet">
 
-        {% csrf_token %}
+        <h2>Store Partner Login</h2>
 
-        <label>
-            Username
-        </label>
+        {% if error %}
+            <div class="lg-error" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
 
-        <input
-            type="text"
-            name="username"
-            placeholder="Enter username"
-            required
-            autocomplete="username"
-        >
+        <form method="POST" id="login-form">
 
-        <label>
-            Password
-        </label>
+            {% csrf_token %}
 
-        <input
-            type="password"
-            name="password"
-            placeholder="Enter password"
-            required
-            autocomplete="current-password"
-        >
+            <label class="lg-label" for="id_username">Username</label>
+            <div class="lg-field">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path>
+                </svg>
+                <input type="text" id="id_username" name="username"
+                       placeholder="Enter username"
+                       required autocomplete="username"
+                       autocapitalize="off" spellcheck="false">
+            </div>
 
-        <button type="submit">
-            Login
-        </button>
+            <label class="lg-label" for="id_password">Password</label>
+            <div class="lg-field">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+                </svg>
+                <input type="password" id="id_password" name="password"
+                       placeholder="Enter password"
+                       required autocomplete="current-password">
+                <button type="button" class="lg-eye" id="toggle-password"
+                        aria-label="Show password">
+                    <svg class="lg-eye-on" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="lg-eye-off" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.9 17.9A10.9 10.9 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9"></path>
+                        <path d="M9.9 4.2A10.7 10.7 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                </button>
+            </div>
 
-    </form>
+            <button type="submit" class="lg-btn" id="login-btn">
+                <span class="lg-btn-label">Login</span>
+                <span class="lg-btn-loading" aria-hidden="true">
+                    <span class="lg-spinner"></span>
+                    <span>Signing in…</span>
+                </span>
+            </button>
+
+        </form>
+
+        <div class="lg-help">Need help? Contact LOKA support</div>
+
+    </div>
 
 </div>
+
+<script>
+(function () {
+    var form = document.getElementById('login-form');
+    var btn  = document.getElementById('login-btn');
+    var pass = document.getElementById('id_password');
+    var eye  = document.getElementById('toggle-password');
+
+    /* show / hide password */
+    eye.addEventListener('click', function () {
+        var show = pass.type === 'password';
+        pass.type = show ? 'text' : 'password';
+        eye.classList.toggle('on', show);
+        eye.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    });
+
+    /* ripple from the tap point */
+    btn.addEventListener('pointerdown', function (e) {
+        if (btn.classList.contains('loading')) return;
+
+        var rect = btn.getBoundingClientRect();
+        var size = Math.max(rect.width, rect.height) * 2;
+        var dot  = document.createElement('span');
+
+        dot.className = 'lg-ripple';
+        dot.style.width  = dot.style.height = size + 'px';
+        dot.style.left   = (e.clientX - rect.left - size / 2) + 'px';
+        dot.style.top    = (e.clientY - rect.top  - size / 2) + 'px';
+
+        btn.appendChild(dot);
+        setTimeout(function () { dot.remove(); }, 650);
+    });
+
+    /* loading state once the form is valid and really submitting */
+    form.addEventListener('submit', function (e) {
+        if (form.dataset.submitting === '1') {
+            e.preventDefault();          // block double submit
+            return;
+        }
+        form.dataset.submitting = '1';
+        btn.classList.add('loading');
+        btn.setAttribute('aria-busy', 'true');
+    });
+
+    /* coming back with the browser Back button: reset the button */
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            form.dataset.submitting = '';
+            btn.classList.remove('loading');
+            btn.removeAttribute('aria-busy');
+        }
+    });
+})();
+</script>
 
 </body>
 </html>
