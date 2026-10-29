@@ -7,228 +7,145 @@
   * { box-sizing: border-box; }
 
   /* ── PAGE ── */
-  .category-page {
+  .cs-page {
     background: #F5F5F0;
     min-height: 100vh;
     font-family: inherit;
   }
 
-  /* ── COVER WRAPPER (holds image + floating box together) ── */
-  .category-cover-wrapper {
-    position: relative;
-    margin-bottom: 0;
+  /* ── HEADER (pinned) : same gradient as the nav bar ── */
+  .cs-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
+    padding: 12px 14px 30px;
   }
 
-  /* ── COVER ── */
-  .category-cover {
-    height: 200px;
-    margin-bottom:0;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(145deg, #2D5A27 0%, #1A3A16 60%, #3A2010 100%);
-  }
-
-  .category-cover img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.35;
-  }
-
-  .category-cover::after {
+  /* cream rounded cap = top edge of the sheet, stays visible while pinned */
+  .cs-header::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 30%, rgba(26,58,22,0.7) 100%);
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 18px;
+    background: #F5F5F0;
+    border-radius: 22px 22px 0 0;
   }
 
-  /* ── STICKY BAR ── */
-  .sticky-bar {
-
-    position: sticky;
-
-    top: 0;
-
-    margin-top: -1px;
-
-    z-index: 100;
-
-    background: #1C3D18;
-
-    height: 56px;
-
-    padding: 0 14px;
-
+  .cs-nav-row {
+    position: relative;
     display: flex;
-
     align-items: center;
-
     justify-content: center;
+    height: 44px;
+  }
 
-    border-bottom: 1px solid rgba(255,255,255,.08);
-
-    position: sticky;
-}
-
-  .back-btn {
-
-    position:absolute;
-
-    left:14px;
-
-    top:50%;
-
-    transform:translateY(-50%);
-
-    z-index:10;
-
-    width:44px;
-
-    height:44px;
-
-    border-radius:14px;
-
-    background:rgba(255,255,255,.15);
-
-    backdrop-filter:blur(16px) saturate(180%);
-
-    -webkit-backdrop-filter:blur(16px) saturate(180%);
-
-    border:1px solid rgba(255,255,255,.30);
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    text-decoration:none;
-
-    color:#fff;
-
-    font-size:22px;
-
-    font-weight:700;
-
-    line-height:1;
-
-    box-shadow:
-        0 4px 16px rgba(0,0,0,.25),
-        inset 0 1px 0 rgba(255,255,255,.25);
-
-    transition:
-        background .2s,
-        transform .15s,
-        box-shadow .2s;
-}
-
-.back-btn:hover{
-
-    background:rgba(255,255,255,.28);
-
-    box-shadow:
-        0 6px 20px rgba(0,0,0,.32),
-        inset 0 1px 0 rgba(255,255,255,.30);
-}
-
-.back-btn:active{
-
-    transform:
-        translateY(-50%)
-        scale(.94);
-}
-
-  .sticky-bar .sticky-name {
-
-    font-size: 17px;
-
-    font-weight: 700;
-
-    color: #fff;
-
-    text-align: center;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-    max-width: 70%;
-}
-
- .sticky-bar .sticky-count {
-
+  .cs-back-btn {
     position: absolute;
-
-    right: 14px;
-
+    left: 0;
     top: 50%;
-
     transform: translateY(-50%);
-
-    font-size: 12px;
-
-    color: rgba(255,255,255,.55);
-}
-  /* ── FLOATING HEADER BOX ── */
-  .category-floating-box {
-    background: #fff;
-    position: absolute;
-    bottom: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 80px);
-    max-width: 320px;
+    width: 44px;
+    height: 44px;
     border-radius: 14px;
-    padding: 14px 16px 12px;
-    border: 0.5px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
-    z-index: 5;
-  }
-
-  .category-floating-box .eyebrow {
-    font-size: 10px;
-    color: #E8621A;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-weight: 500;
-    margin-bottom: 3px;
-  }
-
-  .category-floating-box h1 {
-    font-size: 22px;
-    font-weight: 500;
-    color: #1A3A16;
-    margin: 0;
-    line-height: 1.2;
-  }
-
-  .category-floating-box .store-count {
+    background: rgba(255, 255, 255, .15);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .30);
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin-top: 6px;
-    font-size: 12px;
-    color: #6B7B69;
+    justify-content: center;
+    text-decoration: none;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .25);
+    transition: background .2s, transform .15s;
   }
+
+  .cs-back-btn:hover { background: rgba(255, 255, 255, .28); }
+  .cs-back-btn:active { transform: translateY(-50%) scale(.94); }
+
+  .cs-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55%;
+  }
+
+  .cs-count {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: rgba(255, 255, 255, .65);
+  }
+
+  /* ── SEARCH ── */
+  .cs-search {
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 24px;
+    height: 44px;
+    padding: 0 6px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+  }
+
+  .cs-search svg { flex-shrink: 0; color: #2D5A27; }
+
+  .cs-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1A3A16;
+    padding: 0;
+  }
+
+  .cs-search input::placeholder { color: #8A9988; }
+
+  .cs-clear {
+    display: none;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #EEF2ED;
+    color: #4A7045;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .cs-clear.show { display: flex; }
 
   /* ── FILTER CHIPS ── */
-  .filter-row {
-    padding: 12px 14px 8px;
+  .cs-filter-row {
+    padding: 6px 14px 8px;
     display: flex;
     gap: 7px;
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .filter-row::-webkit-scrollbar { display: none; }
+  .cs-filter-row::-webkit-scrollbar { display: none; }
 
-  .filter-chip {
-    font-size: 11px;
-    padding: 5px 12px;
+  .cs-chip {
+    font-size: 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     border: 0.5px solid #C5D9C3;
     color: #4A7045;
@@ -238,54 +155,44 @@
     flex-shrink: 0;
   }
 
-  .filter-chip.active {
+  .cs-chip.active {
     background: #2D5A27;
     color: #fff;
     border-color: #2D5A27;
   }
 
   /* ── STORE LIST ── */
-  .store-list {
-    padding: 4px 12px 24px;
+  .cs-store-list {
+    padding: 4px 12px 28px;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
-  /* ── STORE ROW / CARD ── */
-  .store-row {
+  /* ── STORE CARD ── */
+  .cs-store-row {
+    background: #fff;
+    border-radius: 14px;
+    border: .5px solid #E0E8DF;
+    display: flex;
+    align-items: stretch;
+    min-height: 140px;
+    overflow: hidden;
+    text-decoration: none;
+    position: relative;
+  }
 
-    background:#fff;
-
-    border-radius:14px;
-
-    border:.5px solid #E0E8DF;
-
-    display:flex;
-
-    align-items:stretch;
-
-    min-height:140px;
-
-    overflow:hidden;
-
-    text-decoration:none;
-
-    position:relative;
-}
-
-  .store-row:hover:not(.store-disabled) {
+  .cs-store-row:hover:not(.cs-disabled) {
     border-color: #A8C9A5;
     box-shadow: 0 2px 12px rgba(45, 90, 39, 0.1);
   }
 
-  .store-row.store-disabled {
+  .cs-store-row.cs-disabled {
     opacity: 0.62;
     cursor: default;
   }
 
-  /* TOP RATED RIBBON */
-  .store-row .top-rated-tag {
+  .cs-top-rated {
     position: absolute;
     top: 0;
     right: 0;
@@ -298,9 +205,7 @@
     letter-spacing: 0.05em;
   }
 
-  /* ── STORE IMAGE ── */
- 
-.store-image {
+  .cs-store-image {
     width: 128px;
     min-width: 128px;
     display: flex;
@@ -309,44 +214,24 @@
     align-self: center;
     padding: 4px;
     flex-shrink: 0;
-}
+    font-size: 40px;
+  }
 
-.store-image img {
+  .cs-store-image img {
+    width: 120px;
+    height: 132px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+  }
 
-    width:120px;
-    height:132px;
+  @media (max-width: 576px) {
+    .cs-store-row { min-height: 136px; }
+    .cs-store-image { width: 124px; min-width: 124px; }
+    .cs-store-image img { width: 116px; height: 128px; }
+  }
 
-    object-fit:cover;
-
-    border-radius:10px;
-
-    display:block;
-}
-
-@media(max-width:576px){
-
-    .store-row{
-
-        min-height:136px;
-    }
-
-    .store-image{
-
-        width:124px;
-        min-width:124px;
-
-        padding:4px;
-    }
-
-    .store-image img{
-
-        width:116px;
-        height:128px;
-    }
-
-}
-  /* ── STORE INFO ── */
-  .store-info {
+  .cs-store-info {
     flex: 1;
     padding: 10px 12px;
     display: flex;
@@ -354,56 +239,32 @@
     min-width: 0;
   }
 
-  .store-info h3 {
-
+  .cs-store-info h3 {
     font-size: 18px;
-
     font-weight: 700;
-
     color: #1B5E20;
-
     line-height: 1.25;
-
     margin: 0 0 6px;
-
     letter-spacing: 0.2px;
-}
+  }
 
-  /* ── RATING PILL ── */
-  .rating-pill {
-
+  .cs-rating-pill {
     display: inline-flex;
-
     align-items: center;
-
     gap: 4px;
-
     font-size: 15px;
-
     font-weight: 700;
-
-    color: #ffffff;
-
+    color: #fff;
     margin-bottom: 4px;
-
     background: #2E7D32;
-
     padding: 3px 10px;
-
     border-radius: 20px;
-
     width: fit-content;
-}
+  }
 
-  .rating-pill .star-icon {
+  .cs-rating-pill .cs-star { color: #FFD54F; font-size: 13px; }
 
-    color: #FFD54F;
-
-    font-size: 13px;
-}
-
-  /* ── STORE META ── */
-  .store-meta {
+  .cs-store-meta {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -411,7 +272,7 @@
     margin-bottom: 2px;
   }
 
-  .store-open-badge {
+  .cs-open-badge {
     font-size: 11px;
     font-weight: 500;
     background: #EAF5E8;
@@ -420,7 +281,7 @@
     border-radius: 20px;
   }
 
-  .store-closed-badge {
+  .cs-closed-badge {
     font-size: 11px;
     font-weight: 500;
     background: #FDF1EB;
@@ -429,13 +290,9 @@
     border-radius: 20px;
   }
 
-  .next-open-time {
-    font-size: 11px;
-    color: #9AA899;
-  }
+  .cs-next-open { font-size: 11px; color: #9AA899; }
 
-  /* ── BOTTOM ROW ── */
-  .store-bottom {
+  .cs-store-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -443,96 +300,94 @@
     padding-top: 5px;
   }
 
-  .starting-price {
-    font-size: 12px;
-    color: #7A8A78;
-  }
-
-  .starting-price strong {
-    color: #1A2E19;
-    font-weight: 500;
-  }
-
-  .items-pill {
-    font-size: 11px;
-    color: #9AA899;
-  }
+  .cs-price { font-size: 12px; color: #7A8A78; }
+  .cs-price strong { color: #1A2E19; font-weight: 500; }
+  .cs-items { font-size: 11px; color: #9AA899; }
 
   /* ── EMPTY STATE ── */
-  .empty-state {
+  .cs-empty {
     text-align: center;
     padding: 48px 24px;
     color: #9AA899;
   }
 
-  .empty-state i {
+  .cs-empty i {
     font-size: 48px;
-    color: #C5D9C3;
+    font-style: normal;
     margin-bottom: 12px;
     display: block;
   }
 
-  .empty-state p {
-    font-size: 14px;
-  }
+  .cs-empty p { font-size: 14px; margin: 0; }
 </style>
 
 
-<div class="category-page">
+<div class="cs-page">
 
-  <!-- COVER WRAPPER -->
-  <div class="category-cover-wrapper">
+  <!-- PINNED HEADER -->
+  <div class="cs-header">
 
-    <!-- COVER IMAGE -->
-    <div class="category-cover">
-      {% if category.image %}
-        <img src="{{ category.image.url }}" alt="{{ category.name }}">
-      {% endif %}
+    <div class="cs-nav-row">
+      <a href="/" class="cs-back-btn" aria-label="Go back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <span class="cs-title">{{ category.name }}</span>
+      <span class="cs-count" id="cs-count">{{ stores|length }} {% trans "stores" %}</span>
     </div>
 
-  </div><!-- /cover-wrapper -->
-
-  <!-- STICKY BAR -->
-  <div class="sticky-bar">
-    <a href="/" class="back-btn" aria-label="Go back">
-      <svg width="20" height="20" viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
+    <div class="cs-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.4"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
       </svg>
-  </a>
-    <span class="sticky-name">{{ category.name }}</span>
-    <span class="sticky-count" id="sticky-count">{{ stores|length }} {% trans "stores" %}</span>
+      <input type="text" id="cs-search-input"
+             placeholder="{% trans 'Search stores in this category' %}"
+             autocomplete="off" autocapitalize="off" spellcheck="false"
+             aria-label="{% trans 'Search stores' %}">
+      <button type="button" class="cs-clear" id="cs-clear" aria-label="{% trans 'Clear search' %}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
   </div>
 
   <!-- FILTER CHIPS -->
-  <div class="filter-row">
-    <div class="filter-chip active" data-filter="all">{% trans "All" %}</div>
-    <div class="filter-chip" data-filter="open">{% trans "Open now" %}</div>
-    <div class="filter-chip" data-filter="top_rated">{% trans "Top rated" %}</div>
-    <div class="filter-chip" data-filter="lowest_price">{% trans "Lowest price" %}</div>
+  <div class="cs-filter-row">
+    <div class="cs-chip active" data-filter="all">{% trans "All" %}</div>
+    <div class="cs-chip" data-filter="open">{% trans "Open now" %}</div>
+    <div class="cs-chip" data-filter="top_rated">{% trans "Top rated" %}</div>
+    <div class="cs-chip" data-filter="lowest_price">{% trans "Lowest price" %}</div>
   </div>
 
   <!-- STORE LIST -->
-  <div class="store-list" id="store-list">
+  <div class="cs-store-list" id="cs-store-list">
 
     {% for store in stores %}
 
     <a href="{% if store.is_open %}{% url 'store_detail' store.id %}{% else %}#{% endif %}"
-       class="store-row {% if not store.is_open %}store-disabled{% endif %}"
+       class="cs-store-row {% if not store.is_open %}cs-disabled{% endif %}"
        data-open="{% if store.is_open %}1{% else %}0{% endif %}"
+       data-name="{{ store.name|lower }}"
        data-rating="{{ store.average_rating|default:'0' }}"
        data-price="{{ store.min_price|default:'99999' }}">
 
       {% if store.total_ratings > 0 and store.average_rating >= 4.5 %}
-        <div class="top-rated-tag">TOP RATED</div>
+        <div class="cs-top-rated">TOP RATED</div>
       {% endif %}
 
       <!-- IMAGE -->
-      <div class="store-image">
+      <div class="cs-store-image">
         {% if store.image %}
           <img src="{{ store.image.url }}" alt="{{ store.name }}">
         {% else %}
@@ -541,32 +396,32 @@
       </div>
 
       <!-- INFO -->
-      <div class="store-info">
+      <div class="cs-store-info">
 
         <h3>{{ store.name }}</h3>
 
         {% if store.total_ratings > 0 %}
-        <div class="rating-pill">
-          <span class="star-icon">&#9733;</span>
+        <div class="cs-rating-pill">
+          <span class="cs-star">&#9733;</span>
           {{ store.average_rating }}
           <span>({{ store.total_ratings }})</span>
         </div>
         {% endif %}
 
-        <div class="store-meta">
+        <div class="cs-store-meta">
           {% if store.is_open %}
-            <div class="store-open-badge">{% trans "Open now" %}</div>
+            <div class="cs-open-badge">{% trans "Open now" %}</div>
           {% else %}
-            <div class="store-closed-badge">{% trans "Closed" %}</div>
-            <div class="next-open-time">{% trans "Opens at" %} {{ store.next_open_time }}</div>
+            <div class="cs-closed-badge">{% trans "Closed" %}</div>
+            <div class="cs-next-open">{% trans "Opens at" %} {{ store.next_open_time }}</div>
           {% endif %}
         </div>
 
-        <div class="store-bottom">
-          <div class="starting-price">
+        <div class="cs-store-bottom">
+          <div class="cs-price">
             {% trans "From" %} <strong>&#8377;{{ store.min_price|default:"0" }}</strong>
           </div>
-          <div class="items-pill">
+          <div class="cs-items">
             {% if store.total_products > 20 %}
               {% trans "20+ items" %}
             {% else %}
@@ -580,16 +435,20 @@
     </a>
 
     {% empty %}
-    <div class="empty-state">
+    <div class="cs-empty">
       <i>&#127978;</i>
       <p>{% trans "No stores in this category yet." %}</p>
     </div>
     {% endfor %}
 
     <!-- NO RESULTS (shown by JS) -->
-    <div class="empty-state" id="no-results" style="display:none;">
+    <div class="cs-empty" id="cs-no-filter" style="display:none;">
       <i>&#128269;</i>
       <p>{% trans "No stores match this filter." %}</p>
+    </div>
+    <div class="cs-empty" id="cs-no-search" style="display:none;">
+      <i>&#128269;</i>
+      <p>{% trans "No stores match your search." %}</p>
     </div>
 
   </div>
@@ -598,52 +457,73 @@
 
 <script>
 (function () {
-  var chips    = document.querySelectorAll('.filter-chip');
-  var cards    = document.querySelectorAll('#store-list .store-row');
-  var noResult = document.getElementById('no-results');
-  var countEl  = document.getElementById('visible-count');
-  var stickyCountEl = document.getElementById('sticky-count');
+  var list      = document.getElementById('cs-store-list');
+  var chips     = document.querySelectorAll('.cs-chip');
+  var cards     = Array.prototype.slice.call(list.querySelectorAll('.cs-store-row'));
+  var input     = document.getElementById('cs-search-input');
+  var clearBtn  = document.getElementById('cs-clear');
+  var countEl   = document.getElementById('cs-count');
+  var noFilter  = document.getElementById('cs-no-filter');
+  var noSearch  = document.getElementById('cs-no-search');
 
-  function applyFilter(filter) {
-    var sorted = Array.from(cards);
+  var currentFilter = 'all';
 
-    // --- sort a copy based on filter ---
-    if (filter === 'top_rated') {
+  function render() {
+    var query = input.value.trim().toLowerCase();
+    var sorted = cards.slice();
+
+    if (currentFilter === 'top_rated') {
       sorted.sort(function (a, b) {
         return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
       });
-    } else if (filter === 'lowest_price') {
+    } else if (currentFilter === 'lowest_price') {
       sorted.sort(function (a, b) {
         return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
       });
     }
 
-    // --- re-insert in new order ---
-    var list = document.getElementById('store-list');
-    sorted.forEach(function (card) { list.appendChild(card); });
+    // re-insert in new order (before the empty-state blocks)
+    sorted.forEach(function (card) { list.insertBefore(card, noFilter); });
 
-    // --- show / hide ---
     var visible = 0;
     sorted.forEach(function (card) {
       var show = true;
-      if (filter === 'open' && card.dataset.open !== '1') show = false;
+      if (currentFilter === 'open' && card.dataset.open !== '1') show = false;
+      if (query && card.dataset.name.indexOf(query) === -1) show = false;
       card.style.display = show ? '' : 'none';
       if (show) visible++;
     });
 
-    noResult.style.display = visible === 0 ? '' : 'none';
+    var hasStores = cards.length > 0;
+    noSearch.style.display = (hasStores && visible === 0 && query) ? '' : 'none';
+    noFilter.style.display = (hasStores && visible === 0 && !query) ? '' : 'none';
 
-    var label = visible + ' store' + (visible !== 1 ? 's' : '');
-    if (countEl) countEl.textContent = visible;
-    if (stickyCountEl) stickyCountEl.textContent = label;
+    if (countEl) countEl.textContent = visible + ' store' + (visible !== 1 ? 's' : '');
+    clearBtn.classList.toggle('show', query.length > 0);
   }
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
       chips.forEach(function (c) { c.classList.remove('active'); });
       chip.classList.add('active');
-      applyFilter(chip.dataset.filter);
+      currentFilter = chip.dataset.filter;
+      render();
     });
+  });
+
+  input.addEventListener('input', render);
+
+  clearBtn.addEventListener('click', function () {
+    input.value = '';
+    render();
+    input.focus();
+  });
+
+  // closed stores are not clickable
+  cards.forEach(function (card) {
+    if (card.classList.contains('cs-disabled')) {
+      card.addEventListener('click', function (e) { e.preventDefault(); });
+    }
   });
 })();
 </script>
