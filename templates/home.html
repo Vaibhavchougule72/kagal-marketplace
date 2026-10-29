@@ -64,7 +64,26 @@ body { background: #fff; }
 .lk-stack::before { left: 22px; right: 22px; top: 16px; bottom: 16px; background: rgba(255,255,255,.10); z-index: 0; }
 .lk-stack::after  { left: 12px; right: 12px; top: 10px; bottom: 23px; background: rgba(255,255,255,.20); z-index: 1; }
 .lk-offer { position: relative; z-index: 2; }
-.lk-offer .carousel-inner { border-radius: 22px; background: var(--loka-orange); }
+.lk-offer .carousel-inner { border-radius: 22px; background: transparent; }
+
+/* Card-deck transition: the top offer swings off, the next one rises from behind */
+.lk-offer .carousel-item {
+    border-radius: 22px; overflow: hidden;
+    transform-origin: 50% 100%;
+    transition: transform .7s cubic-bezier(.22, .9, .24, 1), opacity .7s ease;
+    backface-visibility: hidden; will-change: transform, opacity;
+}
+.lk-offer .carousel-item.active { z-index: 2; }
+.lk-offer .carousel-item-next, .lk-offer .carousel-item-prev { z-index: 1; }
+/* incoming card waits behind, slightly smaller */
+.lk-offer .carousel-item-next:not(.carousel-item-start),
+.lk-offer .carousel-item-prev:not(.carousel-item-end) { transform: scale(.92) translateY(8px); opacity: .55; }
+/* incoming card settles to full size */
+.lk-offer .carousel-item-next.carousel-item-start,
+.lk-offer .carousel-item-prev.carousel-item-end { transform: none; opacity: 1; }
+/* outgoing card swings away */
+.lk-offer .active.carousel-item-start { transform: translateX(-115%) rotate(-6deg); opacity: 0; }
+.lk-offer .active.carousel-item-end   { transform: translateX(115%) rotate(6deg); opacity: 0; }
 .lk-offer-img {
     display: block; width: 100%;
     height: clamp(140px, 38vw, 320px);
@@ -226,6 +245,11 @@ body { background: #fff; }
     .lk-feats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
+    .lk-offer .carousel-item { transition: opacity .3s ease; }
+    .lk-offer .carousel-item-next:not(.carousel-item-start),
+    .lk-offer .carousel-item-prev:not(.carousel-item-end),
+    .lk-offer .active.carousel-item-start,
+    .lk-offer .active.carousel-item-end { transform: none; }
     .lk-cat-img, .lk-feat, .lk-feat-img > img, .lk-dots span, .lk-offer .carousel-indicators [data-bs-target] { transition: none; }
 }
 </style>
