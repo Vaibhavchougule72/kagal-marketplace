@@ -12,6 +12,7 @@ from .models import CheckoutLead
 admin.site.register(CheckoutLead)
 from .models import OfferSlider
 import csv
+
 from .models import Customer
 from django.http import HttpResponse
 from .models import Order
@@ -22,9 +23,9 @@ from .models import Coupon, Customer
 from django import forms
 from datetime import timedelta
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Min, Max
 
-from .models import CustomerReferral
+from .models import CustomerReferral, CustomerVisit
 from django.core.exceptions import ValidationError
 
 def download_customer_csv(modeladmin, request, queryset):
@@ -1339,6 +1340,104 @@ class CustomerAdmin(admin.ModelAdmin):
         referral_customers = CustomerReferral.objects.count()
 
         # --------------------------------
+        # CUSTOMER VISIT ANALYTICS
+        # --------------------------------
+
+        today = timezone.localdate()
+
+        month_start = today.replace(day=1)
+
+        # Today's visits
+        today_visits = CustomerVisit.objects.filter(
+            started_at__date=today
+        )
+
+        visitors_today = today_visits.values(
+            "customer_id"
+        ).distinct().count()
+
+        total_visits_today = today_visits.count()
+
+
+        # This month's visits
+        month_visits = CustomerVisit.objects.filter(
+            started_at__date__gte=month_start,
+            started_at__date__lte=today
+        )
+
+        visitors_month = month_visits.values(
+            "customer_id"
+        ).distinct().count()
+
+        total_visits_month = month_visits.count()
+
+
+        # Customers who visited but never placed a valid order
+        visited_customer_ids = CustomerVisit.objects.values_list(
+            "customer_id",
+            flat=True
+        ).distinct()
+
+        browsers_without_orders = Customer.objects.filter(
+            id__in=visited_customer_ids
+        ).exclude(
+            phone__in=ordering_phones
+        ).count()
+
+        # --------------------------------
+        # TODAY'S CUSTOMER VISIT DETAILS
+        # --------------------------------
+
+        today_customer_visits = (
+            today_visits
+            .values(
+                "customer_id",
+                "customer__name",
+                "customer__phone",
+            )
+            .annotate(
+                visits_count=Count("id"),
+                first_visit=Min("started_at"),
+                last_visit=Max("last_seen_at"),
+            )
+            .order_by("-last_visit")
+        )
+
+        # --------------------------------
+        # MONTHLY CUSTOMER VISIT DETAILS
+        # --------------------------------
+
+        monthly_customer_visits = list(
+            month_visits
+            .values(
+                "customer_id",
+                "customer__name",
+                "customer__phone",
+            )
+            .annotate(
+                visits_count=Count("id"),
+                last_visit=Max("last_seen_at"),
+            )
+            .order_by("-visits_count")
+        )
+
+        # Monthly order counts by phone
+        monthly_order_counts = dict(
+            valid_orders.filter(
+                created_at__date__gte=month_start,
+                created_at__date__lte=today,
+            )
+            .values("phone")
+            .annotate(total=Count("id"))
+            .values_list("phone", "total")
+        )
+
+        # Attach monthly order counts to each customer
+        for item in monthly_customer_visits:
+            item["orders_this_month"] = monthly_order_counts.get(
+                item["customer__phone"], 0
+            )
+        # --------------------------------
         # LOGGED IN BUT NEVER ORDERED
         # --------------------------------
 
@@ -1365,6 +1464,10 @@ class CustomerAdmin(admin.ModelAdmin):
             "repeat_customers": len(repeat_phones),
 
             "referral_customers": referral_customers,
+
+            "today_customer_visits": today_customer_visits,
+
+            "monthly_customer_visits": monthly_customer_visits,
 
             "logged_in_no_order": logged_in_no_order,
 

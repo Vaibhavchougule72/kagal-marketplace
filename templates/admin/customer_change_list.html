@@ -47,8 +47,178 @@
         <div>Logged In – No Orders</div>
         <h2>{{ logged_in_no_order }}</h2>
     </div>
+    <!-- CUSTOMER VISIT ANALYTICS -->
+
+    <div style="background:#e8eaf6;padding:20px;border-radius:12px;">
+        <div>Visitors Today</div>
+        <h2>{{ visitors_today }}</h2>
+    </div>
+
+    <div style="background:#e0f7fa;padding:20px;border-radius:12px;">
+        <div>Total Visits Today</div>
+        <h2>{{ total_visits_today }}</h2>
+    </div>
+
+    <div style="background:#f1f8e9;padding:20px;border-radius:12px;">
+        <div>Unique Visitors This Month</div>
+        <h2>{{ visitors_month }}</h2>
+    </div>
+
+    <div style="background:#fff8e1;padding:20px;border-radius:12px;">
+        <div>Total Visits This Month</div>
+        <h2>{{ total_visits_month }}</h2>
+    </div>
+
+    <div style="background:#fce4ec;padding:20px;border-radius:12px;">
+        <div>Visitors Without Orders</div>
+        <h2>{{ browsers_without_orders }}</h2>
+    </div>
 
     {% endwith %}
+
+</div>
+
+<div style="
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    margin-top:25px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+">
+
+<h2 style="margin-bottom:20px;">
+    Today's Customer Activity
+</h2>
+
+<div style="overflow-x:auto;">
+
+    <table style="width:100%;border-collapse:collapse;">
+
+        <thead>
+            <tr style="background:#f5f5f5;text-align:left;">
+                <th style="padding:12px;">Customer</th>
+                <th style="padding:12px;">Phone</th>
+                <th style="padding:12px;">First Visit</th>
+                <th style="padding:12px;">Last Visit</th>
+                <th style="padding:12px;">Visits Today</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in today_customer_visits %}
+
+            <tr style="border-bottom:1px solid #eee;">
+
+                <td style="padding:12px;">
+                    {{ item.customer__name|default:"Customer" }}
+                </td>
+
+                <td style="padding:12px;">
+                    {{ item.customer__phone }}
+                </td>
+
+                <td style="padding:12px;">
+                    {{ item.first_visit|date:"h:i A" }}
+                </td>
+
+                <td style="padding:12px;">
+                    {{ item.last_visit|date:"h:i A" }}
+                </td>
+
+                <td style="padding:12px;">
+                    <strong>{{ item.visits_count }}</strong>
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="5" style="padding:20px;text-align:center;color:#888;">
+                    No customer visits recorded today.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- MONTHLY CUSTOMER ACTIVITY -->
+
+<div style="
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    margin-top:25px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+">
+
+    <h2 style="margin-bottom:20px;">
+        Monthly Customer Activity
+    </h2>
+
+    <div style="overflow-x:auto;">
+
+        <table style="width:100%;border-collapse:collapse;">
+
+            <thead>
+                <tr style="background:#f5f5f5;text-align:left;">
+                    <th style="padding:12px;">Customer</th>
+                    <th style="padding:12px;">Phone</th>
+                    <th style="padding:12px;">Total Visits</th>
+                    <th style="padding:12px;">Last Visited</th>
+                    <th style="padding:12px;">Orders This Month</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in monthly_customer_visits %}
+
+                <tr style="border-bottom:1px solid #eee;">
+
+                    <td style="padding:12px;">
+                        {{ item.customer__name|default:"Customer" }}
+                    </td>
+
+                    <td style="padding:12px;">
+                        {{ item.customer__phone }}
+                    </td>
+
+                    <td style="padding:12px;">
+                        <strong>{{ item.visits_count }}</strong>
+                    </td>
+
+                    <td style="padding:12px;">
+                        {{ item.last_visit|date:"d M Y, h:i A" }}
+                    </td>
+
+                    <td style="padding:12px;">
+                        {{ item.orders_this_month }}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="5" style="padding:20px;text-align:center;color:#888;">
+                        No customer activity recorded this month.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 
