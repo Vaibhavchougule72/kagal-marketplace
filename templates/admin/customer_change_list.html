@@ -1,0 +1,55 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+
+<h1>LOKA Customer Analytics</h1>
+
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:15px;
+    margin:20px 0 25px;
+">
+
+    {% with cards=1 %}
+
+    <div style="background:#e8f5e9;padding:20px;border-radius:12px;">
+        <div>Total Registered</div>
+        <h2>{{ total_registered }}</h2>
+    </div>
+
+    <div style="background:#e3f2fd;padding:20px;border-radius:12px;">
+        <div>Customers Who Ordered</div>
+        <h2>{{ total_ordering }}</h2>
+    </div>
+
+    <div style="background:#e0f2f1;padding:20px;border-radius:12px;">
+        <div>Completed Customers</div>
+        <h2>{{ completed_customers }}</h2>
+    </div>
+
+    <div style="background:#fff3e0;padding:20px;border-radius:12px;">
+        <div>Active – Last 30 Days</div>
+        <h2>{{ active_customers_30 }}</h2>
+    </div>
+
+    <div style="background:#f3e5f5;padding:20px;border-radius:12px;">
+        <div>Repeat Customers</div>
+        <h2>{{ repeat_customers }}</h2>
+    </div>
+
+    <div style="background:#fce4ec;padding:20px;border-radius:12px;">
+        <div>Referral Customers</div>
+        <h2>{{ referral_customers }}</h2>
+    </div>
+
+    <div style="background:#eeeeee;padding:20px;border-radius:12px;">
+        <div>Logged In – No Orders</div>
+        <h2>{{ logged_in_no_order }}</h2>
+    </div>
+
+    {% endwith %}
+
+</div>
+
+{% endblock %}

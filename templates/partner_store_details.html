@@ -10,6 +10,8 @@
         content="width=device-width, initial-scale=1.0"
     >
 
+    <meta name="theme-color" content="#1D3F18">
+
     <title>
         Store Details - LOKA Partner
     </title>
@@ -22,230 +24,320 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7f6;
-            color: #222;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #F5F5F0;
+            color: #1A3A16;
         }
 
-        /* ============================= */
-        /* STICKY NAV */
-        /* ============================= */
-
-        .nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-
-            background: linear-gradient(135deg, #227D57 0%, #175f42 100%);
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 12px 16px;
+        .page {
+            max-width: 700px;
+            margin: auto;
+            min-height: 100vh;
+            background: #F5F5F0;
         }
 
-        .nav-back {
-            width: 32px;
-            height: 32px;
+        form {
+            margin: 0;
+        }
 
-            border-radius: 50%;
 
-            background: rgba(255, 255, 255, 0.14);
-            border: 0.5px solid rgba(255, 255, 255, 0.26);
+        /* ============================= */
+        /* COVER PHOTO HEADER */
+        /* ============================= */
 
+        .cover {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+            background: #D9C7A8;
+        }
+
+        .cover img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .cover-tint {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(29, 63, 24, 0.86) 0%,
+                rgba(44, 88, 38, 0.72) 55%,
+                rgba(55, 43, 20, 0.86) 100%
+            );
+        }
+
+        /* used when the store has no image yet */
+        .cover.no-image {
+            background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 5;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .16);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, .3);
             display: flex;
             align-items: center;
             justify-content: center;
-
-            color: white;
             text-decoration: none;
-
-            font-size: 18px;
-            line-height: 1;
-
-            flex-shrink: 0;
-
-            transition: transform 0.12s ease, background 0.12s ease;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .25);
+            transition: background .2s, transform .15s;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .nav-back:active {
-            transform: scale(0.88);
-            background: rgba(255, 255, 255, 0.26);
+        .back-btn:active {
+            transform: scale(.94);
         }
 
-        .nav-title {
-            color: white;
-            font-size: 15px;
+        .change-photo {
+            position: absolute;
+            right: 16px;
+            bottom: 58px;
+            z-index: 5;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, .95);
+            color: #1B5E20;
+            border-radius: 22px;
+            padding: 8px 14px;
+            font-size: 13px;
             font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .2);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .change-photo:active {
+            transform: scale(.96);
+        }
+
+        .change-photo input {
+            display: none;
         }
 
 
         /* ============================= */
-        /* CONTAINER */
+        /* INFO CARD */
         /* ============================= */
-
-        .container {
-            max-width: 700px;
-            margin: auto;
-            padding: 20px;
-        }
 
         .card {
-            background: white;
-            border-radius: 16px;
-            padding: 18px;
+            position: relative;
+            z-index: 6;
+            background: #fff;
+            border: 0.5px solid rgba(0, 0, 0, .07);
+            border-radius: 22px;
+            margin: -52px 16px 0;
+            padding: 0 16px 8px;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, .09);
+        }
 
-            box-shadow:
-                0 4px 15px rgba(
-                    0,
-                    0,
-                    0,
-                    0.05
-                );
+        .store-logo {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            margin: -34px auto 6px;
+            border: 3px solid #fff;
+            background: #2D5A27;
+            color: #fff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .store-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .store-logo svg {
+            width: 30px;
+            height: 30px;
         }
 
         .title {
+            text-align: center;
             font-size: 19px;
             font-weight: 800;
-            margin-bottom: 18px;
+            color: #1B5E20;
+            margin-bottom: 16px;
+        }
+
+        .photo-note {
+            display: none;
+            text-align: center;
+            font-size: 12px;
+            color: #2D6B27;
+            background: #EAF5E8;
+            border-radius: 10px;
+            padding: 7px 10px;
+            margin: -6px 0 14px;
+        }
+
+        .photo-note.show {
+            display: block;
         }
 
         .field {
             margin-bottom: 16px;
         }
 
-        label {
+        .field > label {
             display: block;
             font-size: 13px;
             font-weight: 700;
             margin-bottom: 6px;
-            color: #444;
+            color: #3D5A3A;
         }
 
-        input,
-        textarea,
-        select {
+        .field input[type="text"],
+        .field textarea,
+        .field select {
             width: 100%;
-            padding: 11px;
-
-            border: 1px solid #d8dedb;
-            border-radius: 10px;
-
-            font-size: 14px;
-            outline: none;
-
-            background: white;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            border-color: #227D57;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .current-image {
-            width: 100%;
-            max-width: 300px;
-            height: 160px;
-
+            padding: 0 14px;
+            height: 48px;
+            border: 1.5px solid #DDE5DC;
             border-radius: 12px;
-            overflow: hidden;
-
-            background: #f1f3f2;
-
-            margin-bottom: 10px;
-
-            border: 1px solid #d8dedb;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1A3A16;
+            outline: none;
+            background: #fff;
+            transition: border-color .2s, box-shadow .2s;
         }
 
-        .current-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .field textarea {
+            height: auto;
+            min-height: 100px;
+            padding: 12px 14px;
+            resize: vertical;
+            line-height: 1.45;
         }
 
-        .image-help {
-            margin-top: 6px;
-            font-size: 12px;
-            color: #777;
+        .field select {
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 38px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%237A8A78' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
         }
 
-        .buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-
-            gap: 10px;
-
-            margin-top: 20px;
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
+            border-color: #2D5A27;
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, .12);
         }
 
-        .btn {
-            min-height: 46px;
 
-            border-radius: 10px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 14px;
-            font-weight: 800;
-
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .cancel-btn {
-            background: #f1f3f2;
-            color: #555;
-
-            border: 1px solid #d8dedb;
-        }
-
-        .save-btn {
-            background: #227D57;
-            color: white;
-
-            border: none;
-        }
-
+        /* ============================= */
         /* STORE TIMINGS */
+        /* ============================= */
 
         .timings-section {
-            margin-top: 28px;
-            padding: 22px;
-            background: #f8faf9;
-            border: 1px solid #e2e8e5;
-            border-radius: 14px;
+            background: #fff;
+            border: 0.5px solid rgba(0, 0, 0, .07);
+            border-radius: 22px;
+            margin: 16px 16px 0;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
         }
 
         .section-title {
-            font-size: 19px;
-            font-weight: 700;
-            color: #173f2b;
-            margin-bottom: 5px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #1B5E20;
         }
 
         .timing-help {
             font-size: 13px;
-            color: #718096;
-            margin-bottom: 18px;
+            color: #7A8A78;
+            margin: 2px 0 12px;
+        }
+
+        .copy-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #EAF5E8;
+            color: #2D6B27;
+            border-radius: 12px;
+            padding: 9px 10px 9px 13px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .copy-btn {
+            border: none;
+            background: #2D5A27;
+            color: #fff;
+            border-radius: 9px;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:active {
+            transform: scale(.95);
+        }
+
+        .copy-msg {
+            font-size: 12px;
+            min-height: 16px;
+            margin: 0 2px 4px;
+            color: #2D6B27;
+        }
+
+        .copy-msg.warn {
+            color: #C05018;
+        }
+
+        .timing-cols {
+            display: flex;
+            gap: 8px;
+            padding: 6px 0 2px;
+            font-size: 12px;
+            color: #7A8A78;
+        }
+
+        .timing-cols .c-day {
+            width: 92px;
+            flex-shrink: 0;
+        }
+
+        .timing-cols span:not(.c-day) {
+            flex: 1;
         }
 
         .timing-row {
-            display: grid;
-            grid-template-columns: 120px 1fr 90px;
+            display: flex;
             align-items: center;
-            gap: 18px;
-            padding: 14px 0;
-            border-bottom: 1px solid #e5e9e7;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid #EEF1EC;
         }
 
         .timing-row:last-child {
@@ -253,82 +345,182 @@
         }
 
         .timing-day {
-            font-weight: 600;
+            width: 42px;
+            flex-shrink: 0;
+            font-weight: 700;
+            font-size: 14px;
             color: #26352d;
         }
 
-        .timing-fields {
-            display: flex;
-            gap: 14px;
+        /* The real "closed_<day>" checkbox, styled as an OPEN / CLOSED switch.
+           Unchecked  = Open   (green, knob right)
+           Checked    = Closed (grey,  knob left)                        */
+
+        .day-switch {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 42px;
+            height: 24px;
+            margin: 0;
+            border-radius: 14px;
+            background: #2D5A27;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            outline: none;
+            transition: background .2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .timing-field {
+        .day-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+            transition: right .2s, left .2s;
+        }
+
+        .day-switch:checked {
+            background: #C9CFC7;
+        }
+
+        .day-switch:checked::after {
+            right: auto;
+            left: 3px;
+        }
+
+        .day-switch:focus-visible {
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, .25);
+        }
+
+        .time-input {
             flex: 1;
+            min-width: 0;
+            height: 40px;
+            padding: 0 8px;
+            border: 1px solid #E5E9E3;
+            border-radius: 10px;
+            background: #F5F5F0;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            color: #1A3A16;
+            text-align: center;
+            outline: none;
         }
 
-        .timing-field label {
+        .time-input:focus {
+            border-color: #2D5A27;
+            background: #fff;
+        }
+
+        .closed-label {
+            display: none;
+            flex: 2;
+            color: #C05018;
+            font-size: 14px;
+            font-weight: 700;
+            padding-left: 4px;
+        }
+
+        /* closed day: hide the time boxes (their values still submit) */
+
+        .timing-row.is-closed .time-input {
+            display: none;
+        }
+
+        .timing-row.is-closed .closed-label {
             display: block;
-            font-size: 12px;
-            color: #718096;
-            margin-bottom: 5px;
         }
 
-        .timing-field input[type="time"] {
-            width: 100%;
-            box-sizing: border-box;
+        .timing-row.is-closed .timing-day {
+            opacity: .6;
         }
 
-        .closed-check {
+
+        /* ============================= */
+        /* PINNED SAVE BAR */
+        /* ============================= */
+
+        .buttons {
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+            background: #fff;
+            border-top: 1px solid #E0E8DF;
+        }
+
+        .btn {
+            min-height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 7px;
-            font-size: 13px;
-            color: #555;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: inherit;
+            text-decoration: none;
             cursor: pointer;
-            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform .15s ease;
         }
 
-        .closed-check input {
-            width: 16px;
-            height: 16px;
-            margin: 0;
+        .btn:active {
+            transform: scale(.97);
         }
 
-        @media (max-width: 600px) {
-
-            .container {
-                padding: 14px;
-            }
-
-            .card {
-                padding: 15px;
-            }
-
-            .field {
-                margin-bottom: 13px;
-            }
-
-            .buttons {
-                grid-template-columns: 1fr;
-            }
-
+        .cancel-btn {
+            background: #fff;
+            color: #555;
+            border: 1px solid #DDE5DC;
         }
 
-        @media (max-width: 600px) {
+        .save-btn {
+            background: #2D5A27;
+            color: white;
+            border: none;
+            box-shadow: 0 5px 14px rgba(45, 90, 39, .3);
+        }
 
-            .timing-row {
-                grid-template-columns: 1fr;
-                gap: 10px;
+        .save-btn.saving {
+            opacity: .75;
+            pointer-events: none;
+        }
+
+        @media (min-width: 720px) {
+            body {
+                background: #E9EDE6;
             }
 
-            .timing-fields {
-                gap: 10px;
+            .page {
+                box-shadow: 0 0 40px rgba(0, 0, 0, .1);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .timing-day {
+                width: 36px;
+                font-size: 13px;
             }
 
-            .closed-check {
-                margin-top: 2px;
+            .timing-cols .c-day {
+                width: 86px;
             }
 
+            .time-input {
+                font-size: 13px;
+                padding: 0 4px;
+            }
         }
 
     </style>
@@ -338,230 +530,401 @@
 
 <body>
 
+<div class="page">
 
-<!-- ================================= -->
-<!-- STICKY NAV -->
-<!-- ================================= -->
+<form
+    method="POST"
+    enctype="multipart/form-data"
+    id="storeForm"
+>
 
-<div class="nav">
+    {% csrf_token %}
 
-    <a
-        href="{% url 'partner_dashboard' %}"
-        class="nav-back"
-        aria-label="Back"
-    >
-        &#8249;
-    </a>
 
-    <span class="nav-title">
-        Store Details
-    </span>
+    <!-- ================================= -->
+    <!-- COVER PHOTO HEADER -->
+    <!-- ================================= -->
+
+    <div class="cover {% if not store.image %}no-image{% endif %}" id="coverBox">
+
+        {% if store.image %}
+            <img
+                src="{{ store.image.url }}"
+                alt="{{ store.name }}"
+                id="coverImg"
+            >
+        {% endif %}
+
+        <div class="cover-tint"></div>
+
+        <a
+            href="{% url 'partner_dashboard' %}"
+            class="back-btn"
+            aria-label="Back"
+        >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </a>
+
+        <label class="change-photo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            Change photo
+            <input
+                type="file"
+                name="image"
+                id="imageInput"
+                accept="image/*"
+            >
+        </label>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- STORE INFO -->
+    <!-- ================================= -->
+
+    <div class="card">
+
+        <div class="store-logo" id="logoBox">
+
+            {% if store.image %}
+                <img
+                    src="{{ store.image.url }}"
+                    alt=""
+                    id="logoImg"
+                >
+            {% else %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l1.5-5h15L21 9"></path>
+                    <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"></path>
+                    <path d="M5 12v8h14v-8"></path>
+                    <path d="M10 20v-5h4v5"></path>
+                </svg>
+            {% endif %}
+
+        </div>
+
+        <div class="title">
+            Store details
+        </div>
+
+        <div class="photo-note" id="photoNote"></div>
+
+
+        <!-- STORE NAME -->
+
+        <div class="field">
+
+            <label for="id_name">
+                Store Name
+            </label>
+
+            <input
+                type="text"
+                name="name"
+                id="id_name"
+                value="{{ store.name }}"
+                required
+            >
+
+        </div>
+
+
+        <!-- CATEGORY -->
+
+        <div class="field">
+
+            <label for="id_category">
+                Category
+            </label>
+
+            <select
+                name="category"
+                id="id_category"
+                required
+            >
+
+                {% for category in categories %}
+
+                    <option
+                        value="{{ category.id }}"
+                        {% if category.id == store.category_id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ category.name }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- DESCRIPTION -->
+
+        <div class="field">
+
+            <label for="id_description">
+                Store Description
+            </label>
+
+            <textarea
+                name="description"
+                id="id_description"
+                placeholder="Tell customers about your store..."
+            >{{ store.description }}</textarea>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- STORE TIMINGS -->
+    <!-- ================================= -->
+
+    <div class="timings-section">
+
+        <div class="section-title">
+            Store timings
+        </div>
+
+        <div class="timing-help">
+            Switch a day off to mark it closed.
+        </div>
+
+        {% with timing_rows.0 as first_row %}
+        <div class="copy-row">
+            <span>Copy {{ first_row.day }} to all days</span>
+            <button type="button" class="copy-btn" id="copyBtn">Apply</button>
+        </div>
+        {% endwith %}
+
+        <div class="copy-msg" id="copyMsg" aria-live="polite"></div>
+
+        <div class="timing-cols">
+            <span class="c-day"></span>
+            <span>Opens</span>
+            <span>Closes</span>
+        </div>
+
+        {% for row in timing_rows %}
+        <div class="timing-row {% if row.is_closed %}is-closed{% endif %}">
+
+            <div class="timing-day">
+                {{ row.day|slice:":3" }}
+            </div>
+
+            <!-- the real "closed" checkbox, shown as an open/closed switch -->
+            <input
+                type="checkbox"
+                class="day-switch"
+                name="closed_{{ row.day }}"
+                aria-label="{{ row.day }} closed"
+                {% if row.is_closed %}checked{% endif %}
+            >
+
+            <input
+                type="time"
+                class="time-input open-time"
+                name="open_time_{{ row.day }}"
+                value="{{ row.open_time }}"
+                aria-label="{{ row.day }} opening time"
+            >
+
+            <input
+                type="time"
+                class="time-input close-time"
+                name="close_time_{{ row.day }}"
+                value="{{ row.close_time }}"
+                aria-label="{{ row.day }} closing time"
+            >
+
+            <span class="closed-label">Closed all day</span>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- BUTTONS (pinned) -->
+    <!-- ================================= -->
+
+    <div class="buttons">
+
+        <a
+            href="{% url 'partner_dashboard' %}"
+            class="btn cancel-btn"
+        >
+            Cancel
+        </a>
+
+        <button
+            type="submit"
+            class="btn save-btn"
+            id="saveBtn"
+        >
+            Save Changes
+        </button>
+
+    </div>
+
+</form>
 
 </div>
 
 
-<main class="container">
+<script>
+(function () {
 
-    <div class="card">
+    var form       = document.getElementById('storeForm');
+    var saveBtn    = document.getElementById('saveBtn');
+    var rows       = Array.prototype.slice.call(document.querySelectorAll('.timing-row'));
+    var copyBtn    = document.getElementById('copyBtn');
+    var copyMsg    = document.getElementById('copyMsg');
+    var imageInput = document.getElementById('imageInput');
+    var coverBox   = document.getElementById('coverBox');
+    var photoNote  = document.getElementById('photoNote');
+    var msgTimer;
 
-        <div class="title">
-            🏪 Store Details
-        </div>
+    /* ── Day switches: closed = checked ── */
+    rows.forEach(function (row) {
 
+        var sw = row.querySelector('.day-switch');
 
-        <form
-            method="POST"
-            enctype="multipart/form-data"
-        >
+        sw.addEventListener('change', function () {
+            row.classList.toggle('is-closed', sw.checked);
+        });
 
-            {% csrf_token %}
+    });
 
+    /* ── Copy the first day's hours to every open day ── */
+    function showMsg(text, warn) {
+        copyMsg.textContent = text;
+        copyMsg.classList.toggle('warn', !!warn);
+        clearTimeout(msgTimer);
+        msgTimer = setTimeout(function () { copyMsg.textContent = ''; }, 2500);
+    }
 
-            <!-- STORE NAME -->
+    if (copyBtn && rows.length) {
 
-            <div class="field">
+        copyBtn.addEventListener('click', function () {
 
-                <label>
-                    Store Name
-                </label>
+            var first   = rows[0];
+            var firstSw = first.querySelector('.day-switch');
+            var open    = first.querySelector('.open-time').value;
+            var close   = first.querySelector('.close-time').value;
 
-                <input
-                    type="text"
-                    name="name"
-                    value="{{ store.name }}"
-                    required
-                >
+            if (firstSw.checked) {
+                showMsg('Turn this day on first, then copy its hours.', true);
+                return;
+            }
 
-            </div>
+            if (!open || !close) {
+                showMsg('Set the opening and closing time first.', true);
+                return;
+            }
 
+            rows.forEach(function (row, i) {
 
-            <!-- CATEGORY -->
+                if (i === 0) return;
 
-            <div class="field">
+                // days switched off stay as they are
+                if (row.querySelector('.day-switch').checked) return;
 
-                <label>
-                    Category
-                </label>
+                row.querySelector('.open-time').value  = open;
+                row.querySelector('.close-time').value = close;
 
-                <select
-                    name="category"
-                    required
-                >
+            });
 
-                    {% for category in categories %}
+            showMsg('Hours copied to all open days.');
 
-                        <option
-                            value="{{ category.id }}"
-                            {% if category.id == store.category_id %}
-                                selected
-                            {% endif %}
-                        >
-                            {{ category.name }}
-                        </option>
+        });
 
-                    {% endfor %}
+    }
 
-                </select>
+    /* ── Photo picked: preview it on the cover and logo ── */
+    if (imageInput) {
 
-            </div>
+        imageInput.addEventListener('change', function () {
 
+            var file = imageInput.files && imageInput.files[0];
 
-            <!-- DESCRIPTION -->
+            if (!file) return;
 
-            <div class="field">
+            var reader = new FileReader();
 
-                <label>
-                    Store Description
-                </label>
+            reader.onload = function (e) {
 
-                <textarea
-                    name="description"
-                    placeholder="Tell customers about your store..."
-                >{{ store.description }}</textarea>
+                var cover = document.getElementById('coverImg');
 
-            </div>
+                if (!cover) {
+                    cover = document.createElement('img');
+                    cover.id = 'coverImg';
+                    cover.alt = '';
+                    coverBox.insertBefore(cover, coverBox.firstChild);
+                    coverBox.classList.remove('no-image');
+                }
 
+                cover.src = e.target.result;
 
-            <!-- STORE IMAGE -->
+                var logoBox = document.getElementById('logoBox');
+                var logo    = document.getElementById('logoImg');
 
-            <div class="field">
+                if (!logo) {
+                    logoBox.innerHTML = '';
+                    logo = document.createElement('img');
+                    logo.id = 'logoImg';
+                    logo.alt = '';
+                    logoBox.appendChild(logo);
+                }
 
-                <label>
-                    Store Image
-                </label>
+                logo.src = e.target.result;
 
-                {% if store.image %}
+            };
 
-                    <div class="current-image">
+            reader.readAsDataURL(file);
 
-                        <img
-                            src="{{ store.image.url }}"
-                            alt="{{ store.name }}"
-                        >
+            photoNote.textContent = 'New photo selected. Tap Save Changes to apply it.';
+            photoNote.classList.add('show');
 
-                    </div>
+        });
 
-                    <div class="image-help">
-                        Select a new image to replace the current image.
-                    </div>
+    }
 
-                {% else %}
+    /* ── Saving state ── */
+    form.addEventListener('submit', function () {
 
-                    <div class="image-help">
-                        No store image uploaded yet.
-                    </div>
+        if (!form.checkValidity()) return;
 
-                {% endif %}
+        saveBtn.classList.add('saving');
+        saveBtn.textContent = 'Saving...';
 
-                <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                >
+    });
 
-            </div>
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            saveBtn.classList.remove('saving');
+            saveBtn.textContent = 'Save Changes';
+        }
+    });
 
-            <!-- STORE TIMINGS -->
-            <div class="timings-section">
-
-                <div class="section-title">
-                    🕒 Store Timings
-                </div>
-
-                <div class="timing-help">
-                    Set the opening and closing time for each day.
-                </div>
-
-                {% for row in timing_rows %}
-                <div class="timing-row">
-
-                    <div class="timing-day">
-                        {{ row.day }}
-                    </div>
-
-                    <div class="timing-fields">
-
-                        <div class="timing-field">
-                            <label>Opening</label>
-                            <input
-                                type="time"
-                                name="open_time_{{ row.day }}"
-                                value="{{ row.open_time }}"
-                            >
-                        </div>
-
-                        <div class="timing-field">
-                            <label>Closing</label>
-                            <input
-                                type="time"
-                                name="close_time_{{ row.day }}"
-                                value="{{ row.close_time }}"
-                            >
-                        </div>
-
-                    </div>
-
-                    <label class="closed-check">
-                        <input
-                            type="checkbox"
-                            name="closed_{{ row.day }}"
-                            {% if row.is_closed %}checked{% endif %}
-                        >
-                        <span>Closed</span>
-                    </label>
-
-                </div>
-                {% endfor %}
-
-            </div>
-
-
-            <!-- BUTTONS -->
-
-            <div class="buttons">
-
-                <a
-                    href="{% url 'partner_dashboard' %}"
-                    class="btn cancel-btn"
-                >
-                    Cancel
-                </a>
-
-                <button
-                    type="submit"
-                    class="btn save-btn"
-                >
-                    Save Changes
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-</main>
-
+})();
+</script>
 
 </body>
 

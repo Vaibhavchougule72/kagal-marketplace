@@ -20,6 +20,11 @@ from django.forms.models import BaseInlineFormSet
 from django.contrib.auth.models import User
 from .models import Coupon, Customer
 from django import forms
+from datetime import timedelta
+from django.utils import timezone
+from django.db.models import Count
+
+from .models import CustomerReferral
 from django.core.exceptions import ValidationError
 
 def download_customer_csv(modeladmin, request, queryset):
@@ -1231,10 +1236,10 @@ def download_customers_excel(modeladmin, request, queryset):
     return response
 
 
-download_customers_excel.short_description = "Download Customers Excel"
-
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
+
+    change_list_template = "admin/customer_change_list.html"
 
     list_display = (
         "name",
@@ -1260,6 +1265,115 @@ class CustomerAdmin(admin.ModelAdmin):
     actions = [
         download_customers_excel,
     ]
+
+    def changelist_view(self, request, extra_context=None):
+
+        extra_context = extra_context or {}
+
+        # --------------------------------
+        # ALL REGISTERED CUSTOMERS
+        # --------------------------------
+
+        total_registered = Customer.objects.count()
+
+        # --------------------------------
+        # QUALIFYING ORDERS
+        # --------------------------------
+
+        valid_orders = Order.objects.exclude(
+            status__in=["FAILED", "CANCELLED"]
+        )
+
+        # --------------------------------
+        # UNIQUE ORDERING CUSTOMERS
+        # --------------------------------
+
+        customer_order_counts = (
+            valid_orders
+            .values("phone")
+            .annotate(total_orders=Count("id"))
+        )
+
+        ordering_phones = set()
+        repeat_phones = set()
+
+        for item in customer_order_counts:
+
+            ordering_phones.add(item["phone"])
+
+            if item["total_orders"] >= 2:
+                repeat_phones.add(item["phone"])
+
+        # --------------------------------
+        # CUSTOMERS WITH DELIVERED ORDERS
+        # --------------------------------
+
+        completed_phones = set(
+            Order.objects.filter(
+                status="DELIVERED"
+            ).values_list(
+                "phone",
+                flat=True
+            ).distinct()
+        )
+
+        # --------------------------------
+        # LAST 30 DAYS
+        # --------------------------------
+
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+
+        active_phones = set(
+            valid_orders.filter(
+                created_at__gte=thirty_days_ago
+            ).values_list(
+                "phone",
+                flat=True
+            ).distinct()
+        )
+
+        # --------------------------------
+        # REFERRAL CUSTOMERS
+        # --------------------------------
+
+        referral_customers = CustomerReferral.objects.count()
+
+        # --------------------------------
+        # LOGGED IN BUT NEVER ORDERED
+        # --------------------------------
+
+        logged_in_no_order = Customer.objects.filter(
+            last_login_at__isnull=False
+        ).exclude(
+            phone__in=ordering_phones
+        ).count()
+
+        # --------------------------------
+        # DASHBOARD DATA
+        # --------------------------------
+
+        extra_context.update({
+
+            "total_registered": total_registered,
+
+            "total_ordering": len(ordering_phones),
+
+            "completed_customers": len(completed_phones),
+
+            "active_customers_30": len(active_phones),
+
+            "repeat_customers": len(repeat_phones),
+
+            "referral_customers": referral_customers,
+
+            "logged_in_no_order": logged_in_no_order,
+
+        })
+
+        return super().changelist_view(
+            request,
+            extra_context=extra_context
+        )
 
 from django.contrib import admin
 from .models import StorePartnerProfile, PartnerDeviceToken

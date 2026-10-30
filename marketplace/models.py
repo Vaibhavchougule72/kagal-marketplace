@@ -6,6 +6,7 @@ from cloudinary.models import CloudinaryField
 from decimal import Decimal
 from .firebase import send_push_notification
 from firebase_admin import messaging
+import uuid
 from django.core.exceptions import ValidationError
 
 class Category(models.Model):
@@ -1862,3 +1863,57 @@ class NotificationJob(models.Model):
 
     def __str__(self):
         return f"Notification Job #{self.pk} - {self.status}"
+
+
+class CustomerVisit(models.Model):
+
+    PLATFORM_CHOICES = [
+        ("WEBSITE", "Website"),
+        ("ANDROID_APP", "Android App"),
+    ]
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="visits"
+    )
+
+    session_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True
+    )
+
+    platform = models.CharField(
+        max_length=20,
+        choices=PLATFORM_CHOICES,
+        default="WEBSITE"
+    )
+
+    started_at = models.DateTimeField(
+        default=timezone.now,
+        db_index=True
+    )
+
+    last_seen_at = models.DateTimeField(
+        default=timezone.now,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ["-last_seen_at"]
+        indexes = [
+            models.Index(
+                fields=["customer", "started_at"]
+            ),
+            models.Index(
+                fields=["platform", "started_at"]
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.customer.name or self.customer.phone} - "
+            f"{self.platform} - {self.started_at}"
+        )

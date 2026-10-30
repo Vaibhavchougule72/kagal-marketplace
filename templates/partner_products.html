@@ -10,6 +10,8 @@
         content="width=device-width, initial-scale=1.0"
     >
 
+    <meta name="theme-color" content="#1D3F18">
+
     <title>
         Products - LOKA Partner
     </title>
@@ -22,32 +24,40 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7f6;
-            color: #222;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #F5F5F0;
+            color: #1A3A16;
+        }
+
+        button {
+            font-family: inherit;
         }
 
         /* ============================= */
-        /* STICKY NAV */
+        /* HERO (nav + count tabs) */
         /* ============================= */
 
-        .nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        .hero {
+            background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
+            color: white;
+            padding: 14px 16px 40px;
+            border-radius: 0 0 24px 24px;
+        }
 
-            background: linear-gradient(135deg, #227D57 0%, #175f42 100%);
+        .hero-inner {
+            max-width: 900px;
+            margin: auto;
+        }
 
+        .nav-row {
             display: flex;
             align-items: center;
             gap: 10px;
-
-            padding: 12px 16px;
         }
 
         .nav-back {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
 
             border-radius: 50%;
 
@@ -60,10 +70,6 @@
 
             color: white;
             text-decoration: none;
-
-            font-size: 18px;
-            line-height: 1;
-
             flex-shrink: 0;
 
             transition: transform 0.12s ease, background 0.12s ease;
@@ -76,9 +82,54 @@
         }
 
         .nav-title {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        /* status tabs with live counts */
+
+        .status-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .status-tab {
+            flex: 1;
+            min-width: 0;
+
+            border: none;
+            cursor: pointer;
+            text-align: center;
+
+            padding: 9px 4px;
+            border-radius: 13px;
+
+            background: rgba(255, 255, 255, 0.14);
             color: white;
-            font-size: 15px;
-            font-weight: 700;
+
+            transition: background 0.15s ease, color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .status-tab.active {
+            background: white;
+            color: #1A3A16;
+        }
+
+        .tab-count {
+            display: block;
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .tab-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0.85;
+            white-space: nowrap;
         }
 
         /* ============================= */
@@ -88,239 +139,372 @@
         .container {
             max-width: 900px;
             margin: auto;
-            padding: 20px;
+            padding: 0 16px 110px;
         }
 
-        /* TITLE */
+        /* search + filters (overlap the hero) */
 
-        .page-title {
-            margin-bottom: 20px;
-        }
-
-        .page-title h1 {
-            margin: 0;
-            font-size: 26px;
-        }
-
-        .page-title p {
-            margin-top: 6px;
-            color: #777;
-            font-size: 14px;
-        }
-
-        /* SEARCH & SORT */
-
-        .product-controls {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        .search-row {
+            display: flex;
+            gap: 10px;
+            margin-top: -22px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 5;
         }
 
         .search-box {
-            width: 100%;
-            padding: 13px 15px;
-            border: 1px solid #d8e2dc;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .search-box:focus {
-            border-color: #227D57;
-        }
-
-        .filter-row {
-            margin-top: 10px;
-        }
-
-        .filter-select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d8e2dc;
-            border-radius: 10px;
-            background: white;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* STATUS TABS */
-
-        .status-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .status-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .status-tab {
             flex: 1;
-            min-width: 100px;
-
-            text-align: center;
-
-            font-size: 13px;
-            font-weight: 700;
-
-            padding: 11px 8px;
-
-            border-radius: 12px;
-
-            background: white;
-            color: #777;
-
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-
-            cursor: pointer;
-            user-select: none;
-
-            transition: background 0.15s ease, color 0.15s ease;
-        }
-
-        .status-tab.active {
-            background: #227D57;
-            color: white;
-        }
-
-        /* PRODUCTS */
-
-        .products-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 15px;
-            padding: 16px;
-
-            box-shadow:
-                0 4px 15px rgba(
-                    0,
-                    0,
-                    0,
-                    0.05
-                );
-        }
-
-        .product-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-        .product-name {
-            font-size: 17px;
-            font-weight: 800;
-            color: #222;
-        }
-
-        .product-category {
-            margin-top: 4px;
-            font-size: 13px;
-            color: #777;
-        }
-
-        .product-price-row {
+            min-width: 0;
+            height: 46px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 9px;
+            gap: 9px;
+            padding: 0 14px;
+            background: white;
+            border-radius: 23px;
+            box-shadow: 0 5px 14px rgba(0, 0, 0, 0.1);
+            color: #7A8A78;
         }
 
-        .product-price {
-            font-size: 17px;
-            font-weight: 800;
-            color: #227D57;
+        .search-box input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1A3A16;
+            padding: 0;
         }
 
-        .product-original-price {
-            font-size: 13px;
-            color: #999;
-            text-decoration: line-through;
+        .search-box input::placeholder {
+            color: #8A9988;
         }
 
-        /* STATUS */
-
-        .product-status-area {
+        .filters-btn {
+            height: 46px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0 15px;
+            border: none;
+            border-radius: 23px;
+            background: white;
+            color: #1A3A16;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 5px 14px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
             flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .product-status {
+        .filters-btn:active {
+            transform: scale(0.96);
+        }
+
+        .filter-badge {
+            display: none;
+            background: #E8621A;
+            color: white;
+            border-radius: 10px;
+            padding: 1px 7px;
             font-size: 12px;
             font-weight: 700;
         }
 
-        .product-status.available {
-            color: #16803c;
+        .filter-badge.show {
+            display: inline-block;
         }
 
-        .product-status.unavailable {
-            color: #d93025;
-        }
+        /* active filter chips */
 
-        .product-status.inactive {
-            color: #777;
-        }
-
-        /* ACTIONS */
-
-        .product-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .edit-product-btn,
-        .product-availability-btn {
-            width: 100%;
-            min-height: 42px;
-
-            display: flex;
+        .active-filters {
+            display: none;
             align-items: center;
-            justify-content: center;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 12px;
+        }
 
-            border-radius: 10px;
+        .active-filters.show {
+            display: flex;
+        }
 
+        .active-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            background: #EAF5E8;
+            color: #2D6B27;
+            border-radius: 16px;
+            padding: 6px 11px;
             font-size: 13px;
             font-weight: 700;
-
-            text-decoration: none;
             cursor: pointer;
         }
 
-        .edit-product-btn {
-            background: #f2f5f3;
+        .clear-all {
+            margin-left: auto;
+            border: none;
+            background: transparent;
+            color: #7A8A78;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 2px;
+        }
+
+        /* ============================= */
+        /* PRODUCT LIST */
+        /* ============================= */
+
+        .products-list {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #EEF1EC;
+            position: relative;
+        }
+
+        .product-card:first-child {
+            border-radius: 16px 16px 0 0;
+        }
+
+        .product-card:last-child {
+            border-bottom: none;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .product-card:only-child {
+            border-radius: 16px;
+        }
+
+        .product-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #E9DFC9;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .product-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .product-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #1A3A16;
+            line-height: 1.25;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .vmark {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1.5px solid;
+            border-radius: 2px;
+            position: relative;
+            vertical-align: -1px;
+            margin-right: 6px;
+        }
+
+        .vmark::after {
+            content: "";
+            position: absolute;
+            left: 2.5px;
+            top: 2.5px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .vmark.veg { color: #198754; }
+        .vmark.nonveg { color: #dc3545; }
+
+        .product-category {
+            margin-top: 2px;
+            font-size: 13px;
+            color: #7A8A78;
+        }
+
+        .product-price {
             color: #227D57;
-            border: 1px solid #d8e2dc;
+            font-weight: 800;
         }
 
-        .product-availability-btn {
-            border: 1px solid transparent;
+        .product-original-price {
+            color: #999;
+            text-decoration: line-through;
+            font-weight: 400;
+            margin-left: 5px;
+            font-size: 12px;
         }
 
-        .unavailable-btn {
-            background: #fff1f1;
-            color: #d93025;
-            border-color: #f2b8b5;
+        .product-status {
+            margin-top: 3px;
+            font-size: 12px;
+            font-weight: 700;
         }
 
-        .available-btn {
-            background: #edf9f0;
-            color: #16803c;
-            border-color: #a8d5b2;
+        .product-status.available { color: #16803c; }
+        .product-status.unavailable { color: #d93025; }
+        .product-status.timing { color: #C05018; }
+        .product-status.inactive { color: #777; }
+
+        .product-card.is-inactive .product-thumb,
+        .product-card.is-inactive .product-info {
+            opacity: 0.55;
         }
 
+        /* availability switch */
+
+        .availability-form {
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .avail-switch {
+            width: 44px;
+            height: 24px;
+            border-radius: 14px;
+            border: none;
+            background: #C9CFC7;
+            position: relative;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            display: block;
+        }
+
+        .avail-switch::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: left 0.2s ease;
+        }
+
+        .avail-switch.on {
+            background: #2D5A27;
+        }
+
+        .avail-switch.on::after {
+            left: 23px;
+        }
+
+        .avail-switch.busy {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ⋯ menu */
+
+        .row-menu {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .menu-btn {
+            width: 32px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: #7A8A78;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-btn:active {
+            background: #F1F4F0;
+        }
+
+        .menu-pop {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 30;
+            min-width: 180px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            border: 1px solid #E8EDE6;
+            padding: 5px;
+        }
+
+        .menu-pop.open {
+            display: block;
+        }
+
+        .menu-pop form {
+            margin: 0;
+        }
+
+        .menu-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .menu-item:active {
+            background: #F1F4F0;
+        }
+
+        .menu-item.edit { color: #227D57; }
+        .menu-item.delete { color: #d93025; }
+
+        /* ============================= */
         /* EMPTY */
+        /* ============================= */
 
         .empty {
             background: white;
@@ -330,84 +514,211 @@
             color: #777;
         }
 
-        /* ADD PRODUCT */
+        #noResults {
+            display: none;
+            margin-top: 12px;
+        }
 
-        .add-product-btn {
+        /* ============================= */
+        /* ADD PRODUCT BUTTON */
+        /* ============================= */
+
+        .fab {
+            position: fixed;
+            right: 16px;
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            z-index: 60;
+
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
 
-            width: 100%;
-            min-height: 46px;
+            padding: 13px 20px;
+            border-radius: 28px;
 
-            margin-top: 14px;
-
-            background: #227D57;
+            background: #E8621A;
             color: white;
 
-            border: none;
-            border-radius: 11px;
+            font-size: 15px;
+            font-weight: 800;
+            text-decoration: none;
 
+            box-shadow: 0 6px 18px rgba(232, 98, 26, 0.45);
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* ============================= */
+        /* FILTERS SHEET */
+        /* ============================= */
+
+        .sheet-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(10, 25, 8, 0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .sheet-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sheet {
+            width: 100%;
+            max-width: 560px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 22px 22px 0 0;
+            padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+            transform: translateY(100%);
+            transition: transform 0.28s ease;
+        }
+
+        .sheet-overlay.show .sheet {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 36px;
+            height: 4px;
+            border-radius: 2px;
+            background: #D5DBD2;
+            margin: 0 auto 12px;
+        }
+
+        .sheet-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1B5E20;
+        }
+
+        .sheet-label {
+            font-size: 14px;
+            font-weight: 800;
+            margin: 16px 0 8px;
+        }
+
+        .seg {
+            display: flex;
+            background: #F5F5F0;
+            border-radius: 12px;
+            padding: 3px;
+        }
+
+        .seg button {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 4px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .seg button.active {
+            background: #2D5A27;
+            color: white;
+            font-weight: 700;
+        }
+
+        .chip-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip-wrap button {
+            border: 1px solid #C5D9C3;
+            background: white;
+            color: #4A7045;
+            border-radius: 18px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chip-wrap button.active {
+            background: #2D5A27;
+            border-color: #2D5A27;
+            color: white;
+        }
+
+        .sheet-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .sheet-clear {
+            flex: 1;
+            height: 48px;
+            border: 1px solid #DDE5DC;
+            background: white;
+            color: #555;
+            border-radius: 12px;
             font-size: 15px;
             font-weight: 700;
-
-            text-decoration: none;
             cursor: pointer;
-
-            box-shadow: 0 4px 12px rgba(34, 125, 87, 0.20);
         }
 
-        .add-product-btn:active {
-            transform: scale(0.98);
-        }
-
-        .delete-product-btn {
-            width: 100%;
-            min-height: 42px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 10px;
-
-            font-size: 13px;
-            font-weight: 700;
-
+        .sheet-show {
+            flex: 2;
+            height: 48px;
+            border: none;
+            background: #2D5A27;
+            color: white;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
             cursor: pointer;
-
-            background: #fff1f1;
-            color: #d93025;
-            border: 1px solid #f2b8b5;
+            box-shadow: 0 5px 14px rgba(45, 90, 39, 0.3);
         }
 
-        .delete-product-btn:active {
-            transform: scale(0.98);
-        }
-
+        /* ============================= */
         /* MOBILE */
+        /* ============================= */
 
         @media (max-width: 600px) {
 
+            .hero {
+                padding: 12px 14px 38px;
+            }
+
             .container {
-                padding: 15px;
+                padding: 0 14px 110px;
             }
 
-            .status-tab {
-                min-width: 84px;
-                font-size: 12px;
-                padding: 10px 6px;
+            .tab-count {
+                font-size: 18px;
             }
 
-            .product-main {
-                flex-direction: column;
-                gap: 8px;
+            .tab-label {
+                font-size: 10.5px;
             }
+        }
 
-            .product-actions {
-                grid-template-columns: 1fr;
+        @media (prefers-reduced-motion: reduce) {
+            .sheet,
+            .sheet-overlay,
+            .avail-switch,
+            .avail-switch::after {
+                transition: none;
             }
-
         }
 
     </style>
@@ -419,116 +730,115 @@
 
 
 <!-- ================================= -->
-<!-- STICKY NAV -->
+<!-- HERO: NAV + COUNT TABS -->
 <!-- ================================= -->
 
-<div class="nav">
+<header class="hero">
 
-    <a
-        href="{% url 'partner_dashboard' %}"
-        class="nav-back"
-        aria-label="Back"
-    >
-        &#8249;
-    </a>
+    <div class="hero-inner">
 
-    <span class="nav-title">
-        Products
-    </span>
+        <div class="nav-row">
 
-</div>
+            <a
+                href="{% url 'partner_dashboard' %}"
+                class="nav-back"
+                aria-label="Back"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </a>
+
+            <span class="nav-title">
+                Products
+            </span>
+
+        </div>
+
+
+        <div class="status-tabs" id="statusTabs">
+
+            <button type="button" class="status-tab active" data-status="all">
+                <span class="tab-count">{{ products|length }}</span>
+                <span class="tab-label">All</span>
+            </button>
+
+            <button type="button" class="status-tab" data-status="available">
+                <span class="tab-count">·</span>
+                <span class="tab-label">Available</span>
+            </button>
+
+            <button type="button" class="status-tab" data-status="unavailable">
+                <span class="tab-count">·</span>
+                <span class="tab-label">Unavailable</span>
+            </button>
+
+            <button type="button" class="status-tab" data-status="inactive">
+                <span class="tab-count">·</span>
+                <span class="tab-label">Inactive</span>
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
 
 
 <main class="container">
 
 
-    <div class="page-title">
+    <!-- SEARCH + FILTERS BUTTON -->
 
-        <h1>
-            Products
-        </h1>
+    <div class="search-row">
 
-        <a
-            href="{% url 'partner_product_add' %}"
-            class="add-product-btn"
-        >
-            ＋ Add New Product
-        </a>
+        <label class="search-box">
 
-    </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+            </svg>
 
+            <input
+                type="text"
+                id="productSearch"
+                placeholder="Search products"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+            >
 
-    <div class="product-controls">
+        </label>
 
-        <input
-            type="text"
-            id="productSearch"
-            class="search-box"
-            placeholder="🔍 Search products..."
-        >
+        <button type="button" class="filters-btn" id="openFilters">
 
-        <div class="filter-row">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="18" x2="20" y2="18"></line>
+                <circle cx="9" cy="6" r="2" fill="white"></circle>
+                <circle cx="15" cy="12" r="2" fill="white"></circle>
+                <circle cx="8" cy="18" r="2" fill="white"></circle>
+            </svg>
 
-            <!-- Existing Sort Filter -->
-            <select id="sortFilter" class="filter-select">
-                <option value="default">Sort: Default</option>
-                <option value="az">A → Z</option>
-                <option value="za">Z → A</option>
-            </select>
+            Filters
 
-        </div>
+            <span class="filter-badge" id="filterBadge">0</span>
 
-        <!-- NEW: Subcategory Filter -->
-        <div class="filter-row">
-
-            <select id="subcategoryFilter" class="filter-select">
-                <option value="all">All Subcategories</option>
-
-                {% for subcategory in subcategories %}
-                    <option value="{{ subcategory.id }}">
-                        {{ subcategory.name }}
-                    </option>
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-        <!-- NEW: Food Type Filter -->
-        <div class="filter-row">
-
-            <select id="foodTypeFilter" class="filter-select">
-                <option value="all">All Food Types</option>
-                <option value="VEG">🟢 Veg</option>
-                <option value="NON_VEG">🔴 Non-Veg</option>
-            </select>
-
-        </div>
+        </button>
 
     </div>
 
 
-    <!-- STATUS-FIRST TABS -->
+    <!-- ACTIVE FILTER CHIPS -->
 
-    <div class="status-tabs" id="statusTabs">
-
-        <div class="status-tab active" data-status="all">
-            All
-        </div>
-
-        <div class="status-tab" data-status="available">
-            Available
-        </div>
-
-        <div class="status-tab" data-status="unavailable">
-            Unavailable
-        </div>
-
-        <div class="status-tab" data-status="inactive">
-            Inactive
-        </div>
-
-    </div>
+    <div class="active-filters" id="activeFilters"></div>
 
 
     {% if products %}
@@ -538,160 +848,159 @@
             {% for product in products %}
 
                 <div
-                    class="product-card"
+                    class="product-card {% if not product.is_active %}is-inactive{% endif %}"
+                    data-index="{{ forloop.counter0 }}"
                     data-name="{{ product.name|lower }}"
                     data-subcategory="{% if product.subcategory_id %}{{ product.subcategory_id }}{% else %}none{% endif %}"
                     data-food-type="{{ product.food_type|default:'' }}"
                     data-inactive="{% if not product.is_active %}true{% else %}false{% endif %}"
                     data-unavailable="{% if product.partner_unavailable %}true{% else %}false{% endif %}"
+                    data-available-now="{% if product.is_available_now %}true{% else %}false{% endif %}"
                 >
 
+                    <!-- THUMBNAIL -->
 
-                    <div class="product-main">
-
-
-                        <div>
-
-                            <div class="product-name">
-                                {{ product.name }}
-                            </div>
-
-
-                            <div class="product-category">
-                                {{ product.category.name }}
-                            </div>
-
-
-                            <div class="product-price-row">
-
-                                {% if product.discount_price %}
-
-                                    <span class="product-price">
-                                        ₹{{ product.discount_price }}
-                                    </span>
-
-                                    <span class="product-original-price">
-                                        ₹{{ product.price }}
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="product-price">
-                                        ₹{{ product.price }}
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- STATUS -->
-
-                        <div class="product-status-area">
-
-                            {% if not product.is_active %}
-
-                                <div class="product-status inactive">
-                                    🔴 Inactive
-                                </div>
-
-                            {% elif product.partner_unavailable %}
-
-                                <div class="product-status unavailable">
-                                    🔴 Temporarily Unavailable
-                                </div>
-
-                            {% elif not product.is_available_now %}
-
-                                <div class="product-status unavailable">
-                                    🕐 Unavailable Now
-                                </div>
-
-                            {% else %}
-
-                                <div class="product-status available">
-                                    🟢 Available
-                                </div>
-
-                            {% endif %}
-
-                        </div>
-
-
-                    </div>
-
-
-                    <!-- ACTIONS -->
-
-                    <div class="product-actions">
-
-
-                        <!-- EDIT -->
-
-                        <a
-                            href="{% url 'partner_product_edit' product.id %}"
-                            class="edit-product-btn"
-                        >
-                            ✏️ Edit Product
-                        </a>
-
-
-                        <!-- TEMPORARY AVAILABILITY -->
-
-                        <form
-                            method="POST"
-                            action="{% url 'partner_toggle_product_availability' product.id %}"
-                            class="availability-form"
-                        >
-                            {% csrf_token %}
-
-                            {% if product.partner_unavailable %}
-
-                                <button
-                                    type="submit"
-                                    class="product-availability-btn available-btn"
-                                >
-                                    ✓ Available Again
-                                </button>
-
-                            {% else %}
-
-                                <button
-                                    type="submit"
-                                    class="product-availability-btn unavailable-btn"
-                                >
-                                    Mark Unavailable
-                                </button>
-
-                            {% endif %}
-
-                        </form>
-
-                        <form
-                            method="POST"
-                            action="{% url 'partner_product_delete' product.id %}"
-                            class="delete-product-form"
-                        >
-                            {% csrf_token %}
-
-                            <button
-                                type="submit"
-                                class="delete-product-btn"
+                    <div class="product-thumb">
+                        {% if product.image %}
+                            <img
+                                src="{{ product.image.url }}"
+                                alt="{{ product.name }}"
+                                loading="lazy"
                             >
-                                🗑️ Delete Product
-                            </button>
-                        </form>
+                        {% else %}
+                            &#127869;
+                        {% endif %}
+                    </div>
 
+
+                    <!-- INFO -->
+
+                    <div class="product-info">
+
+                        <div class="product-name">
+                            {% if product.food_type == 'VEG' %}
+                                <i class="vmark veg"></i>
+                            {% elif product.food_type == 'NON_VEG' %}
+                                <i class="vmark nonveg"></i>
+                            {% endif %}{{ product.name }}
+                        </div>
+
+                        <div class="product-category">
+
+                            {{ product.category.name }}
+
+                            &middot;
+
+                            {% if product.discount_price %}
+                                <span class="product-price">₹{{ product.discount_price }}</span>
+                                <span class="product-original-price">₹{{ product.price }}</span>
+                            {% else %}
+                                <span class="product-price">₹{{ product.price }}</span>
+                            {% endif %}
+
+                        </div>
+
+                        {% if not product.is_active %}
+
+                            <div class="product-status inactive">
+                                Inactive
+                            </div>
+
+                        {% elif product.partner_unavailable %}
+
+                            <div class="product-status unavailable">
+                                Temporarily unavailable
+                            </div>
+
+                        {% elif not product.is_available_now %}
+
+                            <div class="product-status timing">
+                                Unavailable now &middot; outside timings
+                            </div>
+
+                        {% else %}
+
+                            <div class="product-status available">
+                                Available
+                            </div>
+
+                        {% endif %}
 
                     </div>
 
+
+                    <!-- AVAILABILITY SWITCH (on = not marked unavailable) -->
+
+                    <form
+                        method="POST"
+                        action="{% url 'partner_toggle_product_availability' product.id %}"
+                        class="availability-form"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="avail-switch {% if not product.partner_unavailable %}on{% endif %}"
+                            role="switch"
+                            aria-checked="{% if not product.partner_unavailable %}true{% else %}false{% endif %}"
+                            aria-label="Available: {{ product.name }}"
+                        ></button>
+                    </form>
+
+
+                    <!-- ⋯ MENU: EDIT + DELETE -->
+
+                    <div class="row-menu">
+
+                        <button
+                            type="button"
+                            class="menu-btn"
+                            aria-haspopup="true"
+                            aria-label="More options for {{ product.name }}"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="5" r="1.8"></circle>
+                                <circle cx="12" cy="12" r="1.8"></circle>
+                                <circle cx="12" cy="19" r="1.8"></circle>
+                            </svg>
+                        </button>
+
+                        <div class="menu-pop">
+
+                            <a
+                                href="{% url 'partner_product_edit' product.id %}"
+                                class="menu-item edit"
+                            >
+                                &#9998;&#65039; Edit product
+                            </a>
+
+                            <form
+                                method="POST"
+                                action="{% url 'partner_product_delete' product.id %}"
+                                class="delete-product-form"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="menu-item delete delete-product-btn"
+                                >
+                                    &#128465;&#65039; Delete product
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             {% endfor %}
 
+        </div>
+
+        <div class="empty" id="noResults">
+            No products match your filters.
         </div>
 
     {% else %}
@@ -707,20 +1016,110 @@
 
 </main>
 
+
+<!-- ADD PRODUCT -->
+
+<a
+    href="{% url 'partner_product_add' %}"
+    class="fab"
+>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.6"
+         stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    Add product
+</a>
+
+
+<!-- ================================= -->
+<!-- FILTERS SHEET -->
+<!-- ================================= -->
+
+<div class="sheet-overlay" id="filterOverlay">
+
+    <div class="sheet" role="dialog" aria-label="Filters">
+
+        <div class="sheet-handle"></div>
+
+        <div class="sheet-title">Filters</div>
+
+        <div class="sheet-label">Sort</div>
+
+        <div class="seg" id="sortSeg">
+            <button type="button" data-value="default" class="active">Default</button>
+            <button type="button" data-value="az">A &rarr; Z</button>
+            <button type="button" data-value="za">Z &rarr; A</button>
+        </div>
+
+        <div class="sheet-label">Subcategory</div>
+
+        <div class="chip-wrap" id="subSeg">
+
+            <button type="button" data-value="all" class="active">All</button>
+
+            {% for subcategory in subcategories %}
+                <button type="button" data-value="{{ subcategory.id }}">{{ subcategory.name }}</button>
+            {% endfor %}
+
+        </div>
+
+        <div class="sheet-label">Food type</div>
+
+        <div class="seg" id="foodSeg">
+            <button type="button" data-value="all" class="active">All</button>
+            <button type="button" data-value="VEG">Veg</button>
+            <button type="button" data-value="NON_VEG">Non-Veg</button>
+        </div>
+
+        <div class="sheet-actions">
+            <button type="button" class="sheet-clear" id="sheetClear">Clear</button>
+            <button type="button" class="sheet-show" id="sheetShow">Show products</button>
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const searchInput = document.getElementById("productSearch");
-    const sortFilter = document.getElementById("sortFilter");
     const statusTabs = document.getElementById("statusTabs");
-
-    const subcategoryFilter = document.getElementById("subcategoryFilter");
-    const foodTypeFilter = document.getElementById("foodTypeFilter");
     const productsList = document.querySelector(".products-list");
+
+    const overlay = document.getElementById("filterOverlay");
+    const openFilters = document.getElementById("openFilters");
+    const filterBadge = document.getElementById("filterBadge");
+    const activeFilters = document.getElementById("activeFilters");
+    const sheetShow = document.getElementById("sheetShow");
+    const sheetClear = document.getElementById("sheetClear");
+    const noResults = document.getElementById("noResults");
 
     if (!productsList) return;
 
-    let currentStatus = "all";
+    const groups = {
+        sort: document.getElementById("sortSeg"),
+        subcategory: document.getElementById("subSeg"),
+        foodType: document.getElementById("foodSeg")
+    };
+
+    const defaults = {
+        sort: "default",
+        subcategory: "all",
+        foodType: "all"
+    };
+
+    const state = {
+        status: "all",
+        sort: "default",
+        subcategory: "all",
+        foodType: "all"
+    };
+
+    /* ---------- helpers ---------- */
 
     function getProductStatus(card) {
         if (card.dataset.inactive === "true") {
@@ -734,11 +1133,23 @@ document.addEventListener("DOMContentLoaded", function () {
         return "available";
     }
 
-    function updateTabCounts() {
-
-        const cards = Array.from(
+    function allCards() {
+        return Array.from(
             productsList.querySelectorAll(".product-card")
         );
+    }
+
+    function closeMenus() {
+        document.querySelectorAll(".menu-pop.open").forEach(function (pop) {
+            pop.classList.remove("open");
+        });
+    }
+
+    /* ---------- tab counts ---------- */
+
+    function updateTabCounts() {
+
+        const cards = allCards();
 
         const counts = {
             all: cards.length,
@@ -752,123 +1163,208 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         statusTabs.querySelectorAll(".status-tab").forEach(function (tab) {
-
-            const status = tab.dataset.status;
-            const label = tab.dataset.label || tab.textContent.trim();
-
-            tab.dataset.label = label;
-
-            tab.textContent = label + " (" + counts[status] + ")";
+            tab.querySelector(".tab-count").textContent =
+                counts[tab.dataset.status];
         });
     }
 
-    function filterAndSortProducts() {
+    /* ---------- status line under the product name ---------- */
 
-        const searchText =
-            searchInput.value.trim().toLowerCase();
+    function refreshStatusLine(card) {
 
-        const selectedSort =
-            sortFilter.value;
+        const el = card.querySelector(".product-status");
 
-        const selectedSubcategory =
-            subcategoryFilter.value;
+        if (!el) return;
 
-        const selectedFoodType =
-            foodTypeFilter.value;
+        if (card.dataset.inactive === "true") {
 
-        const cards = Array.from(
-            productsList.querySelectorAll(".product-card")
+            el.className = "product-status inactive";
+            el.textContent = "Inactive";
+
+        } else if (card.dataset.unavailable === "true") {
+
+            el.className = "product-status unavailable";
+            el.textContent = "Temporarily unavailable";
+
+        } else if (card.dataset.availableNow === "false") {
+
+            el.className = "product-status timing";
+            el.textContent = "Unavailable now \u00B7 outside timings";
+
+        } else {
+
+            el.className = "product-status available";
+            el.textContent = "Available";
+        }
+    }
+
+    /* ---------- filter + sort ---------- */
+
+    function activeFilterCount() {
+        let n = 0;
+
+        if (state.sort !== defaults.sort) n++;
+        if (state.subcategory !== defaults.subcategory) n++;
+        if (state.foodType !== defaults.foodType) n++;
+
+        return n;
+    }
+
+    function labelFor(groupKey) {
+        const btn = groups[groupKey].querySelector(
+            'button[data-value="' + state[groupKey] + '"]'
         );
+
+        return btn ? btn.textContent.trim() : "";
+    }
+
+    function setGroup(groupKey, value) {
+
+        state[groupKey] = value;
+
+        groups[groupKey].querySelectorAll("button").forEach(function (btn) {
+            btn.classList.toggle("active", btn.dataset.value === value);
+        });
+    }
+
+    function renderActiveChips() {
+
+        activeFilters.innerHTML = "";
+
+        const keys = ["foodType", "subcategory", "sort"];
+
+        let shown = 0;
+
+        keys.forEach(function (key) {
+
+            if (state[key] === defaults[key]) return;
+
+            shown++;
+
+            const chip = document.createElement("button");
+
+            chip.type = "button";
+            chip.className = "active-chip";
+            chip.textContent = labelFor(key) + " \u2715";
+
+            chip.addEventListener("click", function () {
+                setGroup(key, defaults[key]);
+                applyFilters();
+            });
+
+            activeFilters.appendChild(chip);
+        });
+
+        if (shown > 0) {
+
+            const clear = document.createElement("button");
+
+            clear.type = "button";
+            clear.className = "clear-all";
+            clear.textContent = "Clear all";
+
+            clear.addEventListener("click", clearSheetFilters);
+
+            activeFilters.appendChild(clear);
+        }
+
+        activeFilters.classList.toggle("show", shown > 0);
+
+        const count = activeFilterCount();
+
+        filterBadge.textContent = count;
+        filterBadge.classList.toggle("show", count > 0);
+    }
+
+    function applyFilters() {
+
+        const searchText = searchInput.value.trim().toLowerCase();
+
+        const cards = allCards();
 
         cards.forEach(function (card) {
 
-            const productName =
-                (card.dataset.name || "").toLowerCase();
+            const name = (card.dataset.name || "").toLowerCase();
+            const subcategory = card.dataset.subcategory || "none";
+            const foodType = (card.dataset.foodType || "").toUpperCase();
+            const status = getProductStatus(card);
 
-            const productSubcategory =
-                card.dataset.subcategory || "none";
+            const show =
+                name.includes(searchText) &&
+                (state.status === "all" || state.status === status) &&
+                (state.subcategory === "all" || subcategory === state.subcategory) &&
+                (state.foodType === "all" || foodType === state.foodType);
 
-            const productFoodType =
-                (card.dataset.foodType || "").toUpperCase();
-
-            const status =
-                getProductStatus(card);
-
-            // Search filter
-            const matchesSearch =
-                productName.includes(searchText);
-
-            // Existing status filter
-            const matchesStatus =
-                currentStatus === "all" ||
-                currentStatus === status;
-
-            // Subcategory filter
-            const matchesSubcategory =
-                selectedSubcategory === "all" ||
-                productSubcategory === selectedSubcategory;
-
-            // Veg / Non-Veg filter
-            const matchesFoodType =
-                selectedFoodType === "all" ||
-                productFoodType === selectedFoodType;
-
-            // Combine all filters
-            const shouldShow =
-                matchesSearch &&
-                matchesStatus &&
-                matchesSubcategory &&
-                matchesFoodType;
-
-            card.style.display = shouldShow ? "" : "none";
+            card.style.display = show ? "" : "none";
         });
 
-        // Sort only the visible products
-        const visibleCards = cards.filter(function (card) {
-            return card.style.display !== "none";
-        });
+        // sort every product (visible or not) so the order stays consistent
+        const sorted = cards.slice();
 
-        if (selectedSort === "az") {
+        if (state.sort === "az") {
 
-            visibleCards.sort(function (a, b) {
-                return (a.dataset.name || "").localeCompare(
-                    b.dataset.name || ""
-                );
+            sorted.sort(function (a, b) {
+                return (a.dataset.name || "").localeCompare(b.dataset.name || "");
             });
 
-        } else if (selectedSort === "za") {
+        } else if (state.sort === "za") {
 
-            visibleCards.sort(function (a, b) {
-                return (b.dataset.name || "").localeCompare(
-                    a.dataset.name || ""
-                );
+            sorted.sort(function (a, b) {
+                return (b.dataset.name || "").localeCompare(a.dataset.name || "");
+            });
+
+        } else {
+
+            sorted.sort(function (a, b) {
+                return Number(a.dataset.index) - Number(b.dataset.index);
             });
         }
 
-        visibleCards.forEach(function (card) {
+        sorted.forEach(function (card) {
             productsList.appendChild(card);
         });
+
+        const visible = cards.filter(function (card) {
+            return card.style.display !== "none";
+        }).length;
+
+        if (noResults) {
+            noResults.style.display = visible === 0 ? "block" : "none";
+        }
+
+        productsList.style.display = visible === 0 ? "none" : "";
+
+        sheetShow.textContent =
+            visible === 1 ? "Show 1 product" : "Show " + visible + " products";
+
+        renderActiveChips();
     }
 
-    searchInput.addEventListener(
-        "input",
-        filterAndSortProducts
-    );
+    function clearSheetFilters() {
 
-    sortFilter.addEventListener(
-        "change",
-        filterAndSortProducts
-    );
+        setGroup("sort", defaults.sort);
+        setGroup("subcategory", defaults.subcategory);
+        setGroup("foodType", defaults.foodType);
 
-    subcategoryFilter.addEventListener(
-        "change",
-        filterAndSortProducts
-    );
+        applyFilters();
+    }
 
-    foodTypeFilter.addEventListener(
-        "change",
-        filterAndSortProducts
-    );
+    /* ---------- wire up controls ---------- */
+
+    searchInput.addEventListener("input", applyFilters);
+
+    Object.keys(groups).forEach(function (key) {
+
+        groups[key].addEventListener("click", function (event) {
+
+            const btn = event.target.closest("button");
+
+            if (!btn) return;
+
+            setGroup(key, btn.dataset.value);
+            applyFilters();
+        });
+    });
 
     statusTabs.querySelectorAll(".status-tab").forEach(function (tab) {
 
@@ -880,12 +1376,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
             tab.classList.add("active");
 
-            currentStatus = tab.dataset.status;
+            state.status = tab.dataset.status;
 
-            filterAndSortProducts();
+            applyFilters();
         });
-
     });
+
+    sheetClear.addEventListener("click", clearSheetFilters);
+
+    /* ---------- filters sheet open / close ---------- */
+
+    function openSheet() {
+        overlay.classList.add("show");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeSheet() {
+        overlay.classList.remove("show");
+        document.body.style.overflow = "";
+    }
+
+    openFilters.addEventListener("click", openSheet);
+    sheetShow.addEventListener("click", closeSheet);
+
+    overlay.addEventListener("click", function (event) {
+        if (event.target === overlay) {
+            closeSheet();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeSheet();
+            closeMenus();
+        }
+    });
+
+    /* ---------- ⋯ menus ---------- */
+
+    document.querySelectorAll(".menu-btn").forEach(function (btn) {
+
+        btn.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            const pop = btn.parentElement.querySelector(".menu-pop");
+            const wasOpen = pop.classList.contains("open");
+
+            closeMenus();
+
+            if (!wasOpen) {
+                pop.classList.add("open");
+            }
+        });
+    });
+
+    document.addEventListener("click", closeMenus);
+
+    /* ---------- delete product ---------- */
 
     document.querySelectorAll(".delete-product-form").forEach(function (form) {
 
@@ -903,7 +1451,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const productName =
                 productCard.querySelector(".product-name").textContent.trim();
 
-            // Confirmation popup
             const confirmed = window.confirm(
                 'Are you sure you want to delete "' +
                 productName +
@@ -911,10 +1458,12 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             if (!confirmed) {
+                closeMenus();
                 return;
             }
 
             const scrollPosition = window.scrollY;
+            const originalLabel = button.innerHTML;
 
             button.disabled = true;
             button.textContent = "Deleting...";
@@ -935,8 +1484,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 productCard.remove();
 
+                closeMenus();
                 updateTabCounts();
-                filterAndSortProducts();
+                applyFilters();
 
                 window.scrollTo(0, scrollPosition);
 
@@ -945,7 +1495,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error("Product delete error:", error);
 
                 button.disabled = false;
-                button.textContent = "🗑️ Delete Product";
+                button.innerHTML = originalLabel;
 
                 window.alert(
                     "Unable to delete the product. Please try again."
@@ -956,18 +1506,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
+    /* ---------- availability switch ---------- */
+
     document.querySelectorAll(".availability-form").forEach(function (form) {
 
         form.addEventListener("submit", async function (event) {
 
             event.preventDefault();
 
-            const scrollPosition = window.scrollY;
+            const toggle = form.querySelector(".avail-switch");
+            const card = form.closest(".product-card");
 
-            const button = form.querySelector("button");
+            if (toggle.classList.contains("busy")) return;
 
-            button.disabled = true;
-            button.textContent = "Updating...";
+            toggle.classList.add("busy");
 
             try {
 
@@ -988,58 +1540,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error("Update failed");
                 }
 
-                const card = form.closest(".product-card");
+                const nowUnavailable = !!data.partner_unavailable;
 
-                const statusElement =
-                    card.querySelector(".product-status");
+                card.dataset.unavailable = nowUnavailable ? "true" : "false";
 
-                if (data.partner_unavailable) {
+                toggle.classList.toggle("on", !nowUnavailable);
+                toggle.setAttribute("aria-checked", nowUnavailable ? "false" : "true");
 
-                    card.dataset.unavailable = "true";
+                refreshStatusLine(card);
 
-                    statusElement.className =
-                        "product-status unavailable";
+                toggle.classList.remove("busy");
 
-                    statusElement.textContent =
-                        "🔴 Temporarily Unavailable";
-
-                    button.className =
-                        "product-availability-btn available-btn";
-
-                    button.textContent =
-                        "✓ Available Again";
-
-                } else {
-
-                    card.dataset.unavailable = "false";
-
-                    statusElement.className =
-                        "product-status available";
-
-                    statusElement.textContent =
-                        "🟢 Available";
-
-                    button.className =
-                        "product-availability-btn unavailable-btn";
-
-                    button.textContent =
-                        "Mark Unavailable";
-                }
-
-                button.disabled = false;
-
-                /*
-                * Re-apply the current search/sort/tab filter
-                * and refresh the tab counts, without moving
-                * the scroll position.
-                */
                 updateTabCounts();
-                filterAndSortProducts();
-
-                window.scrollTo(
-                    0,
-                    scrollPosition
-                );
+                applyFilters();
 
             } catch (error) {
 
@@ -1048,11 +1561,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     error
                 );
 
-                button.disabled = false;
-
-                /*
-                * Reload only if something actually failed.
-                */
+                // Reload only if something actually failed.
                 window.location.reload();
             }
 
@@ -1061,6 +1570,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     updateTabCounts();
+    applyFilters();
 
 });
 </script>

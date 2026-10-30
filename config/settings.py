@@ -76,7 +76,7 @@ MIDDLEWARE = [
     'django.middleware.gzip.GZipMiddleware',
     'marketplace.middleware.CustomerNoCacheMiddleware',
     'marketplace.middleware.CustomerAuthenticationMiddleware',
-    
+    'marketplace.middleware.CustomerVisitTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
