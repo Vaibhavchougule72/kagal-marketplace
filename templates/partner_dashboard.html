@@ -66,6 +66,23 @@
             font-weight: 600;
         }
 
+        .partner-notification-btn {
+            background: #E8621A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .partner-notification-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
         .store-name {
             font-size: 25px;
             font-weight: 800;
@@ -539,12 +556,24 @@
                 LOKA PARTNER
             </div>
 
-            <a
-                href="{% url 'partner_logout' %}"
-                class="logout"
-            >
-                Logout
-            </a>
+            <div style="display:flex; align-items:center; gap:12px;">
+
+                <button
+                    type="button"
+                    id="partnerWebPushBtn"
+                    class="partner-notification-btn"
+                >
+                    Enable Notifications
+                </button>
+
+                <a
+                    href="{% url 'partner_logout' %}"
+                    class="logout"
+                >
+                    Logout
+                </a>
+
+            </div>
 
         </div>
 
@@ -901,6 +930,126 @@ orderFilter.addEventListener("change", function () {
 
 updateOrderFilterUI();
 
+</script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/13.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/13.1.0/firebase-messaging-compat.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const button = document.getElementById("partnerWebPushBtn");
+
+    if (!button) return;
+
+    button.addEventListener("click", async function () {
+
+        try {
+
+            button.disabled = true;
+            button.textContent = "Enabling...";
+
+            // Check browser support
+            if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+                throw new Error("This browser does not support web notifications.");
+            }
+
+            if (!firebase.apps.length) {
+
+                firebase.initializeApp({
+                    apiKey: "AIzaSyAySx6DJ_gnw4JAPLsOixdiCEDCr7Xt73tLA",
+                    authDomain: "loka-marketplace.firebaseapp.com",
+                    projectId: "loka-marketplace",
+                    storageBucket: "loka-marketplace.firebasestorage.app",
+                    messagingSenderId: "54112834347",
+                    appId: "1:54112834347:web:5b5a8e61e673f5de812b6e"
+                });
+
+            }
+
+            const messaging = firebase.messaging();
+
+            // Request permission
+            const permission = await Notification.requestPermission();
+
+            if (permission !== "granted") {
+                throw new Error("Notification permission was not granted.");
+            }
+
+            // Register service worker
+            const registration = await navigator.serviceWorker.register(
+                "/firebase-messaging-sw.js"
+            );
+
+            await navigator.serviceWorker.ready;
+
+            // Generate FCM token
+            const token = await messaging.getToken({
+
+                vapidKey: "BEGNlNBGPFhZX9LHxxSBEmNgC-SgVasM_cuG5kgTajzccBqc6PwlQ2dTJAyZPW_1bvnep0DPQZGJmBXA5E5Uhsg",
+
+                serviceWorkerRegistration: registration
+
+            });
+
+            if (!token) {
+                throw new Error("Firebase could not generate a notification token.");
+            }
+
+            // Get Django CSRF token
+            const csrfToken = document.querySelector(
+                'input[name="csrfmiddlewaretoken"]'
+            )?.value;
+
+            if (!csrfToken) {
+                throw new Error("Security token not found. Please refresh the page.");
+            }
+
+            // Save token in Django
+            const response = await fetch("/save-partner-fcm-token/", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+
+                credentials: "same-origin",
+
+                body: JSON.stringify({
+                    token: token
+                })
+
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "Could not save notification token.");
+            }
+
+            button.textContent = "Notifications Enabled";
+
+            alert("LOKA notifications enabled successfully!");
+
+            console.log("LOKA Partner Web FCM token saved.");
+
+        } catch (error) {
+
+            console.error("LOKA notification setup error:", error);
+
+            button.disabled = false;
+            button.textContent = "Enable Notifications";
+
+            alert(error.message || "Could not enable notifications.");
+
+        }
+
+    });
+
+});
 </script>
 
 </body>
