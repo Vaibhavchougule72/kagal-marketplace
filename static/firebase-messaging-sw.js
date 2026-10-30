@@ -40,7 +40,7 @@ messaging.onBackgroundMessage(function (payload) {
         body:
             "Order #" + (data.order_id || "") +
             "\nCustomer: " + (data.customer_name || "New customer") +
-            "\nTotal: ₹" + (data.total || "0"),
+            "\nSubtotal: Rs. " + (data.subtotal || "0"),
 
         icon: "/static/images/loka-logo.png",
 

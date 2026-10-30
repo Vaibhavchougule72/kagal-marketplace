@@ -296,6 +296,8 @@ def send_partner_new_order_notification(token, order):
                 order.total
             ),
 
+            "subtotal": str(order.subtotal),
+
             "created_at": order.created_at.isoformat(),
         },
 
