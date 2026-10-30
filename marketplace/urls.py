@@ -12,6 +12,7 @@ from .views import (
     save_partner_fcm_token,
 )
 
+from .partner_push import firebase_messaging_service_worker
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -430,6 +431,11 @@ urlpatterns = [
         "available-coupons/",
         views.available_coupons,
         name="available_coupons"
+    ),
+    path(
+        "firebase-messaging-sw.js",
+        firebase_messaging_service_worker,
+        name="firebase_messaging_sw"
     ),
 ]
 
