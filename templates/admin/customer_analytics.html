@@ -1,0 +1,321 @@
+{% extends "admin/base_site.html" %}
+{% load humanize %}
+
+{% block extrastyle %}
+{{ block.super }}
+
+<style>
+    .analytics-container {
+        padding: 20px 0;
+    }
+
+    .analytics-heading {
+        margin-bottom: 25px;
+    }
+
+    .analytics-heading h1 {
+        font-size: 26px;
+        margin-bottom: 5px;
+    }
+
+    .analytics-heading p {
+        color: var(--body-quiet-color);
+        margin: 0;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+
+    .kpi-card {
+        display: block;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--body-bg);
+        text-decoration: none !important;
+        color: var(--body-fg) !important;
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 18px rgba(0,0,0,.10);
+    }
+
+    .kpi-card.selected {
+        border: 2px solid var(--primary);
+        background: var(--darkened-bg);
+    }
+
+    .kpi-label {
+        font-size: 13px;
+        font-weight: 600;
+        min-height: 38px;
+        line-height: 1.5;
+    }
+
+    .kpi-value {
+        font-size: 30px;
+        font-weight: 700;
+        margin-top: 10px;
+    }
+
+    .customer-section {
+        background: var(--body-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .customer-section h2 {
+        font-size: 20px;
+        margin-top: 0;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .search-form input {
+        flex: 1;
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+    }
+
+    .search-form button,
+    .reset-button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        background: var(--button-bg);
+        color: var(--button-fg);
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .customer-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+    }
+
+    .customer-table th,
+    .customer-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .customer-table th {
+        font-weight: 700;
+        background: var(--darkened-bg);
+    }
+
+    .customer-table tbody tr:hover {
+        background: var(--darkened-bg);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .pagination a {
+        padding: 8px 13px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        text-decoration: none;
+    }
+
+    .empty-message {
+        padding: 25px;
+        text-align: center;
+        color: var(--body-quiet-color);
+    }
+
+    @media (max-width: 1000px) {
+        .kpi-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 650px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .kpi-card {
+            padding: 14px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+        }
+
+        .customer-section {
+            padding: 12px;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="analytics-container">
+
+
+<div class="analytics-heading">
+    <h1>Customer Analytics</h1>
+    <p>Monitor customer acquisition, ordering behaviour and visits.</p>
+</div>
+
+<!-- KPI CARDS -->
+<div class="kpi-grid">
+
+    {% for kpi in kpis %}
+    <a href="?segment={{ kpi.segment }}"
+       class="kpi-card {% if selected_segment == kpi.segment %}selected{% endif %}">
+
+        <div class="kpi-label">
+            {{ kpi.label }}
+        </div>
+
+        <div class="kpi-value">
+            {{ kpi.value|intcomma }}
+        </div>
+
+    </a>
+    {% endfor %}
+
+</div>
+
+
+<!-- CUSTOMER TABLE -->
+<div class="customer-section">
+
+    <h2>Customer Details</h2>
+
+    <form method="get" class="search-form">
+
+        <input type="hidden"
+               name="segment"
+               value="{{ selected_segment }}">
+
+        <input type="text"
+               name="q"
+               placeholder="Search by name, phone or email..."
+               value="{{ search_query }}">
+
+        <button type="submit">Search</button>
+
+        <a href="?segment={{ selected_segment }}"
+           class="reset-button">
+            Reset
+        </a>
+
+    </form>
+
+
+    <div class="table-wrapper">
+
+        <table class="customer-table">
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Total Orders</th>
+                    <th>Visits Today</th>
+                    <th>Visits This Month</th>
+                    <th>Registered On</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in customer_rows %}
+                <tr>
+                    <td>{{ row.customer.name|default:"—" }}</td>
+
+                    <td>{{ row.customer.phone }}</td>
+
+                    <td>{{ row.customer.email|default:"—" }}</td>
+
+                    <td>{{ row.order_count }}</td>
+
+                    <td>{{ row.visits_today }}</td>
+
+                    <td>{{ row.visits_month }}</td>
+
+                    <td>{{ row.customer.created_at|date:"d M Y" }}</td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-message">
+                        No customers found.
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+
+        <span>
+            Showing {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            of {{ page_obj.paginator.count }} customers
+        </span>
+
+        <div>
+
+            {% if page_obj.has_previous %}
+            <a href="?segment={{ selected_segment }}&q={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}">
+                Previous
+            </a>
+            {% endif %}
+
+            <strong style="margin: 0 10px;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </strong>
+
+            {% if page_obj.has_next %}
+            <a href="?segment={{ selected_segment }}&q={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}">
+                Next
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+{% endblock %}

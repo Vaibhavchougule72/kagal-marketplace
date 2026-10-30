@@ -11,8 +11,9 @@ admin.site.register(StoreRating)
 from .models import CheckoutLead
 admin.site.register(CheckoutLead)
 from .models import OfferSlider
+from django.db.models import Q
 import csv
-
+from django.core.paginator import Paginator
 from .models import Customer
 from django.http import HttpResponse
 from .models import Order
@@ -1267,6 +1268,21 @@ class CustomerAdmin(admin.ModelAdmin):
         download_customers_excel,
     ]
 
+    def get_urls(self):
+        urls = super().get_urls()
+
+        custom_urls = [
+            path(
+                "analytics/",
+                self.admin_site.admin_view(
+                    self.customer_analytics_view
+                ),
+                name="marketplace_customer_customer_analytics",
+            ),
+        ]
+
+        return custom_urls + urls
+
     def changelist_view(self, request, extra_context=None):
 
         extra_context = extra_context or {}
@@ -1476,6 +1492,247 @@ class CustomerAdmin(admin.ModelAdmin):
         return super().changelist_view(
             request,
             extra_context=extra_context
+        )
+
+    def customer_analytics_view(self, request):
+
+        now = timezone.localtime(timezone.now())
+        today = now.date()
+        month_start = today.replace(day=1)
+        last_30_days = now - timedelta(days=30)
+
+        # Valid orders only
+        valid_orders = Order.objects.exclude(
+            status__in=["FAILED", "CANCELLED"]
+        )
+
+        # Registered customers who have ordered
+        ordering_phones = valid_orders.values("phone").distinct()
+
+        ordered_customers = Customer.objects.filter(
+            phone__in=ordering_phones
+        )
+
+        # Customers who ordered at least twice
+        repeat_phones = (
+            valid_orders
+            .values("phone")
+            .annotate(order_count=Count("id"))
+            .filter(order_count__gte=2)
+            .values("phone")
+        )
+
+        repeat_customers = Customer.objects.filter(
+            phone__in=repeat_phones
+        )
+
+        # Customers who never ordered
+        never_ordered = Customer.objects.exclude(
+            phone__in=ordering_phones
+        )
+
+        # Customers who ordered in the last 30 days
+        active_phones = (
+            valid_orders
+            .filter(created_at__gte=last_30_days)
+            .values("phone")
+            .distinct()
+        )
+
+        active_customers = Customer.objects.filter(
+            phone__in=active_phones
+        )
+
+        # Referred customers
+        referral_customers = Customer.objects.filter(
+            id__in=CustomerReferral.objects.values("referred_customer_id")
+        ).distinct()
+
+        # Visit sessions today
+        today_visits = CustomerVisit.objects.filter(
+            started_at__date=today
+        )
+
+        # Visit sessions this month
+        month_visits = CustomerVisit.objects.filter(
+            started_at__date__gte=month_start,
+            started_at__date__lte=today
+        )
+
+        # Unique visitors today and this month
+        visitors_today = Customer.objects.filter(
+            id__in=today_visits.values("customer_id")
+        ).distinct()
+
+        visitors_month = Customer.objects.filter(
+            id__in=month_visits.values("customer_id")
+        ).distinct()
+
+        # Visitors who have never placed a valid order
+        all_visitor_ids = CustomerVisit.objects.values_list(
+            "customer_id",
+            flat=True
+        ).distinct()
+
+        visitors_without_orders = Customer.objects.filter(
+            id__in=all_visitor_ids
+        ).exclude(
+            phone__in=ordering_phones
+        )
+
+        # KPI cards
+        kpis = [
+            {
+                "label": "Total Customers",
+                "value": Customer.objects.count(),
+                "segment": "all",
+            },
+            {
+                "label": "Customers Ordered at Least Once",
+                "value": ordered_customers.count(),
+                "segment": "ordered",
+            },
+            {
+                "label": "Customers Who Order Repeatedly",
+                "value": repeat_customers.count(),
+                "segment": "repeat",
+            },
+            {
+                "label": "Customers Never Ordered",
+                "value": never_ordered.count(),
+                "segment": "never_ordered",
+            },
+            {
+                "label": "Active Last 30 Days",
+                "value": active_customers.count(),
+                "segment": "active_30",
+            },
+            {
+                "label": "Referral Customers",
+                "value": referral_customers.count(),
+                "segment": "referrals",
+            },
+            {
+                "label": "Visitors Today",
+                "value": visitors_today.count(),
+                "segment": "visitors_today",
+            },
+            {
+                "label": "Total Visits Today",
+                "value": today_visits.count(),
+                "segment": "visits_today",
+            },
+            {
+                "label": "Unique Visitors This Month",
+                "value": visitors_month.count(),
+                "segment": "visitors_month",
+            },
+            {
+                "label": "Total Visits This Month",
+                "value": month_visits.count(),
+                "segment": "visits_month",
+            },
+            {
+                "label": "Visitors Without Orders",
+                "value": visitors_without_orders.count(),
+                "segment": "visitors_without_orders",
+            },
+        ]
+
+        # Select customer segment when a KPI card is clicked
+        segment = request.GET.get("segment", "all")
+
+        segment_querysets = {
+            "all": Customer.objects.all(),
+            "ordered": ordered_customers,
+            "repeat": repeat_customers,
+            "never_ordered": never_ordered,
+            "active_30": active_customers,
+            "referrals": referral_customers,
+            "visitors_today": visitors_today,
+            "visits_today": Customer.objects.filter(
+                id__in=today_visits.values("customer_id")
+            ).distinct(),
+            "visitors_month": visitors_month,
+            "visits_month": Customer.objects.filter(
+                id__in=month_visits.values("customer_id")
+            ).distinct(),
+            "visitors_without_orders": visitors_without_orders,
+        }
+
+        customers = segment_querysets.get(
+            segment,
+            Customer.objects.all()
+        ).order_by("-created_at")
+
+        # Search
+        search_query = request.GET.get("q", "").strip()
+
+        if search_query:
+            customers = customers.filter(
+                Q(name__icontains=search_query)
+                | Q(phone__icontains=search_query)
+                | Q(email__icontains=search_query)
+            )
+
+        # Pagination
+        paginator = Paginator(customers, 25)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        # Additional information for customers on the current page
+        page_customers = list(page_obj.object_list)
+        page_phones = [customer.phone for customer in page_customers]
+        page_ids = [customer.id for customer in page_customers]
+
+        order_counts = dict(
+            valid_orders
+            .filter(phone__in=page_phones)
+            .values("phone")
+            .annotate(total=Count("id"))
+            .values_list("phone", "total")
+        )
+
+        today_visit_counts = dict(
+            today_visits
+            .filter(customer_id__in=page_ids)
+            .values("customer_id")
+            .annotate(total=Count("id"))
+            .values_list("customer_id", "total")
+        )
+
+        month_visit_counts = dict(
+            month_visits
+            .filter(customer_id__in=page_ids)
+            .values("customer_id")
+            .annotate(total=Count("id"))
+            .values_list("customer_id", "total")
+        )
+
+        customer_rows = []
+
+        for customer in page_customers:
+            customer_rows.append({
+                "customer": customer,
+                "order_count": order_counts.get(customer.phone, 0),
+                "visits_today": today_visit_counts.get(customer.id, 0),
+                "visits_month": month_visit_counts.get(customer.id, 0),
+            })
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Customer Analytics",
+            "kpis": kpis,
+            "selected_segment": segment,
+            "customer_rows": customer_rows,
+            "page_obj": page_obj,
+            "search_query": search_query,
+        }
+
+        return render(
+            request,
+            "admin/customer_analytics.html",
+            context
         )
 
 from django.contrib import admin
