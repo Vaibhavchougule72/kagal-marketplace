@@ -9,6 +9,8 @@
         content="width=device-width, initial-scale=1.0"
     >
 
+    <meta name="theme-color" content="#1D3F18">
+
     <title>Add Product - LOKA Partner</title>
 
     <style>
@@ -19,41 +21,47 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7f6;
-            color: #222;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #F5F5F0;
+            color: #1A3A16;
+        }
+
+        .page {
+            max-width: 700px;
+            margin: auto;
+            min-height: 100vh;
+            background: #F5F5F0;
+        }
+
+        form {
+            margin: 0;
         }
 
         /* ============================= */
-        /* NAV */
+        /* PHOTO-FIRST HEADER */
         /* ============================= */
 
-        .nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        .hero {
+            background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
+            color: white;
+            padding: 14px 16px 66px;
+            border-radius: 0 0 24px 24px;
+        }
 
-            background: linear-gradient(
-                135deg,
-                #227D57 0%,
-                #175f42 100%
-            );
-
+        .nav-row {
             display: flex;
             align-items: center;
             gap: 10px;
-
-            padding: 12px 16px;
         }
 
         .nav-back {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
 
             border-radius: 50%;
 
-            background: rgba(255,255,255,0.14);
-            border: 0.5px solid rgba(255,255,255,0.26);
+            background: rgba(255, 255, 255, 0.14);
+            border: 0.5px solid rgba(255, 255, 255, 0.26);
 
             display: flex;
             align-items: center;
@@ -61,221 +69,533 @@
 
             color: white;
             text-decoration: none;
+            flex-shrink: 0;
 
-            font-size: 18px;
+            transition: transform 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-back:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.26);
         }
 
         .nav-title {
-            color: white;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .photo-drop {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+
+            margin-top: 16px;
+            height: 120px;
+
+            border: 1.5px dashed rgba(255, 255, 255, 0.6);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.12);
+
+            overflow: hidden;
+            cursor: pointer;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .photo-drop:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .photo-drop input {
+            display: none;
+        }
+
+        .photo-title {
             font-size: 15px;
             font-weight: 700;
         }
 
-        /* ============================= */
-        /* CONTAINER */
-        /* ============================= */
-
-        .container {
-            max-width: 700px;
-            margin: auto;
-            padding: 20px;
+        .photo-sub {
+            font-size: 12px;
+            opacity: 0.8;
         }
 
-        .page-title {
-            margin-bottom: 18px;
+        .photo-preview {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
         }
 
-        .page-title h1 {
-            margin: 0;
-            font-size: 26px;
+        .photo-change {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1B5E20;
+            border-radius: 18px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
         }
 
-        .page-title p {
-            margin-top: 6px;
-            color: #777;
-            font-size: 14px;
+        .photo-drop.has-image {
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.85);
+        }
+
+        .photo-drop.has-image .photo-preview { display: block; }
+        .photo-drop.has-image .photo-change  { display: flex; }
+        .photo-drop.has-image .photo-empty   { display: none; }
+
+        .photo-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
 
         /* ============================= */
-        /* FORM CARD */
+        /* CARDS */
         /* ============================= */
 
-        .form-card {
+        .card {
             background: white;
-            border-radius: 15px;
-            padding: 18px;
-
-            box-shadow:
-                0 4px 15px rgba(0,0,0,0.05);
+            border: 0.5px solid rgba(0, 0, 0, 0.06);
+            border-radius: 22px;
+            margin: 16px 16px 0;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
+
+        .card.main {
+            margin-top: -46px;
+            position: relative;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.09);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #1B5E20;
+        }
+
+        .card-help {
+            font-size: 13px;
+            color: #7A8A78;
+            margin: 2px 0 12px;
+        }
+
+        /* ============================= */
+        /* FIELDS */
+        /* ============================= */
 
         .field {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
-        .field label {
+        .field > label,
+        .field-label {
             display: block;
-
-            margin-bottom: 7px;
-
             font-size: 13px;
             font-weight: 700;
-
-            color: #333;
+            margin-bottom: 6px;
+            color: #3D5A3A;
         }
 
-        .field input,
+        .field input[type="text"],
+        .field input[type="number"],
         .field select,
         .field textarea {
             width: 100%;
+            height: 48px;
+            padding: 0 14px;
 
-            padding: 13px;
-
-            border: 1px solid #d8e2dc;
-            border-radius: 10px;
+            border: 1.5px solid #DDE5DC;
+            border-radius: 12px;
 
             background: white;
+            color: #1A3A16;
 
-            font-size: 14px;
+            font-size: 15px;
+            font-family: inherit;
 
             outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .field textarea {
-            min-height: 110px;
+            height: auto;
+            min-height: 100px;
+            padding: 12px 14px;
             resize: vertical;
+            line-height: 1.45;
+        }
+
+        .field select {
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 38px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%237A8A78' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        .field select:disabled {
+            background-color: #F3F4F2;
+            color: #A5ADA3;
         }
 
         .field input:focus,
         .field select:focus,
         .field textarea:focus {
-            border-color: #227D57;
+            border-color: #2D5A27;
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, 0.12);
         }
 
-        /* ============================= */
-        /* IMAGE */
-        /* ============================= */
+        .field input::placeholder,
+        .field textarea::placeholder {
+            color: #8A9988;
+        }
 
-        .image-box {
-            border: 1px dashed #b8c9bf;
-            border-radius: 12px;
+        .field-row {
+            display: flex;
+            gap: 12px;
+        }
 
-            padding: 18px;
+        .field-row .field {
+            flex: 1;
+            min-width: 0;
+        }
 
+        /* Veg / Non-Veg toggle (radio buttons, same field: food_type) */
+
+        .seg {
+            display: flex;
+            background: #F5F5F0;
+            border-radius: 13px;
+            padding: 3px;
+        }
+
+        .seg label {
+            flex: 1;
+            position: relative;
             text-align: center;
-
-            background: #fafcfb;
+            padding: 11px 0;
+            border-radius: 11px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .image-box input {
-            border: none;
-            padding: 0;
-        }
-
-        /* ============================= */
-        /* CHECKBOXES */
-        /* ============================= */
-
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 11px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            padding: 11px;
-
-            background: #f7faf8;
-
-            border-radius: 9px;
-
-            font-size: 14px;
-        }
-
-        .checkbox-item input {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* ============================= */
-        /* SECTION */
-        /* ============================= */
-
-        .section-title {
-            margin: 25px 0 13px;
-
-            font-size: 16px;
-            font-weight: 800;
-
-            color: #227D57;
-        }
-
-        /* ============================= */
-        /* BUTTONS */
-        /* ============================= */
-
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-
-            margin-top: 25px;
-        }
-
-        .btn {
-            min-height: 46px;
-
-            border-radius: 10px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 14px;
-            font-weight: 700;
-
-            text-decoration: none;
-
+        .seg input {
+            position: absolute;
+            opacity: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
             cursor: pointer;
         }
 
-        .cancel-btn {
-            background: #f2f5f3;
-            color: #555;
+        .seg label:has(input:checked) {
+            background: white;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+            color: #1A3A16;
+            font-weight: 800;
+        }
 
-            border: 1px solid #d8e2dc;
+        .seg label.is-checked {
+            background: white;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+            color: #1A3A16;
+            font-weight: 800;
+        }
+
+        .seg label:focus-within {
+            outline: 2px solid rgba(45, 90, 39, 0.4);
+        }
+
+        .vmark {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            border: 1.5px solid;
+            border-radius: 2px;
+            position: relative;
+            vertical-align: -1px;
+            margin-right: 7px;
+        }
+
+        .vmark::after {
+            content: "";
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .vmark.veg { color: #198754; }
+        .vmark.nonveg { color: #dc3545; }
+
+        /* ============================= */
+        /* SETTINGS SWITCHES */
+        /* ============================= */
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid #EEF1EC;
+            cursor: pointer;
+        }
+
+        .switch-row:last-child {
+            border-bottom: none;
+            padding-bottom: 2px;
+        }
+
+        .switch-text {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .switch-text small {
+            display: block;
+            margin-top: 2px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #7A8A78;
+        }
+
+        .switch {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 46px;
+            height: 26px;
+            margin: 0;
+            border-radius: 14px;
+            background: #C9CFC7;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .switch::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: left 0.2s ease;
+        }
+
+        .switch:checked {
+            background: #2D5A27;
+        }
+
+        .switch:checked::after {
+            left: 23px;
+        }
+
+        .switch:focus-visible {
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, 0.25);
+        }
+
+        /* UPI only: always on, cannot be switched off */
+
+        .switch-row.locked {
+            cursor: default;
+        }
+
+        .switch.locked {
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .lock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 6px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #EAF5E8;
+            color: #2D6B27;
+            font-size: 11px;
+            font-weight: 700;
+            vertical-align: 1px;
+        }
+
+        /* ============================= */
+        /* AVAILABILITY TIMELINE */
+        /* ============================= */
+
+        .timeline {
+            display: flex;
+            height: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #EAF5E8;
+            margin-top: 4px;
+        }
+
+        .timeline i {
+            display: block;
+            transition: background 0.2s ease;
+        }
+
+        .timeline i.blocked {
+            background: #E8621A;
+        }
+
+        .ticks {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0 14px;
+            font-size: 11px;
+            color: #7A8A78;
+        }
+
+        .slot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .slot {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 11px 12px;
+            border: 1px solid #C5D9C3;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4A7045;
+            background: white;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .slot input {
+            position: absolute;
+            opacity: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .slot .x {
+            display: none;
+            font-weight: 800;
+        }
+
+        .slot.is-blocked {
+            background: #FDF1EB;
+            border-color: #F5C9AE;
+            color: #C05018;
+        }
+
+        .slot.is-blocked .x {
+            display: inline;
+        }
+
+        .slot:focus-within {
+            outline: 2px solid rgba(232, 98, 26, 0.35);
+        }
+
+        /* ============================= */
+        /* PINNED SAVE BAR */
+        /* ============================= */
+
+        .actions {
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+            background: white;
+            border-top: 1px solid #E0E8DF;
+        }
+
+        .btn {
+            min-height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .cancel-btn {
+            background: white;
+            color: #555;
+            border: 1px solid #DDE5DC;
         }
 
         .save-btn {
-            background: #227D57;
+            background: #2D5A27;
             color: white;
-
             border: none;
+            box-shadow: 0 5px 14px rgba(45, 90, 39, 0.3);
         }
 
-        .save-btn:active,
-        .cancel-btn:active {
-            transform: scale(0.98);
+        .save-btn.saving {
+            opacity: 0.75;
+            pointer-events: none;
         }
 
-        /* ============================= */
-        /* MOBILE */
-        /* ============================= */
-
-        @media (max-width: 600px) {
-
-            .container {
-                padding: 15px;
+        @media (min-width: 720px) {
+            body {
+                background: #E9EDE6;
             }
 
-            .actions {
-                grid-template-columns: 1fr;
+            .page {
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
             }
-
         }
 
     </style>
@@ -284,73 +604,169 @@
 
 <body>
 
-<!-- ============================= -->
-<!-- NAV -->
-<!-- ============================= -->
+<div class="page">
 
-<div class="nav">
+<form
+    method="POST"
+    enctype="multipart/form-data"
+    id="productForm"
+>
 
-    <a
-        href="{% url 'partner_products' %}"
-        class="nav-back"
-        aria-label="Back"
-    >
-        &#8249;
-    </a>
+    {% csrf_token %}
 
-    <span class="nav-title">
-        Add Product
-    </span>
-
-</div>
-
-
-<main class="container">
 
     <!-- ============================= -->
-    <!-- TITLE -->
+    <!-- PHOTO-FIRST HEADER -->
     <!-- ============================= -->
 
-    <div class="page-title">
+    <header class="hero">
 
-        <h1>
-            Add New Product
-        </h1>
+        <div class="nav-row">
 
-        <p>
+            <a
+                href="{% url 'partner_products' %}"
+                class="nav-back"
+                aria-label="Back"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </a>
+
+            <span class="nav-title">
+                Add Product
+            </span>
+
+        </div>
+
+        <label class="photo-drop" id="photoDrop">
+
+            <input
+                type="file"
+                name="image"
+                id="imageInput"
+                accept="image/*"
+            >
+
+            <img class="photo-preview" id="photoPreview" alt="">
+
+            <span class="photo-empty">
+
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+
+                <span class="photo-title">Add product photo</span>
+                <span class="photo-sub">Tap to choose from your phone</span>
+
+            </span>
+
+            <span class="photo-change">Change photo</span>
+
+        </label>
+
+    </header>
+
+
+    <!-- ============================= -->
+    <!-- KEY FIELDS -->
+    <!-- ============================= -->
+
+    <div class="card main">
+
+        <p style="margin:0 0 14px;font-size:13px;color:#7A8A78;">
             Add a new product to {{ store.name }}
         </p>
-
-    </div>
-
-
-    <!-- ============================= -->
-    <!-- FORM -->
-    <!-- ============================= -->
-
-    <form
-        method="POST"
-        enctype="multipart/form-data"
-        class="form-card"
-    >
-
-        {% csrf_token %}
-
 
         <!-- PRODUCT NAME -->
 
         <div class="field">
 
-            <label>
+            <label for="id_name">
                 Product Name
             </label>
 
             <input
                 type="text"
                 name="name"
+                id="id_name"
                 placeholder="Enter product name"
                 required
             >
+
+        </div>
+
+
+        <!-- FOOD TYPE -->
+
+        <div class="field">
+
+            <span class="field-label">
+                Food Type
+            </span>
+
+            <div class="seg" id="foodTypeSeg">
+
+                <label>
+                    <input type="radio" name="food_type" value="VEG" required>
+                    <i class="vmark veg"></i>Veg
+                </label>
+
+                <label>
+                    <input type="radio" name="food_type" value="NON_VEG" required>
+                    <i class="vmark nonveg"></i>Non-Veg
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRICE + DISCOUNT -->
+
+        <div class="field-row">
+
+            <div class="field">
+
+                <label for="id_price">
+                    Price
+                </label>
+
+                <input
+                    type="number"
+                    name="price"
+                    id="id_price"
+                    step="0.01"
+                    min="0"
+                    inputmode="decimal"
+                    placeholder="₹ Enter price"
+                    required
+                >
+
+            </div>
+
+            <div class="field">
+
+                <label for="id_discount_price">
+                    Discount Price
+                </label>
+
+                <input
+                    type="number"
+                    name="discount_price"
+                    id="id_discount_price"
+                    step="0.01"
+                    min="0"
+                    inputmode="decimal"
+                    placeholder="₹ Optional"
+                >
+
+            </div>
 
         </div>
 
@@ -359,12 +775,13 @@
 
         <div class="field">
 
-            <label>
+            <label for="id_category">
                 Category
             </label>
 
             <select
                 name="category"
+                id="id_category"
                 required
             >
 
@@ -383,6 +800,7 @@
             </select>
 
         </div>
+
 
         <!-- SUBCATEGORY -->
 
@@ -415,254 +833,209 @@
         </div>
 
 
-        <!-- PRICE -->
-
-        <div class="field">
-
-            <label>
-                Price
-            </label>
-
-            <input
-                type="number"
-                name="price"
-                step="0.01"
-                min="0"
-                placeholder="Enter price"
-                required
-            >
-
-        </div>
-
-
-        <!-- DISCOUNT PRICE -->
-
-        <div class="field">
-
-            <label>
-                Discount Price
-            </label>
-
-            <input
-                type="number"
-                name="discount_price"
-                step="0.01"
-                min="0"
-                placeholder="Optional"
-            >
-
-        </div>
-
-
         <!-- DESCRIPTION -->
 
-        <div class="field">
+        <div class="field" style="margin-bottom:2px;">
 
-            <label>
+            <label for="id_description">
                 Description
             </label>
 
             <textarea
                 name="description"
+                id="id_description"
                 placeholder="Enter product description"
             ></textarea>
 
         </div>
 
-        <!-- FOOD TYPE -->
-
-        <div class="field">
-
-            <label for="food_type">
-                Food Type
-            </label>
-
-            <select
-                name="food_type"
-                id="food_type"
-                required
-            >
-                <option value="">
-                    Select Food Type
-                </option>
-
-                <option value="VEG">
-                    🟢 Veg
-                </option>
-
-                <option value="NON_VEG">
-                    🔴 Non-Veg
-                </option>
-
-            </select>
-
-        </div>
+    </div>
 
 
-        <!-- IMAGE -->
+    <!-- ============================= -->
+    <!-- PRODUCT SETTINGS (switches) -->
+    <!-- ============================= -->
 
-        <div class="field">
+    <div class="card">
 
-            <label>
-                Product Image
-            </label>
-
-            <div class="image-box">
-
-                <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                >
-
-            </div>
-
-        </div>
-
-
-        <!-- PRODUCT SETTINGS -->
-
-        <div class="section-title">
+        <div class="card-title">
             Product Settings
         </div>
 
-        <div class="checkbox-group">
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="is_active"
-                    checked
-                >
-
-                Product Active
-
-            </label>
-
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="is_featured"
-                >
-
-                Featured Product
-
-            </label>
-
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="is_hero"
-                >
-
-                Hero Product
-
-            </label>
-
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="upi_only"
-                >
-
-                UPI Only
-
-            </label>
-
+        <div class="card-help">
+            Choose where and how it appears
         </div>
 
+        <label class="switch-row">
 
-        <!-- AVAILABILITY -->
+            <span class="switch-text">
+                Product Active
+                <small>Shown to customers</small>
+            </span>
 
-        <div class="section-title">
+            <input
+                type="checkbox"
+                class="switch"
+                name="is_active"
+                checked
+            >
+
+        </label>
+
+        <label class="switch-row">
+
+            <span class="switch-text">
+                Featured Product
+                <small>Shown at the top of your store</small>
+            </span>
+
+            <input
+                type="checkbox"
+                class="switch"
+                name="is_featured"
+            >
+
+        </label>
+
+        <label class="switch-row">
+
+            <span class="switch-text">
+                Hero Product
+                <small>Highlighted on the home page</small>
+            </span>
+
+            <input
+                type="checkbox"
+                class="switch"
+                name="is_hero"
+            >
+
+        </label>
+
+        <!-- UPI ONLY: always on (locked) -->
+
+        <label class="switch-row locked">
+
+            <span class="switch-text">
+                UPI Only
+                <span class="lock-badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="3"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+                    </svg>
+                    Always on
+                </span>
+                <small>No cash on delivery</small>
+            </span>
+
+            <input
+                type="checkbox"
+                class="switch locked"
+                name="upi_only"
+                checked
+                tabindex="-1"
+                aria-disabled="true"
+                onclick="return false;"
+            >
+
+        </label>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- TIME AVAILABILITY (timeline) -->
+    <!-- ============================= -->
+
+    <div class="card">
+
+        <div class="card-title">
             Time Availability
         </div>
 
-        <div class="checkbox-group">
+        <div class="card-help">
+            Tap a time to mark it unavailable
+        </div>
 
-            <label class="checkbox-item">
+        <div class="timeline" id="timeline">
+            <i data-slot="unavailable_10_12" style="flex: 2;"></i>
+            <i data-slot="unavailable_12_3" style="flex: 3;"></i>
+            <i data-slot="unavailable_3_630" style="flex: 3.5;"></i>
+            <i data-slot="unavailable_630_9" style="flex: 2.5;"></i>
+        </div>
 
-                <input
-                    type="checkbox"
-                    name="unavailable_10_12"
-                >
+        <div class="ticks">
+            <span>10 AM</span>
+            <span>12</span>
+            <span>3 PM</span>
+            <span>6:30</span>
+            <span>9 PM</span>
+        </div>
 
-                Unavailable 10:00 AM – 12:00 PM
+        <div class="slot-grid">
 
+            <label class="slot">
+                <input type="checkbox" name="unavailable_10_12">
+                <span>10:00 &ndash; 12:00</span>
+                <span class="x">&#10005;</span>
             </label>
 
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="unavailable_12_3"
-                >
-
-                Unavailable 12:00 PM – 3:00 PM
-
+            <label class="slot">
+                <input type="checkbox" name="unavailable_12_3">
+                <span>12:00 &ndash; 3:00</span>
+                <span class="x">&#10005;</span>
             </label>
 
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="unavailable_3_630"
-                >
-
-                Unavailable 3:00 PM – 6:30 PM
-
+            <label class="slot">
+                <input type="checkbox" name="unavailable_3_630">
+                <span>3:00 &ndash; 6:30</span>
+                <span class="x">&#10005;</span>
             </label>
 
-
-            <label class="checkbox-item">
-
-                <input
-                    type="checkbox"
-                    name="unavailable_630_9"
-                >
-
-                Unavailable 6:30 PM – 9:00 PM
-
+            <label class="slot">
+                <input type="checkbox" name="unavailable_630_9">
+                <span>6:30 &ndash; 9:00</span>
+                <span class="x">&#10005;</span>
             </label>
 
         </div>
 
+    </div>
 
-        <!-- ACTIONS -->
 
-        <div class="actions">
+    <!-- ============================= -->
+    <!-- ACTIONS (pinned) -->
+    <!-- ============================= -->
 
-            <a
-                href="{% url 'partner_products' %}"
-                class="btn cancel-btn"
-            >
-                Cancel
-            </a>
+    <div class="actions">
 
-            <button
-                type="submit"
-                class="btn save-btn"
-            >
-                Save Product
-            </button>
+        <a
+            href="{% url 'partner_products' %}"
+            class="btn cancel-btn"
+        >
+            Cancel
+        </a>
 
-        </div>
+        <button
+            type="submit"
+            class="btn save-btn"
+            id="saveBtn"
+        >
+            Save Product
+        </button>
 
-    </form>
+    </div>
 
-</main>
+</form>
+
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    /* ---------- Subcategory depends on category ---------- */
 
     const categorySelect = document.querySelector(
         'select[name="category"]'
@@ -672,39 +1045,147 @@ document.addEventListener("DOMContentLoaded", function () {
         'select[name="subcategory"]'
     );
 
-    if (!categorySelect || !subcategorySelect) {
-        return;
+    if (categorySelect && subcategorySelect) {
+
+        const subcategoryOptions = Array.from(
+            subcategorySelect.options
+        ).slice(1);
+
+        function updateSubcategories() {
+
+            const selectedCategory = categorySelect.value;
+
+            subcategorySelect.value = "";
+            subcategorySelect.disabled = !selectedCategory;
+
+            subcategoryOptions.forEach(function (option) {
+
+                const belongsToCategory =
+                    option.dataset.category === selectedCategory;
+
+                option.hidden = !belongsToCategory;
+                option.disabled = !belongsToCategory;
+
+            });
+
+        }
+
+        categorySelect.addEventListener(
+            "change",
+            updateSubcategories
+        );
+
+        updateSubcategories();
     }
 
-    const subcategoryOptions = Array.from(
-        subcategorySelect.options
-    ).slice(1);
+    /* ---------- Photo preview ---------- */
 
-    function updateSubcategories() {
+    const imageInput = document.getElementById("imageInput");
+    const photoDrop = document.getElementById("photoDrop");
+    const photoPreview = document.getElementById("photoPreview");
 
-        const selectedCategory = categorySelect.value;
+    if (imageInput) {
 
-        subcategorySelect.value = "";
-        subcategorySelect.disabled = !selectedCategory;
+        imageInput.addEventListener("change", function () {
 
-        subcategoryOptions.forEach(function (option) {
+            const file = imageInput.files && imageInput.files[0];
 
-            const belongsToCategory =
-                option.dataset.category === selectedCategory;
+            if (!file) {
+                photoDrop.classList.remove("has-image");
+                photoPreview.removeAttribute("src");
+                return;
+            }
 
-            option.hidden = !belongsToCategory;
-            option.disabled = !belongsToCategory;
+            const reader = new FileReader();
 
+            reader.onload = function (event) {
+                photoPreview.src = event.target.result;
+                photoDrop.classList.add("has-image");
+            };
+
+            reader.readAsDataURL(file);
         });
-
     }
 
-    categorySelect.addEventListener(
-        "change",
-        updateSubcategories
-    );
+    /* ---------- Veg / Non-Veg toggle highlight (fallback for :has) ---------- */
 
-    updateSubcategories();
+    const foodLabels = document.querySelectorAll("#foodTypeSeg label");
+
+    function syncFoodType() {
+
+        foodLabels.forEach(function (label) {
+            const input = label.querySelector("input");
+            label.classList.toggle("is-checked", input.checked);
+        });
+    }
+
+    foodLabels.forEach(function (label) {
+        label.querySelector("input").addEventListener("change", syncFoodType);
+    });
+
+    syncFoodType();
+
+    /* ---------- Availability timeline ---------- */
+
+    const slots = document.querySelectorAll(".slot");
+
+    function syncSlots() {
+
+        slots.forEach(function (slot) {
+
+            const input = slot.querySelector("input");
+            const segment = document.querySelector(
+                '#timeline i[data-slot="' + input.name + '"]'
+            );
+
+            slot.classList.toggle("is-blocked", input.checked);
+
+            if (segment) {
+                segment.classList.toggle("blocked", input.checked);
+            }
+        });
+    }
+
+    slots.forEach(function (slot) {
+        slot.querySelector("input").addEventListener("change", syncSlots);
+    });
+
+    syncSlots();
+
+    /* ---------- UPI only is always on ---------- */
+
+    const upiOnly = document.querySelector('input[name="upi_only"]');
+
+    if (upiOnly) {
+
+        upiOnly.checked = true;
+
+        // keep it on, even if the browser restores an old form state
+        window.addEventListener("pageshow", function () {
+            upiOnly.checked = true;
+        });
+    }
+
+    /* ---------- Saving state ---------- */
+
+    const form = document.getElementById("productForm");
+    const saveBtn = document.getElementById("saveBtn");
+
+    form.addEventListener("submit", function () {
+
+        if (!form.checkValidity()) return;
+
+        saveBtn.classList.add("saving");
+        saveBtn.textContent = "Saving...";
+    });
+
+    window.addEventListener("pageshow", function (event) {
+
+        if (event.persisted) {
+            saveBtn.classList.remove("saving");
+            saveBtn.textContent = "Save Product";
+        }
+    });
 
 });
 </script>

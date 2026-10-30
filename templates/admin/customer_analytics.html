@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load humanize %}
+
 
 {% block extrastyle %}
 {{ block.super }}
@@ -199,7 +199,7 @@
         </div>
 
         <div class="kpi-value">
-            {{ kpi.value|intcomma }}
+            {{ kpi.value}}
         </div>
 
     </a>
