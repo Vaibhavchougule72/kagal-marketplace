@@ -3,178 +3,279 @@
 
 <div class="container mt-4">
 
-<h2>🚴 Rider Dashboard</h2>
+    <h2>🚴 Rider Dashboard</h2>
 
-<div class="row text-center mb-4">
+    <!-- ============================= -->
+    <!-- RIDER EARNINGS -->
+    <!-- ============================= -->
 
-<div class="col-6">
-<div class="card p-3 shadow-sm">
-<h4>₹{{ total_payout }}</h4>
-<small>Total Earnings</small>
+    <div class="row text-center mb-4">
+
+        <div class="col-6">
+            <div class="card p-3 shadow-sm">
+                <h4>₹{{ total_payout }}</h4>
+                <small>Total Earnings</small>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="card p-3 shadow-sm">
+                <h4>{{ total_distance }} km</h4>
+                <small>Total Distance</small>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- AVAILABLE ORDERS -->
+    <!-- ============================= -->
+
+    <h4>🆕 Available Orders</h4>
+
+    {% for order in available_orders %}
+
+    <div class="card mb-3 shadow-sm">
+
+        <div class="card-body">
+
+            <b>Order #{{ order.id }}</b><br>
+
+            🏪 <strong>Store:</strong> {{ order.store.name }}<br>
+
+            👤 {{ order.customer_name }}<br>
+
+            📍 {{ order.address }}<br>
+
+            💰 ₹{{ order.total }}<br>
+
+            <div class="mt-3">
+
+                <form method="POST"
+                      action="{% url 'rider_update_status' order.id 'ACCEPTED' %}">
+
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="btn btn-warning btn-sm w-100">
+
+                        Accept Order
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <p>No new orders available.</p>
+
+    {% endfor %}
+
+
+    <!-- ============================= -->
+    <!-- ACTIVE ORDERS -->
+    <!-- ============================= -->
+
+    <h4 class="mt-4">📦 My Active Orders</h4>
+
+    {% for order in active_orders %}
+
+    <div class="card mb-3 shadow-sm rider-order-card"
+         data-order-id="{{ order.id }}"
+         data-status="{{ order.status }}"
+         data-location-url="{% url 'update_rider_location' order.id %}">
+
+        <div class="card-body">
+
+            <b>Order #{{ order.id }}</b><br>
+
+            🏪 <strong>Store:</strong> {{ order.store.name }}<br>
+
+            👤 {{ order.customer_name }}<br>
+
+            📞 {{ order.phone }}<br>
+
+            📍 {{ order.address }}<br>
+
+            💰 ₹{{ order.total }}<br>
+
+            Status: <b>{{ order.status }}</b>
+
+            <!-- VIEW ORDER DETAILS -->
+
+            <div class="mt-3">
+
+                <a href="{% url 'rider_order_detail' order.id %}"
+                  class="btn btn-outline-success btn-sm w-100">
+
+                    📋 View Order Details
+
+                </a>
+
+            </div>
+
+
+            <!-- CALL AND MAP -->
+
+            <div class="mt-3">
+
+                <a href="tel:{{ order.phone }}"
+                   class="btn btn-success btn-sm">
+
+                    Call Customer
+
+                </a>
+
+                <a target="_blank"
+                   href="https://www.google.com/maps?q={{ order.latitude }},{{ order.longitude }}"
+                   class="btn btn-primary btn-sm">
+
+                    Open Map
+
+                </a>
+
+            </div>
+
+
+            <!-- STATUS ACTIONS -->
+
+            <div class="mt-3">
+
+                {% if order.status == "ACCEPTED" %}
+
+                    <form method="POST"
+                          action="{% url 'rider_update_status' order.id 'PICKED_UP' %}">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-info btn-sm w-100">
+
+                            Picked Up From Store
+
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+
+                {% if order.status == "PICKED_UP" %}
+
+                    <form method="POST"
+                          action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-primary btn-sm w-100">
+
+                            Out For Delivery
+
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+
+                {% if order.status == "OUT_FOR_DELIVERY" %}
+
+                    <div class="mt-2 mb-2">
+
+                        <span style="font-size:12px;color:#2D6B27;">
+
+                            🟢 Open Order Details to start location tracking.
+
+                        </span>
+
+                    </div>
+
+                    <form method="POST"
+                          action="{% url 'rider_update_status' order.id 'DELIVERED' %}">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-success btn-sm w-100 mb-2">
+
+                            Mark as Delivered
+
+                        </button>
+
+                    </form>
+
+
+                    <form method="POST"
+                          action="{% url 'rider_update_status' order.id 'FAILED' %}">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="btn btn-danger btn-sm w-100">
+
+                            Mark as Failed
+
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <p>No active orders.</p>
+
+    {% endfor %}
+
+
+    <!-- ============================= -->
+    <!-- COMPLETED ORDERS -->
+    <!-- ============================= -->
+
+    <h4 class="mt-4">✅ Completed Orders</h4>
+
+    {% for order in completed_orders %}
+
+    <div class="card mb-2">
+
+        <div class="card-body">
+
+            Order #{{ order.id }}
+
+            <br>
+
+            💰 ₹{{ order.delivery_payout }}
+
+            <br>
+
+            <small class="text-success">Delivered</small>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <p>No completed orders yet.</p>
+
+    {% endfor %}
+
 </div>
-</div>
 
-<div class="col-6">
-<div class="card p-3 shadow-sm">
-<h4>{{ total_distance }} km</h4>
-<small>Total Distance</small>
-</div>
-</div>
 
-</div>
-
-<h4>📦 Active Orders</h4>
-
-{% for order in active_orders %}
-<div class="card mb-3 shadow-sm rider-order-card"
-     data-order-id="{{ order.id }}"
-     data-status="{{ order.status }}"
-     data-location-url="{% url 'update_rider_location' order.id %}">
-<div class="card-body">
-
-<b>Order #{{ order.id }}</b><br>
-
-🏪 <strong>Store:</strong> {{ order.store.name }}<br>
-
-👤 {{ order.customer_name }}<br>
-
-📞 {{ order.phone }}<br>
-
-📍 {{ order.address }}<br>
-
-💰 ₹{{ order.total }}<br>
-
-Status: <b>{{ order.status }}</b>
-
-<div class="mt-3">
-
-<a href="tel:{{ order.phone }}" class="btn btn-success btn-sm">
-Call
-</a>
-
-<a target="_blank"
-href="https://www.google.com/maps?q={{ order.latitude }},{{ order.longitude }}"
-class="btn btn-primary btn-sm">
-Map
-</a>
-
-</div>
-
-<div class="mt-3">
-
-{% if order.status == "REQUEST_SUBMITTED" %}
-<a href="{% url 'rider_update_status' order.id 'ACCEPTED' %}"
-class="btn btn-warning btn-sm">
-Accept
-</a>
-{% endif %}
-
-{% if order.status == "ACCEPTED" %}
-<a href="{% url 'rider_update_status' order.id 'PICKED_UP' %}"
-class="btn btn-info btn-sm">
-In Progress
-</a>
-{% endif %}
-
-{% if order.status == "PICKED_UP" %}
-<a href="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}"
-class="btn btn-primary btn-sm">
-Out For Delivery
-</a>
-{% endif %}
-
-{% if order.status == "OUT_FOR_DELIVERY" %}
-
-<span style="font-size:12px;color:#2D6B27;">🟢 Sharing live location</span>
-
-<a href="{% url 'rider_update_status' order.id 'DELIVERED' %}"
-class="btn btn-success btn-sm">
-Delivered
-</a>
-
-<a href="{% url 'rider_update_status' order.id 'FAILED' %}"
-class="btn btn-danger btn-sm">
-Failed
-</a>
-
-{% endif %}
-
-</div>
-</div>
-</div>
-{% empty %}
-<p>No active orders.</p>
-{% endfor %}
-
-<h4 class="mt-4">✅ Completed Orders</h4>
-
-{% for order in completed_orders %}
-<div class="card mb-2">
-<div class="card-body">
-Order #{{ order.id }} - ₹{{ order.delivery_payout }}
-</div>
-</div>
-{% endfor %}
-
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  /* ── Read active OUT_FOR_DELIVERY orders straight from the DOM,
-     no Django template tags inside this script. ── */
-  var trackingUrls = [];
-
-  document.querySelectorAll('.rider-order-card[data-status="OUT_FOR_DELIVERY"]')
-    .forEach(function (card) {
-      trackingUrls.push(card.dataset.locationUrl);
-    });
-
-  var lastSentTime = 0;
-  var lastSentLat = null;
-  var lastSentLng = null;
-
-  function sendLocation(lat, lng) {
-    trackingUrls.forEach(function (baseUrl) {
-      fetch(baseUrl + "?lat=" + lat + "&lng=" + lng);
-    });
-  }
-
-  function startTracking() {
-    if (!navigator.geolocation || trackingUrls.length === 0) return;
-
-    navigator.geolocation.watchPosition(
-      function (pos) {
-        var lat = pos.coords.latitude;
-        var lng = pos.coords.longitude;
-        var now = Date.now();
-
-        var movedEnough = true;
-        if (lastSentLat !== null) {
-          var approxMeters = Math.sqrt(
-            Math.pow(lat - lastSentLat, 2) + Math.pow(lng - lastSentLng, 2)
-          ) * 111000;
-          movedEnough = approxMeters > 15;
-        }
-
-        if (now - lastSentTime < 5000 && !movedEnough) return;
-
-        lastSentLat = lat;
-        lastSentLng = lng;
-        lastSentTime = now;
-
-        sendLocation(lat, lng);
-      },
-      function (err) {
-        console.error("Location error:", err);
-      },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
-    );
-  }
-
-  startTracking();
-
-});
-</script>
 
 {% endblock %}

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Order #{{ order.id }} - LOKA Rider</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f5;
+            color: #222;
+        }
+
+        .header {
+            background: #227D57;
+            color: white;
+            padding: 20px;
+        }
+
+        .header-inner {
+            max-width: 650px;
+            margin: auto;
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .header h2 {
+            margin: 18px 0 5px;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            padding: 16px;
+            padding-bottom: 40px;
+        }
+
+        .section {
+            background: white;
+            padding: 18px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+        }
+
+        .section h3 {
+            margin: 0 0 16px;
+            font-size: 17px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 13px;
+            border-radius: 20px;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .label {
+            color: #777;
+        }
+
+        .value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .item-qty {
+            font-size: 13px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .item-price {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .contact-button {
+            display: block;
+            text-align: center;
+            padding: 13px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .call-button {
+            background: #e8f5ee;
+            color: #227D57;
+        }
+
+        .map-button {
+            background: #fff0e5;
+            color: #d96b19;
+        }
+
+        .action-button {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            background: #227D57;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .failed-button {
+            background: #dc3545;
+        }
+
+        .note {
+            background: #fff8e8;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .completed {
+            text-align: center;
+            color: #227D57;
+            font-weight: bold;
+            padding: 15px;
+        }
+
+        .muted {
+            color: #888;
+            font-size: 13px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="header-inner">
+
+            <a href="{% url 'rider_dashboard' %}" class="back">
+                ← Back to Dashboard
+            </a>
+
+            <h2>Order #{{ order.id }}</h2>
+
+            <p>Order Details</p>
+
+        </div>
+
+    </div>
+
+
+    <div class="container">
+
+
+        <!-- ORDER INFORMATION -->
+
+        <div class="section">
+
+            <h3>Order Information</h3>
+
+            <div class="info-row">
+                <span class="label">Order ID</span>
+                <span class="value">#{{ order.id }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Order Date</span>
+                <span class="value">
+                    {{ order.created_at|date:"d M Y, h:i A" }}
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Payment Method</span>
+                <span class="value">{{ order.payment_method }}</span>
+            </div>
+
+            <div style="margin-top:15px;">
+                <span class="status">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+
+        </div>
+
+
+        <!-- ORDER ITEMS -->
+
+        <div class="section">
+
+            <h3>Order Items</h3>
+
+            {% for item in order_items %}
+
+                <div class="item">
+
+                    <div>
+
+                        <div class="item-name">
+                            {{ item.display_name }}
+                        </div>
+
+                        <div class="item-qty">
+                            Quantity: {{ item.quantity }}
+                        </div>
+
+                    </div>
+
+                    <div class="item-price">
+                        ₹{{ item.item_total|floatformat:2 }}
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <p class="muted">No items found.</p>
+
+            {% endfor %}
+
+
+            <div class="total-row">
+
+                <span>Order Total</span>
+
+                <span>₹{{ order.total|floatformat:2 }}</span>
+
+            </div>
+
+        </div>
+
+
+        <!-- STORE INFORMATION -->
+
+        <div class="section">
+
+            <h3>Pickup From Store</h3>
+
+            <div class="info-row">
+
+                <span class="label">Store Name</span>
+
+                <span class="value">
+                    {{ order.store.name }}
+                </span>
+
+            </div>
+
+            <p class="muted">
+                Collect the order from the store before starting delivery.
+            </p>
+
+        </div>
+
+
+        <!-- CUSTOMER INFORMATION -->
+
+        <div class="section">
+
+            <h3>Customer Information</h3>
+
+            <div class="info-row">
+
+                <span class="label">Customer</span>
+
+                <span class="value">
+                    {{ order.customer_name }}
+                </span>
+
+            </div>
+
+            <div class="info-row">
+
+                <span class="label">Phone</span>
+
+                <span class="value">
+                    {{ order.phone }}
+                </span>
+
+            </div>
+
+            <div style="margin-top:15px;">
+
+                <div class="label" style="margin-bottom:8px;">
+                    Delivery Address
+                </div>
+
+                <div style="font-size:14px; line-height:1.6;">
+                    {{ order.address }}
+                </div>
+
+            </div>
+
+
+            <a href="tel:{{ order.phone }}"
+               class="contact-button call-button">
+
+                ☎ Call Customer
+
+            </a>
+
+
+            {% if order.latitude != None and order.longitude != None %}
+
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ order.latitude }},{{ order.longitude }}"
+                   target="_blank"
+                   class="contact-button map-button">
+
+                    📍 Navigate to Customer
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- CUSTOMER NOTE -->
+
+        {% if order.customer_note %}
+
+            <div class="section">
+
+                <h3>Customer Instructions</h3>
+
+                <div class="note">
+                    {{ order.customer_note|linebreaksbr }}
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ORDER STATUS ACTIONS -->
+
+        <div class="section">
+
+            <h3>Delivery Actions</h3>
+
+
+            {% if order.status == "ACCEPTED" %}
+
+                <p class="muted">
+                    Collect the order from the store.
+                </p>
+
+                <form method="POST"
+                      action="{% url 'rider_update_status' order.id 'PICKED_UP' %}">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="action-button">
+                        ✓ Picked Up From Store
+                    </button>
+
+                </form>
+
+
+            {% elif order.status == "PICKED_UP" %}
+
+                <p class="muted">
+                    You have collected the order.
+                    Start delivery when you leave the store.
+                </p>
+
+                <form method="POST"
+                      action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="action-button">
+                        🛵 Start Delivery
+                    </button>
+
+                </form>
+
+
+                <form method="POST"
+                      action="{% url 'rider_update_status' order.id 'FAILED' %}">
+
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="action-button failed-button">
+
+                        Mark Delivery Failed
+
+                    </button>
+
+                </form>
+
+
+            {% elif order.status == "OUT_FOR_DELIVERY" %}
+
+                <p class="muted">
+                    You are currently delivering this order.
+                </p>
+
+                <form method="POST"
+                      action="{% url 'rider_update_status' order.id 'DELIVERED' %}"
+                      onsubmit="return confirm('Are you sure this order has been delivered?');">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="action-button">
+                        ✓ Mark as Delivered
+                    </button>
+
+                </form>
+
+
+                <form method="POST"
+                      action="{% url 'rider_update_status' order.id 'FAILED' %}"
+                      onsubmit="return confirm('Are you sure delivery failed?');">
+
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="action-button failed-button">
+
+                        Mark Delivery Failed
+
+                    </button>
+
+                </form>
+
+
+            {% elif order.status == "DELIVERED" %}
+
+                <div class="completed">
+                    ✓ Order Successfully Delivered
+                </div>
+
+
+            {% elif order.status == "FAILED" %}
+
+                <div style="text-align:center; color:#dc3545; font-weight:bold;">
+                    Delivery Failed
+                </div>
+
+
+            {% else %}
+
+                <p class="muted">
+                    No actions available for this order.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+    </div>
+<!-- RIDER LOCATION TRACKING -->
+
+{% if order.status == "OUT_FOR_DELIVERY" %}
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (!navigator.geolocation) {
+        console.error("Geolocation is not supported.");
+        return;
+    }
+
+    const locationUrl = "{% url 'update_rider_location' order.id %}";
+
+    let lastSentTime = 0;
+    let lastSentLat = null;
+    let lastSentLng = null;
+
+    let watchId = null;
+
+
+    // GET CSRF TOKEN
+
+    function getCookie(name) {
+
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+
+                cookie = cookie.trim();
+
+                if (cookie.startsWith(name + "=")) {
+
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+
+    // CALCULATE DISTANCE BETWEEN TWO LOCATIONS
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+
+        const R = 6371000;
+
+        const toRad = value => value * Math.PI / 180;
+
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+
+        const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+
+        return R * 2 * Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+    }
+
+
+    // SEND LOCATION TO DJANGO
+
+    function sendLocation(lat, lng) {
+
+        fetch(locationUrl, {
+
+            method: "POST",
+
+            credentials: "same-origin",
+
+            headers: {
+
+                "Content-Type": "application/json",
+
+                "X-CSRFToken": getCookie("csrftoken")
+
+            },
+
+            body: JSON.stringify({
+
+                lat: lat,
+                lng: lng
+
+            })
+
+        })
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Location update failed.");
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            if (!data.success) {
+
+                console.error(
+                    "Location update failed:",
+                    data.message
+                );
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error("Location error:", error);
+
+        });
+
+    }
+
+
+    // START LOCATION TRACKING
+
+    function startTracking() {
+
+        watchId = navigator.geolocation.watchPosition(
+
+            function (position) {
+
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                const now = Date.now();
+
+                let movedEnough = true;
+
+
+                if (lastSentLat !== null) {
+
+                    const distance = calculateDistance(
+                        lastSentLat,
+                        lastSentLng,
+                        lat,
+                        lng
+                    );
+
+                    movedEnough = distance >= 15;
+
+                }
+
+
+                // SEND LOCATION AFTER 5 SECONDS
+                // OR WHEN RIDER MOVES 15 METRES
+
+                if (
+                    now - lastSentTime < 5000 &&
+                    !movedEnough
+                ) {
+                    return;
+                }
+
+
+                lastSentLat = lat;
+                lastSentLng = lng;
+                lastSentTime = now;
+
+
+                sendLocation(lat, lng);
+
+            },
+
+
+            function (error) {
+
+                console.error(
+                    "Location permission/error:",
+                    error.message
+                );
+
+            },
+
+
+            {
+
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 10000
+
+            }
+
+        );
+
+    }
+
+
+    startTracking();
+
+
+    // STOP TRACKING WHEN PAGE IS CLOSED
+
+    window.addEventListener("pagehide", function () {
+
+        if (watchId !== null) {
+
+            navigator.geolocation.clearWatch(watchId);
+
+        }
+
+    });
+
+});
+
+</script>
+
+{% endif %}
+</body>
+</html>

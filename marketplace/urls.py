@@ -74,6 +74,11 @@ urlpatterns = [
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path("rider-dashboard/", views.rider_dashboard, name="rider_dashboard"),
     path(
+        "rider/order/<int:order_id>/",
+        views.rider_order_detail,
+        name="rider_order_detail"
+    ),
+    path(
         "rider/update-status/<int:order_id>/<str:new_status>/",
         views.rider_update_status,
         name="rider_update_status"

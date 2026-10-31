@@ -62,7 +62,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .models import StorePartnerProfile, PartnerDeviceToken
+from .models import StorePartnerProfile, PartnerDeviceToken, DeliveryPartnerProfile
 from .notification_service import notify_store_partner_new_order
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -5306,45 +5306,170 @@ from django.db.models import Sum
 @login_required
 def rider_dashboard(request):
 
+    # -----------------------------------------
+    # VERIFY RIDER ACCOUNT
+    # -----------------------------------------
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return HttpResponseForbidden("Rider account not active.")
+
     try:
-        active_orders = Order.objects.filter(
-            assigned_delivery=request.user
-        ).exclude(
-            status__in=["DELIVERED", "FAILED", "CANCELLED"]
-        ).order_by("-created_at")
 
-        completed_orders = Order.objects.filter(
-            assigned_delivery=request.user,
-            status="DELIVERED"
-        ).order_by("-created_at")[:10]
+        # -----------------------------------------
+        # AVAILABLE ORDERS
+        # -----------------------------------------
+        available_orders = (
+            Order.objects
+            .filter(
+                status="REQUEST_SUBMITTED",
+                assigned_delivery__isnull=True
+            )
+            .select_related("store")
+            .order_by("-created_at")
+        )
 
-        total_payout = Order.objects.filter(
-            assigned_delivery=request.user,
-            status="DELIVERED"
-        ).aggregate(
-            Sum("delivery_payout")
-        )["delivery_payout__sum"] or 0
+        # -----------------------------------------
+        # RIDER'S ACTIVE ORDERS
+        # -----------------------------------------
+        active_orders = (
+            Order.objects
+            .filter(
+                assigned_delivery=request.user
+            )
+            .exclude(
+                status__in=[
+                    "DELIVERED",
+                    "FAILED",
+                    "CANCELLED"
+                ]
+            )
+            .select_related("store")
+            .order_by("-created_at")
+        )
 
-        total_distance = Order.objects.filter(
-            assigned_delivery=request.user,
-            status="DELIVERED"
-        ).aggregate(
-            Sum("delivery_distance")
-        )["delivery_distance__sum"] or 0
+        # -----------------------------------------
+        # COMPLETED ORDERS
+        # -----------------------------------------
+        completed_orders = (
+            Order.objects
+            .filter(
+                assigned_delivery=request.user,
+                status="DELIVERED"
+            )
+            .select_related("store")
+            .order_by("-created_at")[:10]
+        )
+
+        # -----------------------------------------
+        # EARNINGS
+        # -----------------------------------------
+        total_payout = (
+            Order.objects
+            .filter(
+                assigned_delivery=request.user,
+                status="DELIVERED"
+            )
+            .aggregate(
+                Sum("delivery_payout")
+            )["delivery_payout__sum"] or 0
+        )
+
+        # -----------------------------------------
+        # TOTAL DISTANCE
+        # -----------------------------------------
+        total_distance = (
+            Order.objects
+            .filter(
+                assigned_delivery=request.user,
+                status="DELIVERED"
+            )
+            .aggregate(
+                Sum("delivery_distance")
+            )["delivery_distance__sum"] or 0
+        )
 
         return render(request, "rider_dashboard.html", {
+
+            "rider_profile": rider_profile,
+
+            "available_orders": available_orders,
+
             "active_orders": active_orders,
+
             "completed_orders": completed_orders,
+
             "total_payout": total_payout,
+
             "total_distance": round(total_distance, 2),
+
             "show_floating_cart": False,
+
             "simple_navbar": True
+
         })
 
-    except Exception as e:
-        logger.exception("RIDER DASHBOARD ERROR")
-        return HttpResponse("Rider dashboard failed. Check logs.")
+    except Exception:
 
+        logger.exception("RIDER DASHBOARD ERROR")
+
+        return HttpResponse(
+            "Rider dashboard failed. Check logs."
+        )
+
+# =====================================================
+# RIDER ORDER DETAILS
+# =====================================================
+
+@login_required
+def rider_order_detail(request, order_id):
+
+    # -----------------------------------------
+    # VERIFY RIDER ACCOUNT
+    # -----------------------------------------
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return HttpResponseForbidden("Rider account not active.")
+
+    # -----------------------------------------
+    # GET ORDER
+    # -----------------------------------------
+    order = get_object_or_404(
+        Order.objects
+        .select_related("store")
+        .prefetch_related(
+            "items__product",
+            "items__bundle"
+        ),
+        id=order_id,
+        assigned_delivery=request.user
+    )
+
+    # -----------------------------------------
+    # ORDER ITEMS
+    # -----------------------------------------
+    order_items = order.items.all()
+
+    context = {
+        "rider_profile": rider_profile,
+        "order": order,
+        "order_items": order_items,
+        "show_floating_cart": False,
+        "simple_navbar": True,
+    }
+
+    return render(
+        request,
+        "rider_order_detail.html",
+        context
+    )
 
 def reward_referral_for_delivered_order(order):
     """
@@ -5719,57 +5844,200 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 
 @login_required
+@require_POST
 def rider_update_status(request, order_id, new_status):
 
-    allowed_status = [
-        "ACCEPTED",
-        "PICKED_UP",
-        "OUT_FOR_DELIVERY",
-        "DELIVERED",
-        "FAILED"
-    ]
+    # -----------------------------------------
+    # VERIFY RIDER
+    # -----------------------------------------
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
 
-    if new_status not in allowed_status:
-        messages.error(request, "Invalid status")
+    if not rider_profile:
+        return HttpResponseForbidden("Rider account not active.")
+
+    # -----------------------------------------
+    # ALLOWED TRANSITIONS
+    # -----------------------------------------
+    allowed_transitions = {
+        "ACCEPTED": ["REQUEST_SUBMITTED"],
+        "PICKED_UP": ["ACCEPTED"],
+        "OUT_FOR_DELIVERY": ["PICKED_UP"],
+        "DELIVERED": ["OUT_FOR_DELIVERY"],
+        "FAILED": ["OUT_FOR_DELIVERY", "PICKED_UP"]
+    }
+
+    if new_status not in allowed_transitions:
+        messages.error(request, "Invalid status.")
         return redirect("rider_dashboard")
 
-    order = get_object_or_404(
-        Order,
-        id=order_id,
-        assigned_delivery=request.user
-    )
+    # -----------------------------------------
+    # LOCK AND PROCESS ORDER
+    # -----------------------------------------
+    try:
 
-    order.status = new_status
-    order.save()
+        with transaction.atomic():
 
-    if new_status == "DELIVERED":
-        reward_referral_for_delivered_order(order)
-        process_journey_reward(order)
+            order = (
+                Order.objects
+                .select_for_update()
+                .filter(id=order_id)
+                .first()
+            )
 
-    messages.success(request, f"Order #{order.id} updated to {new_status}")
+            if not order:
+                messages.error(request, "Order not found.")
+                return redirect("rider_dashboard")
+
+            # ---------------------------------
+            # ACCEPT NEW ORDER
+            # ---------------------------------
+            if new_status == "ACCEPTED":
+
+                if (
+                    order.status != "REQUEST_SUBMITTED"
+                    or order.assigned_delivery_id is not None
+                ):
+                    messages.error(
+                        request,
+                        "This order has already been accepted."
+                    )
+                    return redirect("rider_dashboard")
+
+                order.assigned_delivery = request.user
+
+                order.delivery_partner_phone = rider_profile.phone
+
+            # ---------------------------------
+            # UPDATE EXISTING ASSIGNED ORDER
+            # ---------------------------------
+            else:
+
+                if order.assigned_delivery_id != request.user.id:
+                    return HttpResponseForbidden(
+                        "This order is not assigned to you."
+                    )
+
+                if order.status not in allowed_transitions[new_status]:
+                    messages.error(
+                        request,
+                        "Invalid order status transition."
+                    )
+                    return redirect("rider_dashboard")
+
+            order.status = new_status
+
+            # Preserve existing Order.save() logic.
+            order.save()
+
+        # -------------------------------------
+        # DELIVERED REWARDS
+        # -------------------------------------
+        if new_status == "DELIVERED":
+
+            reward_referral_for_delivered_order(order)
+
+            process_journey_reward(order)
+
+        messages.success(
+            request,
+            f"Order #{order.id} updated successfully."
+        )
+
+    except Exception:
+
+        logger.exception(
+            "RIDER ORDER STATUS UPDATE FAILED"
+        )
+
+        messages.error(
+            request,
+            "Unable to update order. Please try again."
+        )
 
     return redirect("rider_dashboard")
 
-from django.contrib.auth.decorators import login_required
-
 @login_required
+@require_POST
 def update_rider_location(request, order_id):
 
+    # -----------------------------------------
+    # VERIFY RIDER
+    # -----------------------------------------
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return JsonResponse({
+            "success": False,
+            "message": "Rider account not active."
+        }, status=403)
+
+    # -----------------------------------------
+    # GET ASSIGNED ORDER
+    # -----------------------------------------
     order = get_object_or_404(
         Order,
         id=order_id,
-        assigned_delivery=request.user
+        assigned_delivery=request.user,
+        status="OUT_FOR_DELIVERY"
     )
 
-    lat = request.GET.get("lat")
-    lng = request.GET.get("lng")
+    # -----------------------------------------
+    # READ COORDINATES
+    # -----------------------------------------
+    try:
 
-    if lat and lng:
-        order.rider_latitude = float(lat)
-        order.rider_longitude = float(lng)
-        order.save(update_fields=["rider_latitude", "rider_longitude"])
+        if request.content_type == "application/json":
 
-    return JsonResponse({"success": True})
+            data = json.loads(request.body)
+
+            lat = float(data.get("lat"))
+            lng = float(data.get("lng"))
+
+        else:
+
+            lat = float(request.POST.get("lat"))
+            lng = float(request.POST.get("lng"))
+
+        # Validate geographical coordinates.
+        if not (
+            math.isfinite(lat)
+            and math.isfinite(lng)
+            and -90 <= lat <= 90
+            and -180 <= lng <= 180
+        ):
+            raise ValueError("Invalid coordinates")
+
+    except (TypeError, ValueError, json.JSONDecodeError):
+
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid location coordinates."
+        }, status=400)
+
+    # -----------------------------------------
+    # SAVE LOCATION
+    # -----------------------------------------
+    order.rider_latitude = lat
+    order.rider_longitude = lng
+
+    order.save(
+        update_fields=[
+            "rider_latitude",
+            "rider_longitude"
+        ]
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Location updated successfully."
+    })
+
 
 def get_rider_location(request, order_id):
 
@@ -5782,7 +6050,7 @@ def get_rider_location(request, order_id):
             "status": order.status
         })
 
-    if not order.rider_latitude or not order.rider_longitude:
+    if order.rider_latitude is None or order.rider_longitude is None:
         return JsonResponse({
             "success": False,
             "message": "Waiting for rider's location…"
