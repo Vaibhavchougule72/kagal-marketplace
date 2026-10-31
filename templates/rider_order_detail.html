@@ -413,6 +413,126 @@
             font-size: 16px;
             padding: 12px;
         }
+
+        /* CUSTOM RIDER POPUP */
+
+        .custom-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 30, 13, 0.60);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            z-index: 20000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.2s ease;
+        }
+
+        .custom-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 360px;
+            background: #fff;
+            border-radius: 22px;
+            padding: 25px 22px 22px;
+            text-align: center;
+            position: relative;
+            transform: translateY(15px) scale(0.97);
+            transition: 0.2s ease;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.2);
+        }
+
+        .custom-modal.show .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            border: none;
+            background: #F1F3EF;
+            color: #53634F;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 21px;
+            cursor: pointer;
+        }
+
+        .modal-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #EAF5E8;
+            color: #267A43;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            margin: 5px auto 15px;
+        }
+
+        .modal-icon.warning {
+            background: #FFF2E8;
+            color: #E8621A;
+        }
+
+        .modal-icon.error {
+            background: #FDECEC;
+            color: #DC3545;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1D3F18;
+            margin: 0 0 9px;
+        }
+
+        .modal-message {
+            font-size: 14px;
+            color: #71806D;
+            line-height: 1.6;
+            margin: 0 0 22px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 13px 10px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .modal-button.primary {
+            background: #1D3F18;
+            color: white;
+        }
+
+        .modal-button.secondary {
+            background: #F0F2ED;
+            color: #53634F;
+        }
+
+        .modal-button.orange {
+            background: #E8621A;
+            color: white;
+        }
     </style>
 </head>
 
@@ -714,10 +834,116 @@
 
 
     </div>
+<!-- CUSTOM RIDER MODAL -->
+<div class="custom-modal" id="customModal">
 
+    <div class="modal-card">
+
+        <button type="button" class="modal-close" id="modalClose">
+            &times;
+        </button>
+
+        <div class="modal-icon" id="modalIcon">✓</div>
+
+        <h3 class="modal-title" id="modalTitle">
+            Success
+        </h3>
+
+        <p class="modal-message" id="modalMessage"></p>
+
+        <div class="modal-buttons" id="modalButtons">
+
+            <button type="button"
+                    class="modal-button primary"
+                    id="modalOkay">
+                Okay
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("customModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMessage = document.getElementById("modalMessage");
+    const modalIcon = document.getElementById("modalIcon");
+    const modalButtons = document.getElementById("modalButtons");
+
+    function closeModal() {
+        modal.classList.remove("show");
+    }
+
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+
+    function showMessage(title, message, type = "success") {
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+
+        modalIcon.className = "modal-icon";
+
+        if (type === "success") {
+            modalIcon.textContent = "✓";
+        } else if (type === "error") {
+            modalIcon.textContent = "!";
+            modalIcon.classList.add("error");
+        } else {
+            modalIcon.textContent = "!";
+            modalIcon.classList.add("warning");
+        }
+
+        modalButtons.innerHTML = `
+            <button type="button" class="modal-button primary" id="modalOkay">
+                Okay
+            </button>
+        `;
+
+        document.getElementById("modalOkay").addEventListener("click", closeModal);
+
+        modal.classList.add("show");
+    }
+
+    function showConfirmation(title, message) {
+
+        return new Promise(resolve => {
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+
+            modalIcon.className = "modal-icon warning";
+            modalIcon.textContent = "!";
+
+            modalButtons.innerHTML = `
+                <button type="button"
+                        class="modal-button secondary"
+                        id="modalCancel">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="modal-button orange"
+                        id="modalConfirm">
+                    Yes, Delivered
+                </button>
+            `;
+
+            function finish(result) {
+                closeModal();
+                resolve(result);
+            }
+
+            document.getElementById("modalCancel").onclick = () => finish(false);
+            document.getElementById("modalConfirm").onclick = () => finish(true);
+            document.getElementById("modalClose").onclick = () => finish(false);
+
+            modal.classList.add("show");
+        });
+    }
 
     const form = document.getElementById("statusUpdateForm");
     const button = document.getElementById("statusUpdateButton");
@@ -818,8 +1044,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (button.disabled) return;
 
-        if (form.dataset.currentStatus === "OUT_FOR_DELIVERY") {
-            if (!confirm("Are you sure this order has been delivered?")) {
+                if (form.dataset.currentStatus === "OUT_FOR_DELIVERY") {
+
+            const confirmed = await showConfirmation(
+                "Confirm Delivery",
+                "Are you sure you have successfully delivered this order to the customer?"
+            );
+
+            if (!confirmed) {
                 return;
             }
         }
@@ -871,11 +1103,19 @@ document.addEventListener("DOMContentLoaded", function () {
             updateTracker(data.status);
 
             // Update page without reloading.
-            alert(data.message);
+            showMessage(
+                "Status Updated!",
+                data.message,
+                "success"
+            );
 
         } catch (error) {
 
-            alert(error.message || "Something went wrong.");
+            showMessage(
+                "Update Failed",
+                error.message || "Something went wrong. Please try again.",
+                "error"
+            );
 
             button.disabled = false;
             button.classList.remove("busy");

@@ -5456,13 +5456,28 @@ def rider_dashboard(request):
         # DASHBOARD ORDERS WITH DATE FILTER
         # Includes available orders + rider's orders
         # -----------------------------------------
+        # -----------------------------------------
+        # DASHBOARD ORDERS
+        # Available orders only when rider is ON
+        # Always show this rider's assigned orders
+        # -----------------------------------------
+
+        if rider_profile.is_available:
+
+            available_orders_filter = Q(
+                status="REQUEST_SUBMITTED",
+                assigned_delivery__isnull=True
+            )
+
+        else:
+
+            available_orders_filter = Q(pk__in=[])
+
+
         dashboard_orders = (
             Order.objects
             .filter(
-                Q(
-                    status="REQUEST_SUBMITTED",
-                    assigned_delivery__isnull=True
-                )
+                available_orders_filter
                 |
                 Q(assigned_delivery=request.user),
                 created_at__date__range=(start_date, end_date)
@@ -5548,6 +5563,29 @@ def rider_dashboard(request):
         return HttpResponse(
             "Rider dashboard failed. Check logs."
         )
+
+@login_required
+@require_POST
+def toggle_rider_availability(request):
+
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return HttpResponseForbidden("Rider account not active.")
+
+    rider_profile.is_available = not rider_profile.is_available
+
+    rider_profile.save(update_fields=["is_available"])
+
+    if rider_profile.is_available:
+        messages.success(request, "You are now available for new orders.")
+    else:
+        messages.success(request, "You are now unavailable for new orders.")
+
+    return redirect("rider_dashboard")
 
 
 # =====================================================
@@ -6123,6 +6161,12 @@ def rider_update_status(request, order_id, new_status):
 
             # ACCEPT NEW ORDER
             if new_status == "ACCEPTED":
+                if not rider_profile.is_available:
+                    return respond(
+                        False,
+                        "You are currently unavailable. Switch ON to accept orders.",
+                        403
+                    )
 
                 if (
                     order.status != "REQUEST_SUBMITTED"
