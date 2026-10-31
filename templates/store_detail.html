@@ -1338,6 +1338,56 @@ body{
     display: none !important;
 }
 
+/* ── ADD button click effect: press + ripple + pop ── */
+.sd-feat-add,
+#sheetAddBtn,
+.sd-add-btn {
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* the grid ADD button is already position:absolute, so only these two need relative */
+.sd-feat-add,
+#sheetAddBtn { position: relative; }
+
+.sd-feat-add { transition: background .15s, transform .12s, box-shadow .15s; }
+#sheetAddBtn { transition: background .15s, transform .12s, box-shadow .15s; cursor: pointer; }
+.sd-add-btn  { transition: background .15s, transform .12s, box-shadow .15s; }
+
+.sd-feat-add:active:not(:disabled),
+#sheetAddBtn:active:not(:disabled),
+.sd-product-card .sd-add-btn:active:not(:disabled) {
+    transform: scale(.92);
+    box-shadow: 0 0 0 4px rgba(45, 122, 58, .25);
+}
+
+.lk-ripple {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    background: rgba(255, 255, 255, .5);
+    transform: scale(0);
+    animation: lkRipple .55s ease-out forwards;
+}
+@keyframes lkRipple { to { transform: scale(1); opacity: 0; } }
+
+.lk-pop { animation: lkPop .35s ease; }
+@keyframes lkPop {
+    0%   { transform: scale(.9); }
+    60%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sd-feat-add, #sheetAddBtn, .sd-add-btn { transition: none; }
+    .sd-feat-add:active:not(:disabled),
+    #sheetAddBtn:active:not(:disabled),
+    .sd-product-card .sd-add-btn:active:not(:disabled) { transform: none; }
+    .lk-ripple { display: none; }
+    .lk-pop { animation: none; }
+}
+
 </style>
 
 <!-- ══════════════════════════════════════════
@@ -2154,6 +2204,36 @@ sheetAddBtn.onclick = function () {
 
     window.addEventListener("load", updateArrowVisibility);
 })();
+</script>
+
+<script>
+/* ADD buttons: ripple + pop on click (delegated, so it also works on AJAX-loaded cards) */
+document.addEventListener("click", function (e) {
+
+    var btn = e.target.closest(".sd-feat-add, .sd-add-btn, #sheetAddBtn");
+
+    if (!btn || btn.disabled) return;
+
+    // ripple from the touch / click point
+    var r = btn.getBoundingClientRect();
+    var size = Math.max(r.width, r.height) * 2;
+    var dot = document.createElement("span");
+
+    dot.className = "lk-ripple";
+    dot.style.width = dot.style.height = size + "px";
+    dot.style.left = (e.clientX - r.left - size / 2) + "px";
+    dot.style.top = (e.clientY - r.top - size / 2) + "px";
+
+    btn.appendChild(dot);
+    setTimeout(function () { dot.remove(); }, 600);
+
+    // quick pop
+    btn.classList.remove("lk-pop");
+    void btn.offsetWidth;            // restart the animation on rapid taps
+    btn.classList.add("lk-pop");
+    setTimeout(function () { btn.classList.remove("lk-pop"); }, 400);
+
+});
 </script>
 
 {% endblock %}

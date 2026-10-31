@@ -171,13 +171,41 @@ body { background: #fff; }
 .lk-combo-name { font-size: 18px; font-weight: 500; line-height: 1.2; color: var(--loka-green); }
 .lk-combo-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
 .lk-price { font-size: 23px; font-weight: 500; color: var(--loka-orange-deep); }
+
+/* store line on the combo card */
+.lk-combo-store {
+    display: flex; align-items: center; gap: 5px; margin-bottom: 2px;
+    font-size: 13px; color: #5C6B62;
+}
+.lk-combo-store svg {
+    width: 14px; height: 14px; flex: none;
+    stroke: var(--loka-orange-deep); fill: none; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+.lk-combo-store span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ADD button: press effect + ripple + "added" state */
 .lk-add {
+    position: relative; overflow: hidden;
     display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 16px;
     border: 1.5px solid var(--loka-green); border-radius: 999px; background: transparent;
     color: var(--loka-green); font-family: inherit; font-size: 15px; font-weight: 500;
-    transition: background .15s ease, color .15s ease;
+    -webkit-tap-highlight-color: transparent; user-select: none;
+    transition: background .15s ease, color .15s ease, transform .12s ease, box-shadow .15s ease;
 }
 .lk-add:hover { background: var(--loka-green); color: #fff; }
+.lk-add:active { transform: scale(.92); box-shadow: 0 0 0 4px rgba(232, 86, 10, .18); }
+.lk-add .lk-ripple {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    background: rgba(232, 86, 10, .35); transform: scale(0);
+    animation: lkRipple .55s ease-out forwards;
+}
+@keyframes lkRipple { to { transform: scale(1); opacity: 0; } }
+.lk-add.lk-added {
+    background: var(--loka-orange); border-color: var(--loka-orange); color: #fff;
+    animation: lkPop .35s ease;
+}
+@keyframes lkPop { 0% { transform: scale(.9); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
 /* ---------- Featured kitchens ---------- */
 .lk-feats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin: 8px 0 0; padding: 2px 2px 10px; }
@@ -260,6 +288,9 @@ body { background: #fff; }
     .lk-offer.lk-out-right .active.carousel-item-start,
     .lk-offer.lk-out-right .active.carousel-item-end { transform: none; }
     .lk-cat-img, .lk-feat, .lk-feat-img > img, .lk-dots span, .lk-offer .carousel-indicators [data-bs-target] { transition: none; }
+    .lk-add, .lk-add.lk-added { transition: none; animation: none; }
+    .lk-add:active { transform: none; }
+    .lk-add .lk-ripple { display: none; }
 }
 </style>
 
@@ -386,6 +417,12 @@ body { background: #fff; }
                 </div>
 
                 <div class="lk-combo-body">
+                    {% if combo.store %}
+                    <div class="lk-combo-store">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9v1a2.5 2.5 0 005 0 2.5 2.5 0 005 0 2.5 2.5 0 005 0V9"/><path d="M5 13v7h14v-7"/></svg>
+                        <span>from {{ combo.store.name }}</span>
+                    </div>
+                    {% endif %}
                     <div class="lk-combo-name">{{ combo.name }}</div>
                     <div class="lk-combo-bottom">
                         <div class="lk-price">₹{{ combo.price|floatformat:0 }}</div>
@@ -591,6 +628,40 @@ document.addEventListener("DOMContentLoaded", function(){
             document.getElementById("comboItems").innerHTML = html;
 
             new bootstrap.Modal(document.getElementById("comboModal")).show();
+
+        });
+
+    });
+
+});
+
+/* ADD button on combo cards: ripple + brief "Added" confirmation */
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".lk-add").forEach(function (btn) {
+
+        btn.addEventListener("click", function (e) {
+
+            // ripple from the touch / click point
+            var r = btn.getBoundingClientRect();
+            var size = Math.max(r.width, r.height) * 2;
+            var dot = document.createElement("span");
+            dot.className = "lk-ripple";
+            dot.style.width = dot.style.height = size + "px";
+            dot.style.left = (e.clientX - r.left - size / 2) + "px";
+            dot.style.top = (e.clientY - r.top - size / 2) + "px";
+            btn.appendChild(dot);
+            setTimeout(function () { dot.remove(); }, 600);
+
+            // quick confirmation state
+            if (btn.classList.contains("lk-added")) return;
+            var original = btn.textContent;
+            btn.classList.add("lk-added");
+            btn.textContent = "✓ ADDED";
+            setTimeout(function () {
+                btn.classList.remove("lk-added");
+                btn.textContent = original;
+            }, 1000);
 
         });
 
