@@ -686,7 +686,11 @@
                 class="action-form"
                 id="statusUpdateForm"
                 data-current-status="{{ order.status }}"
-                action=""
+                {% if order.status == "ACCEPTED" %}
+                    action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}"
+                {% elif order.status == "OUT_FOR_DELIVERY" %}
+                    action="{% url 'rider_update_status' order.id 'DELIVERED' %}"
+                {% endif %}
             >
                 {% csrf_token %}
 
