@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1D3F18">
 
     <title>Order #{{ order.id }} - LOKA Rider</title>
 
@@ -14,66 +15,188 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7f5;
-            color: #222;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #F5F5F0;
+            color: #1A3A16;
         }
 
-        .header {
-            background: #227D57;
+        /* ============================= */
+        /* HERO: ORDER + STATUS + TRACKER */
+        /* ============================= */
+
+        .hero {
+            background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
             color: white;
-            padding: 20px;
+            padding: 14px 16px 22px;
+            border-radius: 0 0 26px 26px;
         }
 
-        .header-inner {
+        .hero-inner {
             max-width: 650px;
             margin: auto;
         }
 
+        .nav-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .back {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.14);
+            border: 0.5px solid rgba(255, 255, 255, 0.26);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
             text-decoration: none;
-            font-size: 14px;
+            flex-shrink: 0;
+            transition: transform 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .header h2 {
-            margin: 18px 0 5px;
+        .back:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.26);
         }
 
-        .header p {
+        .hero-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .hero-title h2 {
             margin: 0;
-            opacity: 0.9;
-            font-size: 14px;
+            font-size: 19px;
+            font-weight: 800;
         }
+
+        .hero-title p {
+            margin: 1px 0 0;
+            font-size: 12px;
+            opacity: 0.78;
+        }
+
+        .status-pill {
+            background: white;
+            color: #1A3A16;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 7px 13px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* step tracker */
+
+        .tracker {
+            display: flex;
+            margin-top: 22px;
+        }
+
+        .step {
+            flex: 1;
+            position: relative;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+
+        /* connecting line to the left of each step */
+
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 50%;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.25);
+            z-index: 0;
+        }
+
+        .step:first-child::before {
+            display: none;
+        }
+
+        .step.done::before,
+        .step.current::before {
+            background: #3ddc84;
+        }
+
+        .step-dot {
+            position: relative;
+            z-index: 1;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            margin: 0 auto 6px;
+            background: rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1A3A16;
+        }
+
+        .step.done {
+            opacity: 0.9;
+        }
+
+        .step.done .step-dot {
+            background: #3ddc84;
+        }
+
+        .step.current {
+            opacity: 1;
+            font-weight: 800;
+        }
+
+        .step.current .step-dot {
+            background: #E8621A;
+            box-shadow: 0 0 0 4px rgba(232, 98, 26, 0.35);
+        }
+
+        .failed-banner {
+            margin-top: 18px;
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffd9d9;
+            text-align: center;
+        }
+
+        /* ============================= */
+        /* CONTAINER + CARDS */
+        /* ============================= */
 
         .container {
             max-width: 650px;
             margin: auto;
-            padding: 16px;
-            padding-bottom: 190px;
+            padding: 16px 16px 210px;
         }
 
         .section {
             background: white;
             padding: 18px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+            border-radius: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
         }
 
         .section h3 {
-            margin: 0 0 16px;
+            margin: 0 0 14px;
             font-size: 17px;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 7px 13px;
-            border-radius: 20px;
-            background: #fff3cd;
-            color: #856404;
-            font-size: 12px;
-            font-weight: bold;
+            font-weight: 800;
+            color: #1B5E20;
         }
 
         .info-row {
@@ -84,13 +207,63 @@
             font-size: 14px;
         }
 
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
         .label {
-            color: #777;
+            color: #7A8A78;
         }
 
         .value {
-            font-weight: 600;
+            font-weight: 700;
             text-align: right;
+        }
+
+        .address-label {
+            color: #7A8A78;
+            font-size: 13px;
+            margin: 14px 0 6px;
+        }
+
+        .address-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .contact-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .contact-button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 13px 8px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease;
+        }
+
+        .contact-button:active {
+            transform: scale(0.97);
+        }
+
+        .call-button {
+            background: #EAF5E8;
+            color: #227D57;
+        }
+
+        .map-button {
+            background: #FDF1EB;
+            color: #D96B19;
         }
 
         .item {
@@ -98,97 +271,60 @@
             justify-content: space-between;
             gap: 12px;
             padding: 12px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #EEF1EC;
         }
 
-        .item:last-child {
-            border-bottom: none;
+        .item:first-of-type {
+            padding-top: 0;
         }
 
         .item-name {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 14px;
         }
 
         .item-qty {
             font-size: 13px;
-            color: #777;
-            margin-top: 5px;
+            color: #7A8A78;
+            margin-top: 4px;
         }
 
         .item-price {
-            font-weight: bold;
+            font-weight: 800;
             white-space: nowrap;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 12px;
-            border-top: 1px solid #ddd;
-            font-weight: bold;
+            margin-top: 14px;
+            font-weight: 800;
             font-size: 17px;
         }
 
-        .contact-button {
-            display: block;
-            text-align: center;
-            padding: 13px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .call-button {
-            background: #e8f5ee;
+        .total-row span:last-child {
             color: #227D57;
-        }
-
-        .map-button {
-            background: #fff0e5;
-            color: #d96b19;
-        }
-
-        .action-button {
-            width: 100%;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            background: #227D57;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .failed-button {
-            background: #dc3545;
         }
 
         .note {
-            background: #fff8e8;
-            padding: 12px;
-            border-radius: 10px;
+            background: #FFF8E8;
+            border: 1px solid #F3E3B5;
+            padding: 12px 14px;
+            border-radius: 12px;
             font-size: 14px;
             line-height: 1.5;
-        }
-
-        .completed {
-            text-align: center;
-            color: #227D57;
-            font-weight: bold;
-            padding: 15px;
+            color: #6B5A1E;
         }
 
         .muted {
-            color: #888;
+            color: #7A8A78;
             font-size: 13px;
+            margin: 0;
         }
 
+        /* ============================= */
         /* FIXED DELIVERY ACTIONS */
+        /* ============================= */
 
         .delivery-actions {
             position: fixed;
@@ -199,83 +335,274 @@
             width: 100%;
             max-width: 650px;
 
-            margin: 0;
-            padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+            padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
 
             background: #ffffff;
-            border-radius: 16px 16px 0 0;
+            border-radius: 18px 18px 0 0;
 
-            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 
             z-index: 9999;
         }
 
-        .delivery-actions h3 {
-            margin-bottom: 8px;
+        .actions-hint {
+            font-size: 13px;
+            color: #7A8A78;
+            margin: 0 0 9px;
+            text-align: center;
         }
 
-        .delivery-actions .action-button {
-            margin-top: 6px;
-            margin-bottom: 4px;
+        .action-form {
+            margin: 0;
         }
 
+        .action-button {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 13px;
+            background: #E8621A;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(232, 98, 26, 0.35);
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease;
+        }
+
+        .action-button:active {
+            transform: scale(0.98);
+        }
+
+        .action-button.success {
+            background: #2D5A27;
+            box-shadow: 0 6px 16px rgba(45, 90, 39, 0.35);
+        }
+
+        .action-button.busy {
+            opacity: 0.75;
+            pointer-events: none;
+        }
+
+        .failed-link {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: #DC3545;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            padding: 12px 0 2px;
+            cursor: pointer;
+        }
+
+        .completed {
+            text-align: center;
+            color: #227D57;
+            font-weight: 800;
+            font-size: 16px;
+            padding: 12px;
+        }
+
+        .failed-state {
+            text-align: center;
+            color: #DC3545;
+            font-weight: 800;
+            font-size: 16px;
+            padding: 12px;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- HEADER -->
+    <!-- ================================= -->
+    <!-- HERO: ORDER, STATUS, STEP TRACKER -->
+    <!-- ================================= -->
 
-    <div class="header">
+    <header class="hero">
 
-        <div class="header-inner">
+        <div class="hero-inner">
 
-            <a href="{% url 'rider_dashboard' %}" class="back">
-                ← Back to Dashboard
-            </a>
+            <div class="nav-row">
 
-            <h2>Order #{{ order.id }}</h2>
+                <a href="{% url 'rider_dashboard' %}" class="back" aria-label="Back to Dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </a>
 
-            <p>Order Details</p>
+                <div class="hero-title">
+                    <h2>Order #{{ order.id }}</h2>
+                    <p>Order Details</p>
+                </div>
+
+                <span class="status-pill">
+                    {{ order.get_status_display }}
+                </span>
+
+            </div>
+
+
+            {% if order.status == "FAILED" %}
+
+                <div class="failed-banner">
+                    Delivery failed
+                </div>
+
+            {% else %}
+
+                <div class="tracker">
+
+                    <div class="step {% if order.status == 'ACCEPTED' %}current{% elif order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done{% endif %}">
+                        <div class="step-dot">{% if order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
+                        Accepted
+                    </div>
+
+                    <div class="step {% if order.status == 'PICKED_UP' %}current{% elif order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done{% endif %}">
+                        <div class="step-dot">{% if order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
+                        Picked up
+                    </div>
+
+                    <div class="step {% if order.status == 'OUT_FOR_DELIVERY' %}current{% elif order.status == 'DELIVERED' %}done{% endif %}">
+                        <div class="step-dot">{% if order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
+                        On the way
+                    </div>
+
+                    <div class="step {% if order.status == 'DELIVERED' %}done{% endif %}">
+                        <div class="step-dot">{% if order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
+                        Delivered
+                    </div>
+
+                </div>
+
+            {% endif %}
 
         </div>
 
-    </div>
+    </header>
 
 
     <div class="container">
 
 
-        <!-- ORDER INFORMATION -->
+        <!-- CUSTOMER INFORMATION -->
 
         <div class="section">
 
-            <h3>Order Information</h3>
+            <h3>Customer</h3>
 
             <div class="info-row">
-                <span class="label">Order ID</span>
-                <span class="value">#{{ order.id }}</span>
-            </div>
 
-            <div class="info-row">
-                <span class="label">Order Date</span>
+                <span class="label">Customer</span>
+
                 <span class="value">
-                    {{ order.created_at|date:"d M Y, h:i A" }}
+                    {{ order.customer_name }}
                 </span>
+
             </div>
 
             <div class="info-row">
-                <span class="label">Payment Method</span>
-                <span class="value">{{ order.payment_method }}</span>
+
+                <span class="label">Phone</span>
+
+                <span class="value">
+                    {{ order.phone }}
+                </span>
+
             </div>
 
-            <div style="margin-top:15px;">
-                <span class="status">
-                    {{ order.get_status_display }}
-                </span>
+            <div class="address-label">
+                Delivery Address
+            </div>
+
+            <div class="address-text">
+                {{ order.address }}
+            </div>
+
+
+            <div class="contact-row">
+
+                <a href="tel:{{ order.phone }}"
+                   class="contact-button call-button">
+
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.77.66 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.83.32 1.7.54 2.6.66A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+
+                    Call
+
+                </a>
+
+
+                {% if order.latitude != None and order.longitude != None %}
+
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ order.latitude }},{{ order.longitude }}"
+                       target="_blank"
+                       rel="noopener"
+                       class="contact-button map-button">
+
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                        </svg>
+
+                        Navigate
+
+                    </a>
+
+                {% endif %}
+
             </div>
 
         </div>
+
+
+        <!-- STORE INFORMATION -->
+
+        <div class="section">
+
+            <h3>Pickup From Store</h3>
+
+            <div class="info-row">
+
+                <span class="label">Store Name</span>
+
+                <span class="value">
+                    {{ order.store.name }}
+                </span>
+
+            </div>
+
+            <p class="muted" style="margin-top:12px;">
+                Collect the order from the store before starting delivery.
+            </p>
+
+        </div>
+
+
+        <!-- CUSTOMER NOTE -->
+
+        {% if order.customer_note %}
+
+            <div class="section">
+
+                <h3>Customer Instructions</h3>
+
+                <div class="note">
+                    {{ order.customer_note|linebreaksbr }}
+                </div>
+
+            </div>
+
+        {% endif %}
 
 
         <!-- ORDER ITEMS -->
@@ -324,122 +651,50 @@
         </div>
 
 
-        <!-- STORE INFORMATION -->
+        <!-- ORDER INFORMATION -->
 
         <div class="section">
 
-            <h3>Pickup From Store</h3>
+            <h3>Order Information</h3>
 
             <div class="info-row">
-
-                <span class="label">Store Name</span>
-
-                <span class="value">
-                    {{ order.store.name }}
-                </span>
-
+                <span class="label">Order ID</span>
+                <span class="value">#{{ order.id }}</span>
             </div>
 
-            <p class="muted">
-                Collect the order from the store before starting delivery.
-            </p>
+            <div class="info-row">
+                <span class="label">Order Date</span>
+                <span class="value">
+                    {{ order.created_at|date:"d M Y, h:i A" }}
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Payment Method</span>
+                <span class="value">{{ order.payment_method }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Status</span>
+                <span class="value">{{ order.get_status_display }}</span>
+            </div>
 
         </div>
 
 
-        <!-- CUSTOMER INFORMATION -->
+        <!-- ORDER STATUS ACTIONS (pinned) -->
 
-        <div class="section">
-
-            <h3>Customer Information</h3>
-
-            <div class="info-row">
-
-                <span class="label">Customer</span>
-
-                <span class="value">
-                    {{ order.customer_name }}
-                </span>
-
-            </div>
-
-            <div class="info-row">
-
-                <span class="label">Phone</span>
-
-                <span class="value">
-                    {{ order.phone }}
-                </span>
-
-            </div>
-
-            <div style="margin-top:15px;">
-
-                <div class="label" style="margin-bottom:8px;">
-                    Delivery Address
-                </div>
-
-                <div style="font-size:14px; line-height:1.6;">
-                    {{ order.address }}
-                </div>
-
-            </div>
-
-
-            <a href="tel:{{ order.phone }}"
-               class="contact-button call-button">
-
-                ☎ Call Customer
-
-            </a>
-
-
-            {% if order.latitude != None and order.longitude != None %}
-
-                <a href="https://www.google.com/maps/dir/?api=1&destination={{ order.latitude }},{{ order.longitude }}"
-                   target="_blank"
-                   class="contact-button map-button">
-
-                    📍 Navigate to Customer
-
-                </a>
-
-            {% endif %}
-
-        </div>
-
-
-        <!-- CUSTOMER NOTE -->
-
-        {% if order.customer_note %}
-
-            <div class="section">
-
-                <h3>Customer Instructions</h3>
-
-                <div class="note">
-                    {{ order.customer_note|linebreaksbr }}
-                </div>
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- ORDER STATUS ACTIONS -->
-
-        <div class="section delivery-actions">
-
-            <h3>Delivery Actions</h3>
+        <div class="delivery-actions">
 
 
             {% if order.status == "ACCEPTED" %}
 
-                <p class="muted">
+                <p class="actions-hint">
                     Collect the order from the store.
                 </p>
 
                 <form method="POST"
+                      class="action-form"
                       action="{% url 'rider_update_status' order.id 'PICKED_UP' %}">
 
                     {% csrf_token %}
@@ -453,12 +708,13 @@
 
             {% elif order.status == "PICKED_UP" %}
 
-                <p class="muted">
+                <p class="actions-hint">
                     You have collected the order.
                     Start delivery when you leave the store.
                 </p>
 
                 <form method="POST"
+                      class="action-form"
                       action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}">
 
                     {% csrf_token %}
@@ -471,15 +727,14 @@
 
 
                 <form method="POST"
-                      action="{% url 'rider_update_status' order.id 'FAILED' %}">
+                      class="action-form"
+                      action="{% url 'rider_update_status' order.id 'FAILED' %}"
+                      onsubmit="return confirm('Are you sure delivery failed?');">
 
                     {% csrf_token %}
 
-                    <button type="submit"
-                            class="action-button failed-button">
-
+                    <button type="submit" class="failed-link">
                         Mark Delivery Failed
-
                     </button>
 
                 </form>
@@ -487,17 +742,18 @@
 
             {% elif order.status == "OUT_FOR_DELIVERY" %}
 
-                <p class="muted">
+                <p class="actions-hint">
                     You are currently delivering this order.
                 </p>
 
                 <form method="POST"
+                      class="action-form"
                       action="{% url 'rider_update_status' order.id 'DELIVERED' %}"
                       onsubmit="return confirm('Are you sure this order has been delivered?');">
 
                     {% csrf_token %}
 
-                    <button type="submit" class="action-button">
+                    <button type="submit" class="action-button success">
                         ✓ Mark as Delivered
                     </button>
 
@@ -505,16 +761,14 @@
 
 
                 <form method="POST"
+                      class="action-form"
                       action="{% url 'rider_update_status' order.id 'FAILED' %}"
                       onsubmit="return confirm('Are you sure delivery failed?');">
 
                     {% csrf_token %}
 
-                    <button type="submit"
-                            class="action-button failed-button">
-
+                    <button type="submit" class="failed-link">
                         Mark Delivery Failed
-
                     </button>
 
                 </form>
@@ -529,14 +783,14 @@
 
             {% elif order.status == "FAILED" %}
 
-                <div style="text-align:center; color:#dc3545; font-weight:bold;">
+                <div class="failed-state">
                     Delivery Failed
                 </div>
 
 
             {% else %}
 
-                <p class="muted">
+                <p class="actions-hint" style="margin:0;">
                     No actions available for this order.
                 </p>
 
@@ -546,6 +800,57 @@
 
 
     </div>
+
+
+<script>
+(function () {
+
+    /* Busy state for the main action buttons; blocks double taps.
+       Runs only if the confirm() on the form (if any) was accepted. */
+
+    document.querySelectorAll(".action-form").forEach(function (form) {
+
+        form.addEventListener("submit", function (event) {
+
+            if (event.defaultPrevented) return;
+
+            if (form.dataset.submitting === "1") {
+                event.preventDefault();
+                return;
+            }
+
+            form.dataset.submitting = "1";
+
+            var btn = form.querySelector(".action-button");
+
+            if (btn) {
+                btn.classList.add("busy");
+            }
+
+        });
+
+    });
+
+    window.addEventListener("pageshow", function (event) {
+
+        if (!event.persisted) return;
+
+        document.querySelectorAll(".action-form").forEach(function (form) {
+            form.dataset.submitting = "";
+
+            var btn = form.querySelector(".action-button");
+
+            if (btn) {
+                btn.classList.remove("busy");
+            }
+        });
+
+    });
+
+})();
+</script>
+
+
 <!-- RIDER LOCATION TRACKING -->
 
 {% if order.status == "OUT_FOR_DELIVERY" %}
