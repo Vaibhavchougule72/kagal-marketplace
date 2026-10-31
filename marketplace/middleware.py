@@ -54,6 +54,11 @@ class CustomerAuthenticationMiddleware:
         "/payment-success/",
         "/partner/",
         "/save-partner-fcm-token/",
+        "/rider-login/",
+        "/rider-dashboard/",
+        "/rider/",
+        "/rider-logout/",
+        "/rider-location/",
     ]
 
     def __init__(self, get_response):

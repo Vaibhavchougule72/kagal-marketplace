@@ -331,8 +331,7 @@
 </style>
 
 <div class="rider-dashboard">
-
-```
+  
 <!-- HEADER -->
 
 <div class="rider-header">
@@ -547,77 +546,6 @@
 {% endfor %}
 
 
-<!-- COMPLETED ORDERS -->
-
-<div id="completed-orders">
-
-    <div class="section-heading">
-        <h4>✅ Completed Orders</h4>
-    </div>
-
-    {% for order in completed_orders %}
-
-        <div class="order-card">
-
-            <div class="order-top">
-
-                <div class="order-id">
-                    Order #{{ order.id }}
-                </div>
-
-                <span class="order-status">
-                    Delivered
-                </span>
-
-            </div>
-
-            <div class="order-info">
-                🏪 {{ order.store.name }}<br>
-                💰 Delivery Earnings: ₹{{ order.delivery_payout }}
-            </div>
-
-            <a href="{% url 'rider_order_detail' order.id %}"
-               class="order-action">
-                View Order Details
-            </a>
-
-        </div>
-
-    {% empty %}
-
-        <div class="empty-state">
-            No completed orders yet.
-        </div>
-
-    {% endfor %}
-
-</div>
-
-
-<!-- EARNINGS -->
-
-<div id="earnings">
-
-    <div class="section-heading">
-        <h4>💰 Earnings Summary</h4>
-    </div>
-
-    <div class="earnings-card">
-
-        <div class="earning-row">
-            <span>Total Earnings</span>
-            <strong>₹{{ total_payout }}</strong>
-        </div>
-
-        <div class="earning-row">
-            <span>Total Distance</span>
-            <strong>{{ total_distance }} km</strong>
-        </div>
-
-    </div>
-
-</div>
-```
 
 </div>
 

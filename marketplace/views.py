@@ -5446,53 +5446,10 @@ def rider_dashboard(request):
         )
 
         # -----------------------------------------
-        # STATISTICS
+        # BASE ORDERS
         # -----------------------------------------
-        total_orders_count = rider_orders.count()
-
-        ongoing_orders_count = rider_orders.exclude(
-            status__in=[
-                "DELIVERED",
-                "FAILED",
-                "CANCELLED"
-            ]
-        ).count()
-
-        accepted_orders_count = rider_orders.filter(
-            status="ACCEPTED"
-        ).count()
-
-        out_for_delivery_count = rider_orders.filter(
-            status="OUT_FOR_DELIVERY"
-        ).count()
-
-        # -----------------------------------------
-        # AVAILABLE ORDERS
-        # -----------------------------------------
-        available_orders = (
-            Order.objects
-            .filter(
-                status="REQUEST_SUBMITTED",
-                assigned_delivery__isnull=True
-            )
-            .select_related("store")
-            .order_by("-created_at")
-        )
-
-        # -----------------------------------------
-        # RIDER'S ACTIVE ORDERS
-        # -----------------------------------------
-        active_orders = (
-            rider_orders
-            .exclude(
-                status__in=[
-                    "DELIVERED",
-                    "FAILED",
-                    "CANCELLED"
-                ]
-            )
-            .select_related("store")
-            .order_by("-created_at")
+        rider_orders = Order.objects.filter(
+            assigned_delivery=request.user
         )
 
         # -----------------------------------------
@@ -5515,25 +5472,26 @@ def rider_dashboard(request):
         )
 
         # -----------------------------------------
-        # COMPLETED ORDERS
+        # STATISTICS — SAME FILTERED ORDERS
         # -----------------------------------------
-        completed_orders = (
-            rider_orders
-            .filter(status="DELIVERED")
-            .select_related("store")
-            .order_by("-created_at")[:10]
-        )
 
-        # -----------------------------------------
-        # EARNINGS
-        # -----------------------------------------
-        total_payout = (
-            rider_orders
-            .filter(status="DELIVERED")
-            .aggregate(
-                Sum("delivery_payout")
-            )["delivery_payout__sum"] or 0
-        )
+        total_orders_count = dashboard_orders.count()
+
+        ongoing_orders_count = dashboard_orders.exclude(
+            status__in=[
+                "DELIVERED",
+                "FAILED",
+                "CANCELLED"
+            ]
+        ).count()
+
+        accepted_orders_count = dashboard_orders.filter(
+            status="ACCEPTED"
+        ).count()
+
+        out_for_delivery_count = dashboard_orders.filter(
+            status="OUT_FOR_DELIVERY"
+        ).count()
 
         # -----------------------------------------
         # TOTAL DISTANCE
@@ -5553,12 +5511,6 @@ def rider_dashboard(request):
 
             "rider_profile": rider_profile,
 
-            "available_orders": available_orders,
-
-            "active_orders": active_orders,
-
-            "completed_orders": completed_orders,
-
             "dashboard_orders": dashboard_orders,
 
             "total_orders_count": total_orders_count,
@@ -5568,10 +5520,6 @@ def rider_dashboard(request):
             "accepted_orders_count": accepted_orders_count,
 
             "out_for_delivery_count": out_for_delivery_count,
-
-            "total_payout": total_payout,
-
-            "total_distance": round(total_distance, 2),
 
             "selected_period": selected_period,
 
