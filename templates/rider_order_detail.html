@@ -825,7 +825,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
-            const data = await response.json();
+            const responseText = await response.text();
+
+            let data;
+
+            try {
+                data = JSON.parse(responseText);
+            } catch (error) {
+                console.error("Server returned HTML instead of JSON:");
+                console.error(responseText);
+
+                throw new Error(
+                    "Server returned an HTML error page. HTTP Status: " + response.status +
+                    ". Check the browser console for details."
+                );
+            }
 
             if (!response.ok || !data.success) {
                 throw new Error(data.message || "Unable to update status.");
