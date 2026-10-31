@@ -84,6 +84,21 @@ urlpatterns = [
         name="rider_update_status"
     ),
     path(
+        "rider/completed-orders/",
+        views.rider_completed_orders,
+        name="rider_completed_orders"
+    ),
+    path(
+        "rider/earning/",
+        views.rider_earning,
+        name="rider_earning"
+    ),
+    path(
+        "rider-login/",
+        views.rider_login,
+        name="rider_login"
+    ),
+    path(
         "rider/location/<int:order_id>/",
         views.update_rider_location,
         name="update_rider_location"

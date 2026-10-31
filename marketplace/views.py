@@ -5288,6 +5288,75 @@ def privacy_policy(request):
         "show_navbar": False
     })
 
+def rider_login(request):
+
+    # If already logged in as an active rider
+    if request.user.is_authenticated:
+
+        rider_profile = DeliveryPartnerProfile.objects.filter(
+            user=request.user,
+            is_active=True
+        ).first()
+
+        if rider_profile:
+            return redirect("rider_dashboard")
+
+    if request.method == "POST":
+
+        username = request.POST.get(
+            "username", ""
+        ).strip()
+
+        password = request.POST.get(
+            "password", ""
+        )
+
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
+        if user is None:
+            return render(
+                request,
+                "rider_login.html",
+                {
+                    "error": "Invalid username or password."
+                }
+            )
+
+        # Check whether this account belongs to a rider
+        rider_profile = DeliveryPartnerProfile.objects.filter(
+            user=user
+        ).first()
+
+        if not rider_profile:
+            return render(
+                request,
+                "rider_login.html",
+                {
+                    "error": "This account is not registered as a delivery partner."
+                }
+            )
+
+        if not rider_profile.is_active:
+            return render(
+                request,
+                "rider_login.html",
+                {
+                    "error": "Your delivery partner account is inactive."
+                }
+            )
+
+        login(request, user)
+
+        return redirect("rider_dashboard")
+
+    return render(
+        request,
+        "rider_login.html"
+    )
 
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -5319,6 +5388,79 @@ def rider_dashboard(request):
 
     try:
 
+        today = timezone.localdate()
+
+        # -----------------------------------------
+        # DATE FILTER
+        # -----------------------------------------
+        selected_period = request.GET.get("period", "today")
+
+        valid_periods = ["today", "week", "month", "custom"]
+
+        if selected_period not in valid_periods:
+            selected_period = "today"
+
+        start_date = today
+        end_date = today
+
+        if selected_period == "week":
+            # Monday to today
+            start_date = today - timedelta(days=today.weekday())
+
+        elif selected_period == "month":
+            # First day of current month to today
+            start_date = today.replace(day=1)
+
+        elif selected_period == "custom":
+
+            start_date_input = request.GET.get("start_date", "")
+            end_date_input = request.GET.get("end_date", "")
+
+            try:
+                start_date = datetime.strptime(
+                    start_date_input, "%Y-%m-%d"
+                ).date()
+
+                end_date = datetime.strptime(
+                    end_date_input, "%Y-%m-%d"
+                ).date()
+
+                if start_date > end_date:
+                    start_date = today
+                    end_date = today
+
+            except (ValueError, TypeError):
+                start_date = today
+                end_date = today
+
+        # -----------------------------------------
+        # RIDER'S ALL-TIME ORDERS
+        # -----------------------------------------
+        rider_orders = Order.objects.filter(
+            assigned_delivery=request.user
+        )
+
+        # -----------------------------------------
+        # STATISTICS
+        # -----------------------------------------
+        total_orders_count = rider_orders.count()
+
+        ongoing_orders_count = rider_orders.exclude(
+            status__in=[
+                "DELIVERED",
+                "FAILED",
+                "CANCELLED"
+            ]
+        ).count()
+
+        accepted_orders_count = rider_orders.filter(
+            status="ACCEPTED"
+        ).count()
+
+        out_for_delivery_count = rider_orders.filter(
+            status="OUT_FOR_DELIVERY"
+        ).count()
+
         # -----------------------------------------
         # AVAILABLE ORDERS
         # -----------------------------------------
@@ -5336,10 +5478,7 @@ def rider_dashboard(request):
         # RIDER'S ACTIVE ORDERS
         # -----------------------------------------
         active_orders = (
-            Order.objects
-            .filter(
-                assigned_delivery=request.user
-            )
+            rider_orders
             .exclude(
                 status__in=[
                     "DELIVERED",
@@ -5352,14 +5491,30 @@ def rider_dashboard(request):
         )
 
         # -----------------------------------------
+        # DASHBOARD ORDERS WITH DATE FILTER
+        # Includes available orders + rider's orders
+        # -----------------------------------------
+        dashboard_orders = (
+            Order.objects
+            .filter(
+                Q(
+                    status="REQUEST_SUBMITTED",
+                    assigned_delivery__isnull=True
+                )
+                |
+                Q(assigned_delivery=request.user),
+                created_at__date__range=(start_date, end_date)
+            )
+            .select_related("store")
+            .order_by("-created_at")
+        )
+
+        # -----------------------------------------
         # COMPLETED ORDERS
         # -----------------------------------------
         completed_orders = (
-            Order.objects
-            .filter(
-                assigned_delivery=request.user,
-                status="DELIVERED"
-            )
+            rider_orders
+            .filter(status="DELIVERED")
             .select_related("store")
             .order_by("-created_at")[:10]
         )
@@ -5368,11 +5523,8 @@ def rider_dashboard(request):
         # EARNINGS
         # -----------------------------------------
         total_payout = (
-            Order.objects
-            .filter(
-                assigned_delivery=request.user,
-                status="DELIVERED"
-            )
+            rider_orders
+            .filter(status="DELIVERED")
             .aggregate(
                 Sum("delivery_payout")
             )["delivery_payout__sum"] or 0
@@ -5382,17 +5534,17 @@ def rider_dashboard(request):
         # TOTAL DISTANCE
         # -----------------------------------------
         total_distance = (
-            Order.objects
-            .filter(
-                assigned_delivery=request.user,
-                status="DELIVERED"
-            )
+            rider_orders
+            .filter(status="DELIVERED")
             .aggregate(
                 Sum("delivery_distance")
             )["delivery_distance__sum"] or 0
         )
 
-        return render(request, "rider_dashboard.html", {
+        # -----------------------------------------
+        # FINAL CONTEXT
+        # -----------------------------------------
+        context = {
 
             "rider_profile": rider_profile,
 
@@ -5402,15 +5554,37 @@ def rider_dashboard(request):
 
             "completed_orders": completed_orders,
 
+            "dashboard_orders": dashboard_orders,
+
+            "total_orders_count": total_orders_count,
+
+            "ongoing_orders_count": ongoing_orders_count,
+
+            "accepted_orders_count": accepted_orders_count,
+
+            "out_for_delivery_count": out_for_delivery_count,
+
             "total_payout": total_payout,
 
             "total_distance": round(total_distance, 2),
 
+            "selected_period": selected_period,
+
+            "start_date": request.GET.get("start_date", ""),
+
+            "end_date": request.GET.get("end_date", ""),
+
             "show_floating_cart": False,
 
-            "simple_navbar": True
+            "simple_navbar": True,
 
-        })
+        }
+
+        return render(
+            request,
+            "rider_dashboard.html",
+            context
+        )
 
     except Exception:
 
@@ -5419,6 +5593,7 @@ def rider_dashboard(request):
         return HttpResponse(
             "Rider dashboard failed. Check logs."
         )
+
 
 # =====================================================
 # RIDER ORDER DETAILS
@@ -5468,6 +5643,146 @@ def rider_order_detail(request, order_id):
     return render(
         request,
         "rider_order_detail.html",
+        context
+    )
+
+# =====================================================
+# RIDER COMPLETED ORDERS
+# =====================================================
+
+@login_required
+def rider_completed_orders(request):
+
+    # Verify active rider
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return HttpResponseForbidden("Rider account not active.")
+
+    # Fetch all successfully delivered orders
+    completed_orders = (
+        Order.objects
+        .filter(
+            assigned_delivery=request.user,
+            status="DELIVERED"
+        )
+        .select_related("store")
+        .order_by("-created_at")
+    )
+
+    # Summary statistics
+    summary = completed_orders.aggregate(
+        total_earnings=Sum("delivery_payout"),
+        total_distance=Sum("delivery_distance")
+    )
+
+    context = {
+        "rider_profile": rider_profile,
+        "completed_orders": completed_orders,
+        "completed_count": completed_orders.count(),
+        "total_earnings": summary["total_earnings"] or 0,
+        "total_distance": round(
+            summary["total_distance"] or 0, 2
+        ),
+        "show_floating_cart": False,
+        "simple_navbar": True,
+    }
+
+    return render(
+        request,
+        "rider_completed_orders.html",
+        context
+    )
+
+from datetime import timedelta
+from django.utils import timezone
+from django.db.models import Sum
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.shortcuts import render
+
+
+@login_required
+def rider_earning(request):
+
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return HttpResponseForbidden("Rider account not active.")
+
+    today = timezone.localdate()
+
+    # Start of the current week (Monday)
+    week_start = today - timedelta(days=today.weekday())
+
+    # Start of the current month
+    month_start = today.replace(day=1)
+
+    # Only successfully delivered orders
+    delivered_orders = Order.objects.filter(
+        assigned_delivery=request.user,
+        status="DELIVERED"
+    )
+
+    # Earnings calculations
+    total_earnings = delivered_orders.aggregate(
+        total=Sum("delivery_payout")
+    )["total"] or 0
+
+    today_earnings = delivered_orders.filter(
+        created_at__date=today
+    ).aggregate(
+        total=Sum("delivery_payout")
+    )["total"] or 0
+
+    weekly_earnings = delivered_orders.filter(
+        created_at__date__gte=week_start,
+        created_at__date__lte=today
+    ).aggregate(
+        total=Sum("delivery_payout")
+    )["total"] or 0
+
+    monthly_earnings = delivered_orders.filter(
+        created_at__date__gte=month_start,
+        created_at__date__lte=today
+    ).aggregate(
+        total=Sum("delivery_payout")
+    )["total"] or 0
+
+    # Delivery statistics
+    total_deliveries = delivered_orders.count()
+
+    total_distance = delivered_orders.aggregate(
+        total=Sum("delivery_distance")
+    )["total"] or 0
+
+    # Recent earnings history
+    recent_earnings = delivered_orders.select_related(
+        "store"
+    ).order_by("-created_at")[:20]
+
+    context = {
+        "rider_profile": rider_profile,
+        "total_earnings": total_earnings,
+        "today_earnings": today_earnings,
+        "weekly_earnings": weekly_earnings,
+        "monthly_earnings": monthly_earnings,
+        "total_deliveries": total_deliveries,
+        "total_distance": round(total_distance, 2),
+        "recent_earnings": recent_earnings,
+        "show_floating_cart": False,
+        "simple_navbar": True,
+    }
+
+    return render(
+        request,
+        "rider_earning.html",
         context
     )
 

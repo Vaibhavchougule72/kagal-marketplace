@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Earnings | LOKA Rider</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7f4;
+            color: #26332b;
+        }
+
+        .header {
+            background: #14532d;
+            color: white;
+            padding: 22px 18px 30px;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .back {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 22px;
+            font-size: 14px;
+        }
+
+        .header h2 {
+            font-size: 23px;
+            margin-bottom: 7px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            padding: 18px 15px 35px;
+        }
+
+        .main-card {
+            background: white;
+            padding: 23px 20px;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-top: -2px;
+            text-align: center;
+        }
+
+        .main-card .label {
+            color: #718078;
+            font-size: 13px;
+        }
+
+        .main-card h1 {
+            color: #14532d;
+            font-size: 35px;
+            margin: 10px 0;
+        }
+
+        .main-card .subtext {
+            color: #89948d;
+            font-size: 12px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            margin: 25px 0 13px;
+            font-weight: 700;
+        }
+
+        .earning-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .earning-card {
+            background: white;
+            border-radius: 15px;
+            padding: 17px 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+        }
+
+        .earning-card .icon {
+            font-size: 21px;
+            margin-bottom: 10px;
+        }
+
+        .earning-card .label {
+            font-size: 12px;
+            color: #7b8980;
+        }
+
+        .earning-card h3 {
+            font-size: 21px;
+            margin-top: 7px;
+            color: #14532d;
+        }
+
+        .stats-card {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            padding: 18px;
+            border-radius: 15px;
+            margin-top: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+        }
+
+        .stats-card .stat-label {
+            color: #7b8980;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .stats-card h3 {
+            font-size: 19px;
+            color: #14532d;
+        }
+
+        .history-card {
+            background: white;
+            padding: 16px;
+            border-radius: 15px;
+            margin-bottom: 11px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+        }
+
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .order-id {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .amount {
+            color: #15803d;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .history-details {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            color: #7b8980;
+            margin-top: 7px;
+        }
+
+        .empty {
+            background: white;
+            padding: 35px 15px;
+            text-align: center;
+            border-radius: 15px;
+            color: #7b8980;
+        }
+
+        .empty .icon {
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 360px) {
+            .main-card h1 {
+                font-size: 29px;
+            }
+
+            .earning-card h3 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <a href="{% url 'rider_dashboard' %}" class="back">
+        ← Back to Dashboard
+    </a>
+
+    <h2>My Earnings 💰</h2>
+    <p>Track your delivery earnings and performance.</p>
+</div>
+
+<div class="container">
+
+    <!-- Total Earnings -->
+    <div class="main-card">
+        <div class="label">Total Earnings</div>
+
+        <h1>₹{{ total_earnings|floatformat:2 }}</h1>
+
+        <div class="subtext">
+            From {{ total_deliveries }} successful deliveries
+        </div>
+    </div>
+
+    <!-- Earnings Breakdown -->
+    <div class="section-title">Earnings Overview</div>
+
+    <div class="earning-grid">
+
+        <div class="earning-card">
+            <div class="icon">☀️</div>
+            <div class="label">Today's Earnings</div>
+            <h3>₹{{ today_earnings|floatformat:2 }}</h3>
+        </div>
+
+        <div class="earning-card">
+            <div class="icon">📅</div>
+            <div class="label">This Week</div>
+            <h3>₹{{ weekly_earnings|floatformat:2 }}</h3>
+        </div>
+
+        <div class="earning-card">
+            <div class="icon">🗓️</div>
+            <div class="label">This Month</div>
+            <h3>₹{{ monthly_earnings|floatformat:2 }}</h3>
+        </div>
+
+        <div class="earning-card">
+            <div class="icon">📦</div>
+            <div class="label">Total Deliveries</div>
+            <h3>{{ total_deliveries }}</h3>
+        </div>
+
+    </div>
+
+    <!-- Delivery Statistics -->
+    <div class="section-title">Delivery Statistics</div>
+
+    <div class="stats-card">
+        <div>
+            <div class="stat-label">Total Distance</div>
+            <h3>{{ total_distance }} km</h3>
+        </div>
+
+        <div style="font-size: 30px;">🛵</div>
+    </div>
+
+    <!-- Earnings History -->
+    <div class="section-title">Recent Earnings</div>
+
+    {% for order in recent_earnings %}
+
+        <div class="history-card">
+
+            <div class="history-top">
+                <div class="order-id">
+                    Order #{{ order.id }}
+                </div>
+
+                <div class="amount">
+                    +₹{{ order.delivery_payout|floatformat:2 }}
+                </div>
+            </div>
+
+            <div style="font-size:13px; font-weight:600;">
+                {{ order.store.name }}
+            </div>
+
+            <div class="history-details">
+                <span>
+                    {{ order.created_at|date:"d M Y, h:i A" }}
+                </span>
+
+                <span>
+                    {{ order.delivery_distance|floatformat:2 }} km
+                </span>
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <div class="empty">
+            <div class="icon">💰</div>
+            <h3>No Earnings Yet</h3>
+            <p style="font-size:13px; margin-top:8px;">
+                Your completed delivery earnings will appear here.
+            </p> 
+        </div> 
+    {% endfor %} 
+</div> 
+
+</body> 
+
+</html>
