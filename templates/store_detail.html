@@ -1388,6 +1388,35 @@ body{
     .lk-pop { animation: none; }
 }
 
+/* ── "✓ ADDED" confirmation state ── */
+
+/* Featured products + bundles */
+.sd-feat-add { min-width: 52px; }
+
+.sd-feat-add.lk-added {
+    background: #166534;
+    font-size: 0;               /* hides the "ADD" text */
+}
+.sd-feat-add.lk-added::after {
+    content: "✓ ADDED";
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .2px;
+}
+
+/* All Food Items grid (button text already comes from ::after) */
+.sd-product-card .sd-add-btn.lk-added {
+    background: #166534;
+}
+.sd-product-card .sd-add-btn.lk-added::after {
+    content: "✓ ADDED";
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sd-feat-add.lk-added,
+    .sd-product-card .sd-add-btn.lk-added { animation: none; }
+}
+
 </style>
 
 <!-- ══════════════════════════════════════════
@@ -2205,9 +2234,8 @@ sheetAddBtn.onclick = function () {
     window.addEventListener("load", updateArrowVisibility);
 })();
 </script>
-
 <script>
-/* ADD buttons: ripple + pop on click (delegated, so it also works on AJAX-loaded cards) */
+/* ADD buttons: ripple + pop + "✓ ADDED" (delegated, so it also works on AJAX-loaded cards) */
 document.addEventListener("click", function (e) {
 
     var btn = e.target.closest(".sd-feat-add, .sd-add-btn, #sheetAddBtn");
@@ -2227,11 +2255,20 @@ document.addEventListener("click", function (e) {
     btn.appendChild(dot);
     setTimeout(function () { dot.remove(); }, 600);
 
-    // quick pop
+    // pop
     btn.classList.remove("lk-pop");
     void btn.offsetWidth;            // restart the animation on rapid taps
     btn.classList.add("lk-pop");
     setTimeout(function () { btn.classList.remove("lk-pop"); }, 400);
+
+    // "✓ ADDED" (not for the bottom sheet button, it closes the sheet anyway)
+    if (btn.id !== "sheetAddBtn") {
+        btn.classList.add("lk-added");
+        clearTimeout(btn._addedTimer);
+        btn._addedTimer = setTimeout(function () {
+            btn.classList.remove("lk-added");
+        }, 1000);
+    }
 
 });
 </script>
