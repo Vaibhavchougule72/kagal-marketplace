@@ -688,6 +688,8 @@
                 data-current-status="{{ order.status }}"
                 {% if order.status == "ACCEPTED" %}
                     action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}"
+                {% elif order.status == "PICKED_UP" %}
+                    action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}"
                 {% elif order.status == "OUT_FOR_DELIVERY" %}
                     action="{% url 'rider_update_status' order.id 'DELIVERED' %}"
                 {% endif %}
@@ -742,11 +744,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const order = [
             "ACCEPTED",
+            "PICKED_UP",
             "OUT_FOR_DELIVERY",
             "DELIVERED"
         ];
 
-        const currentIndex = order.indexOf(status);
+        let currentIndex = order.indexOf(status);
+
+        // Treat PICKED_UP as the Accepted stage in the three-step tracker.
+        if (status === "PICKED_UP") {
+            currentIndex = 0;
+        }
+        else if (status === "OUT_FOR_DELIVERY") {
+            currentIndex = 1;
+        }
+        else if (status === "DELIVERED") {
+            currentIndex = 2;
+        }
 
         steps.forEach((step, index) => {
 
@@ -771,7 +785,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateButton(status) {
 
-        if (status === "ACCEPTED") {
+        if (status === "ACCEPTED" || status === "PICKED_UP") {
             form.hidden = false;
             button.hidden = false;
             button.disabled = false;

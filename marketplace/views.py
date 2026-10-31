@@ -6101,7 +6101,7 @@ def rider_update_status(request, order_id, new_status):
     # ALLOWED TRANSITIONS
     allowed_transitions = {
         "ACCEPTED": ["REQUEST_SUBMITTED"],
-        "OUT_FOR_DELIVERY": ["ACCEPTED"],
+        "OUT_FOR_DELIVERY": ["ACCEPTED", "PICKED_UP"],
         "DELIVERED": ["OUT_FOR_DELIVERY"],
     }
 
