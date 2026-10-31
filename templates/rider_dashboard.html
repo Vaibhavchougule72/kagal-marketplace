@@ -3,66 +3,78 @@
 
 <style>
     :root {
-        --rider-green: #214d27;
-        --rider-orange: #f36b16;
-        --rider-bg: #f5f5f0;
+        --rd-green: #2D5A27;
+        --rd-dark: #1A3A16;
+        --rd-orange: #E8621A;
+        --rd-bg: #F5F5F0;
     }
 
     body {
-        background: var(--rider-bg);
+        background: var(--rd-bg);
+    }
+
+    .rider-dashboard,
+    .rider-dashboard * {
+        box-sizing: border-box;
     }
 
     .rider-dashboard {
         max-width: 700px;
         margin: auto;
         padding: 0 15px 40px;
+        color: var(--rd-dark);
     }
 
-    /* HEADER */
+    /* ============================= */
+    /* HERO (LOKA nav gradient) */
+    /* ============================= */
 
-    .rider-header {
-        background: linear-gradient(120deg, #174523, #30351c);
+    .rd-hero {
+        background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
         color: white;
         margin: 0 -15px;
-        padding: 18px 16px 55px;
+        padding: 18px 16px 64px;
         border-radius: 0 0 28px 28px;
     }
 
-    .header-top {
+    .rd-hero-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    .brand {
-        font-size: 18px;
-        font-weight: 900;
-        letter-spacing: 1.5px;
+    .rd-brand {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        opacity: 0.85;
     }
 
-    .logout-btn {
+    .rd-logout {
         color: white;
         text-decoration: none;
         font-size: 13px;
         font-weight: 700;
-        padding: 9px 14px;
-        border-radius: 9px;
-        background: var(--rider-orange);
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--rd-orange);
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .rider-name {
-        font-size: 23px;
-        font-weight: 900;
-        margin-top: 22px;
-        margin-bottom: 14px;
+    .rd-logout:active {
+        transform: scale(0.96);
     }
 
-    /* RIDER STATUS */
+    .rd-name {
+        font-size: 24px;
+        font-weight: 800;
+        margin: 16px 0 14px;
+    }
 
-    .rider-status {
-        background: rgba(255,255,255,.15);
+    .rd-status {
+        background: rgba(255, 255, 255, 0.14);
         border-radius: 14px;
-        padding: 13px;
+        padding: 13px 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -70,230 +82,329 @@
         font-weight: 700;
     }
 
-    .status-indicator {
+    .rd-status-left {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 9px;
     }
 
-    .status-dot {
+    .rd-dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
+        flex-shrink: 0;
     }
 
-    .status-active {
-        background: #39df91;
+    .rd-dot.on {
+        background: #3ddc84;
+        box-shadow: 0 0 0 4px rgba(61, 220, 132, 0.25);
     }
 
-    .status-inactive {
-        background: #ff5252;
+    .rd-dot.off {
+        background: #ff6b6b;
     }
 
-    /* STATISTICS */
+    .rd-status-right {
+        font-size: 13px;
+        opacity: 0.8;
+    }
 
-    .stats-grid {
+    /* ============================= */
+    /* COLOR-CODED COUNTS (overlap hero) */
+    /* ============================= */
+
+    .rd-stats {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-top: -32px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: -40px;
         position: relative;
     }
 
-    .stat-card {
+    .rd-stat {
         background: white;
-        border-radius: 15px;
-        padding: 14px;
-        box-shadow: 0 5px 15px rgba(0,0,0,.07);
-        border-top: 4px solid var(--rider-green);
+        border-radius: 14px;
+        padding: 11px 6px 10px;
+        text-align: center;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
+        border-top: 3px solid #372B14;
     }
 
-    .stat-card.orange {
-        border-top-color: var(--rider-orange);
+    .rd-stat.ongoing   { border-top-color: var(--rd-orange); }
+    .rd-stat.accepted  { border-top-color: #3ddc84; }
+    .rd-stat.delivery  { border-top-color: #ff6b6b; }
+
+    .rd-stat-value {
+        font-size: 23px;
+        font-weight: 800;
+        line-height: 1.1;
     }
 
-    .stat-card.green {
-        border-top-color: #28b875;
+    .rd-stat.ongoing .rd-stat-value {
+        color: var(--rd-orange);
     }
 
-    .stat-card.red {
-        border-top-color: #ef5360;
-    }
-
-    .stat-label {
-        font-size: 12px;
+    .rd-stat-label {
+        margin-top: 3px;
+        font-size: 11px;
+        font-weight: 600;
         color: #777;
     }
 
-    .stat-value {
-        font-size: 25px;
-        font-weight: 900;
-        margin-top: 4px;
-        color: #173f20;
-    }
+    /* ============================= */
+    /* EARNINGS ROW */
+    /* ============================= */
 
-    /* QUICK LINKS */
-
-    .quick-links {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
+    .rd-earning {
+        display: flex;
+        align-items: center;
         gap: 12px;
-        margin: 25px 0;
-    }
-
-    .quick-link {
-        text-decoration: none;
-        text-align: center;
+        margin-top: 14px;
+        padding: 12px 14px;
         background: white;
-        padding: 17px 8px;
-        border-radius: 14px;
-        box-shadow: 0 3px 12px rgba(0,0,0,.05);
-        color: #222;
-        font-size: 13px;
-        font-weight: 800;
+        border-radius: 15px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        text-decoration: none;
+        color: var(--rd-dark);
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease;
     }
 
-    .quick-icon {
-        width: 48px;
-        height: 48px;
+    .rd-earning:active {
+        transform: scale(0.98);
+    }
+
+    .rd-earning-icon {
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        margin: 0 auto 9px;
+        background: var(--rd-orange);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 21px;
-        background: var(--rider-green);
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(232, 98, 26, 0.35);
     }
 
-    .quick-link:nth-child(2) .quick-icon {
-        background: var(--rider-orange);
+    .rd-earning-text {
+        flex: 1;
+        font-size: 15px;
+        font-weight: 800;
     }
 
-    /* SECTION HEADER */
+    .rd-earning-text small {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #7A8A78;
+        margin-top: 1px;
+    }
 
-    .section-heading {
+    .rd-earning-chev {
+        color: #9AA899;
+        display: flex;
+    }
+
+    /* ============================= */
+    /* ORDERS HEADING + FILTER */
+    /* ============================= */
+
+    .rd-orders-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin: 25px 0 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 22px 0 14px;
     }
 
-    .section-heading h4 {
-        font-size: 18px;
-        font-weight: 900;
-        color: #183e20;
+    .rd-orders-head h4 {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+        color: #183E20;
+    }
+
+    .rd-filter {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
         margin: 0;
     }
 
-    /* FILTER */
-
-    .filter-form {
-        background: white;
-        padding: 12px;
-        border-radius: 13px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    .rd-filter.custom-open {
+        flex-basis: 100%;
+        justify-content: flex-start;
     }
 
-    .filter-form select,
-    .filter-form input {
-        border: 1px solid #ddd;
+    .rd-filter select,
+    .rd-filter input {
+        height: 40px;
+        border: 1px solid #d0d0d0;
         border-radius: 9px;
-        padding: 10px;
-        font-size: 13px;
-        width: 100%;
+        padding: 0 12px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        color: var(--rd-dark);
         background: white;
     }
 
-    .custom-date {
-        display: none;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-top: 10px;
+    .rd-filter select {
+        min-width: 130px;
+        cursor: pointer;
     }
 
-    .filter-btn {
-        background: var(--rider-green);
-        color: white;
+    .rd-custom-date {
+        display: none;
+        flex: 1;
+        gap: 8px;
+        min-width: 100%;
+    }
+
+    .rd-custom-date input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rd-filter.custom-open .rd-custom-date {
+        display: flex;
+    }
+
+    .rd-filter-btn {
+        display: none;
+        height: 40px;
+        padding: 0 18px;
         border: none;
         border-radius: 9px;
-        padding: 10px 16px;
+        background: var(--rd-green);
+        color: white;
+        font-size: 14px;
         font-weight: 700;
-        width: 100%;
-        margin-top: 10px;
+        font-family: inherit;
+        cursor: pointer;
     }
 
+    .rd-filter.custom-open .rd-filter-btn {
+        display: block;
+    }
+
+    /* ============================= */
     /* ORDER CARDS */
+    /* ============================= */
 
-    .order-card {
+    .rd-order {
         background: white;
-        border-radius: 15px;
+        border-radius: 16px;
         padding: 16px;
-        margin-bottom: 13px;
-        box-shadow: 0 3px 12px rgba(0,0,0,.05);
+        margin-bottom: 14px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .order-top {
+    .rd-order.is-new {
+        background: #FFF9F4;
+        box-shadow:
+            0 0 0 3px var(--rd-orange),
+            0 0 0 7px rgba(232, 98, 26, 0.15);
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+
+    .rd-order-top {
         display: flex;
         justify-content: space-between;
-        gap: 10px;
         align-items: center;
-        margin-bottom: 12px;
+        gap: 10px;
+        margin-bottom: 10px;
     }
 
-    .order-id {
-        font-size: 15px;
-        font-weight: 900;
-        color: #173f20;
-    }
-
-    .order-status {
-        font-size: 11px;
+    .rd-order-id {
+        font-size: 16px;
         font-weight: 800;
-        padding: 6px 9px;
-        border-radius: 20px;
-        background: #e9f4eb;
-        color: #24783a;
+        color: #173F20;
     }
 
-    .order-info {
-        font-size: 13px;
+    .rd-order-status {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 6px 11px;
+        border-radius: 20px;
+        background: #EAF5E8;
+        color: #2D6B27;
+        white-space: nowrap;
+    }
+
+    .rd-order.is-new .rd-order-status {
+        background: #FDF1EB;
+        color: #C05018;
+    }
+
+    .rd-order-info {
+        font-size: 14px;
         line-height: 1.9;
         color: #444;
     }
 
-    .order-info strong {
+    .rd-order-info strong {
         color: #222;
     }
 
-    .order-action {
+    .rd-order-info a {
+        color: var(--rd-green);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .rd-order-action {
         display: block;
         width: 100%;
         text-align: center;
         text-decoration: none;
-        padding: 11px;
-        background: var(--rider-green);
+        padding: 12px;
+        background: var(--rd-green);
         color: white;
-        border-radius: 10px;
-        font-size: 13px;
+        border-radius: 11px;
+        font-size: 14px;
         font-weight: 800;
-        margin-top: 13px;
+        margin-top: 14px;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    .accept-btn {
+    .rd-accept-form {
+        margin: 0;
+    }
+
+    .rd-accept-btn {
         display: block;
         width: 100%;
         border: none;
-        padding: 11px;
-        background: var(--rider-orange);
+        padding: 13px;
+        background: var(--rd-orange);
         color: white;
-        border-radius: 10px;
+        border-radius: 11px;
+        font-size: 15px;
         font-weight: 800;
-        margin-top: 10px;
+        font-family: inherit;
+        margin-top: 14px;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(232, 98, 26, 0.35);
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease;
     }
 
-    .empty-state {
+    .rd-accept-btn:active {
+        transform: scale(0.97);
+    }
+
+    .rd-accept-btn.accepting {
+        opacity: 0.75;
+        pointer-events: none;
+    }
+
+    .rd-empty {
         background: white;
         padding: 30px 15px;
         text-align: center;
@@ -302,272 +413,316 @@
         font-size: 14px;
     }
 
-    /* EARNINGS */
-
-    .earnings-card {
-        background: white;
-        padding: 18px;
-        border-radius: 15px;
-        margin-top: 15px;
-    }
-
-    .earning-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-        font-size: 14px;
-    }
-
-    .earning-row:last-child {
-        border-bottom: none;
-    }
-
-    @media (min-width: 600px) {
-        .stats-grid {
-            grid-template-columns: repeat(4, 1fr);
-        }
+    @media (max-width: 380px) {
+        .rd-stat-value { font-size: 21px; }
+        .rd-stat-label { font-size: 10.5px; }
     }
 </style>
 
 <div class="rider-dashboard">
-  
-<!-- HEADER -->
 
-<div class="rider-header">
+    <!-- ================================= -->
+    <!-- HERO -->
+    <!-- ================================= -->
 
-    <div class="header-top">
+    <div class="rd-hero">
 
-        <div class="brand">LOKA RIDER</div>
+        <div class="rd-hero-top">
 
-        <a href="{% url 'rider_logout' %}" class="logout-btn">
-            Logout
-        </a>
+            <div class="rd-brand">LOKA RIDER</div>
+
+            <a href="{% url 'rider_logout' %}" class="rd-logout">
+                Logout
+            </a>
+
+        </div>
+
+        <div class="rd-name">
+            {{ request.user.get_full_name|default:request.user.username }}
+        </div>
+
+        <div class="rd-status">
+
+            <div class="rd-status-left">
+
+                {% if rider_profile.is_active %}
+
+                    <span class="rd-dot on"></span>
+                    Rider Active
+
+                {% else %}
+
+                    <span class="rd-dot off"></span>
+                    Rider Inactive
+
+                {% endif %}
+
+            </div>
+
+            <span class="rd-status-right">
+                {% if rider_profile.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+
+        </div>
 
     </div>
 
-    <div class="rider-name">
-        {{ request.user.get_full_name|default:request.user.username }}
+
+    <!-- ================================= -->
+    <!-- COLOR-CODED COUNTS -->
+    <!-- ================================= -->
+
+    <div class="rd-stats">
+
+        <div class="rd-stat">
+            <div class="rd-stat-value">{{ total_orders_count|default:0 }}</div>
+            <div class="rd-stat-label">Total</div>
+        </div>
+
+        <div class="rd-stat ongoing">
+            <div class="rd-stat-value">{{ ongoing_orders_count|default:0 }}</div>
+            <div class="rd-stat-label">Ongoing</div>
+        </div>
+
+        <div class="rd-stat accepted">
+            <div class="rd-stat-value">{{ accepted_orders_count|default:0 }}</div>
+            <div class="rd-stat-label">Accepted</div>
+        </div>
+
+        <div class="rd-stat delivery">
+            <div class="rd-stat-value">{{ out_for_delivery_count|default:0 }}</div>
+            <div class="rd-stat-label">Delivering</div>
+        </div>
+
     </div>
 
-    <div class="rider-status">
 
-        <div class="status-indicator">
+    <!-- ================================= -->
+    <!-- EARNINGS -->
+    <!-- ================================= -->
 
-            {% if rider_profile.is_active %}
+    <a href="{% url 'rider_earning' %}" class="rd-earning">
 
-                <span class="status-dot status-active"></span>
-                Rider Active
+        <span class="rd-earning-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"></path>
+                <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path>
+            </svg>
+        </span>
+
+        <span class="rd-earning-text">
+            Earnings
+            <small>See what you have earned</small>
+        </span>
+
+        <span class="rd-earning-chev">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </span>
+
+    </a>
+
+
+    <!-- ================================= -->
+    <!-- ORDERS HEADING + DATE FILTER -->
+    <!-- ================================= -->
+
+    <div class="rd-orders-head">
+
+        <h4>📦 Today's Orders</h4>
+
+        <form method="GET" class="rd-filter" id="rdFilter">
+
+            <select name="period" id="periodFilter" aria-label="Period">
+
+                <option value="today"
+                    {% if selected_period == "today" %}selected{% endif %}>
+                    Today
+                </option>
+
+                <option value="week"
+                    {% if selected_period == "week" %}selected{% endif %}>
+                    This Week
+                </option>
+
+                <option value="month"
+                    {% if selected_period == "month" %}selected{% endif %}>
+                    This Month
+                </option>
+
+                <option value="custom"
+                    {% if selected_period == "custom" %}selected{% endif %}>
+                    Custom Range
+                </option>
+
+            </select>
+
+            <div class="rd-custom-date" id="customDateFields">
+
+                <input type="date"
+                       name="start_date"
+                       value="{{ start_date|default:'' }}"
+                       aria-label="Start date">
+
+                <input type="date"
+                       name="end_date"
+                       value="{{ end_date|default:'' }}"
+                       aria-label="End date">
+
+            </div>
+
+            <button type="submit" class="rd-filter-btn" id="applyFilterBtn">
+                Apply
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- ORDER LIST -->
+    <!-- ================================= -->
+
+    {% for order in dashboard_orders %}
+
+        <div class="rd-order{% if order.status == 'REQUEST_SUBMITTED' %} is-new{% endif %}">
+
+            <div class="rd-order-top">
+
+                <div class="rd-order-id">
+                    Order #{{ order.id }}
+                </div>
+
+                <span class="rd-order-status">
+                    {{ order.get_status_display }}
+                </span>
+
+            </div>
+
+            <div class="rd-order-info">
+
+                🏪 <strong>Store:</strong> {{ order.store.name }}<br>
+
+                👤 <strong>Customer:</strong> {{ order.customer_name }}<br>
+
+                📞 <strong>Phone:</strong>
+                <a href="tel:{{ order.phone }}">{{ order.phone }}</a><br>
+
+                📍 <strong>Address:</strong> {{ order.address }}<br>
+
+                💰 <strong>Order Amount:</strong> ₹{{ order.total }}
+
+            </div>
+
+            {% if order.status == "REQUEST_SUBMITTED" %}
+
+                <form method="POST"
+                      class="rd-accept-form"
+                      action="{% url 'rider_update_status' order.id 'ACCEPTED' %}">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="rd-accept-btn">
+                        Accept Order
+                    </button>
+
+                </form>
 
             {% else %}
 
-                <span class="status-dot status-inactive"></span>
-                Rider Inactive
+                <a href="{% url 'rider_order_detail' order.id %}"
+                   class="rd-order-action">
+
+                    View Order Details →
+
+                </a>
 
             {% endif %}
 
         </div>
 
-        <span>
-            {% if rider_profile.is_active %}Active{% else %}Inactive{% endif %}
-        </span>
+    {% empty %}
 
-    </div>
-
-</div>
-
-
-<!-- STATISTICS -->
-
-<div class="stats-grid">
-
-    <div class="stat-card">
-        <div class="stat-label">Total Orders</div>
-        <div class="stat-value">{{ total_orders_count|default:0 }}</div>
-    </div>
-
-    <div class="stat-card orange">
-        <div class="stat-label">Ongoing Orders</div>
-        <div class="stat-value">{{ ongoing_orders_count|default:0 }}</div>
-    </div>
-
-    <div class="stat-card green">
-        <div class="stat-label">Accepted</div>
-        <div class="stat-value">{{ accepted_orders_count|default:0 }}</div>
-    </div>
-
-    <div class="stat-card red">
-        <div class="stat-label">Out for Delivery</div>
-        <div class="stat-value">{{ out_for_delivery_count|default:0 }}</div>
-    </div>
-
-</div>
-
-
-<!-- QUICK LINKS -->
-
-<div class="quick-links">
-
-    <a href="{% url 'rider_completed_orders' %}">
-        Completed Orders
-    </a>
-
-    <a href="{% url 'rider_earning' %}">
-        Earning
-    </a>
-
-</div>
-
-
-<!-- TODAY'S ORDERS -->
-
-<div class="section-heading">
-
-    <h4>📦 Today's Orders</h4>
-
-</div>
-
-
-<!-- DATE FILTER -->
-
-<form method="GET" class="filter-form">
-
-    <select name="period" id="periodFilter">
-
-        <option value="today"
-            {% if selected_period == "today" %}selected{% endif %}>
-            Today
-        </option>
-
-        <option value="week"
-            {% if selected_period == "week" %}selected{% endif %}>
-            This Week
-        </option>
-
-        <option value="month"
-            {% if selected_period == "month" %}selected{% endif %}>
-            This Month
-        </option>
-
-        <option value="custom"
-            {% if selected_period == "custom" %}selected{% endif %}>
-            Custom Range
-        </option>
-
-    </select>
-
-
-    <div class="custom-date" id="customDateFields">
-
-        <input type="date"
-               name="start_date"
-               value="{{ start_date|default:'' }}"
-               aria-label="Start date">
-
-        <input type="date"
-               name="end_date"
-               value="{{ end_date|default:'' }}"
-               aria-label="End date">
-
-    </div>
-
-    <button type="submit" class="filter-btn">
-        Apply Filter
-    </button>
-
-</form>
-
-
-<!-- ORDER LIST -->
-
-{% for order in dashboard_orders %}
-
-    <div class="order-card">
-
-        <div class="order-top">
-
-            <div class="order-id">
-                Order #{{ order.id }}
-            </div>
-
-            <span class="order-status">
-                {{ order.get_status_display }}
-            </span>
-
+        <div class="rd-empty">
+            No orders found for this period.
         </div>
 
-        <div class="order-info">
-
-            🏪 <strong>Store:</strong> {{ order.store.name }}<br>
-
-            👤 <strong>Customer:</strong> {{ order.customer_name }}<br>
-
-            📞 <strong>Phone:</strong>
-            <a href="tel:{{ order.phone }}">{{ order.phone }}</a><br>
-
-            📍 <strong>Address:</strong> {{ order.address }}<br>
-
-            💰 <strong>Order Amount:</strong> ₹{{ order.total }}
-
-        </div>
-
-        {% if order.status == "REQUEST_SUBMITTED" %}
-
-            <form method="POST"
-                  action="{% url 'rider_update_status' order.id 'ACCEPTED' %}">
-
-                {% csrf_token %}
-
-                <button type="submit" class="accept-btn">
-                    Accept Order
-                </button>
-
-            </form>
-
-        {% else %}
-
-            <a href="{% url 'rider_order_detail' order.id %}"
-               class="order-action">
-
-                View Order Details →
-
-            </a>
-
-        {% endif %}
-
-    </div>
-
-{% empty %}
-
-    <div class="empty-state">
-        No orders found for this period.
-    </div>
-
-{% endfor %}
-
-
+    {% endfor %}
 
 </div>
 
 <script>
+(function () {
 
-    const periodFilter = document.getElementById("periodFilter");
-    const customDateFields = document.getElementById("customDateFields");
+    var periodFilter = document.getElementById("periodFilter");
+    var filterForm = document.getElementById("rdFilter");
 
-    function toggleCustomDates() {
+    function updateFilterUI() {
 
-        if (periodFilter.value === "custom") {
-            customDateFields.style.display = "grid";
-        } else {
-            customDateFields.style.display = "none";
-        }
+        var isCustom = periodFilter.value === "custom";
 
+        filterForm.classList.toggle("custom-open", isCustom);
     }
 
-    periodFilter.addEventListener("change", toggleCustomDates);
+    periodFilter.addEventListener("change", function () {
 
-    toggleCustomDates();
+        if (periodFilter.value === "custom") {
+            updateFilterUI();
+        } else {
+            filterForm.submit();
+        }
 
+    });
+
+    updateFilterUI();
+
+    /* Accept order: show a busy state and block double taps */
+
+    document.querySelectorAll(".rd-accept-form").forEach(function (form) {
+
+        form.addEventListener("submit", function (event) {
+
+            var btn = form.querySelector(".rd-accept-btn");
+
+            if (form.dataset.submitting === "1") {
+                event.preventDefault();
+                return;
+            }
+
+            form.dataset.submitting = "1";
+
+            btn.classList.add("accepting");
+            btn.textContent = "Accepting...";
+
+        });
+
+    });
+
+    window.addEventListener("pageshow", function (event) {
+
+        if (!event.persisted) return;
+
+        document.querySelectorAll(".rd-accept-form").forEach(function (form) {
+
+            var btn = form.querySelector(".rd-accept-btn");
+
+            form.dataset.submitting = "";
+
+            btn.classList.remove("accepting");
+            btn.textContent = "Accept Order";
+
+        });
+
+    });
+
+})();
 </script>
 
 {% endblock %}

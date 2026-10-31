@@ -5529,7 +5529,9 @@ def rider_dashboard(request):
 
             "show_floating_cart": False,
 
-            "simple_navbar": True,
+            "simple_navbar": False,
+
+            "show_navbar": False,
 
         }
 
@@ -5596,57 +5598,6 @@ def rider_order_detail(request, order_id):
     return render(
         request,
         "rider_order_detail.html",
-        context
-    )
-
-# =====================================================
-# RIDER COMPLETED ORDERS
-# =====================================================
-
-@login_required
-def rider_completed_orders(request):
-
-    # Verify active rider
-    rider_profile = DeliveryPartnerProfile.objects.filter(
-        user=request.user,
-        is_active=True
-    ).first()
-
-    if not rider_profile:
-        return HttpResponseForbidden("Rider account not active.")
-
-    # Fetch all successfully delivered orders
-    completed_orders = (
-        Order.objects
-        .filter(
-            assigned_delivery=request.user,
-            status="DELIVERED"
-        )
-        .select_related("store")
-        .order_by("-created_at")
-    )
-
-    # Summary statistics
-    summary = completed_orders.aggregate(
-        total_earnings=Sum("delivery_payout"),
-        total_distance=Sum("delivery_distance")
-    )
-
-    context = {
-        "rider_profile": rider_profile,
-        "completed_orders": completed_orders,
-        "completed_count": completed_orders.count(),
-        "total_earnings": summary["total_earnings"] or 0,
-        "total_distance": round(
-            summary["total_distance"] or 0, 2
-        ),
-        "show_floating_cart": False,
-        "simple_navbar": True,
-    }
-
-    return render(
-        request,
-        "rider_completed_orders.html",
         context
     )
 

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1D3F18">
     <title>My Earnings | LOKA Rider</title>
 
     <style>
@@ -13,121 +14,199 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f7f4;
-            color: #26332b;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #F5F5F0;
+            color: #1A3A16;
+            font-variant-numeric: tabular-nums;
         }
 
-        .header {
-            background: #14532d;
+        /* ============================= */
+        /* HERO + PERIOD SWITCHER */
+        /* ============================= */
+
+        .hero {
+            background: linear-gradient(90deg, #1D3F18 0%, #2C5826 55%, #372B14 100%);
             color: white;
-            padding: 22px 18px 30px;
-            border-radius: 0 0 24px 24px;
+            padding: 14px 16px 58px;
+            border-radius: 0 0 26px 26px;
+        }
+
+        .hero-inner {
+            max-width: 650px;
+            margin: auto;
+        }
+
+        .nav-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .back {
-            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.14);
+            border: 0.5px solid rgba(255, 255, 255, 0.26);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
             text-decoration: none;
-            margin-bottom: 22px;
-            font-size: 14px;
+            flex-shrink: 0;
+            transition: transform 0.12s ease, background 0.12s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .header h2 {
-            font-size: 23px;
-            margin-bottom: 7px;
+        .back:active {
+            transform: scale(0.88);
+            background: rgba(255, 255, 255, 0.26);
         }
 
-        .header p {
+        .nav-title {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .period-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .period-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .period-tab {
+            flex: 0 0 auto;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
             font-size: 13px;
-            opacity: 0.85;
+            font-weight: 700;
+            padding: 9px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.14);
+            color: white;
+            transition: background 0.15s ease, color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        .period-tab.active {
+            background: white;
+            color: #227D57;
+        }
+
+        .hero-label {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .hero-amount {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 4px 0 2px;
+            line-height: 1.1;
+        }
+
+        .hero-sub {
+            font-size: 13px;
+            opacity: 0.8;
+            min-height: 18px;
+        }
+
+        /* ============================= */
+        /* CONTAINER */
+        /* ============================= */
 
         .container {
             max-width: 650px;
             margin: auto;
-            padding: 18px 15px 35px;
+            padding: 0 16px 40px;
         }
 
-        .main-card {
-            background: white;
-            padding: 23px 20px;
-            border-radius: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-top: -2px;
-            text-align: center;
-        }
+        /* deliveries + distance (overlap the hero) */
 
-        .main-card .label {
-            color: #718078;
-            font-size: 13px;
-        }
-
-        .main-card h1 {
-            color: #14532d;
-            font-size: 35px;
-            margin: 10px 0;
-        }
-
-        .main-card .subtext {
-            color: #89948d;
-            font-size: 12px;
-        }
-
-        .section-title {
-            font-size: 17px;
-            margin: 25px 0 13px;
-            font-weight: 700;
-        }
-
-        .earning-grid {
+        .stat-row {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: -36px;
+            position: relative;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px 14px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
 
-        .earning-card {
-            background: white;
-            border-radius: 15px;
-            padding: 17px 14px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-        }
-
-        .earning-card .icon {
-            font-size: 21px;
-            margin-bottom: 10px;
-        }
-
-        .earning-card .label {
-            font-size: 12px;
-            color: #7b8980;
-        }
-
-        .earning-card h3 {
-            font-size: 21px;
-            margin-top: 7px;
-            color: #14532d;
-        }
-
-        .stats-card {
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
             display: flex;
-            justify-content: space-between;
-            background: white;
-            padding: 18px;
-            border-radius: 15px;
-            margin-top: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .stats-card .stat-label {
-            color: #7b8980;
+        .stat-icon.green {
+            background: #EAF5E8;
+            color: #2D5A27;
+        }
+
+        .stat-icon.brown {
+            background: #F1EADA;
+            color: #372B14;
+        }
+
+        .stat-icon svg {
+            width: 21px;
+            height: 21px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #227D57;
+            line-height: 1.15;
+        }
+
+        .stat-label {
             font-size: 12px;
-            margin-bottom: 6px;
+            color: #7A8A78;
+            margin-top: 2px;
         }
 
-        .stats-card h3 {
-            font-size: 19px;
-            color: #14532d;
+        /* ============================= */
+        /* RECENT EARNINGS */
+        /* ============================= */
+
+        .section-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin: 26px 0 13px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .section-note {
+            font-size: 12px;
+            color: #7A8A78;
         }
 
         .history-card {
@@ -135,7 +214,7 @@
             padding: 16px;
             border-radius: 15px;
             margin-bottom: 11px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
         }
 
         .history-top {
@@ -143,18 +222,23 @@
             justify-content: space-between;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .order-id {
-            font-weight: 700;
-            font-size: 14px;
+            font-weight: 800;
+            font-size: 15px;
         }
 
         .amount {
             color: #15803d;
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .store-name {
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .history-details {
@@ -162,7 +246,7 @@
             justify-content: space-between;
             gap: 10px;
             font-size: 12px;
-            color: #7b8980;
+            color: #7A8A78;
             margin-top: 7px;
         }
 
@@ -171,7 +255,7 @@
             padding: 35px 15px;
             text-align: center;
             border-radius: 15px;
-            color: #7b8980;
+            color: #7A8A78;
         }
 
         .empty .icon {
@@ -179,12 +263,16 @@
             margin-bottom: 12px;
         }
 
-        @media (max-width: 360px) {
-            .main-card h1 {
-                font-size: 29px;
+        .empty h3 {
+            color: #1A3A16;
+        }
+
+        @media (max-width: 380px) {
+            .hero-amount {
+                font-size: 36px;
             }
 
-            .earning-card h3 {
+            .stat-value {
                 font-size: 18px;
             }
         }
@@ -193,75 +281,137 @@
 
 <body>
 
-<div class="header">
-    <a href="{% url 'rider_dashboard' %}" class="back">
-        ← Back to Dashboard
-    </a>
+<!-- ================================= -->
+<!-- HERO WITH PERIOD SWITCHER -->
+<!-- ================================= -->
 
-    <h2>My Earnings 💰</h2>
-    <p>Track your delivery earnings and performance.</p>
-</div>
+<header class="hero">
+
+    <div class="hero-inner">
+
+        <div class="nav-row">
+
+            <a href="{% url 'rider_dashboard' %}" class="back" aria-label="Back to Dashboard">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </a>
+
+            <span class="nav-title">My Earnings</span>
+
+        </div>
+
+
+        <div class="period-tabs" id="periodTabs" role="tablist">
+
+            <button type="button" class="period-tab active" role="tab"
+                    aria-selected="true"
+                    data-label="Today's earnings"
+                    data-amount="{{ today_earnings|stringformat:'.2f' }}"
+                    data-sub="Earned so far today">
+                Today
+            </button>
+
+            <button type="button" class="period-tab" role="tab"
+                    aria-selected="false"
+                    data-label="This week's earnings"
+                    data-amount="{{ weekly_earnings|stringformat:'.2f' }}"
+                    data-sub="Earned this week">
+                This Week
+            </button>
+
+            <button type="button" class="period-tab" role="tab"
+                    aria-selected="false"
+                    data-label="This month's earnings"
+                    data-amount="{{ monthly_earnings|stringformat:'.2f' }}"
+                    data-sub="Earned this month">
+                This Month
+            </button>
+
+            <button type="button" class="period-tab" role="tab"
+                    aria-selected="false"
+                    data-label="Total earnings"
+                    data-amount="{{ total_earnings|stringformat:'.2f' }}"
+                    data-sub="From {{ total_deliveries }} successful deliveries">
+                Total
+            </button>
+
+        </div>
+
+
+        <div class="hero-label" id="heroLabel">Today's earnings</div>
+
+        <div class="hero-amount" id="heroAmount" aria-live="polite">
+            ₹{{ today_earnings|floatformat:2 }}
+        </div>
+
+        <div class="hero-sub" id="heroSub">Earned so far today</div>
+
+    </div>
+
+</header>
+
 
 <div class="container">
 
-    <!-- Total Earnings -->
-    <div class="main-card">
-        <div class="label">Total Earnings</div>
+    <!-- ================================= -->
+    <!-- DELIVERIES + DISTANCE -->
+    <!-- ================================= -->
 
-        <h1>₹{{ total_earnings|floatformat:2 }}</h1>
+    <div class="stat-row">
 
-        <div class="subtext">
-            From {{ total_deliveries }} successful deliveries
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+            </div>
+
+            <div>
+                <div class="stat-value">{{ total_deliveries }}</div>
+                <div class="stat-label">Deliveries</div>
+            </div>
+
         </div>
+
+        <div class="stat-card">
+
+            <div class="stat-icon brown">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="5.5" cy="17.5" r="3.5"></circle>
+                    <circle cx="18.5" cy="17.5" r="3.5"></circle>
+                    <path d="M15 6h3l2.5 7.5"></path>
+                    <path d="M5.5 17.5L9 9h6l3.5 8.5"></path>
+                </svg>
+            </div>
+
+            <div>
+                <div class="stat-value">{{ total_distance }} km</div>
+                <div class="stat-label">Total distance</div>
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Earnings Breakdown -->
-    <div class="section-title">Earnings Overview</div>
 
-    <div class="earning-grid">
+    <!-- ================================= -->
+    <!-- RECENT EARNINGS (always the latest 10) -->
+    <!-- ================================= -->
 
-        <div class="earning-card">
-            <div class="icon">☀️</div>
-            <div class="label">Today's Earnings</div>
-            <h3>₹{{ today_earnings|floatformat:2 }}</h3>
-        </div>
-
-        <div class="earning-card">
-            <div class="icon">📅</div>
-            <div class="label">This Week</div>
-            <h3>₹{{ weekly_earnings|floatformat:2 }}</h3>
-        </div>
-
-        <div class="earning-card">
-            <div class="icon">🗓️</div>
-            <div class="label">This Month</div>
-            <h3>₹{{ monthly_earnings|floatformat:2 }}</h3>
-        </div>
-
-        <div class="earning-card">
-            <div class="icon">📦</div>
-            <div class="label">Total Deliveries</div>
-            <h3>{{ total_deliveries }}</h3>
-        </div>
-
+    <div class="section-head">
+        <div class="section-title">Recent Earnings</div>
+        <div class="section-note">Latest 10 deliveries</div>
     </div>
 
-    <!-- Delivery Statistics -->
-    <div class="section-title">Delivery Statistics</div>
-
-    <div class="stats-card">
-        <div>
-            <div class="stat-label">Total Distance</div>
-            <h3>{{ total_distance }} km</h3>
-        </div>
-
-        <div style="font-size: 30px;">🛵</div>
-    </div>
-
-    <!-- Earnings History -->
-    <div class="section-title">Recent Earnings</div>
-
-    {% for order in recent_earnings %}
+    {% for order in recent_earnings|slice:":10" %}
 
         <div class="history-card">
 
@@ -275,7 +425,7 @@
                 </div>
             </div>
 
-            <div style="font-size:13px; font-weight:600;">
+            <div class="store-name">
                 {{ order.store.name }}
             </div>
 
@@ -298,11 +448,96 @@
             <h3>No Earnings Yet</h3>
             <p style="font-size:13px; margin-top:8px;">
                 Your completed delivery earnings will appear here.
-            </p> 
-        </div> 
-    {% endfor %} 
-</div> 
+            </p>
+        </div>
 
-</body> 
+    {% endfor %}
+
+</div>
+
+
+<script>
+(function () {
+
+    var tabs = document.querySelectorAll("#periodTabs .period-tab");
+    var labelEl = document.getElementById("heroLabel");
+    var amountEl = document.getElementById("heroAmount");
+    var subEl = document.getElementById("heroSub");
+
+    var reduceMotion = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var currentValue = parseFloat(
+        document.querySelector("#periodTabs .period-tab.active").dataset.amount
+    ) || 0;
+
+    var animFrame = null;
+
+    function format(value) {
+        return "\u20B9" + value.toFixed(2);
+    }
+
+    function animateTo(target) {
+
+        if (animFrame) {
+            cancelAnimationFrame(animFrame);
+        }
+
+        if (reduceMotion) {
+            currentValue = target;
+            amountEl.textContent = format(target);
+            return;
+        }
+
+        var start = currentValue;
+        var startTime = null;
+        var duration = 350;
+
+        function step(timestamp) {
+
+            if (startTime === null) {
+                startTime = timestamp;
+            }
+
+            var progress = Math.min((timestamp - startTime) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+
+            currentValue = start + (target - start) * eased;
+            amountEl.textContent = format(currentValue);
+
+            if (progress < 1) {
+                animFrame = requestAnimationFrame(step);
+            } else {
+                currentValue = target;
+                amountEl.textContent = format(target);
+            }
+        }
+
+        animFrame = requestAnimationFrame(step);
+    }
+
+    tabs.forEach(function (tab) {
+
+        tab.addEventListener("click", function () {
+
+            tabs.forEach(function (t) {
+                t.classList.remove("active");
+                t.setAttribute("aria-selected", "false");
+            });
+
+            tab.classList.add("active");
+            tab.setAttribute("aria-selected", "true");
+
+            labelEl.textContent = tab.dataset.label;
+            subEl.textContent = tab.dataset.sub;
+
+            animateTo(parseFloat(tab.dataset.amount) || 0);
+        });
+    });
+
+})();
+</script>
+
+</body>
 
 </html>
