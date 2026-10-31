@@ -6058,45 +6058,57 @@ def refund_loka_money(order, description="LOKA Money refund"):
 
     return transaction_record
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-
 @login_required
 @require_POST
 def rider_update_status(request, order_id, new_status):
 
-    # -----------------------------------------
+    is_ajax = (
+        request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+
+    def respond(success, message, status_code=200, order=None):
+        if is_ajax:
+            data = {
+                "success": success,
+                "message": message,
+            }
+
+            if order:
+                data.update({
+                    "order_id": order.id,
+                    "status": order.status,
+                    "status_display": order.get_status_display(),
+                })
+
+            return JsonResponse(data, status=status_code)
+
+        if success:
+            messages.success(request, message)
+        else:
+            messages.error(request, message)
+
+        return redirect("rider_dashboard")
+
     # VERIFY RIDER
-    # -----------------------------------------
     rider_profile = DeliveryPartnerProfile.objects.filter(
         user=request.user,
         is_active=True
     ).first()
 
     if not rider_profile:
-        return HttpResponseForbidden("Rider account not active.")
+        return respond(False, "Rider account not active.", 403)
 
-    # -----------------------------------------
     # ALLOWED TRANSITIONS
-    # -----------------------------------------
     allowed_transitions = {
         "ACCEPTED": ["REQUEST_SUBMITTED"],
-        "PICKED_UP": ["ACCEPTED"],
-        "OUT_FOR_DELIVERY": ["PICKED_UP"],
+        "OUT_FOR_DELIVERY": ["ACCEPTED"],
         "DELIVERED": ["OUT_FOR_DELIVERY"],
-        "FAILED": ["OUT_FOR_DELIVERY", "PICKED_UP"]
     }
 
     if new_status not in allowed_transitions:
-        messages.error(request, "Invalid status.")
-        return redirect("rider_dashboard")
+        return respond(False, "Invalid status.", 400)
 
-    # -----------------------------------------
-    # LOCK AND PROCESS ORDER
-    # -----------------------------------------
     try:
-
         with transaction.atomic():
 
             order = (
@@ -6107,76 +6119,63 @@ def rider_update_status(request, order_id, new_status):
             )
 
             if not order:
-                messages.error(request, "Order not found.")
-                return redirect("rider_dashboard")
+                return respond(False, "Order not found.", 404)
 
-            # ---------------------------------
             # ACCEPT NEW ORDER
-            # ---------------------------------
             if new_status == "ACCEPTED":
 
                 if (
                     order.status != "REQUEST_SUBMITTED"
                     or order.assigned_delivery_id is not None
                 ):
-                    messages.error(
-                        request,
-                        "This order has already been accepted."
+                    return respond(
+                        False,
+                        "This order has already been accepted.",
+                        400
                     )
-                    return redirect("rider_dashboard")
 
                 order.assigned_delivery = request.user
-
                 order.delivery_partner_phone = rider_profile.phone
 
-            # ---------------------------------
-            # UPDATE EXISTING ASSIGNED ORDER
-            # ---------------------------------
+            # UPDATE ASSIGNED ORDER
             else:
 
                 if order.assigned_delivery_id != request.user.id:
-                    return HttpResponseForbidden(
-                        "This order is not assigned to you."
+                    return respond(
+                        False,
+                        "This order is not assigned to you.",
+                        403
                     )
 
                 if order.status not in allowed_transitions[new_status]:
-                    messages.error(
-                        request,
-                        "Invalid order status transition."
+                    return respond(
+                        False,
+                        "Invalid order status transition.",
+                        400
                     )
-                    return redirect("rider_dashboard")
 
             order.status = new_status
-
-            # Preserve existing Order.save() logic.
             order.save()
 
-        # -------------------------------------
         # DELIVERED REWARDS
-        # -------------------------------------
         if new_status == "DELIVERED":
-
             reward_referral_for_delivered_order(order)
-
             process_journey_reward(order)
 
-        messages.success(
-            request,
-            f"Order #{order.id} updated successfully."
+        return respond(
+            True,
+            f"Order #{order.id} updated successfully.",
+            order=order
         )
 
     except Exception:
+        logger.exception("RIDER ORDER STATUS UPDATE FAILED")
 
-        logger.exception(
-            "RIDER ORDER STATUS UPDATE FAILED"
+        return respond(
+            False,
+            "Unable to update order. Please try again.",
+            500
         )
-
-        messages.error(
-            request,
-            "Unable to update order. Please try again."
-        )
-
-    return redirect("rider_dashboard")
 
 @login_required
 @require_POST

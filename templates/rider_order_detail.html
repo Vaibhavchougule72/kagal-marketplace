@@ -441,7 +441,7 @@
                     <p>Order Details</p>
                 </div>
 
-                <span class="status-pill">
+                <span class="status-pill" id="statusPill">
                     {{ order.get_status_display }}
                 </span>
 
@@ -456,25 +456,20 @@
 
             {% else %}
 
-                <div class="tracker">
+                <div class="tracker" id="orderTracker">
 
-                    <div class="step {% if order.status == 'ACCEPTED' %}current{% elif order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done{% endif %}">
-                        <div class="step-dot">{% if order.status == 'PICKED_UP' or order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
+                    <div class="step" data-step="ACCEPTED">
+                        <div class="step-dot">1</div>
                         Accepted
                     </div>
 
-                    <div class="step {% if order.status == 'PICKED_UP' %}current{% elif order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}done{% endif %}">
-                        <div class="step-dot">{% if order.status == 'OUT_FOR_DELIVERY' or order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
-                        Picked up
+                    <div class="step" data-step="OUT_FOR_DELIVERY">
+                        <div class="step-dot">2</div>
+                        Out for delivery
                     </div>
 
-                    <div class="step {% if order.status == 'OUT_FOR_DELIVERY' %}current{% elif order.status == 'DELIVERED' %}done{% endif %}">
-                        <div class="step-dot">{% if order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
-                        On the way
-                    </div>
-
-                    <div class="step {% if order.status == 'DELIVERED' %}done{% endif %}">
-                        <div class="step-dot">{% if order.status == 'DELIVERED' %}&#10003;{% endif %}</div>
+                    <div class="step" data-step="DELIVERED">
+                        <div class="step-dot">3</div>
                         Delivered
                     </div>
 
@@ -681,174 +676,189 @@
 
         </div>
 
+        <!-- ORDER STATUS ACTIONS -->
+        <div class="delivery-actions" id="deliveryActions">
 
-        <!-- ORDER STATUS ACTIONS (pinned) -->
+            <p class="actions-hint" id="actionsHint"></p>
 
-        <div class="delivery-actions">
+            <form
+                method="POST"
+                class="action-form"
+                id="statusUpdateForm"
+                data-current-status="{{ order.status }}"
+                action=""
+            >
+                {% csrf_token %}
 
+                <button
+                    type="submit"
+                    class="action-button"
+                    id="statusUpdateButton"
+                >
+                    Start Delivery
+                </button>
+            </form>
 
-            {% if order.status == "ACCEPTED" %}
-
-                <p class="actions-hint">
-                    Collect the order from the store.
-                </p>
-
-                <form method="POST"
-                      class="action-form"
-                      action="{% url 'rider_update_status' order.id 'PICKED_UP' %}">
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="action-button">
-                        ✓ Picked Up From Store
-                    </button>
-
-                </form>
-
-
-            {% elif order.status == "PICKED_UP" %}
-
-                <p class="actions-hint">
-                    You have collected the order.
-                    Start delivery when you leave the store.
-                </p>
-
-                <form method="POST"
-                      class="action-form"
-                      action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}">
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="action-button">
-                        🛵 Start Delivery
-                    </button>
-
-                </form>
-
-
-                <form method="POST"
-                      class="action-form"
-                      action="{% url 'rider_update_status' order.id 'FAILED' %}"
-                      onsubmit="return confirm('Are you sure delivery failed?');">
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="failed-link">
-                        Mark Delivery Failed
-                    </button>
-
-                </form>
-
-
-            {% elif order.status == "OUT_FOR_DELIVERY" %}
-
-                <p class="actions-hint">
-                    You are currently delivering this order.
-                </p>
-
-                <form method="POST"
-                      class="action-form"
-                      action="{% url 'rider_update_status' order.id 'DELIVERED' %}"
-                      onsubmit="return confirm('Are you sure this order has been delivered?');">
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="action-button success">
-                        ✓ Mark as Delivered
-                    </button>
-
-                </form>
-
-
-                <form method="POST"
-                      class="action-form"
-                      action="{% url 'rider_update_status' order.id 'FAILED' %}"
-                      onsubmit="return confirm('Are you sure delivery failed?');">
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="failed-link">
-                        Mark Delivery Failed
-                    </button>
-
-                </form>
-
-
-            {% elif order.status == "DELIVERED" %}
-
-                <div class="completed">
-                    ✓ Order Successfully Delivered
-                </div>
-
-
-            {% elif order.status == "FAILED" %}
-
-                <div class="failed-state">
-                    Delivery Failed
-                </div>
-
-
-            {% else %}
-
-                <p class="actions-hint" style="margin:0;">
-                    No actions available for this order.
-                </p>
-
-            {% endif %}
+            <div class="completed" id="completedMessage" hidden>
+                ✓ Order Successfully Delivered
+            </div>
 
         </div>
+
 
 
     </div>
 
 
 <script>
-(function () {
+document.addEventListener("DOMContentLoaded", function () {
 
-    /* Busy state for the main action buttons; blocks double taps.
-       Runs only if the confirm() on the form (if any) was accepted. */
+    const form = document.getElementById("statusUpdateForm");
+    const button = document.getElementById("statusUpdateButton");
+    const hint = document.getElementById("actionsHint");
+    const statusPill = document.getElementById("statusPill");
+    const completedMessage = document.getElementById("completedMessage");
 
-    document.querySelectorAll(".action-form").forEach(function (form) {
+    const orderId = "{{ order.id }}";
 
-        form.addEventListener("submit", function (event) {
+    const statusUrls = {
+        OUT_FOR_DELIVERY: "{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}",
+        DELIVERED: "{% url 'rider_update_status' order.id 'DELIVERED' %}"
+    };
 
-            if (event.defaultPrevented) return;
+    const statusLabels = {
+        ACCEPTED: "Accepted",
+        OUT_FOR_DELIVERY: "Out for delivery",
+        DELIVERED: "Delivered"
+    };
 
-            if (form.dataset.submitting === "1") {
-                event.preventDefault();
+    function updateTracker(status) {
+
+        const steps = document.querySelectorAll("#orderTracker .step");
+
+        const order = [
+            "ACCEPTED",
+            "OUT_FOR_DELIVERY",
+            "DELIVERED"
+        ];
+
+        const currentIndex = order.indexOf(status);
+
+        steps.forEach((step, index) => {
+
+            step.classList.remove("done", "current");
+
+            const dot = step.querySelector(".step-dot");
+
+            if (index < currentIndex) {
+                step.classList.add("done");
+                dot.textContent = "✓";
+            }
+            else if (index === currentIndex) {
+                step.classList.add("current");
+                dot.textContent = index + 1;
+            }
+            else {
+                dot.textContent = index + 1;
+            }
+
+        });
+    }
+
+    function updateButton(status) {
+
+        if (status === "ACCEPTED") {
+            form.hidden = false;
+            button.hidden = false;
+            button.disabled = false;
+            button.textContent = "🛵 Start Delivery";
+            button.className = "action-button";
+            hint.textContent = "Collect the order and start delivery.";
+            form.action = statusUrls.OUT_FOR_DELIVERY;
+        }
+
+        else if (status === "OUT_FOR_DELIVERY") {
+            form.hidden = false;
+            button.hidden = false;
+            button.disabled = false;
+            button.textContent = "✓ Mark as Delivered";
+            button.className = "action-button success";
+            hint.textContent = "You are currently delivering this order.";
+            form.action = statusUrls.DELIVERED;
+        }
+
+        else if (status === "DELIVERED") {
+            form.hidden = true;
+            completedMessage.hidden = false;
+            hint.textContent = "";
+        }
+    }
+
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        if (button.disabled) return;
+
+        if (form.dataset.currentStatus === "OUT_FOR_DELIVERY") {
+            if (!confirm("Are you sure this order has been delivered?")) {
                 return;
             }
+        }
 
-            form.dataset.submitting = "1";
+        button.disabled = true;
+        button.classList.add("busy");
 
-            var btn = form.querySelector(".action-button");
+        const originalText = button.textContent;
+        button.textContent = "Updating...";
 
-            if (btn) {
-                btn.classList.add("busy");
+        try {
+
+            const response = await fetch(form.action, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": form.querySelector(
+                        "[name=csrfmiddlewaretoken]"
+                    ).value,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || "Unable to update status.");
             }
 
-        });
+            form.dataset.currentStatus = data.status;
+
+            statusPill.textContent = data.status_display;
+
+            updateButton(data.status);
+            updateTracker(data.status);
+
+            // Update page without reloading.
+            alert(data.message);
+
+        } catch (error) {
+
+            alert(error.message || "Something went wrong.");
+
+            button.disabled = false;
+            button.classList.remove("busy");
+            button.textContent = originalText;
+
+        }
 
     });
 
-    window.addEventListener("pageshow", function (event) {
+    updateButton(form.dataset.currentStatus);
+    updateTracker(form.dataset.currentStatus);
 
-        if (!event.persisted) return;
-
-        document.querySelectorAll(".action-form").forEach(function (form) {
-            form.dataset.submitting = "";
-
-            var btn = form.querySelector(".action-button");
-
-            if (btn) {
-                btn.classList.remove("busy");
-            }
-        });
-
-    });
-
-})();
+});
 </script>
+
 
 
 <!-- RIDER LOCATION TRACKING -->
