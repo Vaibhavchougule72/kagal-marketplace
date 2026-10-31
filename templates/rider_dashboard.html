@@ -454,10 +454,12 @@ body,
         background: #e85d35;
     }
 
-    .availability-note {
+    .availability-feedback {
+        margin: 8px 4px 0;
         font-size: 12px;
-        margin-top: 8px;
-        color: rgba(255,255,255,.85);
+        line-height: 1.4;
+        font-weight: 600;
+        color: rgba(255,255,255,.9);
     }
 </style>
 
@@ -496,13 +498,6 @@ body,
                     {% endif %}
                 </div>
 
-                <div class="availability-note">
-                    {% if rider_profile.is_available %}
-                        You can receive new orders.
-                    {% else %}
-                        You will not receive new orders.
-                    {% endif %}
-                </div>
             </div>
 
             <form method="POST" action="{% url 'toggle_rider_availability' %}">
@@ -519,6 +514,14 @@ body,
                 {% endif %}
             </form>
 
+        </div>
+
+        <div class="availability-feedback">
+            {% if rider_profile.is_available %}
+                You are online and can receive new orders.
+            {% else %}
+                You are offline and will not receive new orders.
+            {% endif %}
         </div>
 
     </div>

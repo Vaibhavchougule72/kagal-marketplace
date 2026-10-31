@@ -5580,11 +5580,6 @@ def toggle_rider_availability(request):
 
     rider_profile.save(update_fields=["is_available"])
 
-    if rider_profile.is_available:
-        messages.success(request, "You are now available for new orders.")
-    else:
-        messages.success(request, "You are now unavailable for new orders.")
-
     return redirect("rider_dashboard")
 
 
