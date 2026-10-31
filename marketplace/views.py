@@ -5358,6 +5358,11 @@ def rider_login(request):
         "rider_login.html"
     )
 
+@login_required
+def rider_logout(request):
+    logout(request)
+    return redirect("rider_login")
+
 from django.views.decorators.csrf import csrf_exempt
 import json
 

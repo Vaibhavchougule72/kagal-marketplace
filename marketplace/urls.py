@@ -99,6 +99,11 @@ urlpatterns = [
         name="rider_login"
     ),
     path(
+        "rider-logout/",
+        views.rider_logout,
+        name="rider_logout"
+    ),
+    path(
         "rider/location/<int:order_id>/",
         views.update_rider_location,
         name="update_rider_location"
