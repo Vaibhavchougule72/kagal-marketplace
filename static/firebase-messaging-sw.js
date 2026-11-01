@@ -33,7 +33,7 @@ messaging.onBackgroundMessage(function (payload) {
 
     const data = payload.data || {};
 
-    const title = data.title || "🔔 New LOKA Order!";
+    const title = data.title || "New LOKA Order!";
 
     const options = {
 
