@@ -863,7 +863,7 @@
                     <div class="product-thumb">
                         {% if product.image %}
                             <img
-                                src="{{ product.image.url }}"
+                                src="{{ product.image.url|cut:'http:' }}"
                                 alt="{{ product.name }}"
                                 loading="lazy"
                             >

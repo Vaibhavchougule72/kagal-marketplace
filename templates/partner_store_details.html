@@ -549,7 +549,7 @@
 
         {% if store.image %}
             <img
-                src="{{ store.image.url }}"
+                src="{{ store.image.url|cut:'http:' }}"
                 alt="{{ store.name }}"
                 id="coverImg"
             >
@@ -598,7 +598,7 @@
 
             {% if store.image %}
                 <img
-                    src="{{ store.image.url }}"
+                    src="{{ store.image.url|cut:'http:' }}"
                     alt=""
                     id="logoImg"
                 >

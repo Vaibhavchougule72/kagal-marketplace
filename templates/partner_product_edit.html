@@ -474,7 +474,7 @@
                     <div class="current-image">
 
                         <img
-                            src="{{ product.image.url }}"
+                            src="{{ product.image.url|cut:'http:' }}"
                             alt="{{ product.name }}"
                         >
 
