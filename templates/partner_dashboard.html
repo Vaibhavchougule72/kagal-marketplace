@@ -938,117 +938,253 @@ updateOrderFilterUI();
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
     const button = document.getElementById("partnerWebPushBtn");
-
     if (!button) return;
 
-    button.addEventListener("click", async function () {
+    const DIAGNOSTIC_URL = "/partner-push-diagnostic/";
+    const TOKEN_URL = "/save-partner-fcm-token/";
+
+    // This is the Web API key previously supplied from Firebase Console.
+    // Keep this identical in firebase-messaging-sw.js and this page.
+    const firebaseConfig = {
+        apiKey: "AIzaSyAx6DJ_gnwj4APLsOixdiCEDCr7Xt73tlA",
+        authDomain: "loka-marketplace.firebaseapp.com",
+        projectId: "loka-marketplace",
+        storageBucket: "loka-marketplace.firebasestorage.app",
+        messagingSenderId: "54112834347",
+        appId: "1:54112834347:web:5b5a8e61e673f5de812b6e"
+    };
+
+    const vapidKey =
+        "BEGNlNBGPFhZX9LHxxSBEmNgC-SgVasM_cuG5kgTajzccBqc6PwlQ2dTJAyZPW_1bvnep0DPQZGJmBXA5E5Uhsg";
+
+    function getCsrfToken() {
+        const inputToken = document.querySelector(
+            'input[name="csrfmiddlewaretoken"]'
+        )?.value;
+
+        if (inputToken) return inputToken;
+
+        const cookie = document.cookie
+            .split("; ")
+            .find(row => row.startsWith("csrftoken="));
+
+        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+    }
+
+    async function reportDiagnostic(stage, error = null, extra = {}) {
+        const payload = {
+            stage: stage,
+            error_name: error?.name || "",
+            error_message: error?.message || "",
+            error_stack: error?.stack || "",
+            permission: ("Notification" in window)
+                ? Notification.permission : "unsupported",
+            service_worker_supported: ("serviceWorker" in navigator),
+            online: navigator.onLine,
+            page_url: window.location.href,
+            user_agent: navigator.userAgent,
+            platform: navigator.platform || "",
+            language: navigator.language || "",
+            standalone: window.matchMedia("(display-mode: standalone)").matches
+                || window.navigator.standalone === true,
+            ...extra
+        };
+
+        console.error("LOKA PUSH DIAGNOSTIC", payload);
 
         try {
+            const csrfToken = getCsrfToken();
+            const response = await fetch(DIAGNOSTIC_URL, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(csrfToken ? {"X-CSRFToken": csrfToken} : {})
+                },
+                body: JSON.stringify(payload)
+            });
 
-            button.disabled = true;
-            button.textContent = "Enabling...";
-
-            // Check browser support
-            if (!("serviceWorker" in navigator) || !("Notification" in window)) {
-                throw new Error("This browser does not support web notifications.");
-            }
-
-            if (!firebase.apps.length) {
-
-                firebase.initializeApp({
-                    apiKey: "AIzaSyAx6DJ_gnwj4APLsOixdiCEDCr7Xt73tlA",
-                    authDomain: "loka-marketplace.firebaseapp.com",
-                    projectId: "loka-marketplace",
-                    storageBucket: "loka-marketplace.firebasestorage.app",
-                    messagingSenderId: "54112834347",
-                    appId: "1:54112834347:web:5b5a8e61e673f5de812b6e",
-                });
-
-            }
-
-            const messaging = firebase.messaging();
-
-            // Request permission
-            const permission = await Notification.requestPermission();
-
-            if (permission !== "granted") {
-                throw new Error("Notification permission was not granted.");
-            }
-
-            // Register service worker
-            const registration = await navigator.serviceWorker.register(
-                "/firebase-messaging-sw.js"
+            const responseText = await response.text();
+            console.log(
+                "LOKA diagnostic endpoint:",
+                response.status,
+                responseText
             );
 
+            if (!response.ok) {
+                console.error(
+                    "LOKA diagnostic endpoint returned HTTP",
+                    response.status
+                );
+            }
+        } catch (reportError) {
+            console.error(
+                "LOKA could not send diagnostics to Django:",
+                reportError
+            );
+        }
+    }
+
+    // Capture SDK script loading failures, including failures before the button
+    // is tapped. The failure is also reported when the user taps Enable.
+    document.querySelectorAll('script[src*="gstatic.com/firebasejs"]').forEach(
+        script => {
+            script.addEventListener("error", () => {
+                reportDiagnostic("FIREBASE_SDK_SCRIPT_LOAD", new Error(
+                    "Failed to load Firebase SDK script: " + script.src
+                ));
+            });
+        }
+    );
+
+    button.addEventListener("click", async function () {
+        let stage = "START";
+        button.disabled = true;
+        button.textContent = "Enabling...";
+
+        try {
+            await reportDiagnostic("START");
+
+            stage = "BROWSER_SUPPORT";
+            if (!("serviceWorker" in navigator)) {
+                throw new Error("This browser does not support Service Workers.");
+            }
+            if (!("Notification" in window)) {
+                throw new Error("This browser does not support Notifications.");
+            }
+
+            stage = "FIREBASE_SDK_CHECK";
+            if (!window.firebase ||
+                typeof firebase.initializeApp !== "function" ||
+                typeof firebase.messaging !== "function") {
+                throw new Error(
+                    "Firebase SDK did not load. Check the Firebase SDK script requests."
+                );
+            }
+
+            stage = "FIREBASE_INITIALIZATION";
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+
+            stage = "MESSAGING_INITIALIZATION";
+            const messaging = firebase.messaging();
+
+            stage = "NOTIFICATION_PERMISSION";
+            const permission = await Notification.requestPermission();
+            await reportDiagnostic("NOTIFICATION_PERMISSION_RESULT", null, {
+                permission_result: permission
+            });
+
+            if (permission !== "granted") {
+                throw new Error(
+                    "Notification permission was not granted. Current permission: "
+                    + permission
+                );
+            }
+
+            stage = "SERVICE_WORKER_REGISTRATION";
+            const registration = await navigator.serviceWorker.register(
+                "/firebase-messaging-sw.js",
+                {scope: "/"}
+            );
+
+            await reportDiagnostic("SERVICE_WORKER_REGISTERED", null, {
+                service_worker_scope: registration.scope,
+                active_state: registration.active?.state || "none",
+                installing_state: registration.installing?.state || "none",
+                waiting_state: registration.waiting?.state || "none",
+                has_active_worker: !!registration.active,
+                has_installing_worker: !!registration.installing,
+                has_waiting_worker: !!registration.waiting
+            });
+
+            stage = "SERVICE_WORKER_READY";
             await navigator.serviceWorker.ready;
 
-            // Generate FCM token
+            await reportDiagnostic("SERVICE_WORKER_READY_RESULT", null, {
+                controller_script_url:
+                    navigator.serviceWorker.controller?.scriptURL || "none"
+            });
+
+            stage = "FCM_TOKEN_GENERATION";
             const token = await messaging.getToken({
-
-                vapidKey: "BEGNlNBGPFhZX9LHxxSBEmNgC-SgVasM_cuG5kgTajzccBqc6PwlQ2dTJAyZPW_1bvnep0DPQZGJmBXA5E5Uhsg",
-
+                vapidKey: vapidKey,
                 serviceWorkerRegistration: registration
-
             });
 
             if (!token) {
-                throw new Error("Firebase could not generate a notification token.");
+                throw new Error("Firebase returned an empty FCM token.");
             }
 
-            // Get Django CSRF token
-            const csrfToken = document.querySelector(
-                'input[name="csrfmiddlewaretoken"]'
-            )?.value;
+            // Never send the full FCM token to diagnostic logs.
+            await reportDiagnostic("FCM_TOKEN_GENERATED", null, {
+                token_generated: true,
+                token_length: token.length
+            });
 
+            stage = "DJANGO_TOKEN_SAVE";
+            const csrfToken = getCsrfToken();
             if (!csrfToken) {
-                throw new Error("Security token not found. Please refresh the page.");
+                throw new Error(
+                    "CSRF token was not found; cannot securely save the FCM token."
+                );
             }
 
-            // Save token in Django
-            const response = await fetch("/save-partner-fcm-token/", {
-
+            const response = await fetch(TOKEN_URL, {
                 method: "POST",
-
+                credentials: "same-origin",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": csrfToken
                 },
-
-                credentials: "same-origin",
-
-                body: JSON.stringify({
-                    token: token
-                })
-
+                body: JSON.stringify({token: token})
             });
 
-            const result = await response.json();
+            const responseText = await response.text();
+            let result = {};
 
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || "Could not save notification token.");
+            try {
+                result = responseText ? JSON.parse(responseText) : {};
+            } catch (parseError) {
+                throw new Error(
+                    "Django token endpoint returned non-JSON response. HTTP "
+                    + response.status + ". Response: "
+                    + responseText.slice(0, 500)
+                );
             }
 
-            button.textContent = "Notifications Enabled";
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message
+                    || ("Django token save failed. HTTP " + response.status)
+                );
+            }
 
+            await reportDiagnostic("SUCCESS", null, {
+                token_saved: true,
+                django_http_status: response.status
+            });
+
+            button.textContent = "Notifications Enabled";
             alert("LOKA notifications enabled successfully!");
 
-            console.log("LOKA Partner Web FCM token saved.");
-
         } catch (error) {
-
-            console.error("LOKA notification setup error:", error);
+            await reportDiagnostic(stage, error, {
+                failed_stage: stage
+            });
 
             button.disabled = false;
             button.textContent = "Enable Notifications";
 
-            alert(error.message || "Could not enable notifications.");
-
+            alert(
+                "Notification setup failed."
+                + "\n\nStage: " + stage
+                + "\n\nError: " + (error?.message || String(error))
+            );
         }
-
     });
-
 });
 </script>
 

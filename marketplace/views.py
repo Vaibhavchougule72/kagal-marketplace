@@ -11799,6 +11799,50 @@ def save_partner_fcm_token(request):
         }
     )
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def partner_push_diagnostic(request):
+
+    data = request.data
+
+    stage = str(data.get("stage", "UNKNOWN"))[:100]
+    error_name = str(data.get("error_name", ""))[:200]
+    error_message = str(data.get("error_message", ""))[:1000]
+    error_stack = str(data.get("error_stack", ""))[:3000]
+
+    user_agent = request.META.get("HTTP_USER_AGENT", "Unknown")
+
+    logger.error(
+        "\n"
+        "========== LOKA PARTNER WEB PUSH DIAGNOSTIC ==========\n"
+        "Partner User ID: %s\n"
+        "Stage: %s\n"
+        "Error Name: %s\n"
+        "Error Message: %s\n"
+        "Error Stack: %s\n"
+        "Browser: %s\n"
+        "Permission: %s\n"
+        "Service Worker Support: %s\n"
+        "Online: %s\n"
+        "Page URL: %s\n"
+        "======================================================",
+        request.user.id,
+        stage,
+        error_name,
+        error_message,
+        error_stack,
+        user_agent,
+        data.get("permission", "Unknown"),
+        data.get("service_worker_supported", "Unknown"),
+        data.get("online", "Unknown"),
+        str(data.get("page_url", ""))[:300],
+    )
+
+    return Response({
+        "success": True,
+        "message": "Diagnostic logged."
+    })
+
 
 @login_required
 def partner_product_edit(request, product_id):

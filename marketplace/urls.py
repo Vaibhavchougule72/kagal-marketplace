@@ -205,6 +205,11 @@ urlpatterns = [
     ),
 
     path(
+        "partner-push-diagnostic/",
+        views.partner_push_diagnostic,
+        name="partner_push_diagnostic"
+    ),
+    path(
         "customer-notifications/send/",
         views.send_notification,
         name="send_notification"
