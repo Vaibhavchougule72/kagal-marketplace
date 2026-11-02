@@ -461,6 +461,22 @@ body,
         font-weight: 600;
         color: rgba(255,255,255,.9);
     }
+
+    .rd-decline-btn {
+        background: #fff;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .rd-decline-btn:hover {
+        background: #dc3545;
+        color: #fff;
+    }
 </style>
 
 <div class="rider-dashboard">
@@ -680,16 +696,29 @@ body,
 
             </div>
 
-            {% if order.status == "REQUEST_SUBMITTED" %}
+            {% if order.status == "REQUEST_SUBMITTED" and not order.assigned_delivery_id %}
 
                 <form method="POST"
                       class="rd-accept-form"
                       action="{% url 'rider_update_status' order.id 'ACCEPTED' %}">
 
+
                     {% csrf_token %}
 
                     <button type="submit" class="rd-accept-btn">
                         Accept Order
+                    </button>
+
+                </form>
+
+                <form method="POST"
+                    action="{% url 'rider_update_status' order.id 'DECLINE' %}"
+                    onsubmit="return confirm('Are you sure you want to decline this order?');">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="rd-decline-btn">
+                        Decline Order
                     </button>
 
                 </form>

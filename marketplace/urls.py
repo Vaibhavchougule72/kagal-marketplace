@@ -199,6 +199,12 @@ urlpatterns = [
     ),
 
     path(
+        "rider/save-fcm-token/",
+        views.save_rider_fcm_token,
+        name="save_rider_fcm_token"
+    ),
+
+    path(
         "customer-notifications/",
         views.customer_notifications_dashboard,
         name="customer_notifications_dashboard"

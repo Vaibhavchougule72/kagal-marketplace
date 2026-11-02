@@ -310,6 +310,61 @@ def send_partner_new_order_notification(token, order):
 
     return messaging.send(message)
 
+# ============================================================
+# RIDER NEW ORDER NOTIFICATION
+# ============================================================
+
+def send_rider_new_order_notification(token, order, offer):
+
+    message = messaging.Message(
+
+        data={
+            "type": "RIDER_NEW_ORDER",
+
+            "order_id": str(order.id),
+
+            "offer_id": str(offer.id),
+
+            "store_name": str(order.store.name),
+
+            "customer_name": str(order.customer_name),
+
+            "payment_method": str(order.payment_method),
+
+            "total": str(order.total),
+
+            "subtotal": str(order.subtotal),
+
+            "created_at": order.created_at.isoformat(),
+        },
+
+        token=token,
+
+        android=messaging.AndroidConfig(
+            priority="high"
+        )
+    )
+
+    try:
+        response = messaging.send(message)
+
+        logger.info(
+            "Rider new order notification sent. "
+            "Order ID: %s, Offer ID: %s",
+            order.id,
+            offer.id
+        )
+
+        return response
+
+    except Exception as e:
+        logger.exception(
+            "Rider notification failed for order %s: %s",
+            order.id,
+            e
+        )
+        raise
+
 def send_partner_order_alert_cancelled(token, order):
     message = messaging.Message(
         data={

@@ -2,6 +2,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 import secrets
+from .models import RiderOrderOffer
 import string
 from .models import NotificationCampaign, NotificationJob
 from django.db.models import Q
@@ -64,6 +65,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .models import StorePartnerProfile, PartnerDeviceToken, DeliveryPartnerProfile
 from .notification_service import notify_store_partner_new_order
+from .rider_dispatch_service import dispatch_order_to_next_rider
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .firebase import notify_partner_order_alert_cancelled
@@ -1877,6 +1879,10 @@ def checkout(request):
                         lambda: notify_store_partner_new_order(order)
                     )
 
+                    transaction.on_commit(
+                        lambda: dispatch_order_to_next_rider(order)
+                    )
+
                     # -----------------------------------
                     # DEDUCT LOKA MONEY — COD
                     # -----------------------------------
@@ -2376,6 +2382,10 @@ def razorpay_webhook(request):
             )
             transaction.on_commit(
                 lambda: notify_store_partner_new_order(order)
+            )
+
+            transaction.on_commit(
+                lambda: dispatch_order_to_next_rider(order)
             )
 
             # -----------------------------------
@@ -5464,9 +5474,19 @@ def rider_dashboard(request):
 
         if rider_profile.is_available:
 
+            pending_offer_order_ids = (
+                RiderOrderOffer.objects
+                .filter(
+                    rider=request.user,
+                    status="PENDING"
+                )
+                .values_list("order_id", flat=True)
+            )
+
             available_orders_filter = Q(
                 status="REQUEST_SUBMITTED",
-                assigned_delivery__isnull=True
+                assigned_delivery__isnull=True,
+                id__in=pending_offer_order_ids
             )
 
         else:
@@ -5563,6 +5583,45 @@ def rider_dashboard(request):
         return HttpResponse(
             "Rider dashboard failed. Check logs."
         )
+
+@login_required
+@require_POST
+def save_rider_fcm_token(request):
+
+    from .models import RiderDeviceToken
+
+    # Verify active rider account
+    rider_profile = DeliveryPartnerProfile.objects.filter(
+        user=request.user,
+        is_active=True
+    ).first()
+
+    if not rider_profile:
+        return JsonResponse({
+            "success": False,
+            "message": "Rider account not active."
+        }, status=403)
+
+    token = request.POST.get("token", "").strip()
+
+    if not token:
+        return JsonResponse({
+            "success": False,
+            "message": "FCM token is required."
+        }, status=400)
+
+    RiderDeviceToken.objects.update_or_create(
+        token=token,
+        defaults={
+            "user": request.user,
+            "is_active": True
+        }
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Rider device registered successfully."
+    })
 
 @login_required
 @require_POST
@@ -6134,6 +6193,7 @@ def rider_update_status(request, order_id, new_status):
     # ALLOWED TRANSITIONS
     allowed_transitions = {
         "ACCEPTED": ["REQUEST_SUBMITTED"],
+        "DECLINE": ["REQUEST_SUBMITTED"],
         "OUT_FOR_DELIVERY": ["ACCEPTED", "PICKED_UP"],
         "DELIVERED": ["OUT_FOR_DELIVERY"],
     }
@@ -6154,27 +6214,100 @@ def rider_update_status(request, order_id, new_status):
             if not order:
                 return respond(False, "Order not found.", 404)
 
-            # ACCEPT NEW ORDER
-            if new_status == "ACCEPTED":
-                if not rider_profile.is_available:
-                    return respond(
-                        False,
-                        "You are currently unavailable. Switch ON to accept orders.",
-                        403
+
+            # DECLINE ORDER OFFER
+            if new_status == "DECLINE":
+
+                from .models import RiderOrderOffer
+
+                offer = (
+                    RiderOrderOffer.objects
+                    .select_for_update()
+                    .filter(
+                        order=order,
+                        rider=request.user,
+                        status="PENDING"
                     )
+                    .first()
+                )
 
                 if (
                     order.status != "REQUEST_SUBMITTED"
                     or order.assigned_delivery_id is not None
+                    or offer is None
                 ):
                     return respond(
                         False,
-                        "This order has already been accepted.",
+                        "This order is no longer available to decline.",
                         400
                     )
 
+                offer.status = "DECLINED"
+                offer.declined_at = timezone.now()
+                offer.next_notification_at = None
+
+                offer.save(
+                    update_fields=[
+                        "status",
+                        "declined_at",
+                        "next_notification_at",
+                    ]
+                )
+
+                # Do not change order status or assign this rider
+                transaction.on_commit(
+                    lambda: dispatch_order_to_next_rider(order)
+                )
+
+                return respond(
+                    True,
+                    f"You declined Order #{order.id}. Finding another rider.",
+                    order=order
+                )
+            # ACCEPT NEW ORDER
+            if new_status == "ACCEPTED":
+
+                # Only the rider who received the pending offer can accept
+                from .models import RiderOrderOffer
+
+                offer = (
+                    RiderOrderOffer.objects
+                    .select_for_update()
+                    .filter(
+                        order=order,
+                        rider=request.user,
+                        status="PENDING"
+                    )
+                    .first()
+                )
+
+                if (
+                    order.status != "REQUEST_SUBMITTED"
+                    or order.assigned_delivery_id is not None
+                    or offer is None
+                ):
+                    messages.error(
+                        request,
+                        "This order is no longer available for acceptance."
+                    )
+                    return redirect("rider_dashboard")
+
+                # Assign rider
                 order.assigned_delivery = request.user
                 order.delivery_partner_phone = rider_profile.phone
+
+                # Mark offer accepted
+                offer.status = "ACCEPTED"
+                offer.accepted_at = timezone.now()
+                offer.next_notification_at = None
+
+                offer.save(
+                    update_fields=[
+                        "status",
+                        "accepted_at",
+                        "next_notification_at",
+                    ]
+                )
 
             # UPDATE ASSIGNED ORDER
             else:
@@ -6193,7 +6326,8 @@ def rider_update_status(request, order_id, new_status):
                         400
                     )
 
-            order.status = new_status
+            if new_status != "ACCEPTED":
+                order.status = new_status
             order.save()
 
         # DELIVERED REWARDS

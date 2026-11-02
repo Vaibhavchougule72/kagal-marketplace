@@ -580,7 +580,103 @@ class DeliveryPartnerProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+class RiderDeviceToken(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="rider_device_tokens"
+    )
+    token = models.TextField(unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"Rider device - {self.user.username}"
+
+class RiderOrderOffer(models.Model):
+
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("ACCEPTED", "Accepted"),
+        ("DECLINED", "Declined"),
+        ("EXPIRED", "Expired"),
+        ("ESCALATED", "Escalated"),
+    ]
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="rider_offers"
+    )
+
+    rider = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="rider_order_offers"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        db_index=True
+    )
+
+    notification_count = models.PositiveSmallIntegerField(default=0)
+
+    first_notified_at = models.DateTimeField(null=True, blank=True)
+    last_notified_at = models.DateTimeField(null=True, blank=True)
+    next_notification_at = models.DateTimeField(null=True, blank=True)
+
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    declined_at = models.DateTimeField(null=True, blank=True)
+    escalated_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "rider"],
+                name="unique_rider_offer_per_order"
+            )
+        ]
+
+        indexes = [
+            models.Index(fields=["status", "next_notification_at"]),
+            models.Index(fields=["order", "status"]),
+        ]
+
+    def __str__(self):
+        return f"Order #{self.order_id} offered to {self.rider.username}"
+
+class RiderAssignmentState(models.Model):
+
+    last_assigned_rider = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="last_rider_assignment_states"
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        rider_name = (
+            self.last_assigned_rider.username
+            if self.last_assigned_rider
+            else "Not set"
+        )
+        return f"Rider assignment cursor: {rider_name}"
+
+    
 class StorePartnerProfile(models.Model):
     user = models.OneToOneField(
         User,
