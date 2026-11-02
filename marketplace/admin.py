@@ -1784,6 +1784,30 @@ class PartnerDeviceTokenAdmin(admin.ModelAdmin):
         "token",
     )
 
+from .models import RiderDeviceToken
+
+@admin.register(RiderDeviceToken)
+class RiderDeviceTokenAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "user",
+        "is_active",
+        "created_at",
+        "updated_at",
+    )
+
+    list_filter = ("is_active",)
+
+    search_fields = (
+        "user__username",
+        "user__first_name",
+        "token",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
 
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
