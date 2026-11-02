@@ -958,6 +958,40 @@ document.addEventListener("DOMContentLoaded", function () {
         DELIVERED: "{% url 'rider_update_status' order.id 'DELIVERED' %}"
     };
 
+    // NATIVE ANDROID LOCATION TRACKING
+
+    const locationUrl = new URL(
+        "{% url 'update_rider_location' order.id %}",
+        window.location.origin
+    ).toString();
+
+    function startNativeLocationTracking() {
+
+        if (
+            window.LokaRider &&
+            typeof window.LokaRider.startLocationTracking === "function"
+        ) {
+            window.LokaRider.startLocationTracking(
+                Number(orderId),
+                locationUrl
+            );
+
+            console.log("Native location tracking requested.");
+        }
+    }
+
+    function stopNativeLocationTracking() {
+
+        if (
+            window.LokaRider &&
+            typeof window.LokaRider.stopLocationTracking === "function"
+        ) {
+            window.LokaRider.stopLocationTracking();
+
+            console.log("Native location tracking stopped.");
+        }
+    }
+
     const statusLabels = {
         ACCEPTED: "Accepted",
         OUT_FOR_DELIVERY: "Out for delivery",
@@ -1101,6 +1135,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updateButton(data.status);
             updateTracker(data.status);
+
+            // START OR STOP NATIVE LOCATION TRACKING
+
+            if (data.status === "OUT_FOR_DELIVERY") {
+                startNativeLocationTracking();
+            }
+
+            else if (data.status === "DELIVERED") {
+                stopNativeLocationTracking();
+            }
 
             // Update page without reloading.
             showMessage(
