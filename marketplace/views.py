@@ -5663,6 +5663,8 @@ def rider_order_detail(request, order_id):
     # -----------------------------------------
     # GET ORDER
     # -----------------------------------------
+    from .models import RiderOrderOffer
+
     order = get_object_or_404(
         Order.objects
         .select_related("store")
@@ -5670,9 +5672,27 @@ def rider_order_detail(request, order_id):
             "items__product",
             "items__bundle"
         ),
-        id=order_id,
-        assigned_delivery=request.user
+        id=order_id
     )
+
+    # Check whether this rider is assigned to the order
+    is_assigned = (
+        order.assigned_delivery_id == request.user.id
+    )
+
+    # Check whether this rider has a pending offer
+    has_pending_offer = RiderOrderOffer.objects.filter(
+        order=order,
+        rider=request.user,
+        status="PENDING"
+    ).exists()
+
+    # Allow access only to assigned riders or riders
+    # who currently have a pending offer
+    if not is_assigned and not has_pending_offer:
+        return HttpResponseForbidden(
+            "You are not authorized to view this order."
+        )
 
     # -----------------------------------------
     # ORDER ITEMS
