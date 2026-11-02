@@ -959,14 +959,12 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // NATIVE ANDROID LOCATION TRACKING
-
     const locationUrl = new URL(
         "{% url 'update_rider_location' order.id %}",
         window.location.origin
     ).toString();
 
     function startNativeLocationTracking() {
-
         if (
             window.LokaRider &&
             typeof window.LokaRider.startLocationTracking === "function"
@@ -975,19 +973,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 Number(orderId),
                 locationUrl
             );
-
             console.log("Native location tracking requested.");
+        } else {
+            console.warn("Native LokaRider bridge is unavailable.");
         }
     }
 
     function stopNativeLocationTracking() {
-
         if (
             window.LokaRider &&
             typeof window.LokaRider.stopLocationTracking === "function"
         ) {
             window.LokaRider.stopLocationTracking();
-
             console.log("Native location tracking stopped.");
         }
     }
@@ -1136,13 +1133,10 @@ document.addEventListener("DOMContentLoaded", function () {
             updateButton(data.status);
             updateTracker(data.status);
 
-            // START OR STOP NATIVE LOCATION TRACKING
-
+            // Start or stop native GPS tracking after Django confirms the status.
             if (data.status === "OUT_FOR_DELIVERY") {
                 startNativeLocationTracking();
-            }
-
-            else if (data.status === "DELIVERED") {
+            } else if (data.status === "DELIVERED") {
                 stopNativeLocationTracking();
             }
 
@@ -1177,233 +1171,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-<!-- RIDER LOCATION TRACKING -->
 
-{% if order.status == "OUT_FOR_DELIVERY" %}
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    if (!navigator.geolocation) {
-        console.error("Geolocation is not supported.");
-        return;
-    }
-
-    const locationUrl = "{% url 'update_rider_location' order.id %}";
-
-    let lastSentTime = 0;
-    let lastSentLat = null;
-    let lastSentLng = null;
-
-    let watchId = null;
-
-
-    // GET CSRF TOKEN
-
-    function getCookie(name) {
-
-        let cookieValue = null;
-
-        if (document.cookie && document.cookie !== "") {
-
-            const cookies = document.cookie.split(";");
-
-            for (let cookie of cookies) {
-
-                cookie = cookie.trim();
-
-                if (cookie.startsWith(name + "=")) {
-
-                    cookieValue = decodeURIComponent(
-                        cookie.substring(name.length + 1)
-                    );
-
-                    break;
-                }
-            }
-        }
-
-        return cookieValue;
-    }
-
-
-    // CALCULATE DISTANCE BETWEEN TWO LOCATIONS
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-
-        const R = 6371000;
-
-        const toRad = value => value * Math.PI / 180;
-
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-
-        const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(toRad(lat1)) *
-            Math.cos(toRad(lat2)) *
-            Math.sin(dLon / 2) ** 2;
-
-        return R * 2 * Math.atan2(
-            Math.sqrt(a),
-            Math.sqrt(1 - a)
-        );
-    }
-
-
-    // SEND LOCATION TO DJANGO
-
-    function sendLocation(lat, lng) {
-
-        fetch(locationUrl, {
-
-            method: "POST",
-
-            credentials: "same-origin",
-
-            headers: {
-
-                "Content-Type": "application/json",
-
-                "X-CSRFToken": getCookie("csrftoken")
-
-            },
-
-            body: JSON.stringify({
-
-                lat: lat,
-                lng: lng
-
-            })
-
-        })
-
-        .then(response => {
-
-            if (!response.ok) {
-                throw new Error("Location update failed.");
-            }
-
-            return response.json();
-
-        })
-
-        .then(data => {
-
-            if (!data.success) {
-
-                console.error(
-                    "Location update failed:",
-                    data.message
-                );
-
-            }
-
-        })
-
-        .catch(error => {
-
-            console.error("Location error:", error);
-
-        });
-
-    }
-
-
-    // START LOCATION TRACKING
-
-    function startTracking() {
-
-        watchId = navigator.geolocation.watchPosition(
-
-            function (position) {
-
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                const now = Date.now();
-
-                let movedEnough = true;
-
-
-                if (lastSentLat !== null) {
-
-                    const distance = calculateDistance(
-                        lastSentLat,
-                        lastSentLng,
-                        lat,
-                        lng
-                    );
-
-                    movedEnough = distance >= 15;
-
-                }
-
-
-                // SEND LOCATION AFTER 5 SECONDS
-                // OR WHEN RIDER MOVES 15 METRES
-
-                if (
-                    now - lastSentTime < 5000 &&
-                    !movedEnough
-                ) {
-                    return;
-                }
-
-
-                lastSentLat = lat;
-                lastSentLng = lng;
-                lastSentTime = now;
-
-
-                sendLocation(lat, lng);
-
-            },
-
-
-            function (error) {
-
-                console.error(
-                    "Location permission/error:",
-                    error.message
-                );
-
-            },
-
-
-            {
-
-                enableHighAccuracy: true,
-                maximumAge: 5000,
-                timeout: 10000
-
-            }
-
-        );
-
-    }
-
-
-    startTracking();
-
-
-    // STOP TRACKING WHEN PAGE IS CLOSED
-
-    window.addEventListener("pagehide", function () {
-
-        if (watchId !== null) {
-
-            navigator.geolocation.clearWatch(watchId);
-
-        }
-
-    });
-
-});
-
-</script>
-
-{% endif %}
 </body>
 </html>
