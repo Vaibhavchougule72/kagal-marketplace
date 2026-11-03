@@ -1,0 +1,140 @@
+{% load i18n %}
+<!-- ================================= -->
+    <!-- ORDERS HEADING + DATE FILTER -->
+    <!-- ================================= -->
+
+    <div class="rd-orders-head">
+
+        <h4>📦 Today's Orders</h4>
+
+        <form method="GET" class="rd-filter" id="rdFilter">
+
+            <select name="period" id="periodFilter" aria-label="Period">
+
+                <option value="today"
+                    {% if selected_period == "today" %}selected{% endif %}>
+                    Today
+                </option>
+
+                <option value="week"
+                    {% if selected_period == "week" %}selected{% endif %}>
+                    This Week
+                </option>
+
+                <option value="month"
+                    {% if selected_period == "month" %}selected{% endif %}>
+                    This Month
+                </option>
+
+                <option value="custom"
+                    {% if selected_period == "custom" %}selected{% endif %}>
+                    Custom Range
+                </option>
+
+            </select>
+
+            <div class="rd-custom-date" id="customDateFields">
+
+                <input type="date"
+                       name="start_date"
+                       value="{{ start_date|default:'' }}"
+                       aria-label="Start date">
+
+                <input type="date"
+                       name="end_date"
+                       value="{{ end_date|default:'' }}"
+                       aria-label="End date">
+
+            </div>
+
+            <button type="submit" class="rd-filter-btn" id="applyFilterBtn">
+                Apply
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- ORDER LIST -->
+    <!-- ================================= -->
+
+    {% for order in dashboard_orders %}
+
+        <div class="rd-order{% if order.status == 'REQUEST_SUBMITTED' %} is-new{% endif %}">
+
+            <div class="rd-order-top">
+
+                <div class="rd-order-id">
+                    Order #{{ order.id }}
+                </div>
+
+                <span class="rd-order-status">
+                    {{ order.get_status_display }}
+                </span>
+
+            </div>
+
+            <div class="rd-order-info">
+
+                🏪 <strong>Store:</strong> {{ order.store.name }}<br>
+
+                👤 <strong>Customer:</strong> {{ order.customer_name }}<br>
+
+                📞 <strong>Phone:</strong>
+                <a href="tel:{{ order.phone }}">{{ order.phone }}</a><br>
+
+                📍 <strong>Address:</strong> {{ order.address }}<br>
+
+                💰 <strong>Order Amount:</strong> ₹{{ order.total }}
+
+            </div>
+
+            {% if order.status == "REQUEST_SUBMITTED" and not order.assigned_delivery_id %}
+
+                <form method="POST"
+                      class="rd-accept-form"
+                      action="{% url 'rider_update_status' order.id 'ACCEPTED' %}">
+
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="rd-accept-btn">
+                        Accept Order
+                    </button>
+
+                </form>
+
+                <form method="POST"
+                    action="{% url 'rider_update_status' order.id 'DECLINE' %}"
+                    onsubmit="return confirm('Are you sure you want to decline this order?');">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="rd-decline-btn">
+                        Decline Order
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <a href="{% url 'rider_order_detail' order.id %}"
+                   class="rd-order-action">
+
+                    View Order Details →
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% empty %}
+
+        <div class="rd-empty">
+            No orders found for this period.
+        </div>
+
+    {% endfor %}

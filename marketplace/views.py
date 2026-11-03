@@ -5570,6 +5570,20 @@ def rider_dashboard(request):
 
         }
 
+        # -----------------------------------------
+        # AJAX DASHBOARD REFRESH
+        # -----------------------------------------
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+
+            return render(
+                request,
+                "partials/rider_dashboard_refresh.html",
+                context
+            )
+
+        # -----------------------------------------
+        # NORMAL PAGE LOAD
+        # -----------------------------------------
         return render(
             request,
             "rider_dashboard.html",

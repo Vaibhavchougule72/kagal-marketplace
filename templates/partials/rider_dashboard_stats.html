@@ -1,0 +1,28 @@
+{% load i18n %}
+<!-- ================================= -->
+<!-- COLOR-CODED COUNTS -->
+<!-- ================================= -->
+
+    <div class="rd-stats">
+
+        <div class="rd-stat">
+            <div class="rd-stat-value">{{ total_orders_count|default:0 }}</div>
+            <div class="rd-stat-label">Total</div>
+        </div>
+
+        <div class="rd-stat ongoing">
+            <div class="rd-stat-value">{{ ongoing_orders_count|default:0 }}</div>
+            <div class="rd-stat-label">Ongoing</div>
+        </div>
+
+        <div class="rd-stat accepted">
+            <div class="rd-stat-value">{{ accepted_orders_count|default:0 }}</div>
+            <div class="rd-stat-label">Accepted</div>
+        </div>
+
+        <div class="rd-stat delivery">
+            <div class="rd-stat-value">{{ out_for_delivery_count|default:0 }}</div>
+            <div class="rd-stat-label">Delivering</div>
+        </div>
+
+    </div>

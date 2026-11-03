@@ -543,45 +543,21 @@ body,
     </div>
 
 
-    <!-- ================================= -->
-    <!-- COLOR-CODED COUNTS -->
-    <!-- ================================= -->
+    <!-- LIVE STATISTICS -->
+    <div id="live-dashboard-stats">
 
-    <div class="rd-stats">
-
-        <div class="rd-stat">
-            <div class="rd-stat-value">{{ total_orders_count|default:0 }}</div>
-            <div class="rd-stat-label">Total</div>
-        </div>
-
-        <div class="rd-stat ongoing">
-            <div class="rd-stat-value">{{ ongoing_orders_count|default:0 }}</div>
-            <div class="rd-stat-label">Ongoing</div>
-        </div>
-
-        <div class="rd-stat accepted">
-            <div class="rd-stat-value">{{ accepted_orders_count|default:0 }}</div>
-            <div class="rd-stat-label">Accepted</div>
-        </div>
-
-        <div class="rd-stat delivery">
-            <div class="rd-stat-value">{{ out_for_delivery_count|default:0 }}</div>
-            <div class="rd-stat-label">Delivering</div>
-        </div>
+        {% include "partials/rider_dashboard_stats.html" %}
 
     </div>
 
 
-    <!-- ================================= -->
     <!-- EARNINGS -->
-    <!-- ================================= -->
-
     <a href="{% url 'rider_earning' %}" class="rd-earning">
 
         <span class="rd-earning-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"></path>
                 <path d="M4 6v12a2 2 0 0 0 2 2h14v-4"></path>
                 <path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path>
@@ -595,8 +571,8 @@ body,
 
         <span class="rd-earning-chev">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.5"
-                 stroke-linecap="round" stroke-linejoin="round">
+                stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </span>
@@ -604,145 +580,13 @@ body,
     </a>
 
 
-    <!-- ================================= -->
-    <!-- ORDERS HEADING + DATE FILTER -->
-    <!-- ================================= -->
+    <!-- LIVE ORDERS -->
+    <div id="live-dashboard-orders">
 
-    <div class="rd-orders-head">
-
-        <h4>📦 Today's Orders</h4>
-
-        <form method="GET" class="rd-filter" id="rdFilter">
-
-            <select name="period" id="periodFilter" aria-label="Period">
-
-                <option value="today"
-                    {% if selected_period == "today" %}selected{% endif %}>
-                    Today
-                </option>
-
-                <option value="week"
-                    {% if selected_period == "week" %}selected{% endif %}>
-                    This Week
-                </option>
-
-                <option value="month"
-                    {% if selected_period == "month" %}selected{% endif %}>
-                    This Month
-                </option>
-
-                <option value="custom"
-                    {% if selected_period == "custom" %}selected{% endif %}>
-                    Custom Range
-                </option>
-
-            </select>
-
-            <div class="rd-custom-date" id="customDateFields">
-
-                <input type="date"
-                       name="start_date"
-                       value="{{ start_date|default:'' }}"
-                       aria-label="Start date">
-
-                <input type="date"
-                       name="end_date"
-                       value="{{ end_date|default:'' }}"
-                       aria-label="End date">
-
-            </div>
-
-            <button type="submit" class="rd-filter-btn" id="applyFilterBtn">
-                Apply
-            </button>
-
-        </form>
+        {% include "partials/rider_dashboard_orders.html" %}
 
     </div>
 
-
-    <!-- ================================= -->
-    <!-- ORDER LIST -->
-    <!-- ================================= -->
-
-    {% for order in dashboard_orders %}
-
-        <div class="rd-order{% if order.status == 'REQUEST_SUBMITTED' %} is-new{% endif %}">
-
-            <div class="rd-order-top">
-
-                <div class="rd-order-id">
-                    Order #{{ order.id }}
-                </div>
-
-                <span class="rd-order-status">
-                    {{ order.get_status_display }}
-                </span>
-
-            </div>
-
-            <div class="rd-order-info">
-
-                🏪 <strong>Store:</strong> {{ order.store.name }}<br>
-
-                👤 <strong>Customer:</strong> {{ order.customer_name }}<br>
-
-                📞 <strong>Phone:</strong>
-                <a href="tel:{{ order.phone }}">{{ order.phone }}</a><br>
-
-                📍 <strong>Address:</strong> {{ order.address }}<br>
-
-                💰 <strong>Order Amount:</strong> ₹{{ order.total }}
-
-            </div>
-
-            {% if order.status == "REQUEST_SUBMITTED" and not order.assigned_delivery_id %}
-
-                <form method="POST"
-                      class="rd-accept-form"
-                      action="{% url 'rider_update_status' order.id 'ACCEPTED' %}">
-
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="rd-accept-btn">
-                        Accept Order
-                    </button>
-
-                </form>
-
-                <form method="POST"
-                    action="{% url 'rider_update_status' order.id 'DECLINE' %}"
-                    onsubmit="return confirm('Are you sure you want to decline this order?');">
-
-                    {% csrf_token %}
-
-                    <button type="submit" class="rd-decline-btn">
-                        Decline Order
-                    </button>
-
-                </form>
-
-            {% else %}
-
-                <a href="{% url 'rider_order_detail' order.id %}"
-                   class="rd-order-action">
-
-                    View Order Details →
-
-                </a>
-
-            {% endif %}
-
-        </div>
-
-    {% empty %}
-
-        <div class="rd-empty">
-            No orders found for this period.
-        </div>
-
-    {% endfor %}
 
 </div>
 
@@ -813,4 +657,109 @@ body,
 })();
 </script>
 
+<script>
+(function () {
+
+    let isRefreshing = false;
+
+    function bindRefreshedOrders() {
+
+        // Date filter
+        const periodFilter = document.getElementById("periodFilter");
+        const filterForm = document.getElementById("rdFilter");
+
+        if (periodFilter && filterForm) {
+
+            periodFilter.addEventListener("change", function () {
+
+                const isCustom = periodFilter.value === "custom";
+
+                filterForm.classList.toggle("custom-open", isCustom);
+
+                if (!isCustom) {
+                    filterForm.submit();
+                }
+
+            });
+
+            filterForm.classList.toggle(
+                "custom-open",
+                periodFilter.value === "custom"
+            );
+        }
+
+        // Accept order buttons
+        document.querySelectorAll(".rd-accept-form").forEach(function (form) {
+
+            form.addEventListener("submit", function (event) {
+
+                if (form.dataset.submitting === "1") {
+                    event.preventDefault();
+                    return;
+                }
+
+                form.dataset.submitting = "1";
+
+                const btn = form.querySelector(".rd-accept-btn");
+
+                if (btn) {
+                    btn.classList.add("accepting");
+                    btn.textContent = "Accepting...";
+                }
+
+            });
+
+        });
+
+    }
+
+    async function refreshDashboard() {
+
+        if (isRefreshing || document.hidden) return;
+
+        isRefreshing = true;
+
+        try {
+
+            const response = await fetch(window.location.href, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (!response.ok) return;
+
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            const newStats = doc.getElementById("live-dashboard-stats");
+            const newOrders = doc.getElementById("live-dashboard-orders");
+
+            const currentStats = document.getElementById("live-dashboard-stats");
+            const currentOrders = document.getElementById("live-dashboard-orders");
+
+            if (newStats && currentStats) {
+                currentStats.innerHTML = newStats.innerHTML;
+            }
+
+            if (newOrders && currentOrders) {
+                currentOrders.innerHTML = newOrders.innerHTML;
+            }
+
+            bindRefreshedOrders();
+
+        } catch (error) {
+            console.error("Dashboard refresh failed:", error);
+        } finally {
+            isRefreshing = false;
+        }
+    }
+
+    setInterval(refreshDashboard, 15000);
+
+})();
+</script>
 {% endblock %}
