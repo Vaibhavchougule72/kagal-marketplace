@@ -174,7 +174,7 @@ def process_rider_offer_reminder(offer_id):
             # Stop if order is already assigned or no longer awaiting a rider
             if (
                 order.assigned_delivery_id
-                or order.status != "REQUEST_SUBMITTED"
+                or order.status not in ["REQUEST_SUBMITTED", "ACCEPTED"]
             ):
                 offer.status = "EXPIRED"
                 offer.next_notification_at = None

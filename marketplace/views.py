@@ -5484,7 +5484,7 @@ def rider_dashboard(request):
             )
 
             available_orders_filter = Q(
-                status="REQUEST_SUBMITTED",
+                status__in=["REQUEST_SUBMITTED", "ACCEPTED"],
                 assigned_delivery__isnull=True,
                 id__in=pending_offer_order_ids
             )
@@ -6266,7 +6266,7 @@ def rider_update_status(request, order_id, new_status):
                 )
 
                 if (
-                    order.status != "REQUEST_SUBMITTED"
+                    order.status not in ["REQUEST_SUBMITTED", "ACCEPTED"]
                     or order.assigned_delivery_id is not None
                     or offer is None
                 ):
@@ -6316,7 +6316,7 @@ def rider_update_status(request, order_id, new_status):
                 )
 
                 if (
-                    order.status != "REQUEST_SUBMITTED"
+                    order.status not in ["REQUEST_SUBMITTED", "ACCEPTED"]
                     or order.assigned_delivery_id is not None
                     or offer is None
                 ):
@@ -11870,16 +11870,45 @@ def partner_order_action(request, order_id):
         # ----------------------------------------------------
 
         if action == "REJECT":
+            from .models import RiderOrderOffer
 
             order.status = "FAILED"
 
+            # Remove any assigned rider
+            order.assigned_delivery = None
+            order.delivery_partner_phone = ""
+
             order.save()
 
-            # Tell Partner App to cancel remaining order alerts.
+            # Get riders who received or accepted this order
+            rider_ids = list(
+                RiderOrderOffer.objects.filter(
+                    order=order,
+                    status__in=["PENDING", "ACCEPTED"]
+                ).values_list("rider_id", flat=True).distinct()
+            )
+
+            # Cancel pending or accepted rider offers
+            RiderOrderOffer.objects.filter(
+                order=order,
+                status__in=["PENDING", "ACCEPTED"]
+            ).update(
+                status="CANCELLED",
+                next_notification_at=None
+            )
+
+            # Notify affected riders after the transaction commits
+            from .firebase import notify_rider_order_cancelled
+
+            transaction.on_commit(
+                lambda: notify_rider_order_cancelled(order, rider_ids)
+            )
+
             transaction.on_commit(
                 lambda: notify_partner_order_alert_cancelled(order)
             )
 
+        
             return redirect(
                 "partner_order_detail",
                 order_id=order.id

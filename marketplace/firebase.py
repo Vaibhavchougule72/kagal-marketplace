@@ -364,6 +364,78 @@ def send_rider_new_order_notification(token, order, offer):
             e
         )
         raise
+# ============================================================
+# RIDER ORDER CANCELLED NOTIFICATION
+# ============================================================
+
+def send_rider_order_cancelled_notification(token, order):
+
+    message = messaging.Message(
+
+        data={
+            "type": "RIDER_ORDER_CANCELLED",
+
+            "order_id": str(order.id),
+
+            "store_name": str(order.store.name),
+
+            "message": "This order has been cancelled by the store.",
+        },
+
+        token=token,
+
+        android=messaging.AndroidConfig(
+            priority="high"
+        )
+    )
+
+    try:
+        response = messaging.send(message)
+
+        logger.info(
+            "Rider cancellation notification sent. "
+            "Order ID: %s",
+            order.id
+        )
+
+        return response
+
+    except Exception as e:
+        logger.exception(
+            "Rider cancellation notification failed "
+            "for order %s: %s",
+            order.id,
+            e
+        )
+        raise
+
+def notify_rider_order_cancelled(order, rider_ids):
+
+    if not order or not rider_ids:
+        return
+
+    from .models import RiderDeviceToken
+
+    tokens = RiderDeviceToken.objects.filter(
+        user_id__in=rider_ids,
+        is_active=True
+    ).values_list("token", flat=True)
+
+    for token in tokens:
+        try:
+            send_rider_order_cancelled_notification(
+                token,
+                order
+            )
+
+        except Exception as e:
+            logger.exception(
+                "Rider cancellation notification failed "
+                "for order %s: %s",
+                order.id,
+                e
+            )
+
 
 def send_partner_order_alert_cancelled(token, order):
     message = messaging.Message(

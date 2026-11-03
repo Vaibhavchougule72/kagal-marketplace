@@ -605,6 +605,7 @@ class RiderOrderOffer(models.Model):
         ("DECLINED", "Declined"),
         ("EXPIRED", "Expired"),
         ("ESCALATED", "Escalated"),
+        ("CANCELLED", "Cancelled"),
     ]
 
     order = models.ForeignKey(
