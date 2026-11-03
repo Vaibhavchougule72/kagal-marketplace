@@ -8,7 +8,7 @@ from .models import NotificationCampaign, NotificationJob
 from django.db.models import Q
 from decimal import Decimal
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 import random
 import math
 import re
@@ -72,6 +72,12 @@ from .firebase import notify_partner_order_alert_cancelled
 from .models import SubCategory
 
 MAX_CART_QTY = 50
+
+# =====================================================
+# LOKA MY JOURNEY CYCLE
+# =====================================================
+
+JOURNEY_START_DATE = date(2026, 11, 5)
 
 # =====================================================
 # CUSTOMER LOGIN OTP SECURITY
@@ -1359,7 +1365,8 @@ def checkout(request):
 
         delivered_orders = Order.objects.filter(
             phone=customer_phone,
-            status="DELIVERED"
+            status="DELIVERED",
+            created_at__date__gte=JOURNEY_START_DATE
         ).count()
 
         next_order_number = delivered_orders + 1
@@ -1557,7 +1564,8 @@ def checkout(request):
 
             delivered_orders = Order.objects.filter(
                 phone=phone,
-                status="DELIVERED"
+                status="DELIVERED",
+                created_at__date__gte=JOURNEY_START_DATE
             ).count()
 
             # 1st order OR every 5th order
@@ -3528,7 +3536,8 @@ def calculate_delivery(request):
 
         delivered_orders = Order.objects.filter(
             phone=phone,
-            status="DELIVERED"
+            status="DELIVERED",
+            created_at__date__gte=JOURNEY_START_DATE
         ).count()
 
     next_order_number = delivered_orders + 1
@@ -4471,7 +4480,8 @@ def check_free_delivery(request):
 
     delivered_orders = Order.objects.filter(
         phone=phone,
-        status="DELIVERED"
+        status="DELIVERED",
+        created_at__date__gte=JOURNEY_START_DATE
     ).count()
 
     next_order = delivered_orders + 1
@@ -5996,7 +6006,8 @@ def process_journey_reward(order):
         # Count only successfully delivered orders.
         delivered_count = Order.objects.filter(
             phone=order.phone,
-            status="DELIVERED"
+            status="DELIVERED",
+            created_at__date__gte=JOURNEY_START_DATE
         ).count()
 
         if delivered_count not in reward_config:
@@ -6009,6 +6020,7 @@ def process_journey_reward(order):
             CustomerJourneyReward.objects.get_or_create(
                 customer=customer,
                 milestone_number=delivered_count,
+                journey_start_date=JOURNEY_START_DATE,
                 defaults={
                     "reward_type": config["type"],
                     "reward_amount": config["amount"],
@@ -10013,7 +10025,8 @@ def my_journey(request):
     # Count only successfully delivered orders.
     delivered_count = Order.objects.filter(
         phone=customer.phone,
-        status="DELIVERED"
+        status="DELIVERED",
+        created_at__date__gte=JOURNEY_START_DATE
     ).count()
 
     # Reward milestones for the first 10 delivered orders.
@@ -10062,7 +10075,8 @@ def my_journey(request):
 
     # Fetch the rewards already recorded for this customer.
     rewards = CustomerJourneyReward.objects.filter(
-        customer=customer
+        customer=customer,
+        journey_start_date=JOURNEY_START_DATE
     ).select_related("coupon", "source_order")
 
     rewards_by_milestone = {

@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 from decimal import Decimal
@@ -1786,6 +1786,12 @@ class CustomerJourneyReward(models.Model):
 
     milestone_number = models.PositiveSmallIntegerField()
 
+    journey_start_date = models.DateField(
+        default=date(2026, 11, 5),
+        db_index=True,
+        help_text="Identifies the My Journey cycle this reward belongs to."
+    )
+        
     reward_type = models.CharField(
         max_length=20,
         choices=REWARD_TYPES
@@ -1831,8 +1837,12 @@ class CustomerJourneyReward(models.Model):
         ordering = ["milestone_number"]
         constraints = [
             models.UniqueConstraint(
-                fields=["customer", "milestone_number"],
-                name="unique_customer_journey_milestone"
+                fields=[
+                    "customer",
+                    "milestone_number",
+                    "journey_start_date"
+                ],
+                name="unique_customer_journey_cycle_milestone"
             )
         ]
 
