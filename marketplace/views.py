@@ -11898,14 +11898,14 @@ def partner_order_action(request, order_id):
             rider_ids = list(
                 RiderOrderOffer.objects.filter(
                     order=order,
-                    status__in=["PENDING", "ACCEPTED"]
+                    status__in=["PENDING", "ACCEPTED","PICKED_UP"]
                 ).values_list("rider_id", flat=True).distinct()
             )
 
             # Cancel pending or accepted rider offers
             RiderOrderOffer.objects.filter(
                 order=order,
-                status__in=["PENDING", "ACCEPTED"]
+                status__in=["PENDING", "ACCEPTED", "PICKED_UP"]
             ).update(
                 status="CANCELLED",
                 next_notification_at=None
