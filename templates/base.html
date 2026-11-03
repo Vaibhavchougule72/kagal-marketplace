@@ -3,6 +3,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    {% load static %}
+
+    <link rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="{% static 'images/favicon.png' %}">
+    
+    <link rel="apple-touch-icon"
+      sizes="180x180"
+      href="{% static 'images/apple-touch-icon.png' %}">
+    
     {% block extra_css %}{% endblock %}
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-K9CM7R5M0D"></script>
