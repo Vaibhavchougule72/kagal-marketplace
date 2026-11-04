@@ -63,52 +63,6 @@ body { background: #fff; }
 }
 .lk-suggest a.list-group-item:hover { background: var(--loka-green-soft); }
 
-/* ---------- Stacked offers ---------- */
-.lk-stack { position: relative; margin-top: 0; padding-bottom: 10px; max-width: 760px; }
-.lk-stack::before, .lk-stack::after { content: ""; position: absolute; border-radius: 22px; }
-.lk-stack::before { display: none; }
-.lk-stack::after  { left: 14px; right: 14px; top: auto; bottom: 0; height: 14px; border-radius: 0 0 18px 18px; background: rgba(15,77,50,.18); z-index: 1; }
-.lk-offer { position: relative; z-index: 2; }
-.lk-offer .carousel-inner { border-radius: 22px; background: transparent; }
-
-/* Card-deck transition: the top offer swings off, the next one rises from behind */
-.lk-offer .carousel-item {
-    border-radius: 22px; overflow: hidden;
-    transform-origin: 50% 100%;
-    transition: transform .7s cubic-bezier(.22, .9, .24, 1), opacity .7s ease;
-    backface-visibility: hidden; will-change: transform, opacity;
-}
-.lk-offer .carousel-item.active { z-index: 2; }
-.lk-offer .carousel-item-next, .lk-offer .carousel-item-prev { z-index: 1; }
-/* incoming card waits behind, slightly smaller */
-.lk-offer .carousel-item-next:not(.carousel-item-start),
-.lk-offer .carousel-item-prev:not(.carousel-item-end) { transform: scale(.92) translateY(8px); opacity: .55; }
-/* incoming card settles to full size */
-.lk-offer .carousel-item-next.carousel-item-start,
-.lk-offer .carousel-item-prev.carousel-item-end { transform: none; opacity: 1; }
-/* outgoing card swings away */
-.lk-offer .active.carousel-item-start { transform: translateX(-115%) rotate(-6deg); opacity: 0; }
-.lk-offer .active.carousel-item-end   { transform: translateX(115%) rotate(6deg); opacity: 0; }
-/* alternate: odd slides swing left, even slides swing right (class set by the script below) */
-.lk-offer.lk-out-left .active.carousel-item-start,
-.lk-offer.lk-out-left .active.carousel-item-end   { transform: translateX(-115%) rotate(-6deg); opacity: 0; }
-.lk-offer.lk-out-right .active.carousel-item-start,
-.lk-offer.lk-out-right .active.carousel-item-end  { transform: translateX(115%) rotate(6deg); opacity: 0; }
-.lk-offer-img {
-    display: block; width: 100%;
-    height: clamp(88px, 24vw, 200px);
-    object-fit: cover;
-}
-.lk-offer .carousel-indicators {
-    position: absolute; left: 0; right: 0; bottom: 6px;
-    margin: 0; justify-content: center; gap: 5px;
-}
-.lk-offer .carousel-indicators [data-bs-target] {
-    width: 6px; height: 6px; margin: 0; padding: 0; border: 0; border-radius: 3px;
-    background: rgba(255,255,255,.6); opacity: 1; text-indent: 0; transition: width .2s ease, background .2s ease;
-}
-.lk-offer .carousel-indicators .active { width: 22px; background: var(--loka-orange); }
-
 /* ---------- White sheet ---------- */
 .lk-sheet {
     position: relative; margin-top: -24px; z-index: 5;
@@ -142,27 +96,22 @@ body { background: #fff; }
 .lk-sheet .lk-feat { margin-top: 0 !important; margin-bottom: 0 !important; }
 .lk-sheet .lk-feats { margin-top: 6px !important; padding-bottom: 10px !important; }
 .lk-sheet .lk-cats { margin-top: 6px !important; }
-.lk-hd { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
-.lk-eyebrow { font-size: 11px; letter-spacing: .08em; color: var(--loka-orange-deep); }
-.lk-title { margin: 0; font-size: clamp(22px, 4.6vw, 42px); font-weight: 500; line-height: 1.1; color: var(--loka-green); }
+.lk-eyebrow { font-size: 13px; letter-spacing: .08em; color: var(--loka-orange-deep); }
+.lk-title { margin: 0; font-size: clamp(27px, 5vw, 42px); font-weight: 500; line-height: 1.1; color: var(--loka-green); }
 .lk-title em { font-style: normal; color: var(--loka-orange); }
 
-/* ---------- Categories (one swipeable row on phones) ---------- */
-.lk-cats {
-    display: flex; gap: 12px; margin: 6px -16px 0 0; padding: 0 16px 2px 0;
-    overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
-}
-.lk-cats::-webkit-scrollbar { display: none; }
-.lk-cat { flex: 0 0 64px; scroll-snap-align: start; display: block; text-align: center; color: var(--loka-green) !important; text-decoration: none !important; }
+/* ---------- Categories ---------- */
+.lk-cats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px 8px; margin-top: 8px; }
+.lk-cat { display: block; text-align: center; color: var(--loka-green) !important; text-decoration: none !important; }
 .lk-cat-img {
-    width: 56px; height: 56px; margin: 0 auto 2px; overflow: hidden;
+    width: min(100%, 92px); aspect-ratio: 1; margin: 0 auto 4px; overflow: hidden;
     border-radius: 50%; background: var(--loka-orange-soft); color: var(--loka-orange-deep);
-    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
     transition: transform .2s ease;
 }
 .lk-cat:hover .lk-cat-img { transform: translateY(-3px); }
 .lk-cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.lk-cat-name { font-size: 12px; line-height: 1.2; overflow-wrap: anywhere; }
+.lk-cat-name { font-size: 14px; line-height: 1.2; overflow-wrap: anywhere; }
 
 /* ---------- Info & Offers ---------- */
 .lk-tag {
@@ -233,7 +182,7 @@ body { background: #fff; }
 .lk-ln.lk-done { background: var(--loka-orange); }
 
 /* Shortcut tiles: one row of four */
-.lk-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+.lk-tiles { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 0; }
 .lk-tile {
     display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px; min-height: 76px;
     border: 1px solid #D5E5DB; border-radius: 16px; background: #fff;
@@ -305,10 +254,7 @@ body { background: #fff; }
 /* ---------- Larger screens ---------- */
 @media (min-width: 768px) {
     .lk-hero { padding-bottom: 36px; }
-    .lk-cats { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 10px 8px; margin: 6px 0 0; padding: 0; overflow: visible; }
-    .lk-cat { flex: none; }
-    .lk-cat-img { width: min(100%, 92px); height: auto; aspect-ratio: 1; font-size: 26px; }
-    .lk-cat-name { font-size: 14px; }
+    .lk-cats { grid-template-columns: repeat(6, minmax(0,1fr)); }
     .lk-feats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
     .lk-footer-cards { grid-template-columns: 1.2fr 1fr 1fr; }
 }
@@ -317,16 +263,7 @@ body { background: #fff; }
     .lk-feats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .lk-offer .carousel-item { transition: opacity .3s ease; }
-    .lk-offer .carousel-item-next:not(.carousel-item-start),
-    .lk-offer .carousel-item-prev:not(.carousel-item-end),
-    .lk-offer .active.carousel-item-start,
-    .lk-offer .active.carousel-item-end,
-    .lk-offer.lk-out-left .active.carousel-item-start,
-    .lk-offer.lk-out-left .active.carousel-item-end,
-    .lk-offer.lk-out-right .active.carousel-item-start,
-    .lk-offer.lk-out-right .active.carousel-item-end { transform: none; }
-    .lk-cat-img, .lk-feat, .lk-feat-img > img, .lk-dots span, .lk-offer .carousel-indicators [data-bs-target] { transition: none; }
+    .lk-cat-img, .lk-feat, .lk-feat-img > img, .lk-dots span { transition: none; }
 }
 </style>
 
@@ -418,41 +355,6 @@ body { background: #fff; }
 <div class="lk-sheet">
 <div class="lk-wrap">
 
-    <!-- OFFER BANNERS -->
-    {% if offer_sliders %}
-    <div class="lk-stack">
-        <div id="lokaOfferCarousel"
-             class="carousel slide lk-offer"
-             data-bs-ride="carousel"
-             data-bs-interval="2000">
-
-            <div class="carousel-inner">
-                {% for offer in offer_sliders %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    {% if offer.image %}
-                    <img src="{{ offer.image.url }}"
-                         class="lk-offer-img"
-                         alt="{{ offer.title }}">
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-
-            {% if offer_sliders|length > 1 %}
-            <div class="carousel-indicators">
-                {% for offer in offer_sliders %}
-                <button type="button"
-                        data-bs-target="#lokaOfferCarousel"
-                        data-bs-slide-to="{{ forloop.counter0 }}"
-                        {% if forloop.first %}class="active" aria-current="true"{% endif %}
-                        aria-label="Offer {{ forloop.counter }}"></button>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-
     <!-- SHORTCUTS -->
     <div class="lk-tiles">
             <a href="{% url 'referral_program' %}" class="lk-tile"><span class="lk-ic-sq"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v9H4zM3 8h18v3H3zM12 8v12M12 8c-2-4-6-3-4 0M12 8c2-4 6-3 4 0"/></svg></span>Refer &amp; Earn</a>
@@ -463,10 +365,8 @@ body { background: #fff; }
 
     <!-- CATEGORIES -->
     <section class="lk-sec" id="categories">
-        <div class="lk-hd">
-            <span class="lk-eyebrow">01 · CATEGORY</span>
-            <h2 class="lk-title">What are you <em>craving?</em></h2>
-        </div>
+        <div class="lk-eyebrow">01 · CATEGORY</div>
+        <h2 class="lk-title">What are you <em>craving?</em></h2>
 
         <div class="lk-cats">
             {% for category in categories %}
@@ -498,10 +398,8 @@ body { background: #fff; }
     {% if featured_stores %}
     <!-- FEATURED KITCHENS -->
     <section class="lk-sec">
-        <div class="lk-hd">
-            <span class="lk-eyebrow">02 · FEATURED</span>
-            <h2 class="lk-title">Kitchens worth <em>the detour.</em></h2>
-        </div>
+        <div class="lk-eyebrow">02 · FEATURED</div>
+        <h2 class="lk-title">Kitchens worth <em>the detour.</em></h2>
 
         <div class="lk-feats">
             {% for store in featured_stores %}
@@ -603,17 +501,6 @@ body { background: #fff; }
     document.addEventListener("DOMContentLoaded", join);
     window.addEventListener("load", join);
     window.addEventListener("resize", join);
-})();
-
-/* Offer cards alternate: 1st swings left, 2nd swings right, 3rd left ... */
-(function () {
-    var c = document.getElementById("lokaOfferCarousel");
-    if (!c) return;
-    c.addEventListener("slide.bs.carousel", function (e) {
-        var right = e.from % 2 === 1;
-        c.classList.toggle("lk-out-right", right);
-        c.classList.toggle("lk-out-left", !right);
-    });
 })();
 
 /* Time-based greeting (no backend change needed) */

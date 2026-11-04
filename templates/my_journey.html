@@ -148,7 +148,10 @@
 
     <!-- NAVIGATION -->
     <div class="journey-nav">
-        <a href="{% url 'customer_profile' %}" class="journey-back" aria-label="Back to profile">&#8249;</a>
+        <button type="button"
+        class="mo-nav-back"
+        aria-label="{% trans 'Back' %}"
+        onclick="goBack()">&#8249;</button>
         <span class="journey-nav-title">My Journey</span>
     </div>
 
