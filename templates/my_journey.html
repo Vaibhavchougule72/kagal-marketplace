@@ -1,50 +1,58 @@
 {% extends "base.html" %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap">
 <style>
     .page-wrapper,
-    .main-content {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    .journey-page {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
+    .main-content,
+    .journey-page,
     html,
-    body,
-    .journey-page {
+    body {
         margin-top: 0 !important;
         padding-top: 0 !important;
     }
+
     * {
         box-sizing: border-box;
     }
 
     .journey-page {
         min-height: 100vh;
-        background: #FAF7F2;
+        background: #FAF6F0;
         padding-bottom: 35px;
         color: #1A2E19;
+        font-family: "Baloo 2", system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
     }
 
-    .journey-nav {
-        position: sticky;
-        top: 0;
-        z-index: 100;
+    .journey-wrap {
+        width: 100%;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    /* ============ DIWALI HERO ============ */
+
+    .jh {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 118px;
+        border-radius: 0 0 36px 36px;
+        color: #fff;
+        background: linear-gradient(180deg, #0E2B12 0%, #17381A 38%, #2a2a14 72%, #2e1c0d 100%);
+    }
+
+    .jh > * {
+        position: relative;
+        z-index: 3;
+    }
+
+    .jh-nav {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px 15px;
-        background: linear-gradient(
-            135deg,
-            #1A3A16,
-            #2D5A27
-        );
-        color: white;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.10);
+        margin-bottom: 26px;
     }
 
     .journey-back {
@@ -53,17 +61,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.13);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        text-decoration: none;
-        font-size: 23px;
         flex-shrink: 0;
+        padding-bottom: 3px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        text-decoration: none;
+        font-size: 22px;
+        line-height: 1;
     }
 
     .journey-back:hover {
-        color: white;
+        color: #fff;
     }
 
     .journey-nav-title {
@@ -71,117 +81,206 @@
         font-weight: 700;
     }
 
+    .jh-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 13px;
+        border-radius: 20px;
+        background: #F7C58A;
+        color: #4a2508;
+        font-size: 12.5px;
+        font-weight: 700;
+    }
+
+    .jh h1 {
+        margin: 4px 0 2px;
+        font-size: 50px;
+        line-height: 1.15;
+        font-weight: 800;
+        font-family: "Baloo 2", "Noto Sans Devanagari", system-ui, sans-serif;
+        background: linear-gradient(180deg, #FFE9CC, #F7C58A);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .jh-greet {
+        margin: 0 0 16px;
+        font-size: 14.5px;
+        line-height: 1.4;
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    /* countdown */
+
+    .jh-cd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 16px;
+        background: rgba(10, 24, 10, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .jh-cd-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #F7C58A;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .jh-cd-label svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    .jh-boxes {
+        display: flex;
+        gap: 6px;
+    }
+
+    .jh-box {
+        min-width: 46px;
+        padding: 5px 4px 3px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.14);
+        text-align: center;
+        line-height: 1.05;
+    }
+
+    .jh-box b {
+        display: block;
+        font-size: 18px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .jh-box small {
+        font-size: 9px;
+        opacity: 0.75;
+    }
+
+    .jh-pop {
+        animation: jhPop 0.3s ease;
+    }
+
+    @keyframes jhPop {
+        from { transform: translateY(-3px); opacity: 0.4; }
+        to   { transform: none; opacity: 1; }
+    }
+
+    /* glow orbs + firework rings */
+
+    .jh-glow {
+        position: absolute;
+        z-index: 0;
+        left: -20%;
+        right: -20%;
+        bottom: -70px;
+        height: 170px;
+        background: radial-gradient(ellipse at 50% 100%, rgba(232, 98, 26, 0.4), transparent 70%);
+    }
+
+    .jh-orb {
+        position: absolute;
+        z-index: 1;
+        width: var(--s);
+        height: var(--s);
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff3c4 0%, #ffc968 35%, rgba(255, 170, 60, 0) 72%);
+        box-shadow: 0 0 14px 4px rgba(255, 190, 90, 0.45);
+        animation: jhFloat var(--t) ease-in-out infinite;
+        animation-delay: var(--d);
+    }
+
+    @keyframes jhFloat {
+        0%, 100% { transform: translate(0, 0); opacity: 0.55; }
+        50%      { transform: translate(var(--x), -16px); opacity: 1; }
+    }
+
+    .jh-ring {
+        position: absolute;
+        z-index: 2;
+        width: 0;
+        height: 0;
+        animation: jhFw 4.5s ease-out infinite;
+        animation-delay: var(--d);
+    }
+
+    .jh-ring i {
+        position: absolute;
+        left: -2px;
+        top: -2px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--c);
+        box-shadow: 0 0 5px var(--c);
+    }
+
+    @keyframes jhFw {
+        0%   { transform: scale(0.15); opacity: 0; }
+        12%  { opacity: 1; }
+        55%  { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.15); opacity: 0; }
+    }
+
+    /* ============ BODY ============ */
+
     .journey-container {
         width: 100%;
-        max-width: 560px;
-        margin: 0 auto;
-        padding: 16px 14px;
+        padding: 14px 14px 0;
     }
-
-    /* HERO */
-
-    .journey-hero {
-        position: relative;
-        overflow: hidden;
-        padding: 24px 20px;
-        margin-bottom: 17px;
-        border-radius: 20px;
-        background: linear-gradient(
-            135deg,
-            #2D5A27,
-            #163A16
-        );
-        color: white;
-        box-shadow: 0 8px 24px rgba(26, 58, 22, 0.20);
-    }
-
-    .journey-hero::after {
-        content: "";
-        position: absolute;
-        width: 170px;
-        height: 170px;
-        right: -65px;
-        top: -75px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.06);
-        pointer-events: none;
-    }
-
-    .journey-hero-label {
-        position: relative;
-        z-index: 1;
-        margin: 0 0 7px;
-        color: #F7C58A;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 1.4px;
-        text-transform: uppercase;
-    }
-
-    .journey-hero h1 {
-        position: relative;
-        z-index: 1;
-        margin: 0 0 8px;
-        color: white;
-        font-size: 25px;
-        line-height: 1.25;
-        font-weight: 800;
-    }
-
-    .journey-hero-description {
-        position: relative;
-        z-index: 1;
-        margin: 0;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 13px;
-        line-height: 1.6;
-    }
-
-    /* ORDER COUNT */
 
     .journey-summary {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
-        margin-bottom: 18px;
+        margin-bottom: 12px;
     }
 
     .journey-stat {
-        padding: 17px 14px;
-        background: white;
-        border: 1px solid #E0E8DF;
-        border-radius: 15px;
-        box-shadow: 0 3px 12px rgba(26, 58, 22, 0.04);
+        padding: 14px 15px;
+        background: #fff;
+        border: 1px solid #E3E9E0;
+        border-radius: 18px;
     }
 
     .journey-stat-label {
-        margin-bottom: 7px;
+        margin-bottom: 2px;
         color: #7D8B7B;
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
     }
 
     .journey-stat-value {
         color: #2D5A27;
-        font-size: 27px;
+        font-size: 28px;
         line-height: 1.2;
         font-weight: 800;
     }
 
     .journey-stat-caption {
-        margin-top: 5px;
+        margin-top: 3px;
         color: #8A9788;
-        font-size: 10px;
+        font-size: 10.5px;
     }
 
-    /* PROGRESS */
-
     .journey-progress-card {
-        padding: 18px;
-        margin-bottom: 24px;
-        background: white;
-        border: 1px solid #E0E8DF;
-        border-radius: 16px;
+        padding: 16px 17px;
+        margin-bottom: 22px;
+        background: #fff;
+        border: 1px solid #E3E9E0;
+        border-radius: 18px;
     }
 
     .journey-progress-heading {
@@ -189,18 +288,18 @@
         justify-content: space-between;
         align-items: center;
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
     .journey-progress-heading h2 {
         margin: 0;
         color: #1A3A16;
-        font-size: 15px;
+        font-size: 15.5px;
         font-weight: 800;
     }
 
     .journey-progress-percent {
-        color: #2D5A27;
+        color: #1A3A16;
         font-size: 13px;
         font-weight: 800;
     }
@@ -210,28 +309,23 @@
         height: 10px;
         overflow: hidden;
         border-radius: 20px;
-        background: #EAF0E8;
+        background: #E6ECE3;
     }
 
     .journey-progress-fill {
+        width: 0;
         height: 100%;
         border-radius: 20px;
-        background: linear-gradient(
-            90deg,
-            #2D5A27,
-            #78A85F
-        );
-        transition: width 0.4s ease;
+        background: linear-gradient(90deg, #2D5A27, #7BAE63);
+        transition: width 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .journey-progress-caption {
         margin: 10px 0 0;
         color: #7D8B7B;
-        font-size: 12px;
+        font-size: 12.5px;
         line-height: 1.5;
     }
-
-    /* SECTION */
 
     .journey-section-heading {
         margin: 0 0 5px;
@@ -241,24 +335,22 @@
     }
 
     .journey-section-description {
-        margin: 0 0 17px;
+        margin: 0 0 14px;
         color: #879284;
         font-size: 12px;
         line-height: 1.5;
     }
 
-    /* MILESTONE CARDS */
+    /* milestones */
 
     .journey-milestone {
-        position: relative;
         display: flex;
-        gap: 13px;
-        padding: 17px 14px;
+        gap: 14px;
+        padding: 15px 14px;
         margin-bottom: 12px;
-        background: white;
-        border: 1px solid #E0E8DF;
-        border-radius: 16px;
-        box-shadow: 0 3px 12px rgba(26, 58, 22, 0.035);
+        background: #fff;
+        border: 1px solid #E3E9E0;
+        border-radius: 18px;
     }
 
     .journey-milestone.earned {
@@ -266,25 +358,21 @@
         background: #FCFFFB;
     }
 
-    .journey-milestone.locked {
-        background: #FFFFFF;
-    }
-
     .journey-milestone-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 49px;
-        height: 49px;
-        min-width: 49px;
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
         border-radius: 14px;
-        background: #EAF2E8;
-        font-size: 23px;
+        background: #E8F0E5;
+        font-size: 24px;
     }
 
     .journey-milestone.locked .journey-milestone-icon {
-        background: #F1F1ED;
-        filter: grayscale(0.35);
+        background: #F0F0EB;
+        filter: grayscale(0.2);
     }
 
     .journey-milestone-content {
@@ -297,70 +385,53 @@
         align-items: flex-start;
         justify-content: space-between;
         gap: 8px;
-        margin-bottom: 5px;
     }
 
     .journey-milestone-title {
         margin: 0;
         color: #1A3A16;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 800;
-        line-height: 1.4;
+        line-height: 1.35;
     }
 
     .journey-milestone.locked .journey-milestone-title {
-        color: #657363;
+        color: #3f4d3d;
     }
 
     .journey-status {
         display: inline-block;
-        padding: 4px 7px;
+        padding: 3px 8px;
         border-radius: 20px;
-        font-size: 9px;
-        font-weight: 800;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
         white-space: nowrap;
         flex-shrink: 0;
     }
 
-    .journey-status.completed {
-        background: #E4F4E1;
-        color: #28752D;
-    }
-
-    .journey-status.unlocked {
-        background: #FFF0DF;
-        color: #B95A12;
-    }
-
-    .journey-status.locked-status {
-        background: #F0F1ED;
-        color: #858B80;
-    }
-
-    .journey-status.processing {
-        background: #E8F0FF;
-        color: #315FA8;
-    }
+    .journey-status.completed     { background: #E1F2DD; color: #28752D; }
+    .journey-status.unlocked      { background: #FFF0DF; color: #B95A12; }
+    .journey-status.locked-status { background: #EEEFEA; color: #80867B; }
+    .journey-status.processing    { background: #E8F0FF; color: #315FA8; }
 
     .journey-milestone-description {
-        margin: 0;
+        margin: 2px 0 0;
         color: #7C8879;
-        font-size: 12px;
+        font-size: 12.5px;
         line-height: 1.5;
     }
 
     .journey-order-badge {
         display: inline-block;
         margin-top: 8px;
-        padding: 4px 8px;
+        padding: 2px 9px;
         border-radius: 6px;
-        background: #F4F7F1;
+        background: #EEF3EA;
         color: #4D6B47;
-        font-size: 10px;
+        font-size: 10.5px;
         font-weight: 700;
     }
-
-    /* COUPON CODE */
 
     .journey-coupon-code {
         display: flex;
@@ -386,7 +457,8 @@
         border: 0;
         border-radius: 6px;
         background: #E8621A;
-        color: white;
+        color: #fff;
+        font-family: inherit;
         font-size: 10px;
         font-weight: 700;
         cursor: pointer;
@@ -397,18 +469,12 @@
         background: #C94F11;
     }
 
-    /* NEXT MILESTONE */
-
     .journey-next-card {
         padding: 17px;
         margin: 20px 0;
         border: 1px solid #F3D1B5;
-        border-radius: 15px;
-        background: linear-gradient(
-            135deg,
-            #FFF8F0,
-            #FFFFFF
-        );
+        border-radius: 18px;
+        background: linear-gradient(135deg, #FFF8F0, #FFFFFF);
     }
 
     .journey-next-label {
@@ -430,7 +496,7 @@
     .journey-next-description {
         margin: 0;
         color: #7C8879;
-        font-size: 12px;
+        font-size: 12.5px;
         line-height: 1.6;
     }
 
@@ -438,7 +504,7 @@
         padding: 21px 17px;
         margin-top: 20px;
         border: 1px solid #C7DDBE;
-        border-radius: 16px;
+        border-radius: 18px;
         background: #F0F8ED;
         text-align: center;
     }
@@ -458,7 +524,7 @@
     .journey-complete-card p {
         margin: 0;
         color: #567252;
-        font-size: 12px;
+        font-size: 12.5px;
         line-height: 1.6;
     }
 
@@ -473,12 +539,12 @@
         display: block;
         padding: 12px 10px;
         border: 1px solid #DDE7D9;
-        border-radius: 11px;
-        background: white;
+        border-radius: 12px;
+        background: #fff;
         color: #2D5A27;
         text-align: center;
         text-decoration: none;
-        font-size: 12px;
+        font-size: 12.5px;
         font-weight: 800;
     }
 
@@ -496,30 +562,21 @@
     }
 
     .journey-footer strong {
-        color: #2D5A27;
+        color: #E8621A;
     }
 
     @media (max-width: 380px) {
-        .journey-milestone {
-            gap: 10px;
-            padding: 14px 11px;
-        }
+        .jh h1 { font-size: 42px; }
+        .jh-box { min-width: 40px; }
+        .jh-box b { font-size: 16px; }
+        .jh-cd-label span { display: none; }
+        .journey-milestone { gap: 10px; padding: 13px 11px; }
+        .journey-milestone-icon { width: 42px; height: 42px; min-width: 42px; font-size: 20px; }
+        .journey-milestone-title { font-size: 13.5px; }
+    }
 
-        .journey-milestone-icon {
-            width: 42px;
-            height: 42px;
-            min-width: 42px;
-            font-size: 20px;
-        }
-
-        .journey-milestone-title {
-            font-size: 13px;
-        }
-
-        .journey-status {
-            font-size: 8px;
-            padding: 4px 6px;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .jh *, .journey-progress-fill { animation: none !important; transition: none !important; }
     }
 </style>
 {% endblock %}
@@ -528,76 +585,88 @@
 {% block content %}
 
 <div class="journey-page">
+<div class="journey-wrap">
 
-    <!-- NAVIGATION -->
-    <div class="journey-nav">
-        <a
-            href="{% url 'customer_profile' %}"
-            class="journey-back"
-            aria-label="Back to profile"
-        >
-            &#8249;
-        </a>
+    <!-- DIWALI HERO -->
+    <section
+        class="jh"
+        id="jhHero"
+        data-start="{{ offer_start_iso|default:'2026-11-05T10:00:00+05:30' }}"
+        data-end="{{ offer_end_iso|default:'2026-11-15T21:00:00+05:30' }}"
+        data-server-now="{{ server_now_ms|default:'' }}"
+    >
+        <div class="jh-glow"></div>
 
-        <span class="journey-nav-title">
-            My Journey
-        </span>
-    </div>
+        <div class="jh-ring" style="left:52%; top:70px; --c:#9FE6B8; --d:0s;"></div>
+        <div class="jh-ring" style="left:81%; top:100px; --c:#F07A2A; --d:1.6s;"></div>
+        <div class="jh-ring" style="left:14%; top:150px; --c:#FFD27A; --d:3s; scale:.7;"></div>
+
+        <span class="jh-orb" style="left:6%;  top:72px;    --s:8px; --t:5s;   --x:6px;  --d:0s;"></span>
+        <span class="jh-orb" style="left:40%; top:50px;    --s:7px; --t:6s;   --x:-5px; --d:1s;"></span>
+        <span class="jh-orb" style="left:30%; bottom:58px; --s:9px; --t:7s;   --x:8px;  --d:.5s;"></span>
+        <span class="jh-orb" style="left:90%; bottom:100px;--s:6px; --t:5.5s; --x:-6px; --d:2s;"></span>
+        <span class="jh-orb" style="left:95%; top:62px;    --s:7px; --t:6.5s; --x:-4px; --d:1.4s;"></span>
+        <span class="jh-orb" style="left:18%; top:100px;   --s:5px; --t:6s;   --x:5px;  --d:2.6s;"></span>
+
+        <div class="jh-nav">
+            <a
+                href="{% url 'customer_profile' %}"
+                class="journey-back"
+                aria-label="Back to profile"
+            >&#8249;</a>
+
+            <span class="journey-nav-title">My Journey</span>
+        </div>
+
+        <span class="jh-tag">✦ Diwali Special · 5–15 Nov</span>
+
+        <h1>दिवाळी धमाका</h1>
+
+        <p class="jh-greet">
+            {% if customer.name %}
+                Hey {{ customer.name|truncatechars:25 }}!
+            {% else %}
+                Hey there!
+            {% endif %}
+            Every delivered order lights up a new reward.
+        </p>
+
+        <div class="jh-cd" aria-live="off">
+            <div class="jh-cd-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 7v5l3 2"/>
+                </svg>
+                <span id="jhLabel">Starts in</span>
+            </div>
+
+            <div class="jh-boxes" id="jhBoxes">
+                <div class="jh-box"><b data-u="d">00</b><small>days</small></div>
+                <div class="jh-box"><b data-u="h">00</b><small>hrs</small></div>
+                <div class="jh-box"><b data-u="m">00</b><small>min</small></div>
+                <div class="jh-box"><b data-u="s">00</b><small>sec</small></div>
+            </div>
+        </div>
+    </section>
 
 
     <div class="journey-container">
-
-        <!-- HERO -->
-        <div class="journey-hero">
-            <p class="journey-hero-label">
-                YOUR LOKA STORY
-            </p>
-
-            <h1>
-                {% if customer.name %}
-                    Hey {{ customer.name|truncatechars:25 }}! 👋
-                {% else %}
-                    Your LOKA Journey! 👋
-                {% endif %}
-            </h1>
-
-            <p class="journey-hero-description">
-                Every delivered order brings you closer to exciting
-                rewards. Keep ordering and enjoy more with LOKA!
-            </p>
-        </div>
-
 
         <!-- SUMMARY -->
         <div class="journey-summary">
 
             <div class="journey-stat">
-                <div class="journey-stat-label">
-                    ORDERS DELIVERED
-                </div>
-
-                <div class="journey-stat-value">
-                    {{ delivered_count }}
-                </div>
-
-                <div class="journey-stat-caption">
-                    Successfully completed orders
-                </div>
+                <div class="journey-stat-label">Orders Delivered</div>
+                <div class="journey-stat-value">{{ delivered_count }}</div>
+                <div class="journey-stat-caption">Successfully completed orders</div>
             </div>
 
             <div class="journey-stat">
-                <div class="journey-stat-label">
-                    JOURNEY GOAL
-                </div>
-
+                <div class="journey-stat-label">Journey Goal</div>
                 <div class="journey-stat-value">
-                    {% if delivered_count >= 10 %}
-                        10/10
-                    {% else %}
-                        {{ delivered_count }}/10
-                    {% endif %}
+                    {% if delivered_count >= 10 %}10/10{% else %}{{ delivered_count }}/10{% endif %}
                 </div>
-
                 <div class="journey-stat-caption">
                     {% if journey_complete %}
                         Goal completed! 🎉
@@ -615,10 +684,7 @@
 
             <div class="journey-progress-heading">
                 <h2>Your Progress</h2>
-
-                <span class="journey-progress-percent">
-                    {{ journey_progress }}%
-                </span>
+                <span class="journey-progress-percent">{{ journey_progress }}%</span>
             </div>
 
             <div
@@ -651,244 +717,41 @@
 
 
         <!-- MILESTONES -->
-        <h2 class="journey-section-heading">
-            Your Reward Milestones 🏆
-        </h2>
+        <h2 class="journey-section-heading">Your Reward Milestones 🏆</h2>
 
         <p class="journey-section-description">
             Rewards are unlocked based on successfully delivered
             orders. Cancelled and failed orders don't count.
         </p>
 
-
         {% for milestone in milestones %}
 
-            <div class="journey-milestone
-                {% if milestone.earned %}earned{% else %}locked{% endif %}">
+            <div class="journey-milestone {% if milestone.earned %}earned{% else %}locked{% endif %}">
 
-                <div class="journey-milestone-icon">
-                    {{ milestone.icon }}
-                </div>
+                <div class="journey-milestone-icon">{{ milestone.icon }}</div>
 
                 <div class="journey-milestone-content">
 
                     <div class="journey-milestone-top">
 
-                        <h3 class="journey-milestone-title">
-                            {{ milestone.title }}
-                        </h3>
+                        <h3 class="journey-milestone-title">{{ milestone.title }}</h3>
 
                         {% if milestone.status_label == "Completed" %}
-
-                            <span class="journey-status completed">
-                                ✓ COMPLETED
-                            </span>
-
+                            <span class="journey-status completed">✓ COMPLETED</span>
                         {% elif milestone.status_label == "Reward Unlocked" %}
-
-                            <span class="journey-status unlocked">
-                                🎉 UNLOCKED
-                            </span>
-
+                            <span class="journey-status unlocked">🎉 UNLOCKED</span>
                         {% elif milestone.status_label == "Processing" %}
-
-                            <span class="journey-status processing">
-                                PROCESSING
-                            </span>
-
+                            <span class="journey-status processing">PROCESSING</span>
                         {% else %}
-
-                            <span class="journey-status locked-status">
-                                🔒 LOCKED
-                            </span>
-
+                            <span class="journey-status locked-status">🔒 LOCKED</span>
                         {% endif %}
 
                     </div>
 
-                    <p class="journey-milestone-description">
-                        {{ milestone.description }}
-                    </p>
+                    <p class="journey-milestone-description">{{ milestone.description }}</p>
 
-                    <span class="journey-order-badge">
-                        ORDER {{ milestone.number }}
-                    </span>
-
+                    <span class="journey-order-badge">ORDER {{ milestone.number }}</span>
 
                     {% if milestone.reward.coupon %}
 
                         <div class="journey-coupon-code">
-
-                            <strong>
-                                {{ milestone.reward.coupon.code }}
-                            </strong>
-
-                            <button
-                                type="button"
-                                class="journey-coupon-copy"
-                                onclick="copyJourneyCoupon(
-                                    '{{ milestone.reward.coupon.code|escapejs }}',
-                                    this
-                                )"
-                            >
-                                COPY CODE
-                            </button>
-
-                        </div>
-
-                        <p class="journey-milestone-description"
-                           style="margin-top: 7px;">
-
-                            Minimum order: ₹199 · Valid for 7 days
-                            from issue date.
-
-                        </p>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-        {% endfor %}
-
-
-        <!-- NEXT MILESTONE -->
-        {% if next_milestone %}
-
-            <div class="journey-next-card">
-
-                <div class="journey-next-label">
-                    YOUR NEXT MILESTONE
-                </div>
-
-                <h3 class="journey-next-title">
-                    {{ next_milestone.icon }}
-                    {{ next_milestone.title }}
-                </h3>
-
-                <p class="journey-next-description">
-
-                    Complete {{ orders_to_next_milestone }}
-                    more delivered order(s) to reach this milestone.
-
-                </p>
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- JOURNEY COMPLETE -->
-        {% if journey_complete %}
-
-            <div class="journey-complete-card">
-
-                <div class="journey-complete-icon">
-                    🎉
-                </div>
-
-                <h3>10 Orders Completed!</h3>
-
-                <p>
-                    You've reached your first 10 delivered orders
-                    with LOKA. Thank you for being part of our journey!
-                </p>
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- QUICK LINKS -->
-        <div class="journey-bottom-links">
-
-            <a
-                href="{% url 'my_orders' %}"
-                class="journey-bottom-link"
-            >
-                📦 My Orders
-            </a>
-
-            <a
-                href="{% url 'customer_coupons' %}"
-                class="journey-bottom-link"
-            >
-                🏷️ My Coupons
-            </a>
-
-        </div>
-
-
-        <div class="journey-footer">
-            <strong>LOKA</strong> · Kagal's food delivery service
-        </div>
-
-    </div>
-
-</div>
-
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-    const progressBar = document.querySelector(
-        ".journey-progress-fill"
-    );
-
-    if (progressBar) {
-        const progress = Math.max(
-            0,
-            Math.min(
-                100,
-                Number(progressBar.dataset.progress) || 0
-            )
-        );
-
-        progressBar.style.width = progress + "%";
-    }
-});
-
-function copyJourneyCoupon(code, button) {
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(code).then(function () {
-            showCouponCopied(button);
-        }).catch(function () {
-            fallbackCopyJourneyCoupon(code, button);
-        });
-    } else {
-        fallbackCopyJourneyCoupon(code, button);
-    }
-}
-
-function fallbackCopyJourneyCoupon(code, button) {
-    const input = document.createElement("textarea");
-    input.value = code;
-    input.style.position = "fixed";
-    input.style.opacity = "0";
-
-    document.body.appendChild(input);
-    input.select();
-
-    try {
-        document.execCommand("copy");
-        showCouponCopied(button);
-    } catch (error) {
-        alert("Your coupon code is: " + code);
-    }
-
-    input.remove();
-}
-
-function showCouponCopied(button) {
-    const originalText = button.innerText;
-
-    button.innerText = "COPIED!";
-
-    setTimeout(function () {
-        button.innerText = originalText;
-    }, 1500);
-}
-</script>
-
-{% endblock %}
