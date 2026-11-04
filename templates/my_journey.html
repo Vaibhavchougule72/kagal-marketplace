@@ -609,11 +609,12 @@
         <span class="jh-orb" style="left:18%; top:100px;   --s:5px; --t:6s;   --x:5px;  --d:2.6s;"></span>
 
         <div class="jh-nav">
-            <a
-                href="{% url 'customer_profile' %}"
+            <button
+                type="button"
                 class="journey-back"
-                aria-label="Back to profile"
-            >&#8249;</a>
+                aria-label="Go back"
+                onclick="goBack()"
+            >&#8249;</button>
 
             <span class="journey-nav-title">My Journey</span>
         </div>
@@ -947,6 +948,25 @@ function showCouponCopied(button) {
     setTimeout(function () {
         button.textContent = original;
     }, 1800);
+}
+</script>
+
+<script>
+function goBack() {
+
+    const previousPage = document.referrer;
+
+    // Return only if the previous page belongs to LOKA
+    if (
+        previousPage &&
+        new URL(previousPage).origin === window.location.origin
+    ) {
+        window.history.back();
+    } else {
+        // Fallback when page is opened directly
+        window.location.href = "/";
+    }
+
 }
 </script>
 

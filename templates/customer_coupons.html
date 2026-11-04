@@ -254,10 +254,11 @@
 
     <div class="coupons-nav">
 
-        <a href="{% url 'customer_profile' %}"
-           class="coupons-back">
+        <button type="button"
+                class="coupons-back"
+                onclick="goBack()">
             ‹
-        </a>
+        </button>
 
         <span class="coupons-title">
             My Coupons
@@ -459,6 +460,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+</script>
+
+<script>
+function goBack() {
+
+    const previousPage = document.referrer;
+
+    // Return only if the previous page belongs to LOKA
+    if (
+        previousPage &&
+        new URL(previousPage).origin === window.location.origin
+    ) {
+        window.history.back();
+    } else {
+        // Fallback when page is opened directly
+        window.location.href = "/";
+    }
+
+}
 </script>
 
 {% endblock %}
