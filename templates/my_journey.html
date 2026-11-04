@@ -755,3 +755,199 @@
                     {% if milestone.reward.coupon %}
 
                         <div class="journey-coupon-code">
+                            <strong>{{ milestone.reward.coupon.code }}</strong>
+
+                            <button
+                                type="button"
+                                class="journey-coupon-copy"
+                                onclick="copyJourneyCoupon('{{ milestone.reward.coupon.code|escapejs }}', this)"
+                            >COPY CODE</button>
+                        </div>
+
+                        <p class="journey-milestone-description" style="margin-top: 7px;">
+                            Minimum order: ₹199 · Valid for 7 days from issue date.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+
+        <!-- NEXT MILESTONE -->
+        {% if next_milestone %}
+
+            <div class="journey-next-card">
+                <div class="journey-next-label">YOUR NEXT MILESTONE</div>
+
+                <h3 class="journey-next-title">
+                    {{ next_milestone.icon }} {{ next_milestone.title }}
+                </h3>
+
+                <p class="journey-next-description">
+                    Complete {{ orders_to_next_milestone }}
+                    more delivered order(s) to reach this milestone.
+                </p>
+            </div>
+
+        {% endif %}
+
+
+        <!-- JOURNEY COMPLETE -->
+        {% if journey_complete %}
+
+            <div class="journey-complete-card">
+                <div class="journey-complete-icon">🎉</div>
+                <h3>10 Orders Completed!</h3>
+                <p>
+                    You've reached your first 10 delivered orders
+                    with LOKA. Thank you for being part of our journey!
+                </p>
+            </div>
+
+        {% endif %}
+
+
+        <!-- QUICK LINKS -->
+        <div class="journey-bottom-links">
+            <a href="{% url 'my_orders' %}" class="journey-bottom-link">📦 My Orders</a>
+            <a href="{% url 'customer_coupons' %}" class="journey-bottom-link">🏷️ My Coupons</a>
+        </div>
+
+        <div class="journey-footer">
+            <strong>LOKA</strong> · Kagal's food delivery service
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ---------- progress bar ---------- */
+    var progressBar = document.querySelector(".journey-progress-fill");
+
+    if (progressBar) {
+        var progress = Math.max(0, Math.min(100, Number(progressBar.dataset.progress) || 0));
+        setTimeout(function () { progressBar.style.width = progress + "%"; }, 250);
+    }
+
+    /* ---------- firework rings ---------- */
+    document.querySelectorAll(".jh-ring").forEach(function (ring) {
+        var R = 34, i, a, dot;
+
+        for (i = 0; i < 18; i++) {
+            a = (i / 18) * Math.PI * 2;
+            dot = document.createElement("i");
+            dot.style.transform = "translate(" + Math.cos(a) * R + "px," + Math.sin(a) * R + "px)";
+            ring.appendChild(dot);
+        }
+
+        for (i = 0; i < 9; i++) {
+            a = (i / 9) * Math.PI * 2 + 0.3;
+            dot = document.createElement("i");
+            dot.style.transform = "translate(" + Math.cos(a) * R * 0.55 + "px," + Math.sin(a) * R * 0.55 + "px)";
+            ring.appendChild(dot);
+        }
+    });
+
+    /* ---------- Diwali countdown ---------- */
+    var hero = document.getElementById("jhHero");
+    if (!hero) return;
+
+    var START = new Date(hero.dataset.start).getTime();
+    var END = new Date(hero.dataset.end).getTime();
+
+    /* use server time when provided, so a wrong phone clock can't skew the offer */
+    var serverNow = Number(hero.dataset.serverNow);
+    var offset = serverNow ? serverNow - Date.now() : 0;
+
+    var label = document.getElementById("jhLabel");
+    var boxes = {};
+    document.querySelectorAll("#jhBoxes b").forEach(function (el) {
+        boxes[el.dataset.u] = el;
+    });
+
+    function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+    function setBox(key, value) {
+        var el = boxes[key], text = pad(value);
+        if (el.textContent === text) return;
+        el.textContent = text;
+        if (key === "s") {
+            el.classList.remove("jh-pop");
+            void el.offsetWidth;
+            el.classList.add("jh-pop");
+        }
+    }
+
+    function tick() {
+        var now = Date.now() + offset, target, text;
+
+        if (now < START)    { target = START; text = "Starts in"; }
+        else if (now < END) { target = END;   text = "Ends in"; }
+        else                { target = now;   text = "Offer ended"; }
+
+        var s = Math.max(0, Math.floor((target - now) / 1000));
+
+        label.textContent = text;
+        setBox("d", Math.floor(s / 86400));
+        setBox("h", Math.floor((s % 86400) / 3600));
+        setBox("m", Math.floor((s % 3600) / 60));
+        setBox("s", s % 60);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+});
+
+/* ---------- coupon copy ---------- */
+function copyJourneyCoupon(code, button) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(function () {
+            showCouponCopied(button);
+        }).catch(function () {
+            fallbackCopyJourneyCoupon(code, button);
+        });
+    } else {
+        fallbackCopyJourneyCoupon(code, button);
+    }
+}
+
+function fallbackCopyJourneyCoupon(code, button) {
+    var input = document.createElement("textarea");
+    input.value = code;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+    input.select();
+
+    try {
+        document.execCommand("copy");
+        showCouponCopied(button);
+    } catch (e) {
+        window.prompt("Copy this code:", code);
+    }
+
+    document.body.removeChild(input);
+}
+
+function showCouponCopied(button) {
+    var original = button.dataset.label || button.textContent;
+    button.dataset.label = original;
+    button.textContent = "COPIED ✓";
+
+    setTimeout(function () {
+        button.textContent = original;
+    }, 1800);
+}
+</script>
+
+{% endblock %}
