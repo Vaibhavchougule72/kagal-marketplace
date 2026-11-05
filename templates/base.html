@@ -2363,6 +2363,125 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% endif %}
+
+<!-- LOKA GLOBAL CUSTOMER LOCATION -->
+<script>
+(function () {
+
+    const STORAGE_KEY = "loka_customer_location";
+
+    function saveLocation(position) {
+
+        const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            updated_at: Date.now()
+        };
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(location)
+        );
+
+        // Backward compatibility with existing checkout fields
+        localStorage.setItem(
+            "customer_latitude",
+            location.latitude
+        );
+
+        localStorage.setItem(
+            "customer_longitude",
+            location.longitude
+        );
+
+        window.LokaLocation = location;
+
+        window.dispatchEvent(
+            new CustomEvent("lokaLocationUpdated", {
+                detail: location
+            })
+        );
+
+        console.log("LOKA location updated:", location);
+    }
+
+
+    function getSavedLocation() {
+
+        try {
+
+            const saved = localStorage.getItem(STORAGE_KEY);
+
+            if (!saved) return null;
+
+            return JSON.parse(saved);
+
+        } catch (error) {
+
+            console.error("LOKA location read error:", error);
+
+            return null;
+        }
+    }
+
+
+    function requestLocation() {
+
+        if (!navigator.geolocation) {
+
+            console.warn("Geolocation is not supported.");
+
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+
+            saveLocation,
+
+            function (error) {
+
+                console.warn(
+                    "LOKA location permission/error:",
+                    error.message
+                );
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 300000
+            }
+        );
+    }
+
+
+    // Make saved location available to every page
+    window.LokaLocation = getSavedLocation();
+
+    // Public functions for other pages
+    window.LokaLocationManager = {
+
+        getLocation: getSavedLocation,
+
+        requestLocation: requestLocation
+
+    };
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Request location only when no saved location exists.
+        if (!window.LokaLocation) {
+            requestLocation();
+        }
+
+    });
+
+})();
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -63,6 +63,39 @@ body { background: #fff; }
 }
 .lk-suggest a.list-group-item:hover { background: var(--loka-green-soft); }
 
+/* ---------- Diwali: hanging diya + marigold garland at the search bar ---------- */
+.lk-search-wrap { position: relative; max-width: 640px; margin-bottom: 40px; }
+.lk-search-wrap .lk-search { margin-top: 12px; }
+.lk-deco { position: absolute; left: 0; right: 0; top: calc(100% - 6px); z-index: 2; pointer-events: none; }
+.lk-garland { position: absolute; left: 0; top: 0; filter: drop-shadow(0 4px 4px rgba(0,0,0,.3)); }
+.lk-garland svg { display: block; }
+.lk-garland.glow { animation: lkGlow 1.4s ease-out; }
+.lk-diya {
+    position: absolute; left: 6px; top: 0; transform-origin: 50% 0;
+    filter: drop-shadow(0 8px 8px rgba(0,0,0,.4)); animation: lkSway 3.2s ease-in-out infinite alternate;
+}
+.lk-flame {
+    transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0); opacity: 0;
+    transition: transform .35s cubic-bezier(.3, 1.6, .5, 1), opacity .2s ease;
+}
+.lk-deco.lit .lk-flame { transform: scale(1); opacity: 1; }
+.lk-fm { transform-box: fill-box; transform-origin: 50% 100%; filter: drop-shadow(0 0 7px #FFC857); animation: lkFlick 1.1s ease-in-out infinite alternate; }
+@keyframes lkSway { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+@keyframes lkFlick { from { transform: scale(1, .9); } to { transform: scale(1.05, 1.08); } }
+@keyframes lkGlow {
+    0% { filter: drop-shadow(0 4px 4px rgba(0,0,0,.3)); }
+    25% { filter: drop-shadow(0 0 12px #FFC857) brightness(1.35); }
+    100% { filter: drop-shadow(0 4px 4px rgba(0,0,0,.3)); }
+}
+/* one-time spark intro (full-screen, ignores taps, sits under the popup banner) */
+#lkSparks { position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 9990; pointer-events: none; }
+#lkSparks svg { position: absolute; left: 0; top: 0; filter: drop-shadow(0 0 6px #FFB347); }
+.lk-burst { position: absolute; width: 5px; height: 5px; margin: -2px 0 0 -2px; border-radius: 50%; }
+@media (prefers-reduced-motion: reduce) {
+    .lk-diya, .lk-fm, .lk-garland.glow { animation: none; }
+    #lkSparks { display: none; }
+}
+
 /* ---------- White sheet ---------- */
 .lk-sheet {
     position: relative; margin-top: -24px; z-index: 5;
@@ -275,16 +308,29 @@ body { background: #fff; }
     <div class="lk-greet" id="lokaGreeting">Hello</div>
     <h1 class="lk-hello">काय खायचं <span>आज?</span></h1>
 
-    <form method="GET" action="{% url 'search_products' %}" class="lk-search" role="search">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input type="search"
-               id="homeSearchInput"
-               name="q"
-               placeholder="Search for food, snacks..."
-               autocomplete="off"
-               aria-label="Search for food and snacks">
-        <div id="homeSuggestionBox" class="lk-suggest home-suggestion-box"></div>
-    </form>
+    <div class="lk-search-wrap" id="lkSearchWrap">
+        <form method="GET" action="{% url 'search_products' %}" class="lk-search" role="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search"
+                   id="homeSearchInput"
+                   name="q"
+                   placeholder="Search for food, snacks..."
+                   autocomplete="off"
+                   aria-label="Search for food and snacks">
+            <div id="homeSuggestionBox" class="lk-suggest home-suggestion-box"></div>
+        </form>
+
+        <!-- Diwali decoration: marigold garland (drawn by the script) + hanging diya -->
+        <div class="lk-deco lit" id="lkDeco" aria-hidden="true">
+            <div class="lk-garland" id="lkGarland"></div>
+            <svg class="lk-diya" width="46" height="88" viewBox="0 0 46 88" focusable="false">
+                <path d="M23 0V36" stroke="#C9962E" stroke-width="2.4" stroke-dasharray="3 2" fill="none"/>
+                <g class="lk-flame"><path class="lk-fm" d="M23 36c5 7 7 11 0 16-7-5-5-9 0-16z" fill="#FFC857"/></g>
+                <path d="M3 56h40c0 12-9 20-20 20S3 68 3 56z" fill="#D9A21B"/>
+                <ellipse cx="23" cy="56" rx="20" ry="4.5" fill="#F7C58A"/>
+            </svg>
+        </div>
+    </div>
 
     <!-- MY JOURNEY (Info & Offers) -->
     <a href="{% url 'my_journey' %}" class="lk-jc">
@@ -538,6 +584,172 @@ body { background: #fff; }
     }
     tick();
     timer = setInterval(tick, 1000);
+})();
+
+/* Diwali: marigold garland, hanging diya and a one-time spark intro.
+   Sparks run once per session from the bottom corners up to the search bar and light the diya.
+   Remove #lkDeco, #lkSearchWrap's decoration and this block after the festival. */
+(function () {
+    var wrap = document.getElementById("lkSearchWrap");
+    var deco = document.getElementById("lkDeco");
+    var garland = document.getElementById("lkGarland");
+    if (!wrap || !deco || !garland) return;
+
+    var NS = "http://www.w3.org/2000/svg";
+    var KEY = "loka_diwali_sparks";
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var seen = false;
+    try { seen = !!sessionStorage.getItem(KEY); } catch (e) {}
+    var willPlay = !reduce && !seen;
+
+    if (willPlay) deco.classList.remove("lit");   /* the diya stays unlit until the spark arrives */
+
+    function svgEl(name, attrs) {
+        var el = document.createElementNS(NS, name);
+        for (var k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
+    }
+
+    /* marigold garland sized to the search bar */
+    function buildGarland() {
+        var w = Math.round(wrap.clientWidth);
+        if (!w) return;
+        var sag = Math.min(28, w * 0.08);
+        var n = Math.max(8, Math.round(w / 24));
+        var c = 3 + sag * 2;
+        var colors = ["#F5A623", "#E8560A", "#FFC857"];
+        var svg = svgEl("svg", { width: w, height: Math.ceil(sag + 16), viewBox: "0 0 " + w + " " + Math.ceil(sag + 16), focusable: "false" });
+        svg.appendChild(svgEl("path", { d: "M8 3Q" + (w / 2) + " " + c + " " + (w - 8) + " 3", fill: "none", stroke: "#6B4A12", "stroke-width": "1.4" }));
+        for (var i = 0; i < n; i++) {
+            var t = i / (n - 1);
+            var x = (1 - t) * (1 - t) * 8 + 2 * (1 - t) * t * (w / 2) + t * t * (w - 8);
+            var y = 3 + 2 * t * (1 - t) * (c - 3);
+            svg.appendChild(svgEl("circle", { cx: x.toFixed(1), cy: y.toFixed(1), r: 6.5, fill: colors[i % 3] }));
+        }
+        garland.innerHTML = "";
+        garland.appendChild(svg);
+    }
+    buildGarland();
+    var resizeTimer;
+    window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(buildGarland, 150);
+    });
+
+    function lightUp() { deco.classList.add("lit"); }
+    function glow() {
+        garland.classList.remove("glow");
+        void garland.offsetWidth;
+        garland.classList.add("glow");
+    }
+
+    function burstAt(layer, x, y, cols, r) {
+        var shadows = [];
+        for (var k = 0; k < 12; k++) {
+            var a = k * Math.PI / 6;
+            [r, r * 0.55].forEach(function (rr) {
+                shadows.push(Math.round(Math.cos(a) * rr) + "px " + Math.round(Math.sin(a) * rr) + "px 0 " + cols[k % cols.length]);
+            });
+        }
+        var el = document.createElement("i");
+        el.className = "lk-burst";
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+        el.style.boxShadow = shadows.join(",");
+        layer.appendChild(el);
+        if (el.animate) {
+            el.animate(
+                [{ transform: "scale(.05)", opacity: 1 }, { transform: "scale(1)", opacity: 1, offset: 0.6 }, { transform: "scale(1.18)", opacity: 0 }],
+                { duration: 900, easing: "ease-out", fill: "forwards" }
+            );
+        }
+    }
+
+    function curve(sx, sy, tx, ty, dir) {
+        var dx = tx - sx, dy = ty - sy;
+        return "M" + sx + " " + sy +
+            " C " + (sx + dx * 0.2 + 70 * dir) + " " + (sy + dy * 0.35) +
+            ", " + (sx + dx * 0.6 - 70 * dir) + " " + (sy + dy * 0.65) +
+            ", " + tx + " " + ty;
+    }
+
+    function runSpark(svg, d, done) {
+        var path = svgEl("path", { d: d, fill: "none", stroke: "#FFC857", "stroke-width": 3, "stroke-linecap": "round" });
+        var head = svgEl("circle", { r: 5, fill: "#fff" });
+        svg.appendChild(path);
+        svg.appendChild(head);
+        var len = path.getTotalLength();
+        path.style.strokeDasharray = len;
+        path.style.strokeDashoffset = len;
+        var dur = 2600, t0 = null;
+        function step(ts) {
+            if (t0 === null) t0 = ts;
+            var t = Math.min(1, (ts - t0) / dur);
+            var p = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            var pt = path.getPointAtLength(len * p);
+            head.setAttribute("cx", pt.x);
+            head.setAttribute("cy", pt.y);
+            path.style.strokeDashoffset = len * (1 - p);
+            if (t < 1) {
+                requestAnimationFrame(step);
+            } else {
+                head.parentNode && head.parentNode.removeChild(head);
+                if (path.animate) path.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 700, fill: "forwards" });
+                done();
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    function playSparks() {
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var box = wrap.getBoundingClientRect();
+        var bar = wrap.querySelector(".lk-search").getBoundingClientRect();
+        var diya = deco.querySelector(".lk-diya").getBoundingClientRect();
+
+        /* only play when the search bar is on screen */
+        if (box.top < 0 || bar.bottom > vh) { lightUp(); return; }
+
+        var layer = document.createElement("div");
+        layer.id = "lkSparks";
+        var svg = svgEl("svg", { width: vw, height: vh, viewBox: "0 0 " + vw + " " + vh, focusable: "false" });
+        layer.appendChild(svg);
+        document.body.appendChild(layer);
+
+        var lx = diya.left + diya.width / 2, ly = diya.top + diya.height * 0.5;   /* the diya flame */
+        var rx = Math.min(vw - 12, bar.right - 24), ry = Math.max(8, bar.top - 8); /* just above the search bar */
+
+        runSpark(svg, curve(12, vh - 8, lx, ly, 1), function () {
+            lightUp();
+            burstAt(layer, lx, ly, ["#FFC857", "#FFF3C4", "#E8560A"], 34);
+        });
+        runSpark(svg, curve(vw - 12, vh - 8, rx, ry, -1), function () {
+            glow();
+            burstAt(layer, rx, ry, ["#F5A623", "#FFF3C4", "#78D6A0"], 34);
+        });
+
+        setTimeout(function () { layer.parentNode && layer.parentNode.removeChild(layer); }, 4600);
+    }
+
+    function start() {
+        try { sessionStorage.setItem(KEY, "1"); } catch (e) {}
+        playSparks();
+    }
+
+    if (willPlay) {
+        /* wait for the popup banner (it opens 1.2s after load) to be closed first */
+        var popup = document.getElementById("popupBanner");
+        setTimeout(function () {
+            if (popup && popup.style.display === "flex") {
+                var mo = new MutationObserver(function () {
+                    if (popup.style.display === "none") { mo.disconnect(); setTimeout(start, 300); }
+                });
+                mo.observe(popup, { attributes: true, attributeFilter: ["style"] });
+            } else {
+                start();
+            }
+        }, popup ? 1600 : 400);
+    }
 })();
 
 /* Featured kitchen dots follow the image slider that base.html runs */

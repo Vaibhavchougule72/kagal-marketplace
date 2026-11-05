@@ -330,7 +330,9 @@ class StoreAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'category',
-        'commission_percent'
+        'commission_percent',
+        'latitude',
+        'longitude',
     )
 
     list_filter = ('category',)

@@ -7,6 +7,7 @@ from decimal import Decimal
 from .firebase import send_push_notification
 from firebase_admin import messaging
 import uuid
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 
 class Category(models.Model):
@@ -52,6 +53,30 @@ class Store(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     image = CloudinaryField('image', blank=True, null=True)
     description = models.TextField(blank=True)
+
+    latitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(-90),
+            MaxValueValidator(90)
+        ],
+        help_text="Store location latitude"
+    )
+
+    longitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(-180),
+            MaxValueValidator(180)
+        ],
+        help_text="Store location longitude"
+    )
 
     partner_closed = models.BooleanField(
         default=False,
