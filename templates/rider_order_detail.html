@@ -804,7 +804,10 @@
                 class="action-form"
                 id="statusUpdateForm"
                 data-current-status="{{ order.status }}"
-                {% if order.status == "ACCEPTED" %}
+                {% if has_pending_offer and not is_assigned %}
+                    action="{% url 'rider_update_status' order.id 'ACCEPTED' %}"
+                    data-action-type="accept"
+                {% elif order.status == "ACCEPTED" %}
                     action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}"
                 {% elif order.status == "PICKED_UP" %}
                     action="{% url 'rider_update_status' order.id 'OUT_FOR_DELIVERY' %}"
@@ -1040,29 +1043,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateButton(status) {
 
-        if (status === "ACCEPTED" || status === "PICKED_UP") {
+        // Rider has a pending offer and has not accepted it yet.
+        if (form.dataset.actionType === "accept") {
+
             form.hidden = false;
             button.hidden = false;
             button.disabled = false;
+
+            button.textContent = "✓ Accept Order";
+            button.className = "action-button";
+
+            hint.textContent = "Accept this order to take the delivery assignment.";
+
+            return;
+        }
+
+        // Store has not accepted the order yet.
+        if (status === "REQUEST_SUBMITTED") {
+
+            form.hidden = true;
+            button.hidden = true;
+
+            hint.textContent = "Waiting for the store to accept the order.";
+
+        }
+
+        else if (status === "ACCEPTED" || status === "PICKED_UP") {
+
+            form.hidden = false;
+            button.hidden = false;
+            button.disabled = false;
+
             button.textContent = "🛵 Start Delivery";
             button.className = "action-button";
+
             hint.textContent = "Collect the order and start delivery.";
+
             form.action = statusUrls.OUT_FOR_DELIVERY;
         }
 
         else if (status === "OUT_FOR_DELIVERY") {
+
             form.hidden = false;
             button.hidden = false;
             button.disabled = false;
+
             button.textContent = "✓ Mark as Delivered";
             button.className = "action-button success";
+
             hint.textContent = "You are currently delivering this order.";
+
             form.action = statusUrls.DELIVERED;
         }
 
         else if (status === "DELIVERED") {
+
             form.hidden = true;
             completedMessage.hidden = false;
+
             hint.textContent = "";
         }
     }
@@ -1122,6 +1160,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!response.ok || !data.success) {
                 throw new Error(data.message || "Unable to update status.");
+            }
+
+            // Remove the pending-accept action after successful acceptance.
+            if (form.dataset.actionType === "accept") {
+                delete form.dataset.actionType;
             }
 
             form.dataset.currentStatus = data.status;

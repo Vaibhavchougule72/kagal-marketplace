@@ -5729,6 +5729,8 @@ def rider_order_detail(request, order_id):
         "rider_profile": rider_profile,
         "order": order,
         "order_items": order_items,
+        "has_pending_offer": has_pending_offer,
+        "is_assigned": is_assigned,
         "show_floating_cart": False,
         "simple_navbar": True,
     }
