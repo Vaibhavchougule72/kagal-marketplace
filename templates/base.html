@@ -2481,7 +2481,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 })();
 </script>
-
+{% if request.path|slice:":6" != "/rider" and request.path|slice:":8" != "/partner" %}
 <!-- LOKA APP DOWNLOAD POPUP -->
 <div class="modal fade" id="lokaAppDownloadModal" tabindex="-1"
      aria-hidden="true">
@@ -2673,6 +2673,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 })();
 </script>
+{% endif %}
 {% block extra_js %}{% endblock %}
 </body>
 </html>
