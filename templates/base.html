@@ -2536,33 +2536,36 @@ document.addEventListener("DOMContentLoaded", function () {
         "https://play.google.com/store/apps/details?id=com.lokamarketplace.app";
 
     // Detect Android app version safely.
-    function isNewAndroidApp() {
+    function isNewAndroidApp(latestVersionCode) {
         try {
             if (
                 window.LokaAndroid &&
                 typeof window.LokaAndroid.getVersionCode === "function"
             ) {
-                const versionCode = parseInt(
+                const installedVersion = parseInt(
                     window.LokaAndroid.getVersionCode(),
                     10
                 );
 
-                return Number.isFinite(versionCode) && versionCode >= 9;
+                const threshold = parseInt(latestVersionCode, 10);
+
+                return (
+                    Number.isFinite(installedVersion) &&
+                    Number.isFinite(threshold) &&
+                    installedVersion >= threshold
+                );
             }
         } catch (error) {
             console.warn("LOKA version detection failed:", error);
         }
 
-        // Browser, old app, or unknown version: allow popup.
         return false;
     }
 
     document.addEventListener("DOMContentLoaded", function () {
 
         // Version 7+ uses its native update system.
-        if (isNewAndroidApp()) {
-            return;
-        }
+        
 
         fetch(SETTINGS_URL)
             .then(response => {
@@ -2575,7 +2578,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (
                     !settings.success ||
-                    !settings.show_download_popup
+                    !settings.show_download_popup ||
+                    isNewAndroidApp(settings.latest_version_code)
                 ) {
                     return;
                 }

@@ -12813,6 +12813,7 @@ def app_download_settings(request):
             "download_popup_interval_days": settings.download_popup_interval_days,
             "download_title": settings.download_title,
             "download_message": settings.download_message,
+            "latest_version_code": settings.latest_version_code,
         })
 
     except Exception:
