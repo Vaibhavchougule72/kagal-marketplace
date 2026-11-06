@@ -1978,10 +1978,14 @@ class AppUpdateSettingsAdmin(admin.ModelAdmin):
         settings = AppUpdateSettings.objects.first()
 
         if settings:
-            from django.shortcuts import redirect
-
             return redirect(
-                f"../{settings.pk}/change/"
+                reverse(
+                    "admin:%s_%s_change" % (
+                        self.model._meta.app_label,
+                        self.model._meta.model_name
+                    ),
+                    args=[settings.pk]
+                )
             )
 
         return super().changelist_view(
