@@ -2049,3 +2049,101 @@ class CustomerVisit(models.Model):
             f"{self.customer.name or self.customer.phone} - "
             f"{self.platform} - {self.started_at}"
         )
+
+
+# =====================================================
+# LOKA APP UPDATE SETTINGS
+# Centrally manage Android app versions and updates
+# =====================================================
+
+class AppUpdateSettings(models.Model):
+
+    # Latest version available on Play Store
+    latest_version_code = models.PositiveIntegerField(
+        default=7,
+        help_text="Latest Android app version code available on Play Store."
+    )
+
+    latest_version_name = models.CharField(
+        max_length=20,
+        default="1.13",
+        help_text="Latest Android app version name."
+    )
+
+    # Minimum version allowed to use the app
+    minimum_supported_version = models.PositiveIntegerField(
+        default=7,
+        help_text="App versions below this number must update."
+    )
+
+    # Enable / disable update checking
+    is_enabled = models.BooleanField(
+        default=True,
+        help_text="Enable or disable app version checking."
+    )
+
+    # Android website download popup
+    show_download_popup = models.BooleanField(
+        default=True,
+        help_text="Show app download popup to Android website visitors."
+    )
+
+    download_popup_interval_days = models.PositiveIntegerField(
+        default=7,
+        help_text="Number of days before showing the download popup again."
+    )
+
+    # Update popup content
+    update_title = models.CharField(
+        max_length=150,
+        default="A New LOKA Update Is Here!"
+    )
+
+    update_message = models.TextField(
+        default="Update LOKA to enjoy the latest features and a smoother ordering experience."
+    )
+
+    # Download popup content
+    download_title = models.CharField(
+        max_length=150,
+        default="Get the LOKA App!"
+    )
+
+    download_message = models.TextField(
+        default="Enjoy faster access, smoother ordering and a better experience with the LOKA App."
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "LOKA App Update Settings"
+        verbose_name_plural = "LOKA App Update Settings"
+
+    def clean(self):
+        super().clean()
+
+        from django.core.exceptions import ValidationError
+
+        if self.minimum_supported_version > self.latest_version_code:
+            raise ValidationError({
+                "minimum_supported_version": (
+                    "Minimum supported version cannot exceed "
+                    "the latest available version."
+                )
+            })
+
+    def save(self, *args, **kwargs):
+
+        self.pk = 1
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            "App update settings cannot be deleted."
+        )
+
+    def __str__(self):
+        return "LOKA App Update Settings"

@@ -26,7 +26,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Count, Min, Max
 
-from .models import CustomerReferral, CustomerVisit
+from .models import CustomerReferral, CustomerVisit, AppUpdateSettings
 from django.core.exceptions import ValidationError
 
 def download_customer_csv(modeladmin, request, queryset):
@@ -1922,3 +1922,69 @@ class CouponAdmin(admin.ModelAdmin):
         return f"₹{obj.discount_value}"
 
     discount_display.short_description = "Discount"
+
+# =====================================================
+# LOKA APP UPDATE SETTINGS
+# =====================================================
+
+@admin.register(AppUpdateSettings)
+class AppUpdateSettingsAdmin(admin.ModelAdmin):
+
+    fieldsets = (
+
+        ("Android App Version", {
+            "fields": (
+                "latest_version_code",
+                "latest_version_name",
+                "minimum_supported_version",
+                "is_enabled",
+            )
+        }),
+
+        ("Android Website Download Popup", {
+            "fields": (
+                "show_download_popup",
+                "download_popup_interval_days",
+                "download_title",
+                "download_message",
+            )
+        }),
+
+        ("App Update Popup Content", {
+            "fields": (
+                "update_title",
+                "update_message",
+            )
+        }),
+
+        ("System Information", {
+            "fields": (
+                "updated_at",
+            )
+        }),
+
+    )
+
+    readonly_fields = ("updated_at",)
+
+    def has_add_permission(self, request):
+        return not AppUpdateSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+
+        settings = AppUpdateSettings.objects.first()
+
+        if settings:
+            from django.shortcuts import redirect
+
+            return redirect(
+                f"../{settings.pk}/change/"
+            )
+
+        return super().changelist_view(
+            request,
+            extra_context
+        )

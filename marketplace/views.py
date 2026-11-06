@@ -12,9 +12,10 @@ from datetime import date, timedelta
 import random
 import math
 import re
+from django.views.decorators.http import require_GET
 from django.conf import settings
 from django.contrib import messages
-from .models import Category, SubCategory, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead, Expense
+from .models import Category, SubCategory, Store, Product, Order, OrderItem, PendingOrder, CheckoutLead, Expense, AppUpdateSettings
 from .cart import Cart
 from django.contrib.auth.models import User
 from .models import Bundle, StoreTiming
@@ -12735,3 +12736,87 @@ def customer_coupons(request):
             "show_floating_cart": False,
         }
     )
+
+
+@require_GET
+def check_app_version(request):
+
+    try:
+        settings = AppUpdateSettings.objects.first()
+
+        if not settings or not settings.is_enabled:
+            return JsonResponse({
+                "success": True,
+                "update_enabled": False,
+                "update_available": False,
+                "force_update": False,
+            })
+
+        version_code = request.GET.get("version_code")
+
+        if version_code is None:
+            return JsonResponse({
+                "success": False,
+                "message": "version_code is required."
+            }, status=400)
+
+        try:
+            installed_version = int(version_code)
+        except (ValueError, TypeError):
+            return JsonResponse({
+                "success": False,
+                "message": "Invalid version_code."
+            }, status=400)
+
+        update_available = (
+            installed_version < settings.latest_version_code
+        )
+
+        force_update = (
+            installed_version < settings.minimum_supported_version
+        )
+
+        return JsonResponse({
+            "success": True,
+            "update_enabled": True,
+            "update_available": update_available,
+            "force_update": force_update,
+            "installed_version_code": installed_version,
+            "latest_version_code": settings.latest_version_code,
+            "latest_version_name": settings.latest_version_name,
+            "minimum_supported_version": settings.minimum_supported_version,
+            "update_title": settings.update_title,
+            "update_message": settings.update_message,
+        })
+
+    except Exception:
+        return JsonResponse({
+            "success": False,
+            "message": "Unable to check app version."
+        }, status=500)
+
+@require_GET
+def app_download_settings(request):
+
+    try:
+        settings = AppUpdateSettings.objects.first()
+
+        if not settings:
+            return JsonResponse({
+                "success": True,
+                "show_download_popup": False
+            })
+
+        return JsonResponse({
+            "success": True,
+            "show_download_popup": settings.show_download_popup,
+            "download_popup_interval_days": settings.download_popup_interval_days,
+            "download_title": settings.download_title,
+            "download_message": settings.download_message,
+        })
+
+    except Exception:
+        return JsonResponse({
+            "success": False,
+            "message": "Unable to load download settings."
+        }, status=500)

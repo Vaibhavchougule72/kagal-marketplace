@@ -109,6 +109,21 @@ urlpatterns = [
         name="update_rider_location"
     ),
     path("download-app/", views.download_app, name="download_app"),
+    # =====================================================
+    # LOKA APP UPDATE APIs
+    # =====================================================
+
+    path(
+        "api/check-app-version/",
+        views.check_app_version,
+        name="check_app_version"
+    ),
+
+    path(
+        "api/app-download-settings/",
+        views.app_download_settings,
+        name="app_download_settings"
+    ),
     path(
         "razorpay/webhook/",
         views.razorpay_webhook,
