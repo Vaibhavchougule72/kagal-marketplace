@@ -654,6 +654,7 @@ def category_stores(request, category_id):
             min_price=Min("product__price"),
             total_products=Count("product")
         )
+        .order_by("category_priority", "name")
     )
 
     return render(

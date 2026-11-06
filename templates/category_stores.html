@@ -398,7 +398,8 @@
        data-open="{% if store.is_open %}1{% else %}0{% endif %}"
        data-name="{{ store.name|lower }}"
        data-rating="{{ store.average_rating|default:'0' }}"
-       data-price="{{ store.min_price|default:'99999' }}">
+       data-price="{{ store.min_price|default:'99999' }}"
+       data-priority="{{ store.category_priority }}">
 
       {% if store.total_ratings > 0 and store.average_rating >= 4.5 %}
         <div class="cs-top-rated">TOP RATED</div>
@@ -492,11 +493,22 @@
 
     if (currentFilter === 'top_rated') {
       sorted.sort(function (a, b) {
-        return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+        var ratingDiff =
+          parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+
+        if (ratingDiff !== 0) return ratingDiff;
+
+        return parseInt(a.dataset.priority) - parseInt(b.dataset.priority);
       });
+
     } else if (currentFilter === 'lowest_price') {
       sorted.sort(function (a, b) {
-        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+        var priceDiff =
+          parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+
+        if (priceDiff !== 0) return priceDiff;
+
+        return parseInt(a.dataset.priority) - parseInt(b.dataset.priority);
       });
     }
 

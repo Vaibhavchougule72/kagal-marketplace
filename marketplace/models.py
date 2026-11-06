@@ -105,6 +105,11 @@ class Store(models.Model):
 
     featured_priority = models.IntegerField(default=0)
 
+    category_priority = models.PositiveIntegerField(
+        default=100,
+        db_index=True,
+        help_text="Controls store ranking on the category stores page. Lower number appears first."
+    )
 
     def is_open(self):
         if self.partner_closed:

@@ -330,14 +330,25 @@ class StoreAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'category',
+        'category_priority',
         'commission_percent',
         'latitude',
         'longitude',
     )
 
+    list_editable = (
+        'category_priority',
+    )
+
     list_filter = ('category',)
 
     search_fields = (
+        'name',
+    )
+
+    ordering = (
+        'category',
+        'category_priority',
         'name',
     )
 
