@@ -61,6 +61,8 @@ class CustomerAuthenticationMiddleware:
         "/rider-location/",
         "/firebase-messaging-sw.js",
         "/partner-push-diagnostic/",
+        "/api/check-app-version/",
+        "/api/app-download-settings/",
     ]
 
     def __init__(self, get_response):
