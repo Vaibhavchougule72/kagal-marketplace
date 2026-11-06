@@ -2482,6 +2482,193 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+<!-- LOKA APP DOWNLOAD POPUP -->
+<div class="modal fade" id="lokaAppDownloadModal" tabindex="-1"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+             style="border:0; border-radius:20px; overflow:hidden;">
+
+            <div class="modal-header"
+                 style="background:var(--loka-green); color:#fff; border:0;">
+
+                <h5 class="modal-title" id="lokaAppDownloadTitle">
+                    Get the LOKA App!
+                </h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body text-center p-4">
+                <p id="lokaAppDownloadMessage" class="mb-0">
+                    Enjoy a better shopping experience with the LOKA App.
+                </p>
+            </div>
+
+            <div class="modal-footer border-0 justify-content-center">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Maybe Later
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="lokaAppDownloadButton">
+                    Download App
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const STORAGE_KEY = "loka_app_download_dismissed_at";
+    const SETTINGS_URL = "/api/app-download-settings/";
+    const PLAY_STORE_URL =
+        "https://play.google.com/store/apps/details?id=com.lokamarketplace.app";
+
+    // Detect Android app version safely.
+    function isNewAndroidApp() {
+        try {
+            if (
+                window.LokaAndroid &&
+                typeof window.LokaAndroid.getVersionCode === "function"
+            ) {
+                const versionCode = parseInt(
+                    window.LokaAndroid.getVersionCode(),
+                    10
+                );
+
+                return Number.isFinite(versionCode) && versionCode >= 9;
+            }
+        } catch (error) {
+            console.warn("LOKA version detection failed:", error);
+        }
+
+        // Browser, old app, or unknown version: allow popup.
+        return false;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Version 7+ uses its native update system.
+        if (isNewAndroidApp()) {
+            return;
+        }
+
+        fetch(SETTINGS_URL)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Could not load popup settings");
+                }
+                return response.json();
+            })
+            .then(settings => {
+
+                if (
+                    !settings.success ||
+                    !settings.show_download_popup
+                ) {
+                    return;
+                }
+
+                // Check dismissal interval.
+                const intervalDays = Math.max(
+                    0,
+                    Number(settings.download_popup_interval_days) || 0
+                );
+
+                let lastDismissed = 0;
+
+                try {
+                    lastDismissed = Number(
+                        localStorage.getItem(STORAGE_KEY) || 0
+                    );
+                } catch (error) {
+                    console.warn("LOKA popup storage unavailable.");
+                }
+
+                const intervalMs =
+                    intervalDays * 24 * 60 * 60 * 1000;
+
+                if (
+                    lastDismissed &&
+                    Date.now() - lastDismissed < intervalMs
+                ) {
+                    return;
+                }
+
+                // Apply admin-configured content.
+                document.getElementById(
+                    "lokaAppDownloadTitle"
+                ).textContent =
+                    settings.download_title || "Get the LOKA App!";
+
+                document.getElementById(
+                    "lokaAppDownloadMessage"
+                ).textContent =
+                    settings.download_message ||
+                    "Enjoy a better experience with the LOKA App.";
+
+                const modalElement = document.getElementById(
+                    "lokaAppDownloadModal"
+                );
+
+                const modal = new bootstrap.Modal(modalElement);
+
+                // Remember dismissal when the popup closes.
+                modalElement.addEventListener(
+                    "hidden.bs.modal",
+                    function () {
+                        try {
+                            localStorage.setItem(
+                                STORAGE_KEY,
+                                String(Date.now())
+                            );
+                        } catch (error) {
+                            console.warn("Could not save popup dismissal.");
+                        }
+                    },
+                    { once: true }
+                );
+
+                // Download button.
+                document.getElementById(
+                    "lokaAppDownloadButton"
+                ).addEventListener("click", function () {
+
+                    try {
+                        if (
+                            window.LokaAndroid &&
+                            typeof window.LokaAndroid.openPlayStore === "function"
+                        ) {
+                            window.LokaAndroid.openPlayStore();
+                        } else {
+                            window.open(PLAY_STORE_URL, "_blank");
+                        }
+                    } catch (error) {
+                        window.location.href = PLAY_STORE_URL;
+                    }
+
+                    modal.hide();
+                });
+
+                modal.show();
+            })
+            .catch(error => {
+                console.warn("LOKA download popup:", error);
+            });
+    });
+})();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>
