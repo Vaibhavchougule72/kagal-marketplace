@@ -1927,18 +1927,7 @@ def checkout(request):
                         status="REQUEST_SUBMITTED"
                     )
 
-                    # -----------------------------------
-                    # SAVE CUSTOMER DELIVERY ADDRESS
-                    # -----------------------------------
-                    if customer and order.items.exists():
-                        save_customer_delivery_address(
-                            customer=customer,
-                            name=name,
-                            phone=phone,
-                            address=address,
-                            latitude=latitude,
-                            longitude=longitude
-                        )
+                    
 
                     transaction.on_commit(
                         lambda: notify_store_partner_new_order(order)
@@ -2024,6 +2013,19 @@ def checkout(request):
                                     # no discount
                                     discount_amount=0
                                 )
+
+                        # -----------------------------------
+                        # SAVE CUSTOMER DELIVERY ADDRESS
+                        # -----------------------------------
+                        if customer and order.items.exists():
+                            save_customer_delivery_address(
+                                customer=customer,
+                                name=name,
+                                phone=phone,
+                                address=address,
+                                latitude=latitude,
+                                longitude=longitude
+                            )
 
                 request.session["cart"] = {"store_id": None, "items": {}}
                 if coupon:
