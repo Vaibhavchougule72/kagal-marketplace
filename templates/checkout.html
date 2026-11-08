@@ -861,6 +861,80 @@
       <!-- 2. LOCATION -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Delivery location" %}</span></div>
+        
+        {% if saved_addresses %}
+            <div class="co-label">Choose a saved address</div>
+
+            <div id="savedAddressList" style="margin-bottom: 14px;">
+
+                {% for saved in saved_addresses %}
+                    <label class="saved-address-option"
+                        style="display:block; padding:12px; margin-bottom:8px;
+                                border:1px solid #E0E8DF; border-radius:10px;
+                                cursor:pointer; background:#FAFAF8;">
+
+                        <input
+                            type="radio"
+                            name="saved_address_id"
+                            value="{{ saved.id }}"
+                            data-name="{{ saved.full_name }}"
+                            data-phone="{{ saved.phone }}"
+                            data-address="{{ saved.address }}"
+                            data-latitude="{{ saved.latitude }}"
+                            data-longitude="{{ saved.longitude }}"
+                            {% if saved.is_default %}checked{% endif %}
+                        >
+
+                        <strong style="color:#1A3A16; margin-left:6px;">
+                            {{ saved.label }}
+                        </strong>
+
+                        <div style="font-size:12px; color:#6B7B69; margin-top:5px;">
+                            {{ saved.full_name }} · {{ saved.phone }}
+                        </div>
+
+                        <div style="font-size:12px; color:#6B7B69; margin-top:3px;">
+                            {{ saved.address }}
+                        </div>
+
+                    </label>
+                {% endfor %}
+
+                <label style="display:block; padding:12px; border:1px dashed #2D5A27;
+                            border-radius:10px; cursor:pointer;">
+
+                    <input type="radio" name="saved_address_id" value="new">
+                    <strong style="color:#2D5A27; margin-left:6px;">
+                        + Add a new address
+                    </strong>
+
+                </label>
+
+            </div>
+        {% endif %}
+
+        <div style="margin: 12px 0; padding: 12px;
+                    background: #F3F8F1; border-radius: 10px;">
+
+            <label style="display:flex; align-items:center; gap:9px;
+                        cursor:pointer; color:#1A3A16;">
+
+                <input
+                    type="checkbox"
+                    name="save_address"
+                    value="on"
+                    checked
+                    style="width:17px; height:17px; accent-color:#2D5A27;"
+                >
+
+                <span style="font-size:13px; font-weight:600;">
+                    Save this address for future orders
+                </span>
+
+            </label>
+
+        </div>
+
         <div class="co-card-body">
           <button type="button" class="co-loc-btn" onclick="useCurrentLocation()">
             📍 {% trans "Use my current location" %}
@@ -2072,6 +2146,78 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   /* Automatically detect current location, with saved-location fallback */
+// =====================================================
+// SAVED CUSTOMER ADDRESS SELECTION
+// =====================================================
+
+function applySavedAddress(radio) {
+
+    const nameInput = document.getElementById('nameInput');
+    const phoneInput = document.getElementById('phoneInput');
+    const addressInput = document.getElementById('addressInput');
+
+    const latitude = radio.dataset.latitude;
+    const longitude = radio.dataset.longitude;
+
+    nameInput.value = radio.dataset.name || '';
+    phoneInput.value = radio.dataset.phone || '';
+    addressInput.value = radio.dataset.address || '';
+
+    if (!latitude || !longitude) {
+        alert('This saved address has no location coordinates.');
+        return;
+    }
+
+    // Set the saved coordinates on the map.
+    setLocation(Number(latitude), Number(longitude));
+
+    // Saved addresses do not require fresh confirmation.
+    window.deliveryLocationConfirmed = true;
+
+    sessionStorage.setItem('checkoutDeliveryConfirmed', 'true');
+
+    document.getElementById('deliveryLocationConfirmedInput').value = 'true';
+
+    // Hide the manual confirmation button.
+    document.getElementById('confirmLocationBtn').style.display = 'none';
+
+    document.getElementById('mapError').style.display = 'none';
+
+    // Update customer information in local storage.
+    localStorage.setItem('user_name', nameInput.value);
+    localStorage.setItem('user_phone', phoneInput.value);
+    localStorage.setItem('user_address', addressInput.value);
+}
+
+
+// Listen for saved address selection.
+document.querySelectorAll('input[name="saved_address_id"]').forEach(function(radio) {
+
+    radio.addEventListener('change', function() {
+
+        if (this.value === 'new') {
+
+            window.deliveryLocationConfirmed = false;
+
+            sessionStorage.setItem('checkoutDeliveryConfirmed', 'false');
+
+            document.getElementById('deliveryLocationConfirmedInput').value = 'false';
+
+            document.getElementById('confirmLocationBtn').style.display = 'block';
+
+            document.getElementById('mapError').innerText =
+                'Select your new delivery location on the map and confirm it.';
+
+            document.getElementById('mapError').style.display = 'block';
+
+            return;
+        }
+
+        applySavedAddress(this);
+
+    });
+
+});
 
 const savedLat = localStorage.getItem('checkoutDeliveryLat');
 const savedLng = localStorage.getItem('checkoutDeliveryLng');
@@ -2092,7 +2238,18 @@ function restoreSavedLocation() {
     return false;
 }
 
-if (navigator.geolocation) {
+const initiallySelectedSavedAddress = document.querySelector(
+    'input[name="saved_address_id"]:checked'
+);
+
+if (
+    initiallySelectedSavedAddress &&
+    initiallySelectedSavedAddress.value !== 'new'
+) {
+
+    applySavedAddress(initiallySelectedSavedAddress);
+
+} else if (navigator.geolocation) {
 
     navigator.geolocation.getCurrentPosition(
 

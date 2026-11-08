@@ -1,6 +1,6 @@
 #python manage.py process_notification_jobs --interval 5
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, request
 import secrets
 from .models import RiderOrderOffer
 import string
@@ -12,6 +12,7 @@ from datetime import date, timedelta
 import random
 import math
 import re
+from .models import CustomerAddress
 from django.views.decorators.http import require_GET
 from django.conf import settings
 from django.contrib import messages
@@ -1307,6 +1308,17 @@ def checkout(request):
     }
 
     # -------------------------
+    # CUSTOMER SAVED ADDRESSES
+    # -------------------------
+    customer = get_logged_in_customer(request)
+
+    saved_addresses = CustomerAddress.objects.filter(
+        customer=customer
+    ) if customer else CustomerAddress.objects.none()
+
+    context["saved_addresses"] = saved_addresses
+
+    # -------------------------
     # STORE OPEN CHECK
     # -------------------------
     if not is_store_open_cached(store):
@@ -1421,12 +1433,42 @@ def checkout(request):
             longitude = request.POST.get("longitude")
             coupon_code = request.POST.get("coupon_code")
 
-            # Require explicit delivery-location confirmation.
+            # -------------------------
+            # VALIDATE SAVED ADDRESS
+            # -------------------------
+            saved_address_id = request.POST.get("saved_address_id")
+            selected_saved_address = None
+
+            if saved_address_id and saved_address_id.isdigit():
+
+                if not customer:
+                    context["error"] = "Please login to use a saved address."
+                    return render(request, "checkout.html", context)
+
+                selected_saved_address = CustomerAddress.objects.filter(
+                    id=int(saved_address_id),
+                    customer=customer
+                ).first()
+
+                if not selected_saved_address:
+                    context["error"] = "Invalid saved address. Please select again."
+                    return render(request, "checkout.html", context)
+
+                # Use trusted values from the database.
+                name = selected_saved_address.full_name
+                phone = selected_saved_address.phone
+                address = selected_saved_address.address
+                latitude = selected_saved_address.latitude
+                longitude = selected_saved_address.longitude
+
+            # -------------------------
+            # DELIVERY LOCATION CONFIRMATION
+            # -------------------------
             delivery_location_confirmed = (
                 request.POST.get("delivery_location_confirmed") == "true"
             )
 
-            if not delivery_location_confirmed:
+            if not selected_saved_address and not delivery_location_confirmed:
                 context["error"] = (
                     "Please confirm your delivery location before placing your order."
                 )
@@ -1885,6 +1927,19 @@ def checkout(request):
                         status="REQUEST_SUBMITTED"
                     )
 
+                    # -----------------------------------
+                    # SAVE CUSTOMER DELIVERY ADDRESS
+                    # -----------------------------------
+                    if customer and order.items.exists():
+                        save_customer_delivery_address(
+                            customer=customer,
+                            name=name,
+                            phone=phone,
+                            address=address,
+                            latitude=latitude,
+                            longitude=longitude
+                        )
+
                     transaction.on_commit(
                         lambda: notify_store_partner_new_order(order)
                     )
@@ -2092,6 +2147,7 @@ def checkout(request):
                     customer_name=name,
                     phone=phone,
                     address=address,
+                    customer=customer,
 
                     customer_note=customer_note,
 
@@ -2547,6 +2603,20 @@ def razorpay_webhook(request):
                 order.delete()
 
                 return HttpResponse(status=400)
+
+            # -----------------------------------
+            # SAVE CUSTOMER DELIVERY ADDRESS
+            # -----------------------------------
+            if pending.customer and order.items.exists():
+
+                save_customer_delivery_address(
+                    customer=pending.customer,
+                    name=pending.customer_name,
+                    phone=pending.phone,
+                    address=pending.address,
+                    latitude=pending.latitude,
+                    longitude=pending.longitude
+                )
 
             # -----------------------------------
             # LINK PAYMENT + ORDER TO PENDING
@@ -3680,6 +3750,8 @@ def payment_success(request):
     # 🔐 RESTORE CUSTOMER SESSION
     # =====================================================
 
+    # Preserve the customer already present in this session.
+    logged_in_customer = get_logged_in_customer(request)
     request.session["customer_phone"] = pending.phone
 
     customer = Customer.objects.filter(
@@ -3702,6 +3774,19 @@ def payment_success(request):
         order = pending.created_order
 
         if order:
+
+            # -----------------------------------
+            # SAVE CUSTOMER DELIVERY ADDRESS
+            # -----------------------------------
+            if logged_in_customer and order.items.exists():
+                save_customer_delivery_address(
+                    customer=logged_in_customer,
+                    name=pending.customer_name,
+                    phone=pending.phone,
+                    address=pending.address,
+                    latitude=pending.latitude,
+                    longitude=pending.longitude
+                )
 
             request.session["cart"] = {
                 "store_id": None,
@@ -8831,6 +8916,47 @@ def get_logged_in_customer(request):
         is_active=True
     ).first()
 
+def save_customer_delivery_address(
+    customer,
+    name,
+    phone,
+    address,
+    latitude,
+    longitude
+):
+    if not customer:
+        return
+
+    existing_address = CustomerAddress.objects.filter(
+        customer=customer,
+        address=address,
+        latitude=latitude,
+        longitude=longitude
+    ).first()
+
+    if existing_address:
+        existing_address.full_name = name
+        existing_address.phone = phone
+        existing_address.save(
+            update_fields=["full_name", "phone", "updated_at"]
+        )
+        return
+
+    has_default = CustomerAddress.objects.filter(
+        customer=customer,
+        is_default=True
+    ).exists()
+
+    CustomerAddress.objects.create(
+        customer=customer,
+        label="Home",
+        full_name=name,
+        phone=phone,
+        address=address,
+        latitude=latitude,
+        longitude=longitude,
+        is_default=not has_default
+    )
 
 def loka_money_data(request):
 

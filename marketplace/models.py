@@ -893,6 +893,14 @@ class PendingOrder(models.Model):
         max_length=500
     )
 
+    customer = models.ForeignKey(
+        "Customer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pending_orders"
+    )
+
     latitude = models.FloatField()
     longitude = models.FloatField()
 
@@ -1665,6 +1673,37 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.name or 'Customer'} - {self.phone}"
 
+class CustomerAddress(models.Model):
+    ADDRESS_TYPES = [
+        ("HOME", "Home"),
+        ("WORK", "Work"),
+        ("OTHER", "Other"),
+    ]
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="addresses"
+    )
+    label = models.CharField(
+        max_length=10,
+        choices=ADDRESS_TYPES,
+        default="HOME"
+    )
+    full_name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=10)
+    address = models.TextField()
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_default", "-created_at"]
+
+    def __str__(self):
+        return f"{self.customer.name} - {self.label}"
 
 class LokaMoneyAccount(models.Model):
     customer = models.OneToOneField(

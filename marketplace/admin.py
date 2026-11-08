@@ -12,6 +12,7 @@ from .models import CheckoutLead
 admin.site.register(CheckoutLead)
 from .models import OfferSlider
 from django.db.models import Q
+from .models import CustomerAddress
 import csv
 from django.core.paginator import Paginator
 from .models import Customer
@@ -1251,6 +1252,20 @@ def download_customers_excel(modeladmin, request, queryset):
     return response
 
 
+class CustomerAddressInline(admin.TabularInline):
+    model = CustomerAddress
+    extra = 0
+
+    fields = (
+        "label",
+        "full_name",
+        "phone",
+        "address",
+        "latitude",
+        "longitude",
+        "is_default",
+    )
+
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
 
@@ -1280,6 +1295,8 @@ class CustomerAdmin(admin.ModelAdmin):
     actions = [
         download_customers_excel,
     ]
+
+    inlines = [CustomerAddressInline]
 
     def get_urls(self):
         urls = super().get_urls()
