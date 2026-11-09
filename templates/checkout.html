@@ -797,6 +797,23 @@
     font-weight: 700;
     cursor: pointer;
 }
+
+/* RETURNING CUSTOMER COMPACT CHECKOUT */
+.returning-customer .checkout-body { padding-top:12px; }
+.returning-customer #contactDetailsCard,
+.returning-customer #deliveryEditorFields { display:none; }
+.returning-customer #contactDetailsCard.editor-open,
+.returning-customer #deliveryEditorFields.editor-open { display:block; }
+.returning-address-card { background:#fff; border:1px solid #DCE8D9; border-radius:13px; padding:14px; margin-bottom:12px; }
+.returning-address-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.returning-address-title { color:#1A3A16; font-size:13px; font-weight:800; }
+.returning-address-value { color:#536650; font-size:12px; line-height:1.55; margin-top:8px; }
+.returning-address-actions { display:flex; gap:8px; margin-top:12px; }
+.returning-address-actions button { flex:1; border:1px solid #2D5A27; border-radius:8px; padding:9px 10px; background:#EAF5E8; color:#1A3A16; font-size:12px; font-weight:700; }
+.returning-address-actions .add-address-action { background:#1A3A16; color:#fff; }
+.returning-customer #savedAddressList .saved-address-option { display:none !important; }
+.returning-customer #savedAddressList.show-choices .saved-address-option { display:block !important; }
+
 </style>
 
 {% if error and error != "Please confirm your delivery location before placing your order." %}
@@ -832,21 +849,35 @@
     <input type="hidden" name="free_delivery"    id="freeDeliveryInput" value="false">
     <input type="hidden" name="discount_amount"  id="hidden_discount"   value="0">
 
-    <div class="checkout-body">
+    <div class="checkout-body {% if saved_addresses %}returning-customer{% endif %}">
+
+      {% if saved_addresses %}
+      <div class="returning-address-card" id="returningAddressCard">
+        <div class="returning-address-top">
+          <div class="returning-address-title">📍 Delivery address</div>
+          <button type="button" id="toggleAddressChoices" style="border:0;background:none;color:#2D5A27;font-size:12px;font-weight:700;">Change</button>
+        </div>
+        <div class="returning-address-value" id="selectedAddressSummary">Select a saved delivery address.</div>
+        <div class="returning-address-actions">
+          <button type="button" id="editSelectedAddress">✎ Edit address</button>
+          <button type="button" class="add-address-action" id="addNewAddress">+ Add new address</button>
+        </div>
+      </div>
+      {% endif %}
 
       <!-- 1. CONTACT -->
-      <div class="co-card">
+      <div class="co-card" id="contactDetailsCard">
         <div class="co-card-head"><span>{% trans "Contact details" %}</span></div>
         <div class="co-card-body">
           <div class="co-label">{% trans "Full name" %}</div>
           <input type="text" name="name" id="nameInput"
-                 class="co-input" placeholder="{% trans 'Your full name' %}" required>
+                 class="co-input" placeholder="{% trans 'Your full name' %}">
           <div class="co-invalid-msg">{% trans "Please enter your full name." %}</div>
 
           <div class="co-label">{% trans "Mobile number" %}</div>
           <input type="text" name="phone" id="phoneInput"
                  class="co-input" maxlength="10"
-                 placeholder="{% trans '10-digit number starting with 6–9' %}" required>
+                 placeholder="{% trans '10-digit number starting with 6–9' %}">
           <div class="co-invalid-msg">{% trans "Enter a valid Indian mobile number." %}</div>
 
           <div class="co-check-row">
@@ -935,7 +966,7 @@
 
         </div>
 
-        <div class="co-card-body">
+        <div class="co-card-body" id="deliveryEditorFields">
           <button type="button" class="co-loc-btn" onclick="useCurrentLocation()">
             📍 {% trans "Use my current location" %}
           </button>
@@ -2189,6 +2220,59 @@ function applySavedAddress(radio) {
     localStorage.setItem('user_address', addressInput.value);
 }
 
+// Returning customer controls: keep the checkout compact until an address action is requested.
+function updateCompactAddressSummary(radio) {
+    const summary = document.getElementById('selectedAddressSummary');
+    if (!summary || !radio || radio.value === 'new') return;
+    const label = radio.closest('label');
+    const labelText = label?.querySelector('strong')?.innerText || 'Saved address';
+    summary.innerHTML = '<strong>' + labelText + '</strong><br>' +
+        (radio.dataset.name || '') + ' · ' + (radio.dataset.phone || '') +
+        '<br>' + (radio.dataset.address || '');
+}
+function openAddressEditor(mode) {
+    const contact = document.getElementById('contactDetailsCard');
+    const editor = document.getElementById('deliveryEditorFields');
+    const list = document.getElementById('savedAddressList');
+
+    if (mode === 'choices') {
+        list?.classList.toggle('show-choices');
+        return;
+    }
+
+    contact?.classList.add('editor-open');
+    editor?.classList.add('editor-open');
+
+    if (mode === 'new') {
+        const newRadio = document.querySelector('input[name="saved_address_id"][value="new"]');
+        if (newRadio) newRadio.checked = true;
+        document.getElementById('nameInput').value = '';
+        document.getElementById('phoneInput').value = '';
+        document.getElementById('addressInput').value = '';
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        window.deliveryLocationConfirmed = false;
+        document.getElementById('deliveryLocationConfirmedInput').value = 'false';
+        document.getElementById('confirmLocationBtn').style.display = 'block';
+        document.getElementById('mapError').style.display = 'block';
+        document.getElementById('mapError').innerText = 'Select your new delivery location on the map and confirm it.';
+    } else {
+        const selected = document.querySelector('input[name="saved_address_id"]:checked');
+        if (selected && selected.value !== 'new') {
+            applySavedAddress(selected);
+            // The current checkout backend treats edited details as a new address.
+            selected.checked = false;
+            const newRadio = document.querySelector('input[name="saved_address_id"][value="new"]');
+            if (newRadio) newRadio.checked = true;
+        }
+    }
+    setTimeout(() => map.invalidateSize(), 250);
+    contact?.scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('toggleAddressChoices')?.addEventListener('click', () => openAddressEditor('choices'));
+document.getElementById('editSelectedAddress')?.addEventListener('click', () => openAddressEditor('edit'));
+document.getElementById('addNewAddress')?.addEventListener('click', () => openAddressEditor('new'));
+
 
 // Listen for saved address selection.
 document.querySelectorAll('input[name="saved_address_id"]').forEach(function(radio) {
@@ -2214,6 +2298,10 @@ document.querySelectorAll('input[name="saved_address_id"]').forEach(function(rad
         }
 
         applySavedAddress(this);
+        updateCompactAddressSummary(this);
+        document.getElementById('contactDetailsCard')?.classList.remove('editor-open');
+        document.getElementById('deliveryEditorFields')?.classList.remove('editor-open');
+        document.getElementById('savedAddressList')?.classList.remove('show-choices');
 
     });
 
@@ -2248,6 +2336,7 @@ if (
 ) {
 
     applySavedAddress(initiallySelectedSavedAddress);
+    updateCompactAddressSummary(initiallySelectedSavedAddress);
 
 } else if (navigator.geolocation) {
 
