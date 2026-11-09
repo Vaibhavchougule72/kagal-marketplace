@@ -1312,12 +1312,31 @@ def checkout(request):
     # -------------------------
     customer = get_logged_in_customer(request)
 
-    saved_addresses = CustomerAddress.objects.filter(
-        customer=customer
-    ) if customer else CustomerAddress.objects.none()
+    saved_addresses = list(
+        CustomerAddress.objects
+        .filter(
+            customer=customer,
+            latitude__isnull=False,
+            longitude__isnull=False,
+        )
+        .order_by("-is_default", "-updated_at")[:2]
+    ) if customer else []
+
+    edit_address = None
+    edit_param = request.GET.get("edit", "")
+    if edit_param.isdigit():
+        edit_address = next(
+            (a for a in saved_addresses if a.id == int(edit_param)), None
+        )
+
+    if saved_addresses and not edit_address and not request.GET.get("new"):
+        checkout_mode = "compact"
+    else:
+        checkout_mode = "full"
 
     context["saved_addresses"] = saved_addresses
-
+    context["edit_address"] = edit_address
+    context["checkout_mode"] = checkout_mode
     # -------------------------
     # STORE OPEN CHECK
     # -------------------------
@@ -1461,6 +1480,15 @@ def checkout(request):
                 latitude = selected_saved_address.latitude
                 longitude = selected_saved_address.longitude
 
+            edit_address_id = None
+            posted_edit_id = request.POST.get("edit_address_id", "")
+            if customer and posted_edit_id.isdigit():
+                owned = CustomerAddress.objects.filter(
+                    id=int(posted_edit_id), customer=customer
+                ).first()
+                if owned:
+                    edit_address_id = owned.id
+
             # -------------------------
             # DELIVERY LOCATION CONFIRMATION
             # -------------------------
@@ -1521,14 +1549,7 @@ def checkout(request):
                         context
                     )
 
-                if not customer:
-                    context["error"] = "Customer account not found."
-                    return render(
-                        request,
-                        "checkout.html",
-                        context
-                    )
-
+                
                 loka_account = (
                     LokaMoneyAccount.objects
                     .filter(customer=customer)
@@ -1655,17 +1676,7 @@ def checkout(request):
             # COUPON
             # -------------------------
 
-            discount_from_frontend = request.POST.get(
-                "discount_amount",
-                "0"
-            )
-
-            try:
-                discount = Decimal(
-                    str(discount_from_frontend)
-                )
-            except:
-                discount = Decimal(0)
+            discount = Decimal("0")
 
             if subtotal < 149 and payment == "COD":
 
@@ -2014,18 +2025,13 @@ def checkout(request):
                                     discount_amount=0
                                 )
 
-                        # -----------------------------------
-                        # SAVE CUSTOMER DELIVERY ADDRESS
-                        # -----------------------------------
-                        if customer and order.items.exists():
-                            save_customer_delivery_address(
-                                customer=customer,
-                                name=name,
-                                phone=phone,
-                                address=address,
-                                latitude=latitude,
-                                longitude=longitude
-                            )
+                    if customer and not selected_saved_address and order.items.exists():
+                        save_customer_delivery_address(
+                            customer=customer,
+                            name=name, phone=phone, address=address,
+                            latitude=latitude, longitude=longitude,
+                            edit_address_id=edit_address_id,
+                        )
 
                 request.session["cart"] = {"store_id": None, "items": {}}
                 if coupon:
@@ -2136,6 +2142,9 @@ def checkout(request):
                 safe_cart = convert_decimals(
                     cart_snapshot
                 )
+
+                safe_cart["address_edit_id"] = edit_address_id
+                safe_cart["used_saved_address"] = bool(selected_saved_address)
 
                 safe_items = convert_decimals(
                     copy.deepcopy(items)
@@ -2457,6 +2466,27 @@ def razorpay_webhook(request):
             )
 
             # -----------------------------------
+            # RECORD COUPON USAGE — UPI
+            # -----------------------------------
+            if pending.coupon_code:
+                used_coupon = Coupon.objects.filter(
+                    code=pending.coupon_code.strip().upper()
+                ).first()
+
+                if used_coupon:
+                    _, usage_created = CouponUsage.objects.get_or_create(
+                        coupon=used_coupon,
+                        phone=pending.phone
+                    )
+
+                    if usage_created:
+                        Coupon.objects.filter(
+                            pk=used_coupon.pk
+                        ).update(
+                            used_count=F("used_count") + 1
+                        )
+
+            # -----------------------------------
             # DEDUCT LOKA MONEY — SUCCESSFUL UPI
             # -----------------------------------
             if pending.loka_money_used > Decimal("0.00"):
@@ -2611,14 +2641,7 @@ def razorpay_webhook(request):
             # -----------------------------------
             if pending.customer and order.items.exists():
 
-                save_customer_delivery_address(
-                    customer=pending.customer,
-                    name=pending.customer_name,
-                    phone=pending.phone,
-                    address=pending.address,
-                    latitude=pending.latitude,
-                    longitude=pending.longitude
-                )
+                save_pending_order_address(pending, pending.customer)
 
             # -----------------------------------
             # LINK PAYMENT + ORDER TO PENDING
@@ -3776,19 +3799,6 @@ def payment_success(request):
         order = pending.created_order
 
         if order:
-
-            # -----------------------------------
-            # SAVE CUSTOMER DELIVERY ADDRESS
-            # -----------------------------------
-            if logged_in_customer and order.items.exists():
-                save_customer_delivery_address(
-                    customer=logged_in_customer,
-                    name=pending.customer_name,
-                    phone=pending.phone,
-                    address=pending.address,
-                    latitude=pending.latitude,
-                    longitude=pending.longitude
-                )
 
             request.session["cart"] = {
                 "store_id": None,
@@ -7022,76 +7032,6 @@ def pending_orders_dashboard(request):
     )
 
 
-from django.http import JsonResponse
-
-def save_checkout_lead(request):
-
-    if request.method == "POST":
-
-        try:
-
-            name = request.POST.get("name")
-            phone = request.POST.get("phone", "").strip()
-            address = request.POST.get("address")
-            payment = request.POST.get("payment")
-
-            total = request.POST.get("total", 0)
-
-            store_id = request.POST.get("store_id")
-
-            # VALID PHONE ONLY
-            if not re.match(r'^[6-9]\d{9}$', phone):
-
-                return JsonResponse({
-                    "success": False
-                })
-
-            store = None
-
-            if store_id:
-                store = Store.objects.filter(
-                    id=store_id
-                ).first()
-
-            lead, created = CheckoutLead.objects.get_or_create(
-
-                phone=phone,
-
-                defaults={
-                    "name": name,
-                    "address": address,
-                    "last_cart_value": total,
-                    "last_payment_method": payment,
-                    "last_store": store
-                }
-            )
-
-            if not created:
-
-                lead.name = name
-                lead.address = address
-                lead.last_cart_value = total
-                lead.last_payment_method = payment
-                lead.last_store = store
-
-                lead.checkout_attempts += 1
-
-                lead.save()
-
-            return JsonResponse({
-                "success": True
-            })
-
-        except Exception as e:
-
-            print("SAVE CHECKOUT LEAD ERROR:", e)
-            return JsonResponse({
-                "success": False
-            })
-
-    return JsonResponse({
-        "success": False
-    })
 
 def debug_view(view_func):
 
@@ -8918,47 +8858,84 @@ def get_logged_in_customer(request):
         is_active=True
     ).first()
 
+MAX_SAVED_ADDRESSES = 2
+
 def save_customer_delivery_address(
-    customer,
-    name,
-    phone,
-    address,
-    latitude,
-    longitude
+    customer, name, phone, address, latitude, longitude,
+    edit_address_id=None
 ):
     if not customer:
         return
 
-    existing_address = CustomerAddress.objects.filter(
-        customer=customer,
-        address=address,
-        latitude=latitude,
-        longitude=longitude
-    ).first()
+    # EDIT MODE: update the chosen saved address
+    if edit_address_id:
+        existing = CustomerAddress.objects.filter(
+            id=edit_address_id, customer=customer
+        ).first()
+        if existing:
+            existing.full_name = name
+            existing.phone = phone
+            existing.address = address
+            existing.latitude = latitude
+            existing.longitude = longitude
+            existing.save(update_fields=[
+                "full_name", "phone", "address",
+                "latitude", "longitude", "updated_at"
+            ])
+            return
 
-    if existing_address:
-        existing_address.full_name = name
-        existing_address.phone = phone
-        existing_address.save(
-            update_fields=["full_name", "phone", "updated_at"]
-        )
+    # Same address already saved? just refresh it
+    existing = CustomerAddress.objects.filter(
+        customer=customer, address=address,
+        latitude=latitude, longitude=longitude
+    ).first()
+    if existing:
+        existing.full_name = name
+        existing.phone = phone
+        existing.save(update_fields=["full_name", "phone", "updated_at"])
         return
 
     has_default = CustomerAddress.objects.filter(
-        customer=customer,
-        is_default=True
+        customer=customer, is_default=True
     ).exists()
+    count = CustomerAddress.objects.filter(customer=customer).count()
 
     CustomerAddress.objects.create(
         customer=customer,
-        label="Home",
-        full_name=name,
-        phone=phone,
-        address=address,
-        latitude=latitude,
-        longitude=longitude,
+        label="Home" if count == 0 else "Other",
+        full_name=name, phone=phone, address=address,
+        latitude=latitude, longitude=longitude,
         is_default=not has_default
     )
+
+    # Keep only the latest MAX_SAVED_ADDRESSES (never delete the default)
+    extra = (
+        CustomerAddress.objects
+        .filter(customer=customer)
+        .order_by("id")
+    )
+    while extra.count() > MAX_SAVED_ADDRESSES:
+        oldest = extra.filter(is_default=False).first()
+        if not oldest:
+            break
+        oldest.delete()
+
+
+def save_pending_order_address(pending, customer):
+    """Used by the Razorpay webhook and payment_success."""
+    data = pending.cart_data or {}
+    if not customer or data.get("used_saved_address"):
+        return
+    save_customer_delivery_address(
+        customer=customer,
+        name=pending.customer_name,
+        phone=pending.phone,
+        address=pending.address,
+        latitude=pending.latitude,
+        longitude=pending.longitude,
+        edit_address_id=data.get("address_edit_id"),
+    )
+
 
 def loka_money_data(request):
 

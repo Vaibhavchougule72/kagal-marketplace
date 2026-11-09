@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{% load i18n %}
+{% load i18n l10n %}
 
 <style>
 
@@ -50,40 +50,25 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-
     background: rgba(255,255,255,.15);
-
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-
     border: 1px solid rgba(255,255,255,.30);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     text-decoration: none;
     flex-shrink: 0;
-
     box-shadow:
         0 4px 16px rgba(0,0,0,.25),
         inset 0 1px 0 rgba(255,255,255,.25);
+    transition: background .2s, transform .15s, box-shadow .2s;
+  }
 
-    transition:
-        background .2s,
-        transform .15s,
-        box-shadow .2s;
-}
+  .checkout-nav .nav-back:hover { background: rgba(255,255,255,.28); }
+  .checkout-nav .nav-back:active { transform: scale(.94); }
 
-.checkout-nav .nav-back:hover {
-    background: rgba(255,255,255,.28);
-}
-
-.checkout-nav .nav-back:active {
-    transform: scale(.94);
-}
-
-.checkout-nav .nav-back svg {
+  .checkout-nav .nav-back svg {
     width: 20px;
     height: 20px;
     stroke: #fff;
@@ -92,7 +77,7 @@
     stroke-linejoin: round;
     fill: none;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
-}
+  }
 
   .checkout-nav .nav-title {
     font-size: 15px;
@@ -112,9 +97,7 @@
   }
 
   /* ── SCROLL BODY ── */
-  .checkout-body {
-    padding: 16px 14px 24px;
-  }
+  .checkout-body { padding: 16px 14px 24px; }
 
   /* ── ALERT ── */
   .co-alert {
@@ -155,9 +138,7 @@
     text-transform: uppercase;
   }
 
-  .co-card-body {
-    padding: 14px;
-  }
+  .co-card-body { padding: 14px; }
 
   /* ── FIELD LABEL ── */
   .co-label {
@@ -166,7 +147,7 @@
     letter-spacing: 0.02em;
     margin-bottom: 6px;
     font-weight: 700;
-}
+  }
 
   /* ── INPUTS ── */
   .co-input,
@@ -188,10 +169,7 @@
   .co-textarea::placeholder { color: #B0C0AE; }
 
   .co-input:focus,
-  .co-textarea:focus {
-    border-color: #2D5A27;
-    background: #fff;
-  }
+  .co-textarea:focus { border-color: #2D5A27; background: #fff; }
 
   .co-input.is-invalid { border-color: #C05018; background: #FDF8F7; }
   .co-input.is-valid   { border-color: #2D6B27; }
@@ -271,15 +249,13 @@
     border: 0.5px solid #D0E4CE;
     position: relative;
     z-index: 1;
-}
+  }
 
-.leaflet-container,
-.leaflet-pane,
-.leaflet-control,
-.leaflet-top,
-.leaflet-bottom {
-    z-index: 1 !important;
-}
+  .leaflet-container,
+  .leaflet-pane,
+  .leaflet-control,
+  .leaflet-top,
+  .leaflet-bottom { z-index: 1 !important; }
 
   .co-map-error {
     font-size: 12px;
@@ -292,10 +268,7 @@
   }
 
   /* ── COUPON ── */
-  .co-coupon-row {
-    display: flex;
-    gap: 8px;
-  }
+  .co-coupon-row { display: flex; gap: 8px; }
 
   .co-coupon-input {
     flex: 1;
@@ -338,10 +311,7 @@
   .co-coupon-msg.error   { background: #FDF1EB; color: #C05018; display: block; }
 
   /* ── PAYMENT OPTIONS ── */
-  .co-pay-row {
-    display: flex;
-    gap: 10px;
-  }
+  .co-pay-row { display: flex; gap: 10px; }
 
   .co-pay-opt {
     flex: 1;
@@ -355,11 +325,7 @@
     transition: all 0.15s;
   }
 
-  .co-pay-opt .pay-icon {
-    font-size: 22px;
-    display: block;
-    margin-bottom: 5px;
-  }
+  .co-pay-opt .pay-icon { font-size: 22px; display: block; margin-bottom: 5px; }
 
   .co-pay-opt.active {
     border-color: #2D5A27;
@@ -368,10 +334,7 @@
     font-weight: 500;
   }
 
-  .co-pay-opt.disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
+  .co-pay-opt.disabled { opacity: 0.45; cursor: not-allowed; }
 
   .co-pay-tag {
     font-size: 9px;
@@ -405,11 +368,7 @@
     padding: 3px 0;
   }
 
-  .co-sum-divider {
-    border: none;
-    border-top: 0.5px solid #E8EDE7;
-    margin: 8px 0;
-  }
+  .co-sum-divider { border: none; border-top: 0.5px solid #E8EDE7; margin: 8px 0; }
 
   .co-sum-row {
     display: flex;
@@ -441,18 +400,10 @@
     padding: 4px 0;
   }
 
-  .co-distance-info {
-    font-size: 11px;
-    color: #A8C9A5;
-    margin-top: 6px;
-  }
+  .co-distance-info { font-size: 11px; color: #A8C9A5; margin-top: 6px; }
 
   /* ── TRUST BADGES ── */
-  .co-trust-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
+  .co-trust-row { display: flex; gap: 8px; margin-bottom: 12px; }
 
   .co-trust-badge {
     flex: 1;
@@ -465,11 +416,7 @@
     line-height: 1.5;
   }
 
-  .co-trust-badge .tb-icon {
-    font-size: 18px;
-    display: block;
-    margin-bottom: 4px;
-  }
+  .co-trust-badge .tb-icon { font-size: 18px; display: block; margin-bottom: 4px; }
 
   /* ── POLICY ── */
   .co-policy-box {
@@ -532,44 +479,30 @@
   }
 
   /* Universal button animation */
-.co-confirm-btn,
-.co-coupon-btn,
-.co-loc-btn,
-.checkout-nav .nav-back {
+  .co-confirm-btn,
+  .co-coupon-btn,
+  .co-loc-btn,
+  .checkout-nav .nav-back {
     transition: all 0.15s ease;
     -webkit-tap-highlight-color: transparent;
-}
+  }
 
-/* Finger press effect */
-.co-confirm-btn:active,
-.co-coupon-btn:active,
-.co-loc-btn:active,
-.checkout-nav .nav-back:active {
+  .co-confirm-btn:active,
+  .co-coupon-btn:active,
+  .co-loc-btn:active,
+  .checkout-nav .nav-back:active {
     transform: scale(0.96);
     opacity: 0.85;
-}
+  }
 
-/* Touch feedback class */
-.btn-clicked {
-    transform: scale(0.96);
-    opacity: 0.85;
-}
+  .btn-clicked { transform: scale(0.96); opacity: 0.85; }
 
-/* ── SMART COUPON PICKER ── */
+  /* ── SMART COUPON PICKER ── */
+  .co-coupon-wrapper { position: relative; flex: 1; min-width: 0; }
 
-.co-coupon-wrapper {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-}
+  .co-coupon-input { width: 100%; margin-bottom: 0; padding-right: 38px; }
 
-.co-coupon-input {
-    width: 100%;
-    margin-bottom: 0;
-    padding-right: 38px;
-}
-
-.co-coupon-chevron {
+  .co-coupon-chevron {
     position: absolute;
     right: 12px;
     top: 50%;
@@ -579,13 +512,11 @@
     color: #1A3A16;
     pointer-events: none;
     transition: transform .18s ease;
-}
+  }
 
-.co-coupon-wrapper.open .co-coupon-chevron {
-    transform: translateY(-50%) rotate(180deg);
-}
+  .co-coupon-wrapper.open .co-coupon-chevron { transform: translateY(-50%) rotate(180deg); }
 
-.co-coupon-suggestions {
+  .co-coupon-suggestions {
     position: absolute;
     left: 0;
     right: 0;
@@ -599,13 +530,11 @@
     display: none;
     max-height: 260px;
     overflow-y: auto;
-}
+  }
 
-.co-coupon-wrapper.open .co-coupon-suggestions {
-    display: block;
-}
+  .co-coupon-wrapper.open .co-coupon-suggestions { display: block; }
 
-.co-coupon-suggestion {
+  .co-coupon-suggestion {
     width: 100%;
     border: none;
     background: #fff;
@@ -618,31 +547,16 @@
     cursor: pointer;
     font-family: inherit;
     border-bottom: 0.5px solid #EEF2ED;
-}
+  }
 
-.co-coupon-suggestion:last-child {
-    border-bottom: none;
-}
+  .co-coupon-suggestion:last-child { border-bottom: none; }
+  .co-coupon-suggestion:hover,
+  .co-coupon-suggestion:active { background: #F4F8F2; }
 
-.co-coupon-suggestion:hover,
-.co-coupon-suggestion:active {
-    background: #F4F8F2;
-}
+  .co-coupon-code { font-size: 12px; font-weight: 700; color: #1A3A16; letter-spacing: .06em; }
+  .co-coupon-details { font-size: 10px; color: #7A8A78; margin-top: 3px; }
 
-.co-coupon-code {
-    font-size: 12px;
-    font-weight: 700;
-    color: #1A3A16;
-    letter-spacing: .06em;
-}
-
-.co-coupon-details {
-    font-size: 10px;
-    color: #7A8A78;
-    margin-top: 3px;
-}
-
-.co-coupon-discount {
+  .co-coupon-discount {
     flex-shrink: 0;
     font-size: 11px;
     font-weight: 600;
@@ -650,72 +564,37 @@
     background: #EAF5E8;
     padding: 4px 7px;
     border-radius: 6px;
-}
+  }
 
-.co-coupon-empty {
-    padding: 14px;
-    text-align: center;
-    font-size: 11px;
-    color: #9AA899;
-}
+  .co-coupon-empty { padding: 14px; text-align: center; font-size: 11px; color: #9AA899; }
+  .co-coupon-loading { padding: 13px; text-align: center; font-size: 11px; color: #9AA899; }
 
-.co-coupon-loading {
-    padding: 13px;
-    text-align: center;
-    font-size: 11px;
-    color: #9AA899;
-}
+  .co-coupon-row { align-items: flex-start; }
 
-.co-coupon-row {
-    align-items: flex-start;
-}
+  /* ── COUPON DROPDOWN OVERLAY FIX ── */
+  .co-card:has(#couponWrapper) { overflow: visible; position: relative; z-index: 20; }
+  .co-card:has(#couponWrapper) .co-card-body { position: relative; z-index: 21; }
+  #couponWrapper { position: relative; z-index: 30; }
+  #couponSuggestions { z-index: 99999 !important; }
 
-/* ── COUPON DROPDOWN OVERLAY FIX ── */
-
-.co-card:has(#couponWrapper) {
-    overflow: visible;
-    position: relative;
-    z-index: 20;
-}
-
-.co-card:has(#couponWrapper) .co-card-body {
-    position: relative;
-    z-index: 21;
-}
-
-#couponWrapper {
-    position: relative;
-    z-index: 30;
-}
-
-#couponSuggestions {
-    z-index: 99999 !important;
-}
-
-.address-label {
+  .address-label {
     font-size: 12px;
     color: #1A3A16;
     font-weight: 700;
     letter-spacing: 0.02em;
     margin-top: 4px;
     margin-bottom: 7px;
-}
+  }
 
   @keyframes co-spin { to { transform: rotate(360deg); } }
-/* Highlight the location confirmation button */
-@keyframes locationConfirmGlow {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(232, 98, 26, 0.5);
-        transform: scale(1);
-    }
 
-    50% {
-        box-shadow: 0 0 18px 7px rgba(232, 98, 26, 0.65);
-        transform: scale(1.03);
-    }
-}
+  /* Highlight the location confirmation button */
+  @keyframes locationConfirmGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232, 98, 26, 0.5); transform: scale(1); }
+    50%      { box-shadow: 0 0 18px 7px rgba(232, 98, 26, 0.65); transform: scale(1.03); }
+  }
 
-#confirmLocationBtn.location-attention {
+  #confirmLocationBtn.location-attention {
     background: #E8621A !important;
     color: #ffffff !important;
     border: 2px solid #ffffff !important;
@@ -723,14 +602,12 @@
     font-weight: 800;
     position: relative;
     z-index: 5;
-}
+  }
 
-#confirmLocationBtn.location-attention:active {
-    transform: scale(0.97);
-}
+  #confirmLocationBtn.location-attention:active { transform: scale(0.97); }
 
-/* Location confirmation popup */
-.location-popup-overlay {
+  /* Location confirmation popup */
+  .location-popup-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -739,13 +616,11 @@
     align-items: center;
     justify-content: center;
     padding: 22px;
-}
+  }
 
-.location-popup-overlay.show {
-    display: flex;
-}
+  .location-popup-overlay.show { display: flex; }
 
-.location-popup {
+  .location-popup {
     width: 100%;
     max-width: 350px;
     background: #ffffff;
@@ -754,39 +629,18 @@
     text-align: center;
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
     animation: locationPopupAppear 0.25s ease-out;
-}
+  }
 
-@keyframes locationPopupAppear {
-    from {
-        opacity: 0;
-        transform: scale(0.88);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
+  @keyframes locationPopupAppear {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
 
-.location-popup-icon {
-    font-size: 42px;
-    margin-bottom: 10px;
-}
+  .location-popup-icon { font-size: 42px; margin-bottom: 10px; }
+  .location-popup h3 { color: #1A3A16; font-size: 20px; margin: 0 0 10px; font-weight: 800; }
+  .location-popup p { color: #667463; font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
 
-.location-popup h3 {
-    color: #1A3A16;
-    font-size: 20px;
-    margin: 0 0 10px;
-    font-weight: 800;
-}
-
-.location-popup p {
-    color: #667463;
-    font-size: 14px;
-    line-height: 1.6;
-    margin: 0 0 20px;
-}
-
-.location-popup-btn {
+  .location-popup-btn {
     width: 100%;
     border: none;
     border-radius: 12px;
@@ -796,24 +650,58 @@
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-}
+  }
 
-/* RETURNING CUSTOMER COMPACT CHECKOUT */
-.returning-customer .checkout-body { padding-top:12px; }
-.returning-customer #contactDetailsCard,
-.returning-customer #deliveryEditorFields { display:none; }
-.returning-customer #contactDetailsCard.editor-open,
-.returning-customer #deliveryEditorFields.editor-open { display:block; }
-.returning-address-card { background:#fff; border:1px solid #DCE8D9; border-radius:13px; padding:14px; margin-bottom:12px; }
-.returning-address-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.returning-address-title { color:#1A3A16; font-size:13px; font-weight:800; }
-.returning-address-value { color:#536650; font-size:12px; line-height:1.55; margin-top:8px; }
-.returning-address-actions { display:flex; gap:8px; margin-top:12px; }
-.returning-address-actions button { flex:1; border:1px solid #2D5A27; border-radius:8px; padding:9px 10px; background:#EAF5E8; color:#1A3A16; font-size:12px; font-weight:700; }
-.returning-address-actions .add-address-action { background:#1A3A16; color:#fff; }
-.returning-customer #savedAddressList .saved-address-option { display:none !important; }
-.returning-customer #savedAddressList.show-choices .saved-address-option { display:block !important; }
+  /* ── SAVED ADDRESS CARDS (compact mode) ── */
+  .addr-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 10px;
+    background: #FAFAF8;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
 
+  .addr-option:has(input:checked) { border-color: #2D5A27; background: #EAF2E8; }
+
+  .addr-option input { margin-top: 4px; accent-color: #2D5A27; flex-shrink: 0; }
+
+  .addr-main { flex: 1; min-width: 0; font-size: 12px; color: #6B7B69; line-height: 1.5; }
+  .addr-main strong { color: #1A3A16; font-size: 13px; }
+
+  .addr-tag {
+    font-size: 9px;
+    background: #2D5A27;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: 6px;
+  }
+
+  .addr-edit {
+    font-size: 12px;
+    font-weight: 600;
+    color: #E8621A;
+    text-decoration: none;
+    flex-shrink: 0;
+    padding: 2px 4px;
+  }
+
+  .addr-add {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border: 1px dashed #2D5A27;
+    border-radius: 10px;
+    color: #2D5A27;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+  }
 </style>
 
 {% if error and error != "Please confirm your delivery location before placing your order." %}
@@ -848,36 +736,77 @@
     {% csrf_token %}
     <input type="hidden" name="free_delivery"    id="freeDeliveryInput" value="false">
     <input type="hidden" name="discount_amount"  id="hidden_discount"   value="0">
+    {% if edit_address %}
+    <input type="hidden" name="edit_address_id" value="{{ edit_address.id }}">
+    {% endif %}
 
-    <div class="checkout-body {% if saved_addresses %}returning-customer{% endif %}">
+    <div class="checkout-body">
 
-      {% if saved_addresses %}
-      <div class="returning-address-card" id="returningAddressCard">
-        <div class="returning-address-top">
-          <div class="returning-address-title">📍 Delivery address</div>
-          <button type="button" id="toggleAddressChoices" style="border:0;background:none;color:#2D5A27;font-size:12px;font-weight:700;">Change</button>
-        </div>
-        <div class="returning-address-value" id="selectedAddressSummary">Select a saved delivery address.</div>
-        <div class="returning-address-actions">
-          <button type="button" id="editSelectedAddress">✎ Edit address</button>
-          <button type="button" class="add-address-action" id="addNewAddress">+ Add new address</button>
+    {% if checkout_mode == "compact" %}
+      <!-- ================================================
+           COMPACT MODE — returning customer (2nd order+)
+           ================================================ -->
+      <input type="hidden" name="name"      id="nameInput">
+      <input type="hidden" name="phone"     id="phoneInput">
+      <input type="hidden" name="address"   id="addressInput">
+      <input type="hidden" name="latitude"  id="latitude">
+      <input type="hidden" name="longitude" id="longitude">
+      <input type="hidden" name="confirm_phone" value="on">
+      <input type="hidden" name="delivery_location_confirmed"
+             id="deliveryLocationConfirmedInput" value="true">
+
+      <div class="co-card">
+        <div class="co-card-head"><span>{% trans "Deliver to" %}</span></div>
+        <div class="co-card-body">
+
+          {% for saved in saved_addresses %}
+          <label class="addr-option">
+            <input type="radio" name="saved_address_id" value="{{ saved.id }}"
+                   data-name="{{ saved.full_name }}"
+                   data-phone="{{ saved.phone }}"
+                   data-address="{{ saved.address }}"
+                   data-latitude="{{ saved.latitude|unlocalize }}"
+                   data-longitude="{{ saved.longitude|unlocalize }}"
+                   {% if forloop.first %}checked{% endif %}>
+            <div class="addr-main">
+              <strong>{{ saved.label }}</strong>
+              {% if saved.is_default %}<span class="addr-tag">Default</span>{% endif %}
+              <div>{{ saved.full_name }} · {{ saved.phone }}</div>
+              <div>{{ saved.address }}</div>
+            </div>
+            <a href="{% url 'checkout' %}?edit={{ saved.id }}"
+               class="addr-edit" onclick="event.stopPropagation()">✏️ Edit</a>
+          </label>
+          {% endfor %}
+
+          <a href="{% url 'checkout' %}?new=1" class="addr-add">
+            + {% trans "Add a new address" %}
+          </a>
+
+          <div id="deliveryInfo" class="co-delivery-info"></div>
+          <div class="co-map-error" id="mapError"></div>
         </div>
       </div>
-      {% endif %}
+
+    {% else %}
+      <!-- ================================================
+           FULL MODE — first order / Edit / Add new address
+           ================================================ -->
 
       <!-- 1. CONTACT -->
-      <div class="co-card" id="contactDetailsCard">
+      <div class="co-card">
         <div class="co-card-head"><span>{% trans "Contact details" %}</span></div>
         <div class="co-card-body">
           <div class="co-label">{% trans "Full name" %}</div>
-          <input type="text" name="name" id="nameInput"
-                 class="co-input" placeholder="{% trans 'Your full name' %}">
+          <input type="text" name="name" id="nameInput" class="co-input"
+                 value="{{ edit_address.full_name|default:'' }}"
+                 placeholder="{% trans 'Your full name' %}" required>
           <div class="co-invalid-msg">{% trans "Please enter your full name." %}</div>
 
           <div class="co-label">{% trans "Mobile number" %}</div>
-          <input type="text" name="phone" id="phoneInput"
-                 class="co-input" maxlength="10"
-                 placeholder="{% trans '10-digit number starting with 6–9' %}">
+          <input type="text" name="phone" id="phoneInput" class="co-input" maxlength="10"
+                 value="{{ edit_address.phone|default:'' }}"
+                 placeholder="{% trans '10-digit number starting with 6–9' %}" required>
           <div class="co-invalid-msg">{% trans "Enter a valid Indian mobile number." %}</div>
 
           <div class="co-check-row">
@@ -891,82 +820,10 @@
 
       <!-- 2. LOCATION -->
       <div class="co-card">
-        <div class="co-card-head"><span>{% trans "Delivery location" %}</span></div>
-        
-        {% if saved_addresses %}
-            <div class="co-label">Choose a saved address</div>
-
-            <div id="savedAddressList" style="margin-bottom: 14px;">
-
-                {% for saved in saved_addresses %}
-                    <label class="saved-address-option"
-                        style="display:block; padding:12px; margin-bottom:8px;
-                                border:1px solid #E0E8DF; border-radius:10px;
-                                cursor:pointer; background:#FAFAF8;">
-
-                        <input
-                            type="radio"
-                            name="saved_address_id"
-                            value="{{ saved.id }}"
-                            data-name="{{ saved.full_name }}"
-                            data-phone="{{ saved.phone }}"
-                            data-address="{{ saved.address }}"
-                            data-latitude="{{ saved.latitude }}"
-                            data-longitude="{{ saved.longitude }}"
-                            {% if saved.is_default %}checked{% endif %}
-                        >
-
-                        <strong style="color:#1A3A16; margin-left:6px;">
-                            {{ saved.label }}
-                        </strong>
-
-                        <div style="font-size:12px; color:#6B7B69; margin-top:5px;">
-                            {{ saved.full_name }} · {{ saved.phone }}
-                        </div>
-
-                        <div style="font-size:12px; color:#6B7B69; margin-top:3px;">
-                            {{ saved.address }}
-                        </div>
-
-                    </label>
-                {% endfor %}
-
-                <label style="display:block; padding:12px; border:1px dashed #2D5A27;
-                            border-radius:10px; cursor:pointer;">
-
-                    <input type="radio" name="saved_address_id" value="new">
-                    <strong style="color:#2D5A27; margin-left:6px;">
-                        + Add a new address
-                    </strong>
-
-                </label>
-
-            </div>
-        {% endif %}
-
-        <div style="margin: 12px 0; padding: 12px;
-                    background: #F3F8F1; border-radius: 10px;">
-
-            <label style="display:flex; align-items:center; gap:9px;
-                        cursor:pointer; color:#1A3A16;">
-
-                <input
-                    type="checkbox"
-                    name="save_address"
-                    value="on"
-                    checked
-                    style="width:17px; height:17px; accent-color:#2D5A27;"
-                >
-
-                <span style="font-size:13px; font-weight:600;">
-                    Save this address for future orders
-                </span>
-
-            </label>
-
+        <div class="co-card-head">
+          <span>{% if edit_address %}{% trans "Edit delivery location" %}{% else %}{% trans "Delivery location" %}{% endif %}</span>
         </div>
-
-        <div class="co-card-body" id="deliveryEditorFields">
+        <div class="co-card-body">
           <button type="button" class="co-loc-btn" onclick="useCurrentLocation()">
             📍 {% trans "Use my current location" %}
           </button>
@@ -989,33 +846,29 @@
               {% trans "Landmark / House details" %}
           </div>
           <textarea name="address" id="addressInput" class="co-textarea"
-                    placeholder="{% trans 'Flat No, Building, Landmark' %}"></textarea>
+                    placeholder="{% trans 'Flat No, Building, Landmark' %}">{{ edit_address.address|default:'' }}</textarea>
         </div>
       </div>
 
       <!-- Location confirmation popup -->
       <div id="locationPopupOverlay" class="location-popup-overlay">
           <div class="location-popup">
-
               <div class="location-popup-icon">📍</div>
-
               <h3>Confirm Your Location!</h3>
-
               <p>
                   Before placing your order, please confirm your exact
                   delivery location on the map.<br><br>
                   Tap the <strong>Confirm Delivery Location</strong>
                   button to continue.
               </p>
-
               <button type="button"
                       class="location-popup-btn"
                       onclick="goToLocationConfirmation()">
                   Show Me →
               </button>
-
           </div>
       </div>
+    {% endif %}
 
       <!-- 3. COUPON -->
       <div class="co-card">
@@ -1024,7 +877,6 @@
           <div class="co-coupon-row">
 
             <div class="co-coupon-wrapper" id="couponWrapper">
-
                 <input
                     type="text"
                     id="coupon_code"
@@ -1035,27 +887,17 @@
                     autocapitalize="characters"
                     spellcheck="false"
                 >
-
                 <span class="co-coupon-chevron">⌄</span>
-
-                <div
-                    id="couponSuggestions"
-                    class="co-coupon-suggestions"
-                ></div>
-
+                <div id="couponSuggestions" class="co-coupon-suggestions"></div>
             </div>
 
-            <button
-                type="button"
-                class="co-coupon-btn"
-                onclick="applyCoupon()"
-            >
+            <button type="button" class="co-coupon-btn" onclick="applyCoupon()">
                 {% trans "Apply" %}
             </button>
 
-        </div>
+          </div>
 
-        <div id="coupon_message" class="co-coupon-msg"></div>
+          <div id="coupon_message" class="co-coupon-msg"></div>
         </div>
       </div>
 
@@ -1090,11 +932,7 @@
               🔒 LOKA Money can be used on orders of ₹199 or more.
             </div>
           {% elif loka_money_balance <= 0 %}
-            <div style="
-              margin-top:8px;
-              font-size:11px;
-              color:#9AA899;
-            ">
+            <div style="margin-top:8px; font-size:11px; color:#9AA899;">
               💰 You don't have any LOKA Money yet.
             </div>
           {% endif %}
@@ -1102,7 +940,7 @@
         </div>
       </div>
 
-      <!-- 4. PAYMENT -->
+      <!-- 5. PAYMENT -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Payment method" %}</span></div>
         <div class="co-card-body">
@@ -1132,7 +970,7 @@
         </div>
       </div>
 
-      <!-- 5. ORDER SUMMARY -->
+      <!-- 6. ORDER SUMMARY -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Order summary" %}</span></div>
         <div class="co-card-body">
@@ -1147,15 +985,10 @@
           <div class="co-sum-row"><span>{% trans "Delivery fee" %}</span><span id="deliveryFee">₹0</span></div>
           <div class="co-sum-row"><span>{% trans "Handling fee" %}</span><span>₹{{ handling_fee }}</span></div>
           <div class="co-sum-row discount"><span>{% trans "Coupon discount" %}</span><span>— <span id="discount_amount">₹0</span></span></div>
-          <div
-            class="co-sum-row discount"
-            id="lokaMoneyRow"
-            style="display:none;"
-          >
+          <div class="co-sum-row discount" id="lokaMoneyRow" style="display:none;">
             <span>LOKA Money</span>
             <span>− ₹<span id="lokaMoneyAmount">0</span></span>
           </div>
-
 
           {% if cod_not_allowed %}
           <div class="co-cod-warn">⚠ {% trans "Cash on Delivery is not available for orders below ₹149." %}</div>
@@ -1176,7 +1009,7 @@
         <div class="co-trust-badge"><span class="tb-icon">🚚</span>Local trusted<br>stores</div>
       </div>
 
-      <!-- 6. POLICY -->
+      <!-- 7. POLICY -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Cancellation policy" %}</span></div>
         <div class="co-card-body">
@@ -1205,9 +1038,11 @@
   </form>
 </div>
 
-<!-- LEAFLET -->
+<!-- LEAFLET (only needed when the map is shown) -->
+{% if checkout_mode == "full" %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+{% endif %}
 
 <script>
 const BUS_STAND_LAT = 16.579620;
@@ -1219,6 +1054,12 @@ const handlingFee = parseFloat("{{ handling_fee }}");
 
 const lokaMoneyBalance = parseFloat("{{ loka_money_balance|default:'0' }}");
 const lokaMoneyMax = 15;
+
+/* Checkout mode flags */
+const IS_FULL   = "{{ checkout_mode }}" === "full";
+const HAS_SAVED = parseInt("{{ saved_addresses|length }}", 10) > 0;
+const EDIT_LAT  = "{{ edit_address.latitude|unlocalize|default:'' }}";
+const EDIT_LNG  = "{{ edit_address.longitude|unlocalize|default:'' }}";
 
 let appliedDiscount = 0;
 let currentDeliveryFee = 0;
@@ -1237,23 +1078,16 @@ let couponRequestTimer = null;
 
 function loadAvailableCoupons(search = '') {
 
-    const phoneInput =
-        document.getElementById('phoneInput');
-
-    const couponSuggestions =
-        document.getElementById('couponSuggestions');
-
-    const phone =
-        phoneInput.value.trim();
+    const phoneInput = document.getElementById('phoneInput');
+    const couponSuggestions = document.getElementById('couponSuggestions');
+    const phone = phoneInput.value.trim();
 
     if (!/^[6-9]\d{9}$/.test(phone)) {
-
         couponSuggestions.innerHTML = `
             <div class="co-coupon-empty">
                 Enter your valid mobile number to see available coupons.
             </div>
         `;
-
         return;
     }
 
@@ -1270,49 +1104,28 @@ function loadAvailableCoupons(search = '') {
         encodeURIComponent(search)
     )
     .then(function(response) {
-
-        if (!response.ok) {
-            throw new Error('Coupon API error');
-        }
-
+        if (!response.ok) { throw new Error('Coupon API error'); }
         return response.json();
-
     })
     .then(function(data) {
-
         if (!data.success) {
-
             availableCoupons = [];
-
             couponSuggestions.innerHTML = `
-                <div class="co-coupon-empty">
-                    No coupons available.
-                </div>
+                <div class="co-coupon-empty">No coupons available.</div>
             `;
-
             return;
         }
-
         availableCoupons = data.coupons || [];
-
         renderCouponSuggestions(search);
-
     })
     .catch(function(error) {
-
-        console.error(
-            'Coupon loading error:',
-            error
-        );
-
+        console.error('Coupon loading error:', error);
         availableCoupons = [];
-
         couponSuggestions.innerHTML = `
             <div class="co-coupon-empty">
                 Unable to load coupons. Please try again.
             </div>
         `;
-
     });
 }
 
@@ -1323,101 +1136,48 @@ function loadAvailableCoupons(search = '') {
 
 function renderCouponSuggestions(search = '') {
 
-    const couponSuggestions =
-        document.getElementById('couponSuggestions');
+    const couponSuggestions = document.getElementById('couponSuggestions');
+    const couponWrapper = document.getElementById('couponWrapper');
+    const query = search.trim().toUpperCase();
 
-    const couponWrapper =
-        document.getElementById('couponWrapper');
-
-    const query =
-        search.trim().toUpperCase();
-
-    const filteredCoupons =
-        availableCoupons.filter(function(coupon) {
-
-            return !query ||
-                coupon.code
-                    .toUpperCase()
-                    .includes(query);
-
-        });
+    const filteredCoupons = availableCoupons.filter(function(coupon) {
+        return !query || coupon.code.toUpperCase().includes(query);
+    });
 
     if (!filteredCoupons.length) {
-
         couponSuggestions.innerHTML = `
-            <div class="co-coupon-empty">
-                No matching coupons available.
-            </div>
+            <div class="co-coupon-empty">No matching coupons available.</div>
         `;
-
         couponWrapper.classList.add('open');
-
         return;
     }
 
-    couponSuggestions.innerHTML =
-        filteredCoupons.map(function(coupon) {
-
-            return `
-                <button
-                    type="button"
-                    class="co-coupon-suggestion"
-                    data-code="${coupon.code}"
-                >
-
-                    <div>
-                        <div class="co-coupon-code">
-                            ${coupon.code}
-                        </div>
-
-                        <div class="co-coupon-details">
-                            ${coupon.description || ''}
-                            ${coupon.min_order
-                                ? ' · Min ₹' + coupon.min_order
-                                : ''}
-                        </div>
+    couponSuggestions.innerHTML = filteredCoupons.map(function(coupon) {
+        return `
+            <button type="button" class="co-coupon-suggestion" data-code="${coupon.code}">
+                <div>
+                    <div class="co-coupon-code">${coupon.code}</div>
+                    <div class="co-coupon-details">
+                        ${coupon.description || ''}
+                        ${coupon.min_order ? ' · Min ₹' + coupon.min_order : ''}
                     </div>
-
-                    <div class="co-coupon-discount">
-                        ${coupon.discount}
-                    </div>
-
-                </button>
-            `;
-
-        }).join('');
+                </div>
+                <div class="co-coupon-discount">${coupon.discount}</div>
+            </button>
+        `;
+    }).join('');
 
     couponWrapper.classList.add('open');
-
-
-    /* ---------------------------------------------
-       CLICK COUPON
-    --------------------------------------------- */
 
     couponSuggestions
         .querySelectorAll('.co-coupon-suggestion')
         .forEach(function(button) {
-
-            button.addEventListener(
-                'click',
-                function() {
-
-                    const code =
-                        this.getAttribute('data-code');
-
-                    document.getElementById(
-                        'coupon_code'
-                    ).value = code;
-
-                    couponWrapper.classList.remove(
-                        'open'
-                    );
-
-                    applyCoupon();
-
-                }
-            );
-
+            button.addEventListener('click', function() {
+                const code = this.getAttribute('data-code');
+                document.getElementById('coupon_code').value = code;
+                couponWrapper.classList.remove('open');
+                applyCoupon();
+            });
         });
 }
 
@@ -1426,8 +1186,7 @@ let freeDeliveryUnlocked =
 
 function updateOrderTotal() {
 
-    const useLokaMoney =
-        document.getElementById('useLokaMoney')?.checked;
+    const useLokaMoney = document.getElementById('useLokaMoney')?.checked;
 
     let totalBeforeLoka =
         subtotal +
@@ -1437,81 +1196,62 @@ function updateOrderTotal() {
 
     let lokaMoneyUsed = 0;
 
-    if (
-        useLokaMoney &&
-        subtotal >= 199 &&
-        lokaMoneyBalance > 0
-    ) {
-        lokaMoneyUsed = Math.min(
-            lokaMoneyBalance,
-            lokaMoneyMax,
-            totalBeforeLoka
-        );
+    if (useLokaMoney && subtotal >= 199 && lokaMoneyBalance > 0) {
+        lokaMoneyUsed = Math.min(lokaMoneyBalance, lokaMoneyMax, totalBeforeLoka);
     }
 
-    const finalTotal =
-        Math.max(0, totalBeforeLoka - lokaMoneyUsed);
+    const finalTotal = Math.max(0, totalBeforeLoka - lokaMoneyUsed);
 
-    document.getElementById('orderTotal').innerText =
-        '₹' + Math.round(finalTotal);
+    document.getElementById('orderTotal').innerText  = '₹' + Math.round(finalTotal);
+    document.getElementById('footerTotal').innerText = '₹' + Math.round(finalTotal);
 
-    document.getElementById('footerTotal').innerText =
-        '₹' + Math.round(finalTotal);
-
-    const lokaRow =
-        document.getElementById('lokaMoneyRow');
-
-    const lokaAmount =
-        document.getElementById('lokaMoneyAmount');
+    const lokaRow = document.getElementById('lokaMoneyRow');
+    const lokaAmount = document.getElementById('lokaMoneyAmount');
 
     if (lokaMoneyUsed > 0) {
-
         lokaRow.style.display = 'flex';
-
-        lokaAmount.innerText =
-            Math.round(lokaMoneyUsed);
-
+        lokaAmount.innerText = Math.round(lokaMoneyUsed);
     } else {
-
         lokaRow.style.display = 'none';
-
         lokaAmount.innerText = '0';
     }
 }
 
-/* ── MAP SETUP ── */
-var map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
+/* ── MAP SETUP (full mode only) ── */
+var map = null;
+var marker = null;
 
-var streetLayer = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }
-);
-var satelliteLayer = L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { maxZoom: 19, attribution: 'Tiles &copy; Esri' }
-);
-satelliteLayer.addTo(map);
-L.control.layers({ "Street": streetLayer, "Satellite": satelliteLayer }).addTo(map);
-L.circle([BUS_STAND_LAT, BUS_STAND_LON], {
-  radius: DELIVERY_RADIUS_KM * 1000, color: '#2D5A27', fillOpacity: 0.06
-}).addTo(map);
+if (IS_FULL) {
+  map = L.map('map').setView([BUS_STAND_LAT, BUS_STAND_LON], 14);
 
-var marker;
-map.on('click', function(e) { setLocation(e.latlng.lat, e.latlng.lng); });
+  var streetLayer = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }
+  );
+  var satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 19, attribution: 'Tiles &copy; Esri' }
+  );
+  satelliteLayer.addTo(map);
+  L.control.layers({ "Street": streetLayer, "Satellite": satelliteLayer }).addTo(map);
+  L.circle([BUS_STAND_LAT, BUS_STAND_LON], {
+    radius: DELIVERY_RADIUS_KM * 1000, color: '#2D5A27', fillOpacity: 0.06
+  }).addTo(map);
+
+  map.on('click', function(e) { setLocation(e.latlng.lat, e.latlng.lng); });
+}
 
 function setLocation(lat, lng) {
+    if (!map) return;
+
     if (marker) {
         map.removeLayer(marker);
     }
 
-    marker = L.marker([lat, lng], {
-        draggable: true
-    }).addTo(map);
+    marker = L.marker([lat, lng], { draggable: true }).addTo(map);
 
     // Zoom in so the customer can check the exact location.
-    map.flyTo([lat, lng], 18, {
-        duration: 0.6
-    });
+    map.flyTo([lat, lng], 18, { duration: 0.6 });
 
     document.getElementById('latitude').value = lat;
     document.getElementById('longitude').value = lng;
@@ -1519,25 +1259,15 @@ function setLocation(lat, lng) {
     // Preserve the selected location across checkout page reloads.
     localStorage.setItem('checkoutDeliveryLat', String(lat));
     localStorage.setItem('checkoutDeliveryLng', String(lng));
-   
+
     // Any location change requires confirmation again.
     window.deliveryLocationConfirmed = false;
+    sessionStorage.setItem('checkoutDeliveryConfirmed', 'false');
 
-    sessionStorage.setItem(
-        'checkoutDeliveryConfirmed',
-        'false'
-    );
-
-    const confirmedInput = document.getElementById(
-        'deliveryLocationConfirmedInput'
-    );
-
-    if (confirmedInput) {
-        confirmedInput.value = 'false';
-    }
+    const confirmedInput = document.getElementById('deliveryLocationConfirmedInput');
+    if (confirmedInput) { confirmedInput.value = 'false'; }
 
     const confirmBtn = document.getElementById('confirmLocationBtn');
-
     if (confirmBtn) {
         confirmBtn.style.display = 'block';
         confirmBtn.innerText = '📍 Confirm Delivery Location';
@@ -1546,7 +1276,6 @@ function setLocation(lat, lng) {
     }
 
     const mapError = document.getElementById('mapError');
-
     if (mapError) {
         mapError.innerText =
             '📍 Check the pin. Drag it to your exact delivery address, then confirm your location.';
@@ -1560,36 +1289,19 @@ function setLocation(lat, lng) {
     marker.on('dragend', function () {
         const pos = marker.getLatLng();
 
-        // Save the updated location after the customer moves the pin.
-        localStorage.setItem(
-            'checkoutDeliveryLat',
-            String(pos.lat)
-        );
-
-        localStorage.setItem(
-            'checkoutDeliveryLng',
-            String(pos.lng)
-        );
+        localStorage.setItem('checkoutDeliveryLat', String(pos.lat));
+        localStorage.setItem('checkoutDeliveryLng', String(pos.lng));
 
         document.getElementById('latitude').value = pos.lat;
         document.getElementById('longitude').value = pos.lng;
 
         window.deliveryLocationConfirmed = false;
-        sessionStorage.setItem(
-            'checkoutDeliveryConfirmed',
-            'false'
-        );
+        sessionStorage.setItem('checkoutDeliveryConfirmed', 'false');
 
-        const confirmedInput = document.getElementById(
-            'deliveryLocationConfirmedInput'
-        );
-
-        if (confirmedInput) {
-            confirmedInput.value = 'false';
-        }
+        const confirmedInput = document.getElementById('deliveryLocationConfirmedInput');
+        if (confirmedInput) { confirmedInput.value = 'false'; }
 
         const confirmBtn = document.getElementById('confirmLocationBtn');
-
         if (confirmBtn) {
             confirmBtn.innerText = '📍 Confirm Delivery Location';
             confirmBtn.style.backgroundColor = '';
@@ -1608,44 +1320,27 @@ function setLocation(lat, lng) {
 
 function showLocationConfirmationPopup() {
     const popup = document.getElementById('locationPopupOverlay');
-
-    if (popup) {
-        popup.classList.add('show');
-    }
+    if (popup) { popup.classList.add('show'); }
 }
 
 function goToLocationConfirmation() {
     const popup = document.getElementById('locationPopupOverlay');
     const confirmBtn = document.getElementById('confirmLocationBtn');
 
-    // Close the popup.
-    if (popup) {
-        popup.classList.remove('show');
-    }
+    if (popup) { popup.classList.remove('show'); }
 
-    // Scroll to the location section.
     const mapElement = document.getElementById('map');
-
     if (mapElement) {
-        mapElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+        mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Make the confirmation button visible and highlight it.
     if (confirmBtn) {
         confirmBtn.style.display = 'block';
         confirmBtn.classList.add('location-attention');
-
         confirmBtn.innerText = '📍 TAP HERE TO CONFIRM LOCATION';
 
-        // Move focus to the confirmation button.
         setTimeout(function () {
-            confirmBtn.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
+            confirmBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 350);
     }
 }
@@ -1658,43 +1353,28 @@ function confirmDeliveryLocation() {
 
     if (!lat || !lng) {
         if (mapError) {
-            mapError.innerText =
-                'Please select your delivery location on the map first.';
+            mapError.innerText = 'Please select your delivery location on the map first.';
             mapError.style.display = 'block';
         }
         return;
     }
 
-    // Confirm the final selected map location.
     window.deliveryLocationConfirmed = true;
-
-    sessionStorage.setItem(
-        'checkoutDeliveryConfirmed',
-        'true'
-    );
+    sessionStorage.setItem('checkoutDeliveryConfirmed', 'true');
 
     if (confirmBtn) {
         confirmBtn.classList.remove('location-attention');
         confirmBtn.innerText = '✅ Location Confirmed';
+        confirmBtn.style.backgroundColor = '#2D5A27';
+        confirmBtn.style.color = '#ffffff';
     }
 
-    const confirmedInput = document.getElementById(
-        'deliveryLocationConfirmedInput'
-    );
-
-    if (confirmedInput) {
-        confirmedInput.value = 'true';
-    }
+    const confirmedInput = document.getElementById('deliveryLocationConfirmedInput');
+    if (confirmedInput) { confirmedInput.value = 'true'; }
 
     if (mapError) {
         mapError.innerText = '✅ Delivery location confirmed!';
         mapError.style.display = 'block';
-    }
-
-    if (confirmBtn) {
-        confirmBtn.innerText = '✅ Location Confirmed';
-        confirmBtn.style.backgroundColor = '#2D5A27';
-        confirmBtn.style.color = '#ffffff';
     }
 }
 
@@ -1712,33 +1392,26 @@ function useCurrentLocation() {
         return;
     }
 
-    document.getElementById('distanceInfo').innerText =
-        'Getting your location…';
+    document.getElementById('distanceInfo').innerText = 'Getting your location…';
 
     navigator.geolocation.getCurrentPosition(
         function(pos) {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
 
-            // Place the marker and zoom in on the detected location.
             setLocation(lat, lng);
-
-            // Remember that the customer has not confirmed the location yet.
             window.deliveryLocationConfirmed = false;
 
             btn.innerHTML = '📍 Confirm your delivery location';
             btn.disabled = false;
 
-            // Show a message asking the customer to verify the pin.
             if (mapError) {
                 mapError.innerText =
                     '📍 We found your location. Please check the map, ' +
                     'drag the pin to your exact delivery address if needed, ' +
                     'and confirm the location before placing your order.';
-
                 mapError.style.display = 'block';
             }
-
         },
         function(error) {
             btn.innerHTML = '📍 Use my current location';
@@ -1758,11 +1431,7 @@ function useCurrentLocation() {
 
             alert(message);
         },
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
 }
 
@@ -1784,17 +1453,22 @@ function updateDelivery(lat, lng) {
   var placeBtn = document.getElementById('placeOrderBtn');
 
   if (dist > DELIVERY_RADIUS_KM) {
-    mapError.innerText = 'Delivery not available outside 10 km.';
-    mapError.style.display = 'block';
+    if (mapError) {
+      mapError.innerText = 'Delivery not available outside 10 km.';
+      mapError.style.display = 'block';
+    }
     placeBtn.disabled = true;
     return;
   }
-  if (window.deliveryLocationConfirmed === true) {
+
+  if (mapError) {
+    if (window.deliveryLocationConfirmed === true) {
       mapError.style.display = 'none';
-  } else {
+    } else {
       mapError.innerText =
           '📍 Check the pin. Drag it to your exact delivery address, then confirm your location.';
       mapError.style.display = 'block';
+    }
   }
   placeBtn.disabled = false;
 
@@ -1804,17 +1478,15 @@ function updateDelivery(lat, lng) {
     .then(function(data) {
       freeDeliveryUnlocked = data.free_delivery;
       document.getElementById('freeDeliveryInput').value = freeDeliveryUnlocked ? 'true' : 'false';
-      var fee = data.delivery_fee;
 
-      currentDeliveryFee = parseFloat(fee) || 0;
+      currentDeliveryFee = parseFloat(data.delivery_fee) || 0;
 
       document.getElementById('deliveryFee').innerText =
-          currentDeliveryFee === 0
-              ? 'FREE 🎉'
-              : '₹' + currentDeliveryFee;
+          currentDeliveryFee === 0 ? 'FREE 🎉' : '₹' + currentDeliveryFee;
 
       updateOrderTotal();
-      document.getElementById('distanceInfo').innerText = 'Distance: ' + data.distance + ' km · 40–60 min delivery';
+      document.getElementById('distanceInfo').innerText =
+          'Distance: ' + data.distance + ' km · 40–60 min delivery';
     });
 }
 
@@ -1823,11 +1495,11 @@ function applyCoupon() {
     const couponBtn = document.querySelector('.co-coupon-btn');
 
     couponBtn.innerText = 'Applying...';
-    couponBtn.disabled = true;   
+    couponBtn.disabled = true;
   var code  = document.getElementById('coupon_code').value.trim();
   var phone = document.getElementById('phoneInput').value;
   var msgEl = document.getElementById('coupon_message');
-  fetch('/apply-coupon/?code=' + code + '&subtotal={{ subtotal }}&phone=' + phone)
+  fetch('/apply-coupon/?code=' + encodeURIComponent(code) + '&subtotal={{ subtotal }}&phone=' + phone)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
@@ -1860,20 +1532,16 @@ function applyCoupon() {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', function() {
 
-
-  /* Payment toggle */
   /* LOKA Money toggle */
-  var lokaMoneyCheckbox =
-      document.getElementById('useLokaMoney');
+  var lokaMoneyCheckbox = document.getElementById('useLokaMoney');
 
   if (lokaMoneyCheckbox) {
-      lokaMoneyCheckbox.addEventListener(
-          'change',
-          function() {
-              updateOrderTotal();
-          }
-      );
+      lokaMoneyCheckbox.addEventListener('change', function() {
+          updateOrderTotal();
+      });
   }
+
+  /* Payment toggle */
   var upiOpt   = document.getElementById('upiOption');
   var codOpt   = document.getElementById('codOption');
   var upiLabel = document.getElementById('upiLabel');
@@ -1894,214 +1562,108 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   syncPaymentUI();
 
-  /* Load saved data */
+  /* Form fields */
   var nameInput    = document.getElementById('nameInput');
   var phoneInput   = document.getElementById('phoneInput');
   var addressInput = document.getElementById('addressInput');
 
-  if (localStorage.getItem('user_name'))    nameInput.value    = localStorage.getItem('user_name');
-  if (localStorage.getItem('user_phone'))   phoneInput.value   = localStorage.getItem('user_phone');
-  if (localStorage.getItem('user_address')) addressInput.value = localStorage.getItem('user_address');
-  
-  /* Load coupons for previously saved phone */
+  /* Guests / first order only: restore last typed details.
+     Returning customers get their data from saved addresses. */
+  if (!HAS_SAVED) {
+    if (localStorage.getItem('user_name'))    nameInput.value    = localStorage.getItem('user_name');
+    if (localStorage.getItem('user_phone'))   phoneInput.value   = localStorage.getItem('user_phone');
+    if (localStorage.getItem('user_address')) addressInput.value = localStorage.getItem('user_address');
+  }
 
-  if (
-      /^[6-9]\d{9}$/.test(phoneInput.value.trim())
-  ) {
+  /* Load coupons for an already-filled phone */
+  if (/^[6-9]\d{9}$/.test(phoneInput.value.trim())) {
       loadAvailableCoupons('');
   }
 
   /* =====================================================
-   SMART COUPON AUTOCOMPLETE
-   ===================================================== */
+     SMART COUPON AUTOCOMPLETE
+     ===================================================== */
 
-  var couponInput =
-      document.getElementById('coupon_code');
+  var couponInput       = document.getElementById('coupon_code');
+  var couponWrapper     = document.getElementById('couponWrapper');
+  var couponSuggestions = document.getElementById('couponSuggestions');
 
-  var couponWrapper =
-      document.getElementById('couponWrapper');
+  couponInput.addEventListener('focus', function() {
+      couponWrapper.classList.add('open');
 
-  var couponSuggestions =
-      document.getElementById('couponSuggestions');
+      const phone = document.getElementById('phoneInput').value.trim();
 
-
-  /* ---------------------------------------------
-    OPEN COUPON DROPDOWN
-  --------------------------------------------- */
-
-  couponInput.addEventListener(
-      'focus',
-      function() {
-
-          couponWrapper.classList.add('open');
-
-          const phone =
-              document.getElementById(
-                  'phoneInput'
-              ).value.trim();
-
-          if (
-              /^[6-9]\d{9}$/.test(phone)
-          ) {
-
-              loadAvailableCoupons(
-                  couponInput.value.trim()
-              );
-
-          } else {
-
-              couponSuggestions.innerHTML = `
-                  <div class="co-coupon-empty">
-                      Enter your mobile number to see available coupons.
-                  </div>
-              `;
-
-          }
-
+      if (/^[6-9]\d{9}$/.test(phone)) {
+          loadAvailableCoupons(couponInput.value.trim());
+      } else {
+          couponSuggestions.innerHTML = `
+              <div class="co-coupon-empty">
+                  Enter your mobile number to see available coupons.
+              </div>
+          `;
       }
-  );
+  });
 
+  couponInput.addEventListener('input', function() {
+      const search = this.value.trim();
 
-  /* ---------------------------------------------
-    TYPING → FILTER / LOAD
-  --------------------------------------------- */
+      couponWrapper.classList.add('open');
 
-  couponInput.addEventListener(
-      'input',
-      function() {
-
-          const search =
-              this.value.trim();
-
-          couponWrapper.classList.add('open');
-
-
-          /*
-          * If coupons are already loaded,
-          * filter immediately.
-          */
-
-          if (availableCoupons.length) {
-
-              renderCouponSuggestions(search);
-
-          }
-
-
-          /*
-          * Also ask backend for matching
-          * coupons.
-          */
-
-          clearTimeout(
-              couponRequestTimer
-          );
-
-          couponRequestTimer =
-              setTimeout(function() {
-
-                  loadAvailableCoupons(
-                      search
-                  );
-
-              }, 200);
-
+      if (availableCoupons.length) {
+          renderCouponSuggestions(search);
       }
-  );
 
+      clearTimeout(couponRequestTimer);
 
-  /* ---------------------------------------------
-    PHONE CHANGE → RELOAD COUPONS
-  --------------------------------------------- */
+      couponRequestTimer = setTimeout(function() {
+          loadAvailableCoupons(search);
+      }, 200);
+  });
 
-  phoneInput.addEventListener(
-      'input',
-      function() {
+  /* Phone change → reload coupons (full mode, where phone is typed) */
+  phoneInput.addEventListener('input', function() {
+      const phone = this.value.trim();
 
-          const phone =
-              this.value.trim();
+      clearTimeout(couponRequestTimer);
 
-          clearTimeout(
-              couponRequestTimer
-          );
-
-
-          if (
-              /^[6-9]\d{9}$/.test(phone)
-          ) {
-
-              couponRequestTimer =
-                  setTimeout(function() {
-
-                      loadAvailableCoupons(
-                          couponInput.value.trim()
-                      );
-
-                  }, 250);
-
-          } else {
-
-              availableCoupons = [];
-
-              couponSuggestions.innerHTML = `
-                  <div class="co-coupon-empty">
-                      Enter your mobile number to see available coupons.
-                  </div>
-              `;
-
-          }
-
+      if (/^[6-9]\d{9}$/.test(phone)) {
+          couponRequestTimer = setTimeout(function() {
+              loadAvailableCoupons(couponInput.value.trim());
+          }, 250);
+      } else {
+          availableCoupons = [];
+          couponSuggestions.innerHTML = `
+              <div class="co-coupon-empty">
+                  Enter your mobile number to see available coupons.
+              </div>
+          `;
       }
-  );
+  });
 
-
-  /* ---------------------------------------------
-    CLICK OUTSIDE → CLOSE
-  --------------------------------------------- */
-
-  document.addEventListener(
-      'click',
-      function(event) {
-
-          if (
-              couponWrapper &&
-              !couponWrapper.contains(event.target)
-          ) {
-
-              couponWrapper.classList.remove(
-                  'open'
-              );
-
-          }
-
+  /* Click outside → close coupon list */
+  document.addEventListener('click', function(event) {
+      if (couponWrapper && !couponWrapper.contains(event.target)) {
+          couponWrapper.classList.remove('open');
       }
-  );
+  });
 
-  // =====================================================
-  // LINK SAVED PHONE WITH FCM TOKEN
-  // =====================================================
+  /* =====================================================
+     LINK SAVED PHONE WITH FCM TOKEN
+     ===================================================== */
 
-  var savedPhone =
-      localStorage.getItem('user_phone');
+  var savedPhone = localStorage.getItem('user_phone');
 
-  if (
-      savedPhone &&
-      /^[6-9]\d{9}$/.test(savedPhone) &&
-      window.LokaAndroid
-  ) {
-
-      window.LokaAndroid.linkPhone(
-          savedPhone
-      );
-
-      console.log(
-          "Saved phone linked with FCM token"
-      );
+  if (savedPhone && /^[6-9]\d{9}$/.test(savedPhone) && window.LokaAndroid) {
+      window.LokaAndroid.linkPhone(savedPhone);
+      console.log("Saved phone linked with FCM token");
   }
 
-  nameInput.addEventListener('input',    function() { localStorage.setItem('user_name',    nameInput.value); });
-  phoneInput.addEventListener('input',   function() { localStorage.setItem('user_phone',   phoneInput.value); });
-  addressInput.addEventListener('input', function() { localStorage.setItem('user_address', addressInput.value); });
+  /* Remember typed details (full mode fields are real inputs) */
+  if (IS_FULL) {
+    nameInput.addEventListener('input',    function() { localStorage.setItem('user_name',    nameInput.value); });
+    phoneInput.addEventListener('input',   function() { localStorage.setItem('user_phone',   phoneInput.value); });
+    addressInput.addEventListener('input', function() { localStorage.setItem('user_address', addressInput.value); });
+  }
 
   /* Free delivery message */
   function checkFreeDelivery(phone) {
@@ -2110,6 +1672,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var infoEl = document.getElementById('deliveryInfo');
+        if (!infoEl) return;
 
         if (data.hide_message) {
             infoEl.innerText = '';
@@ -2136,285 +1699,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var phone = this.value.trim();
 
-      // Save phone locally
-      localStorage.setItem(
-          'user_phone',
-          phone
-      );
+      localStorage.setItem('user_phone', phone);
 
-      // Existing free-delivery logic
       checkFreeDelivery(phone);
 
-      var lat =
-          document.getElementById('latitude').value;
+      var lat = document.getElementById('latitude').value;
+      var lng = document.getElementById('longitude').value;
 
-      var lng =
-          document.getElementById('longitude').value;
-
-      if (
-          lat &&
-          lng &&
-          phone.length === 10
-      ) {
+      if (lat && lng && phone.length === 10) {
           updateDelivery(lat, lng);
       }
 
-      // =====================================================
-      // LOKA ANDROID → LINK PHONE WITH FCM TOKEN
-      // =====================================================
-
-      if (
-          window.LokaAndroid &&
-          /^[6-9]\d{9}$/.test(phone)
-      ) {
-
+      if (window.LokaAndroid && /^[6-9]\d{9}$/.test(phone)) {
           window.LokaAndroid.linkPhone(phone);
-
-          console.log(
-              "FCM phone linking requested"
-          );
+          console.log("FCM phone linking requested");
       }
   });
 
-  /* Automatically detect current location, with saved-location fallback */
-// =====================================================
-// SAVED CUSTOMER ADDRESS SELECTION
-// =====================================================
-
-function applySavedAddress(radio) {
-
-    const nameInput = document.getElementById('nameInput');
-    const phoneInput = document.getElementById('phoneInput');
-    const addressInput = document.getElementById('addressInput');
-
-    const latitude = radio.dataset.latitude;
-    const longitude = radio.dataset.longitude;
-
-    nameInput.value = radio.dataset.name || '';
-    phoneInput.value = radio.dataset.phone || '';
-    addressInput.value = radio.dataset.address || '';
-
-    if (!latitude || !longitude) {
-        alert('This saved address has no location coordinates.');
-        return;
-    }
-
-    // Set the saved coordinates on the map.
-    setLocation(Number(latitude), Number(longitude));
-
-    // Saved addresses do not require fresh confirmation.
-    window.deliveryLocationConfirmed = true;
-
-    sessionStorage.setItem('checkoutDeliveryConfirmed', 'true');
-
-    document.getElementById('deliveryLocationConfirmedInput').value = 'true';
-
-    // Hide the manual confirmation button.
-    document.getElementById('confirmLocationBtn').style.display = 'none';
-
-    document.getElementById('mapError').style.display = 'none';
-
-    // Update customer information in local storage.
-    localStorage.setItem('user_name', nameInput.value);
-    localStorage.setItem('user_phone', phoneInput.value);
-    localStorage.setItem('user_address', addressInput.value);
-}
-
-// Returning customer controls: keep the checkout compact until an address action is requested.
-function updateCompactAddressSummary(radio) {
-    const summary = document.getElementById('selectedAddressSummary');
-    if (!summary || !radio || radio.value === 'new') return;
-    const label = radio.closest('label');
-    const labelText = label?.querySelector('strong')?.innerText || 'Saved address';
-    summary.innerHTML = '<strong>' + labelText + '</strong><br>' +
-        (radio.dataset.name || '') + ' · ' + (radio.dataset.phone || '') +
-        '<br>' + (radio.dataset.address || '');
-}
-function openAddressEditor(mode) {
-    const contact = document.getElementById('contactDetailsCard');
-    const editor = document.getElementById('deliveryEditorFields');
-    const list = document.getElementById('savedAddressList');
-
-    if (mode === 'choices') {
-        list?.classList.toggle('show-choices');
-        return;
-    }
-
-    contact?.classList.add('editor-open');
-    editor?.classList.add('editor-open');
-
-    if (mode === 'new') {
-        const newRadio = document.querySelector('input[name="saved_address_id"][value="new"]');
-        if (newRadio) newRadio.checked = true;
-        document.getElementById('nameInput').value = '';
-        document.getElementById('phoneInput').value = '';
-        document.getElementById('addressInput').value = '';
-        document.getElementById('latitude').value = '';
-        document.getElementById('longitude').value = '';
-        window.deliveryLocationConfirmed = false;
-        document.getElementById('deliveryLocationConfirmedInput').value = 'false';
-        document.getElementById('confirmLocationBtn').style.display = 'block';
-        document.getElementById('mapError').style.display = 'block';
-        document.getElementById('mapError').innerText = 'Select your new delivery location on the map and confirm it.';
-    } else {
-        const selected = document.querySelector('input[name="saved_address_id"]:checked');
-        if (selected && selected.value !== 'new') {
-            applySavedAddress(selected);
-            // The current checkout backend treats edited details as a new address.
-            selected.checked = false;
-            const newRadio = document.querySelector('input[name="saved_address_id"][value="new"]');
-            if (newRadio) newRadio.checked = true;
-        }
-    }
-    setTimeout(() => map.invalidateSize(), 250);
-    contact?.scrollIntoView({behavior:'smooth', block:'start'});
-}
-document.getElementById('toggleAddressChoices')?.addEventListener('click', () => openAddressEditor('choices'));
-document.getElementById('editSelectedAddress')?.addEventListener('click', () => openAddressEditor('edit'));
-document.getElementById('addNewAddress')?.addEventListener('click', () => openAddressEditor('new'));
-
-
-// Listen for saved address selection.
-document.querySelectorAll('input[name="saved_address_id"]').forEach(function(radio) {
-
-    radio.addEventListener('change', function() {
-
-        if (this.value === 'new') {
-
-            window.deliveryLocationConfirmed = false;
-
-            sessionStorage.setItem('checkoutDeliveryConfirmed', 'false');
-
-            document.getElementById('deliveryLocationConfirmedInput').value = 'false';
-
-            document.getElementById('confirmLocationBtn').style.display = 'block';
-
-            document.getElementById('mapError').innerText =
-                'Select your new delivery location on the map and confirm it.';
-
-            document.getElementById('mapError').style.display = 'block';
-
-            return;
-        }
-
-        applySavedAddress(this);
-        updateCompactAddressSummary(this);
-        document.getElementById('contactDetailsCard')?.classList.remove('editor-open');
-        document.getElementById('deliveryEditorFields')?.classList.remove('editor-open');
-        document.getElementById('savedAddressList')?.classList.remove('show-choices');
-
-    });
-
-});
-
-const savedLat = localStorage.getItem('checkoutDeliveryLat');
-const savedLng = localStorage.getItem('checkoutDeliveryLng');
-
-function restoreSavedLocation() {
-    if (
-        savedLat !== null &&
-        savedLng !== null &&
-        savedLat.trim() !== '' &&
-        savedLng.trim() !== '' &&
-        Number.isFinite(Number(savedLat)) &&
-        Number.isFinite(Number(savedLng))
-    ) {
-        setLocation(Number(savedLat), Number(savedLng));
-        return true;
-    }
-
-    return false;
-}
-
-const initiallySelectedSavedAddress = document.querySelector(
-    'input[name="saved_address_id"]:checked'
-);
-
-if (
-    initiallySelectedSavedAddress &&
-    initiallySelectedSavedAddress.value !== 'new'
-) {
-
-    applySavedAddress(initiallySelectedSavedAddress);
-    updateCompactAddressSummary(initiallySelectedSavedAddress);
-
-} else if (navigator.geolocation) {
-
-    navigator.geolocation.getCurrentPosition(
-
-        function(pos) {
-            // Prefer the customer's actual current location.
-            setLocation(
-                pos.coords.latitude,
-                pos.coords.longitude
-            );
-        },
-
-        function(error) {
-            console.warn(
-                'Location detection failed:',
-                error.code,
-                error.message
-            );
-
-            // Fall back to the last saved location.
-            const restored = restoreSavedLocation();
-
-            const mapError = document.getElementById('mapError');
-
-            if (!restored && mapError) {
-                mapError.innerText =
-                    'Unable to detect your location. Please allow location access or select your location on the map.';
-                mapError.style.display = 'block';
-            }
-        },
-
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        }
-    );
-
-} else {
-
-    restoreSavedLocation();
-
-}
-
-  /* Form submit */
+  /* =====================================================
+     FORM SUBMIT
+     ===================================================== */
   var form      = document.getElementById('checkoutForm');
   var placeBtn  = document.getElementById('placeOrderBtn');
+
   // Stop checkout submission before the WebView can reload the page.
   if (form) {
       form.addEventListener('submit', function (e) {
-          const confirmedInput = document.getElementById(
-              'deliveryLocationConfirmedInput'
-          );
-
-          const isConfirmed =
-              confirmedInput && confirmedInput.value === 'true';
+          const confirmedField = document.getElementById('deliveryLocationConfirmedInput');
+          const isConfirmed = confirmedField && confirmedField.value === 'true';
 
           if (!isConfirmed) {
               e.preventDefault();
               e.stopImmediatePropagation();
-
               showLocationConfirmationPopup();
               return false;
           }
       }, true);
   }
+
   // Show location confirmation popup immediately on button tap.
   placeBtn.addEventListener('click', function(e) {
       if (window.deliveryLocationConfirmed !== true) {
           e.preventDefault();
           e.stopImmediatePropagation();
-
           showLocationConfirmationPopup();
       }
   });
-  var spinner   = document.getElementById('btnSpinner');
-  var btnText   = document.getElementById('btnText');
+
+  var spinner = document.getElementById('btnSpinner');
+  var btnText = document.getElementById('btnText');
 
   form.addEventListener('submit', function(e) {
     document.getElementById('hidden_discount').value = window.currentDiscount || 0;
@@ -2425,9 +1758,7 @@ if (
     if (window.deliveryLocationConfirmed !== true) {
         e.preventDefault();
         e.stopImmediatePropagation();
-
         showLocationConfirmationPopup();
-
         return false;
     }
 
@@ -2490,6 +1821,109 @@ if (
     }).catch(function(){});
   }
 
+  /* =====================================================
+     MODE INITIALISATION (runs last)
+     ===================================================== */
+
+  var confirmedInput = document.getElementById('deliveryLocationConfirmedInput');
+
+  /* ---------- COMPACT MODE: pick a saved address ---------- */
+  var selectSavedAddress = function(radio) {
+    var lat = radio.dataset.latitude;
+    var lng = radio.dataset.longitude;
+
+    nameInput.value    = radio.dataset.name    || '';
+    phoneInput.value   = radio.dataset.phone   || '';
+    addressInput.value = radio.dataset.address || '';
+    document.getElementById('latitude').value  = lat;
+    document.getElementById('longitude').value = lng;
+
+    // Saved addresses are already confirmed.
+    window.deliveryLocationConfirmed = true;
+    confirmedInput.value = 'true';
+    sessionStorage.setItem('checkoutDeliveryConfirmed', 'true');
+    localStorage.setItem('user_phone', phoneInput.value);
+
+    checkFreeDelivery(phoneInput.value);
+    loadAvailableCoupons(couponInput.value.trim());
+    updateDelivery(lat, lng);
+
+    if (window.LokaAndroid && /^[6-9]\d{9}$/.test(phoneInput.value)) {
+      window.LokaAndroid.linkPhone(phoneInput.value);
+    }
+  };
+
+  if (!IS_FULL) {
+
+    var radios = document.querySelectorAll('input[name="saved_address_id"]');
+
+    radios.forEach(function(r) {
+      r.addEventListener('change', function() { selectSavedAddress(this); });
+    });
+
+    var firstChecked =
+        document.querySelector('input[name="saved_address_id"]:checked') || radios[0];
+
+    if (firstChecked) {
+      firstChecked.checked = true;
+      selectSavedAddress(firstChecked);
+    }
+
+  /* ---------- FULL MODE: first order / edit / new address ---------- */
+  } else {
+
+    var mapErrorEl = document.getElementById('mapError');
+
+    var showNoLocation = function() {
+      if (mapErrorEl) {
+        mapErrorEl.innerText =
+          'Unable to detect your location. Please allow location access or select your location on the map.';
+        mapErrorEl.style.display = 'block';
+      }
+    };
+
+    var detectCurrentLocation = function(fallback) {
+      if (!navigator.geolocation) { if (fallback) fallback(); return; }
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) { setLocation(pos.coords.latitude, pos.coords.longitude); },
+        function(err) {
+          console.warn('Location detection failed:', err.code, err.message);
+          if (fallback) fallback();
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    };
+
+    if (EDIT_LAT && EDIT_LNG &&
+        isFinite(Number(EDIT_LAT)) && isFinite(Number(EDIT_LNG))) {
+
+      // EDIT: open the map on the saved pin; customer adjusts and re-confirms
+      setLocation(Number(EDIT_LAT), Number(EDIT_LNG));
+      checkFreeDelivery(phoneInput.value);
+
+    } else if (HAS_SAVED) {
+
+      // NEW ADDRESS for a returning customer: start clean
+      detectCurrentLocation(showNoLocation);
+      checkFreeDelivery(phoneInput.value);
+
+    } else {
+
+      // FIRST ORDER / GUEST: detect location, fall back to last pin
+      var sLat = localStorage.getItem('checkoutDeliveryLat');
+      var sLng = localStorage.getItem('checkoutDeliveryLng');
+
+      detectCurrentLocation(function() {
+        if (sLat && sLng && isFinite(Number(sLat)) && isFinite(Number(sLng))) {
+          setLocation(Number(sLat), Number(sLng));
+        } else {
+          showNoLocation();
+        }
+      });
+    }
+  }
+
 });
 
 
@@ -2525,17 +1959,11 @@ document.querySelectorAll(
 (function () {
     function openLocationPopup() {
         const popup = document.getElementById('locationPopupOverlay');
-
-        if (popup) {
-            popup.classList.add('show');
-        }
+        if (popup) { popup.classList.add('show'); }
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener(
-            'DOMContentLoaded',
-            openLocationPopup
-        );
+        document.addEventListener('DOMContentLoaded', openLocationPopup);
     } else {
         openLocationPopup();
     }
