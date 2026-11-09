@@ -28,7 +28,7 @@
   .checkout-page {
     background: #FAF7F2;
     min-height: 100vh;
-    padding-bottom: 24px;
+    padding-bottom: 16px;
     font-family: inherit;
   }
 
@@ -47,9 +47,9 @@
   }
 
   .checkout-nav .nav-back {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
     background: rgba(255,255,255,.15);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -97,7 +97,7 @@
   }
 
   /* ── SCROLL BODY ── */
-  .checkout-body { padding: 16px 14px 24px; }
+  .checkout-body { padding: 12px 12px 16px; }
 
   /* ── ALERT ── */
   .co-alert {
@@ -107,45 +107,66 @@
     padding: 10px 14px;
     font-size: 12px;
     color: #C05018;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
   }
+
+  /* ── ONE-TIME NOTICE (first order) ── */
+  .co-onetime {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #EAF5E8;
+    border: 0.5px solid #B9D9B4;
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #1A3A16;
+  }
+
+  .co-onetime .ot-icon { font-size: 15px; line-height: 1.2; flex-shrink: 0; }
 
   /* ── SECTION CARD ── */
   .co-card {
     background: #fff;
     border-radius: 13px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border: 0.5px solid #E0E8DF;
   }
 
   .co-card-head {
     background: #2D5A27;
-    padding: 9px 14px;
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
   .co-card-head span {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 500;
     color: rgba(255,255,255,0.9);
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
-  .co-card-body { padding: 14px; }
+  .co-card-body { padding: 11px 12px; }
+
+  /* two-column helper */
+  .co-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .co-two > div { min-width: 0; }
 
   /* ── FIELD LABEL ── */
   .co-label {
     font-size: 12px;
     color: #1A3A16;
     letter-spacing: 0.02em;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     font-weight: 700;
   }
 
@@ -155,12 +176,12 @@
     width: 100%;
     border: 0.5px solid #E0E8DF;
     border-radius: 9px;
-    padding: 10px 13px;
+    padding: 9px 11px;
     font-size: 13px;
     color: #2E3D2D;
     background: #FAFAF8;
     outline: none;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-family: inherit;
     transition: border-color 0.15s;
   }
@@ -174,13 +195,13 @@
   .co-input.is-invalid { border-color: #C05018; background: #FDF8F7; }
   .co-input.is-valid   { border-color: #2D6B27; }
 
-  .co-textarea { resize: none; min-height: 72px; }
+  .co-textarea { resize: none; min-height: 54px; margin-bottom: 0; }
 
   .co-invalid-msg {
     font-size: 11px;
     color: #C05018;
-    margin-top: -7px;
-    margin-bottom: 10px;
+    margin-top: -5px;
+    margin-bottom: 8px;
     display: none;
   }
 
@@ -191,8 +212,8 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
   }
 
   .co-check-row input[type="checkbox"] {
@@ -204,9 +225,9 @@
   }
 
   .co-check-row label {
-    font-size: 12px;
+    font-size: 11.5px;
     color: #6B7B69;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
   /* ── DELIVERY INFO STRIP ── */
@@ -215,7 +236,7 @@
     color: #2D6B27;
     background: #EAF5E8;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 7px 11px;
     margin-top: 8px;
     display: none;
   }
@@ -227,7 +248,7 @@
     width: 100%;
     border: 0.5px solid #2D5A27;
     border-radius: 9px;
-    padding: 10px 14px;
+    padding: 9px 14px;
     font-size: 12px;
     color: #2D5A27;
     background: #EAF2E8;
@@ -236,16 +257,16 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-family: inherit;
   }
 
   /* ── MAP ── */
   #map {
     width: 100%;
-    height: 220px;
+    height: 180px;
     border-radius: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     border: 0.5px solid #D0E4CE;
     position: relative;
     z-index: 1;
@@ -262,252 +283,51 @@
     color: #C05018;
     background: #FDF1EB;
     border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
+    padding: 7px 11px;
+    margin-bottom: 8px;
     display: none;
   }
 
-  /* ── COUPON ── */
-  .co-coupon-row { display: flex; gap: 8px; }
+  /* ── OFFERS ROW: COUPON + LOKA MONEY SIDE BY SIDE ── */
+  .co-offers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 20;
+  }
+
+  .co-offers .co-card { margin-bottom: 0; overflow: visible; }
+  .co-offers .co-card-head { border-radius: 12px 12px 0 0; }
+  .co-offers .co-card-body { padding: 10px; }
+
+  .co-coupon-wrapper { position: static; }
+  .co-coupon-field { position: relative; }
 
   .co-coupon-input {
-    flex: 1;
+    width: 100%;
     border: 0.5px solid #E0E8DF;
     border-radius: 9px;
-    padding: 10px 13px;
-    font-size: 13px;
+    padding: 9px 30px 9px 10px;
+    font-size: 12px;
     color: #2E3D2D;
     background: #FAFAF8;
     outline: none;
     font-family: inherit;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
 
+  .co-coupon-input::placeholder { text-transform: none; letter-spacing: 0; color: #B0C0AE; }
   .co-coupon-input:focus { border-color: #2D5A27; }
-
-  .co-coupon-btn {
-    background: #1A3A16;
-    color: #fff;
-    border-radius: 9px;
-    padding: 10px 18px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    font-family: inherit;
-    white-space: nowrap;
-  }
-
-  .co-coupon-msg {
-    font-size: 12px;
-    margin-top: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    display: none;
-  }
-
-  .co-coupon-msg.success { background: #EAF5E8; color: #2D6B27; display: block; }
-  .co-coupon-msg.error   { background: #FDF1EB; color: #C05018; display: block; }
-
-  /* ── PAYMENT OPTIONS ── */
-  .co-pay-row { display: flex; gap: 10px; }
-
-  .co-pay-opt {
-    flex: 1;
-    border: 0.5px solid #E0E8DF;
-    border-radius: 10px;
-    padding: 12px 10px;
-    text-align: center;
-    font-size: 12px;
-    color: #6B7B69;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .co-pay-opt .pay-icon { font-size: 22px; display: block; margin-bottom: 5px; }
-
-  .co-pay-opt.active {
-    border-color: #2D5A27;
-    background: #EAF2E8;
-    color: #1A3A16;
-    font-weight: 500;
-  }
-
-  .co-pay-opt.disabled { opacity: 0.45; cursor: not-allowed; }
-
-  .co-pay-tag {
-    font-size: 9px;
-    background: #2D5A27;
-    color: #fff;
-    border-radius: 4px;
-    padding: 2px 6px;
-    margin-top: 4px;
-    display: inline-block;
-  }
-
-  .co-pay-tag.warn { background: #C05018; }
-
-  /* ── UPI ONLY WARNING ── */
-  .co-upi-warn {
-    background: #FDF8EE;
-    border: 0.5px solid #F0DCC8;
-    border-radius: 9px;
-    padding: 10px 13px;
-    font-size: 12px;
-    color: #9A6020;
-    margin-bottom: 12px;
-  }
-
-  /* ── ORDER SUMMARY ── */
-  .co-item-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #9AA899;
-    padding: 3px 0;
-  }
-
-  .co-sum-divider { border: none; border-top: 0.5px solid #E8EDE7; margin: 8px 0; }
-
-  .co-sum-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: #7A8A78;
-    padding: 4px 0;
-  }
-
-  .co-sum-row.discount { color: #2D6B27; }
-
-  .co-cod-warn {
-    background: #FDF1EB;
-    border-radius: 8px;
-    padding: 8px 10px;
-    color: #C05018;
-    font-size: 12px;
-    font-weight: 500;
-    margin: 6px 0;
-    text-align: center;
-  }
-
-  .co-sum-total {
-    display: flex;
-    justify-content: space-between;
-    font-size: 15px;
-    font-weight: 500;
-    color: #1A3A16;
-    padding: 4px 0;
-  }
-
-  .co-distance-info { font-size: 11px; color: #A8C9A5; margin-top: 6px; }
-
-  /* ── TRUST BADGES ── */
-  .co-trust-row { display: flex; gap: 8px; margin-bottom: 12px; }
-
-  .co-trust-badge {
-    flex: 1;
-    background: #EAF2E8;
-    border-radius: 9px;
-    padding: 10px 6px;
-    text-align: center;
-    font-size: 10px;
-    color: #2D5A27;
-    line-height: 1.5;
-  }
-
-  .co-trust-badge .tb-icon { font-size: 18px; display: block; margin-bottom: 4px; }
-
-  /* ── POLICY ── */
-  .co-policy-box {
-    background: #FDF8F3;
-    border: 0.5px solid #F0DCC8;
-    border-radius: 9px;
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-
-  .co-policy-li {
-    font-size: 12px;
-    color: #9AA899;
-    padding: 3px 0 3px 14px;
-    position: relative;
-    line-height: 1.5;
-  }
-
-  .co-policy-li::before {
-    content: '·';
-    position: absolute;
-    left: 4px;
-    color: #C5AA90;
-    font-size: 18px;
-    line-height: 1.1;
-  }
-
-  /* ── CONFIRM BUTTON ── */
-  .co-confirm-btn {
-    width: 100%;
-    background: #E8621A;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    padding: 17px 24px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-family: inherit;
-    letter-spacing: 0.01em;
-    transition: opacity 0.15s;
-    box-shadow: 0 4px 20px rgba(232, 98, 26, 0.38);
-  }
-
-  .co-confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
-
-  .co-spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255,255,255,0.35);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: co-spin 0.7s linear infinite;
-    display: none;
-    flex-shrink: 0;
-  }
-
-  /* Universal button animation */
-  .co-confirm-btn,
-  .co-coupon-btn,
-  .co-loc-btn,
-  .checkout-nav .nav-back {
-    transition: all 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .co-confirm-btn:active,
-  .co-coupon-btn:active,
-  .co-loc-btn:active,
-  .checkout-nav .nav-back:active {
-    transform: scale(0.96);
-    opacity: 0.85;
-  }
-
-  .btn-clicked { transform: scale(0.96); opacity: 0.85; }
-
-  /* ── SMART COUPON PICKER ── */
-  .co-coupon-wrapper { position: relative; flex: 1; min-width: 0; }
-
-  .co-coupon-input { width: 100%; margin-bottom: 0; padding-right: 38px; }
 
   .co-coupon-chevron {
     position: absolute;
-    right: 12px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     color: #1A3A16;
     pointer-events: none;
@@ -515,6 +335,21 @@
   }
 
   .co-coupon-wrapper.open .co-coupon-chevron { transform: translateY(-50%) rotate(180deg); }
+
+  .co-coupon-btn {
+    width: 100%;
+    margin-top: 8px;
+    background: #1A3A16;
+    color: #fff;
+    border-radius: 9px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+  }
 
   .co-coupon-suggestions {
     position: absolute;
@@ -525,7 +360,7 @@
     border: 0.5px solid #DCE6DA;
     border-radius: 11px;
     box-shadow: 0 8px 24px rgba(26,58,22,.12);
-    z-index: 9999;
+    z-index: 99999;
     overflow: hidden;
     display: none;
     max-height: 260px;
@@ -569,21 +404,237 @@
   .co-coupon-empty { padding: 14px; text-align: center; font-size: 11px; color: #9AA899; }
   .co-coupon-loading { padding: 13px; text-align: center; font-size: 11px; color: #9AA899; }
 
-  .co-coupon-row { align-items: flex-start; }
+  .co-coupon-msg {
+    font-size: 12px;
+    margin: -2px 0 10px;
+    padding: 7px 11px;
+    border-radius: 8px;
+    display: none;
+  }
 
-  /* ── COUPON DROPDOWN OVERLAY FIX ── */
-  .co-card:has(#couponWrapper) { overflow: visible; position: relative; z-index: 20; }
-  .co-card:has(#couponWrapper) .co-card-body { position: relative; z-index: 21; }
-  #couponWrapper { position: relative; z-index: 30; }
-  #couponSuggestions { z-index: 99999 !important; }
+  .co-coupon-msg.success { background: #EAF5E8; color: #2D6B27; display: block; }
+  .co-coupon-msg.error   { background: #FDF1EB; color: #C05018; display: block; }
+
+  .co-loka-label { font-size: 12px; color: #1A3A16; line-height: 1.4; }
+  .co-loka-label small { display: block; font-size: 10.5px; color: #9AA899; margin-top: 2px; }
+  .co-mini-note { margin-top: 7px; font-size: 10.5px; color: #9A6020; line-height: 1.4; }
+
+  /* ── PAYMENT OPTIONS (small pills) ── */
+  .co-pay-row { display: flex; gap: 8px; }
+
+  .co-pay-opt {
+    flex: 1;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 9px;
+    padding: 7px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    text-align: center;
+    font-size: 12px;
+    color: #6B7B69;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .co-pay-opt .pay-icon { font-size: 15px; }
+
+  .co-pay-opt.active {
+    border-color: #2D5A27;
+    background: #EAF2E8;
+    color: #1A3A16;
+    font-weight: 500;
+  }
+
+  .co-pay-opt.disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .co-pay-tag {
+    font-size: 9px;
+    background: #2D5A27;
+    color: #fff;
+    border-radius: 4px;
+    padding: 1px 5px;
+    display: inline-block;
+  }
+
+  .co-pay-tag.warn { background: #C05018; }
+
+  /* ── UPI ONLY WARNING ── */
+  .co-upi-warn {
+    background: #FDF8EE;
+    border: 0.5px solid #F0DCC8;
+    border-radius: 9px;
+    padding: 8px 11px;
+    font-size: 12px;
+    color: #9A6020;
+    margin-bottom: 8px;
+  }
+
+  /* ── COLLAPSIBLE ORDER SUMMARY ── */
+  .co-sum-toggle {
+    width: 100%;
+    border: none;
+    background: #EAF2E8;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: #1A3A16;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .co-sum-title { display: block; font-size: 13px; font-weight: 600; }
+  .co-sum-hint  { display: block; font-size: 10.5px; color: #6B7B69; margin-top: 1px; }
+  .co-sum-right { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+  .co-sum-chev  { font-size: 16px; font-weight: 900; transition: transform .18s ease; }
+
+  .co-sum-card.open .co-sum-chev { transform: rotate(180deg); }
+  .co-sum-card.open .co-sum-hint { display: none; }
+
+  .co-sum-details { display: none; padding: 4px 12px 10px; }
+  .co-sum-card.open .co-sum-details { display: block; }
+
+  .co-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #9AA899;
+    padding: 3px 0;
+  }
+
+  .co-sum-divider { border: none; border-top: 0.5px solid #E8EDE7; margin: 6px 0; }
+
+  .co-sum-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #7A8A78;
+    padding: 3px 0;
+  }
+
+  .co-sum-row.discount { color: #2D6B27; }
+
+  .co-cod-warn {
+    background: #FDF1EB;
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: #C05018;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 0 0 10px;
+    text-align: center;
+  }
+
+  .co-distance-info { font-size: 11px; color: #A8C9A5; margin-top: 4px; }
+
+  /* ── POLICY BUTTON ── */
+  .co-policy-btn {
+    width: 100%;
+    background: #fff;
+    border: 0.5px solid #E0E8DF;
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #2D5A27;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .co-policy-btn small { display: block; font-size: 10.5px; font-weight: 400; color: #9AA899; margin-top: 1px; }
+  .co-policy-btn .pb-arrow { font-size: 18px; line-height: 1; }
+
+  .policy-list { text-align: left; margin: 0 0 16px; padding: 0; list-style: none; }
+
+  .policy-list li {
+    font-size: 13px;
+    color: #667463;
+    line-height: 1.5;
+    padding: 5px 0 5px 16px;
+    position: relative;
+  }
+
+  .policy-list li::before {
+    content: '•';
+    position: absolute;
+    left: 3px;
+    color: #E8621A;
+  }
+
+  /* ── CONFIRM BUTTON ── */
+  .co-confirm-btn {
+    width: 100%;
+    background: #E8621A;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 15px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s;
+    box-shadow: 0 4px 20px rgba(232, 98, 26, 0.38);
+  }
+
+  .co-confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+  .co-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: co-spin 0.7s linear infinite;
+    display: none;
+    flex-shrink: 0;
+  }
+
+  /* Universal button animation */
+  .co-confirm-btn,
+  .co-coupon-btn,
+  .co-loc-btn,
+  .co-policy-btn,
+  .co-sum-toggle,
+  .checkout-nav .nav-back {
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .co-confirm-btn:active,
+  .co-coupon-btn:active,
+  .co-loc-btn:active,
+  .co-policy-btn:active,
+  .checkout-nav .nav-back:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+
+  .btn-clicked { transform: scale(0.96); opacity: 0.85; }
 
   .address-label {
     font-size: 12px;
     color: #1A3A16;
     font-weight: 700;
     letter-spacing: 0.02em;
-    margin-top: 4px;
-    margin-bottom: 7px;
+    margin-top: 2px;
+    margin-bottom: 6px;
   }
 
   @keyframes co-spin { to { transform: rotate(360deg); } }
@@ -606,7 +657,7 @@
 
   #confirmLocationBtn.location-attention:active { transform: scale(0.97); }
 
-  /* Location confirmation popup */
+  /* Popups (location + policy) */
   .location-popup-overlay {
     display: none;
     position: fixed;
@@ -625,7 +676,7 @@
     max-width: 350px;
     background: #ffffff;
     border-radius: 20px;
-    padding: 25px 20px;
+    padding: 22px 20px;
     text-align: center;
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
     animation: locationPopupAppear 0.25s ease-out;
@@ -636,15 +687,15 @@
     to   { opacity: 1; transform: scale(1); }
   }
 
-  .location-popup-icon { font-size: 42px; margin-bottom: 10px; }
-  .location-popup h3 { color: #1A3A16; font-size: 20px; margin: 0 0 10px; font-weight: 800; }
-  .location-popup p { color: #667463; font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
+  .location-popup-icon { font-size: 40px; margin-bottom: 8px; }
+  .location-popup h3 { color: #1A3A16; font-size: 19px; margin: 0 0 10px; font-weight: 800; }
+  .location-popup p { color: #667463; font-size: 14px; line-height: 1.6; margin: 0 0 18px; }
 
   .location-popup-btn {
     width: 100%;
     border: none;
     border-radius: 12px;
-    padding: 14px;
+    padding: 13px;
     background: #E8621A;
     color: #ffffff;
     font-size: 15px;
@@ -657,8 +708,8 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 12px;
-    margin-bottom: 8px;
+    padding: 10px;
+    margin-bottom: 7px;
     border: 0.5px solid #E0E8DF;
     border-radius: 10px;
     background: #FAFAF8;
@@ -670,7 +721,7 @@
 
   .addr-option input { margin-top: 4px; accent-color: #2D5A27; flex-shrink: 0; }
 
-  .addr-main { flex: 1; min-width: 0; font-size: 12px; color: #6B7B69; line-height: 1.5; }
+  .addr-main { flex: 1; min-width: 0; font-size: 12px; color: #6B7B69; line-height: 1.45; }
   .addr-main strong { color: #1A3A16; font-size: 13px; }
 
   .addr-tag {
@@ -694,7 +745,7 @@
   .addr-add {
     display: block;
     text-align: center;
-    padding: 12px;
+    padding: 9px;
     border: 1px dashed #2D5A27;
     border-radius: 10px;
     color: #2D5A27;
@@ -784,7 +835,7 @@
           </a>
 
           <div id="deliveryInfo" class="co-delivery-info"></div>
-          <div class="co-map-error" id="mapError"></div>
+          <div class="co-map-error" id="mapError" style="margin-top:8px;margin-bottom:0;"></div>
         </div>
       </div>
 
@@ -793,21 +844,35 @@
            FULL MODE — first order / Edit / Add new address
            ================================================ -->
 
+      {% if not saved_addresses %}
+      <!-- ONE-TIME NOTICE: first order only -->
+      <div class="co-onetime">
+        <span class="ot-icon">ℹ️</span>
+        <div><strong>This is a one-time process.</strong> Your details are saved for your next orders.</div>
+      </div>
+      {% endif %}
+
       <!-- 1. CONTACT -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Contact details" %}</span></div>
         <div class="co-card-body">
-          <div class="co-label">{% trans "Full name" %}</div>
-          <input type="text" name="name" id="nameInput" class="co-input"
-                 value="{{ edit_address.full_name|default:'' }}"
-                 placeholder="{% trans 'Your full name' %}" required>
-          <div class="co-invalid-msg">{% trans "Please enter your full name." %}</div>
-
-          <div class="co-label">{% trans "Mobile number" %}</div>
-          <input type="text" name="phone" id="phoneInput" class="co-input" maxlength="10"
-                 value="{{ edit_address.phone|default:'' }}"
-                 placeholder="{% trans '10-digit number starting with 6–9' %}" required>
-          <div class="co-invalid-msg">{% trans "Enter a valid Indian mobile number." %}</div>
+          <div class="co-two">
+            <div>
+              <div class="co-label">{% trans "Full name" %}</div>
+              <input type="text" name="name" id="nameInput" class="co-input"
+                     value="{{ edit_address.full_name|default:'' }}"
+                     placeholder="{% trans 'Your full name' %}" required>
+              <div class="co-invalid-msg">{% trans "Please enter your full name." %}</div>
+            </div>
+            <div>
+              <div class="co-label">{% trans "Mobile number" %}</div>
+              <input type="text" name="phone" id="phoneInput" class="co-input" maxlength="10"
+                     inputmode="numeric"
+                     value="{{ edit_address.phone|default:'' }}"
+                     placeholder="{% trans '10-digit mobile' %}" required>
+              <div class="co-invalid-msg">{% trans "Enter a valid Indian mobile number." %}</div>
+            </div>
+          </div>
 
           <div class="co-check-row">
             <input type="checkbox" id="confirm_phone" name="confirm_phone" checked>
@@ -833,7 +898,7 @@
                   id="confirmLocationBtn"
                   class="co-loc-btn"
                   onclick="confirmDeliveryLocation()"
-                  style="display: none; width: 100%; margin-top: 10px;">
+                  style="display: none; width: 100%;">
               ✅ Click Here to Confirm Delivery Location
           </button>
           <input type="hidden" name="latitude"  id="latitude">
@@ -870,25 +935,30 @@
       </div>
     {% endif %}
 
-      <!-- 3. COUPON -->
-      <div class="co-card">
-        <div class="co-card-head"><span>{% trans "Coupon code" %}</span></div>
-        <div class="co-card-body">
-          <div class="co-coupon-row">
+      <!-- 3. COUPON + LOKA MONEY (side by side) -->
+      <div class="co-offers">
+
+        <!-- COUPON -->
+        <div class="co-card">
+          <div class="co-card-head"><span>{% trans "Coupon" %}</span></div>
+          <div class="co-card-body">
 
             <div class="co-coupon-wrapper" id="couponWrapper">
+              <div class="co-coupon-field">
                 <input
                     type="text"
                     id="coupon_code"
                     name="coupon_code"
                     class="co-coupon-input"
-                    placeholder="{% trans 'Enter or select coupon code' %}"
+                    placeholder="{% trans 'Select coupon' %}"
                     autocomplete="off"
                     autocapitalize="characters"
                     spellcheck="false"
                 >
                 <span class="co-coupon-chevron">⌄</span>
-                <div id="couponSuggestions" class="co-coupon-suggestions"></div>
+              </div>
+
+              <div id="couponSuggestions" class="co-coupon-suggestions"></div>
             </div>
 
             <button type="button" class="co-coupon-btn" onclick="applyCoupon()">
@@ -896,51 +966,41 @@
             </button>
 
           </div>
-
-          <div id="coupon_message" class="co-coupon-msg"></div>
-        </div>
-      </div>
-
-      <!-- 4. LOKA MONEY -->
-      <div class="co-card">
-        <div class="co-card-head">
-          <span>LOKA Money</span>
         </div>
 
-        <div class="co-card-body">
+        <!-- LOKA MONEY -->
+        <div class="co-card">
+          <div class="co-card-head"><span>LOKA Money</span></div>
+          <div class="co-card-body">
 
-          <div class="co-check-row">
-            <input
-              type="checkbox"
-              id="useLokaMoney"
-              name="use_loka_money"
-              {% if subtotal < 199 or loka_money_balance <= 0 %}disabled{% endif %}
-            >
+            <div class="co-check-row">
+              <input
+                type="checkbox"
+                id="useLokaMoney"
+                name="use_loka_money"
+                {% if subtotal < 199 or loka_money_balance <= 0 %}disabled{% endif %}
+              >
 
-            <label for="useLokaMoney">
-              <strong>Use LOKA Money</strong><br>
+              <label for="useLokaMoney" class="co-loka-label">
+                <strong>Use balance</strong>
+                <small>₹{{ loka_money_balance|floatformat:2 }} · Max ₹15</small>
+              </label>
+            </div>
 
-              <span style="font-size:11px;color:#9AA899;">
-                Balance: ₹{{ loka_money_balance|floatformat:2 }}
-                · Max ₹15 per order
-              </span>
-            </label>
+            {% if subtotal < 199 %}
+              <div class="co-mini-note">🔒 Available on orders of ₹199 or more.</div>
+            {% elif loka_money_balance <= 0 %}
+              <div class="co-mini-note">💰 No LOKA Money yet.</div>
+            {% endif %}
+
           </div>
-
-          {% if subtotal < 199 %}
-            <div class="co-upi-warn" style="margin-top:8px;margin-bottom:0;">
-              🔒 LOKA Money can be used on orders of ₹199 or more.
-            </div>
-          {% elif loka_money_balance <= 0 %}
-            <div style="margin-top:8px; font-size:11px; color:#9AA899;">
-              💰 You don't have any LOKA Money yet.
-            </div>
-          {% endif %}
-
         </div>
+
       </div>
 
-      <!-- 5. PAYMENT -->
+      <div id="coupon_message" class="co-coupon-msg"></div>
+
+      <!-- 4. PAYMENT -->
       <div class="co-card">
         <div class="co-card-head"><span>{% trans "Payment method" %}</span></div>
         <div class="co-card-body">
@@ -952,28 +1012,42 @@
               <input type="radio" name="payment" value="UPI" id="upiOption"
                      {% if upi_only_required %}checked{% endif %} style="display:none;">
               <span class="pay-icon">📱</span>
-              UPI
-              <div><span class="co-pay-tag">{% trans "Recommended" %}</span></div>
+              <span>UPI</span>
+              <span class="co-pay-tag">{% trans "Best" %}</span>
             </div>
             <div class="co-pay-opt {% if cod_not_allowed or upi_only_required %}disabled{% endif %}" id="codLabel">
               <input type="radio" name="payment" value="COD" id="codOption"
                      {% if cod_not_allowed or upi_only_required %}disabled{% endif %} style="display:none;">
               <span class="pay-icon">💵</span>
-              {% trans "Cash on Delivery" %}
+              <span>{% trans "Cash" %}</span>
               {% if upi_only_required %}
-                <div><span class="co-pay-tag warn">{% trans "UPI only" %}</span></div>
+                <span class="co-pay-tag warn">{% trans "UPI only" %}</span>
               {% elif cod_not_allowed %}
-                <div><span class="co-pay-tag warn">{% trans "Min ₹149" %}</span></div>
+                <span class="co-pay-tag warn">{% trans "Min ₹149" %}</span>
               {% endif %}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 6. ORDER SUMMARY -->
-      <div class="co-card">
-        <div class="co-card-head"><span>{% trans "Order summary" %}</span></div>
-        <div class="co-card-body">
+      {% if cod_not_allowed %}
+      <div class="co-cod-warn">⚠ {% trans "Cash on Delivery is not available for orders below ₹149." %}</div>
+      {% endif %}
+
+      <!-- 5. ORDER SUMMARY (collapsible) -->
+      <div class="co-card co-sum-card" id="sumCard">
+        <button type="button" class="co-sum-toggle" onclick="toggleSummary()" aria-expanded="false">
+          <span>
+            <span class="co-sum-title">{% trans "Order summary" %}</span>
+            <span class="co-sum-hint">{% trans "Tap to view details" %}</span>
+          </span>
+          <span class="co-sum-right">
+            <span id="orderTotal">₹{{ subtotal|add:handling_fee }}</span>
+            <span class="co-sum-chev">⌄</span>
+          </span>
+        </button>
+
+        <div class="co-sum-details">
           {% for item in items %}
           <div class="co-item-row">
             <span>{{ item.name }}{% if item.quantity > 1 %} ×{{ item.quantity }}{% endif %}</span>
@@ -989,43 +1063,18 @@
             <span>LOKA Money</span>
             <span>− ₹<span id="lokaMoneyAmount">0</span></span>
           </div>
-
-          {% if cod_not_allowed %}
-          <div class="co-cod-warn">⚠ {% trans "Cash on Delivery is not available for orders below ₹149." %}</div>
-          {% endif %}
-          <hr class="co-sum-divider">
-          <div class="co-sum-total">
-            <span>{% trans "Total" %}</span>
-            <span id="orderTotal">₹{{ subtotal|add:handling_fee }}</span>
-          </div>
           <div class="co-distance-info" id="distanceInfo"></div>
         </div>
       </div>
 
-      <!-- TRUST BADGES -->
-      <div class="co-trust-row">
-        <div class="co-trust-badge"><span class="tb-icon">🕐</span>40–60 min<br>delivery</div>
-        <div class="co-trust-badge"><span class="tb-icon">🛡</span>No hidden<br>charges</div>
-        <div class="co-trust-badge"><span class="tb-icon">🚚</span>Local trusted<br>stores</div>
-      </div>
-
-      <!-- 7. POLICY -->
-      <div class="co-card">
-        <div class="co-card-head"><span>{% trans "Cancellation policy" %}</span></div>
-        <div class="co-card-body">
-          <div class="co-policy-box">
-            <div class="co-policy-li">{% trans "Order can be cancelled before it is dispatched." %}</div>
-            <div class="co-policy-li">{% trans "Full refund for UPI payments if cancelled before dispatch." %}</div>
-            <div class="co-policy-li">{% trans "Delivery charges may apply if cancelled after dispatch." %}</div>
-            <div class="co-policy-li">{% trans "Refusal at delivery may restrict COD on future orders." %}</div>
-            <div class="co-policy-li">{% trans "UPI refunds may take 3–5 working days." %}</div>
-          </div>
-          <div class="co-check-row">
-            <input type="checkbox" id="policyCheck" checked>
-            <label for="policyCheck">{% trans "I agree to the cancellation and refund policy." %}</label>
-          </div>
-        </div>
-      </div>
+      <!-- 6. CANCELLATION POLICY (opens popup) -->
+      <button type="button" class="co-policy-btn" onclick="openPolicy()">
+        <span>
+          {% trans "Cancellation and refund policy" %}
+          <small>{% trans "By confirming, you agree to this policy" %}</small>
+        </span>
+        <span class="pb-arrow">›</span>
+      </button>
 
       <!-- CONFIRM ORDER BUTTON -->
       <button type="submit" id="placeOrderBtn" class="co-confirm-btn">
@@ -1036,6 +1085,23 @@
     </div><!-- /checkout-body -->
 
   </form>
+</div>
+
+<!-- Policy popup -->
+<div id="policyPopupOverlay" class="location-popup-overlay" onclick="if(event.target===this){closePolicy();}">
+  <div class="location-popup">
+    <h3>{% trans "Cancellation and refund" %}</h3>
+    <ul class="policy-list">
+      <li>{% trans "Order can be cancelled before it is dispatched." %}</li>
+      <li>{% trans "Full refund for UPI payments if cancelled before dispatch." %}</li>
+      <li>{% trans "Delivery charges may apply if cancelled after dispatch." %}</li>
+      <li>{% trans "Refusal at delivery may restrict COD on future orders." %}</li>
+      <li>{% trans "UPI refunds may take 3–5 working days." %}</li>
+    </ul>
+    <button type="button" class="location-popup-btn" onclick="closePolicy()">
+      {% trans "Got it" %}
+    </button>
+  </div>
 </div>
 
 <!-- LEAFLET (only needed when the map is shown) -->
@@ -1063,6 +1129,31 @@ const EDIT_LNG  = "{{ edit_address.longitude|unlocalize|default:'' }}";
 
 let appliedDiscount = 0;
 let currentDeliveryFee = 0;
+
+
+/* =====================================================
+   SUMMARY + POLICY HELPERS
+   ===================================================== */
+
+function toggleSummary() {
+    const card = document.getElementById('sumCard');
+    if (!card) return;
+
+    const isOpen = card.classList.toggle('open');
+
+    const btn = card.querySelector('.co-sum-toggle');
+    if (btn) { btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false'); }
+}
+
+function openPolicy() {
+    const popup = document.getElementById('policyPopupOverlay');
+    if (popup) { popup.classList.add('show'); }
+}
+
+function closePolicy() {
+    const popup = document.getElementById('policyPopupOverlay');
+    if (popup) { popup.classList.remove('show'); }
+}
 
 
 /* =====================================================
@@ -1929,7 +2020,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Button click feedback */
 document.querySelectorAll(
-  '.co-confirm-btn, .co-coupon-btn, .co-loc-btn, .nav-back'
+  '.co-confirm-btn, .co-coupon-btn, .co-loc-btn, .co-policy-btn, .nav-back'
 ).forEach(function(btn){
 
     btn.addEventListener('touchstart', function(){
