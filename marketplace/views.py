@@ -10,6 +10,8 @@ from decimal import Decimal
 from django.utils import timezone
 from datetime import date, timedelta
 import random
+from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 import math
 import re
 from .models import CustomerAddress
@@ -211,7 +213,364 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
     return R * c
 
+BUS_STAND_LAT = 16.579620
+BUS_STAND_LON = 74.312661
 
+
+def get_delivery_distance(lat, lng):
+    raw = calculate_distance(lat, lng, BUS_STAND_LAT, BUS_STAND_LON)
+    return raw if raw <= 1 else 1 + (raw - 1) * 1.55
+
+
+def is_free_delivery_for(phone):
+    if not re.match(r'^[6-9]\d{9}$', phone or ""):
+        return False
+
+    delivered = Order.objects.filter(
+        phone=phone,
+        status="DELIVERED",
+        created_at__date__gte=JOURNEY_START_DATE
+    ).count()
+
+    return (delivered + 1) in (5, 10)
+
+
+def get_delivery_fee(distance, subtotal, free_delivery):
+    if free_delivery or subtotal >= 999:
+        return Decimal("0")
+    if distance <= 2:
+        return Decimal("15")
+    if distance <= 3:
+        return Decimal("18")
+    if distance <= 4:
+        return Decimal("20")
+    if distance <= 5:
+        return Decimal("23")
+    if distance <= 6:
+        return Decimal("27")
+    if distance <= 7:
+        return Decimal("30")
+    return Decimal("40")
+# =====================================================
+# ROAD DISTANCE CALCULATION - OSRM
+# =====================================================
+
+OSRM_BASE_URL = "https://router.project-osrm.org"
+
+
+def get_road_route_distance(coordinates):
+    """
+    Calculate actual road distance using OSRM.
+
+    coordinates format:
+    [
+        (latitude, longitude),
+        (latitude, longitude),
+        ...
+    ]
+
+    Returns:
+    {
+        "total_distance_km": 5.25,
+        "legs_km": [3.25, 2.00]
+    }
+
+    Returns None if routing fails.
+    """
+
+    if len(coordinates) < 2:
+        return None
+
+    try:
+        # Validate and normalize coordinates
+        normalized = []
+
+        for lat, lon in coordinates:
+
+            lat = float(lat)
+            lon = float(lon)
+
+            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                return None
+
+            normalized.append((lat, lon))
+
+        # OSRM expects longitude,latitude
+        route_coordinates = ";".join(
+            f"{lon},{lat}"
+            for lat, lon in normalized
+        )
+
+        # Cache based on ordered route coordinates
+        cache_key = "loka_road_route_" + "_".join(
+            f"{lat:.6f}_{lon:.6f}"
+            for lat, lon in normalized
+        )
+
+        cached_result = cache.get(cache_key)
+
+        if cached_result is not None:
+            return cached_result
+
+        url = (
+            f"{OSRM_BASE_URL}/route/v1/driving/"
+            f"{route_coordinates}"
+            "?overview=false&steps=false"
+        )
+
+        with urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode("utf-8"))
+
+        if data.get("code") != "Ok":
+            logger.warning("OSRM routing error: %s", data)
+            return None
+
+        route = data.get("routes", [])
+
+        if not route:
+            return None
+
+        legs = route[0].get("legs", [])
+
+        if len(legs) != len(normalized) - 1:
+            return None
+
+        legs_km = [
+            float(leg["distance"]) / 1000
+            for leg in legs
+        ]
+
+        result = {
+            "total_distance_km": round(sum(legs_km), 2),
+            "legs_km": [round(distance, 2) for distance in legs_km]
+        }
+
+        # Cache successful route for 6 hours
+        cache.set(cache_key, result, 60 * 60 * 6)
+
+        return result
+
+    except (URLError, HTTPError, TimeoutError, ValueError, KeyError) as e:
+        logger.error("LOKA road distance error: %s", e)
+        return None
+
+    except Exception:
+        logger.exception("Unexpected LOKA road distance error")
+        return None
+
+
+def calculate_total_delivery_road_distance(
+    store,
+    customer_lat,
+    customer_lon,
+    stand_lat=16.579620,
+    stand_lon=74.312661
+):
+    """
+    LOKA total delivery distance.
+
+    If store coordinates exist:
+        Store -> Customer -> Bus Stand
+
+    If store coordinates are missing:
+        Customer -> Bus Stand -> Customer
+
+    All distances are road distances.
+    """
+
+    try:
+
+        customer = (
+            float(customer_lat),
+            float(customer_lon)
+        )
+
+        stand = (
+            float(stand_lat),
+            float(stand_lon)
+        )
+
+        store_lat = getattr(store, "latitude", None) if store else None
+        store_lon = getattr(store, "longitude", None) if store else None
+
+        # Store coordinates available
+        if store_lat is not None and store_lon is not None:
+
+            store_location = (
+                float(store_lat),
+                float(store_lon)
+            )
+
+            route = get_road_route_distance([
+                store_location,
+                customer,
+                stand
+            ])
+
+            if route is None:
+                return None
+
+            return {
+                "total_distance_km": route["total_distance_km"],
+                "store_to_customer_km": route["legs_km"][0],
+                "customer_to_stand_km": route["legs_km"][1],
+                "store_location_used": True
+            }
+
+        # Store coordinates missing: calculate both directions
+        route = get_road_route_distance([
+            customer,
+            stand,
+            customer
+        ])
+
+        if route is None:
+            return None
+
+        return {
+            "total_distance_km": route["total_distance_km"],
+            "store_to_customer_km": None,
+            "customer_to_stand_km": route["legs_km"][0],
+            "store_location_used": False
+        }
+
+    except (TypeError, ValueError):
+        logger.exception("Invalid coordinates for LOKA road distance")
+        return None
+
+# =====================================================
+# STORE → CUSTOMER DELIVERY DISTANCE
+# =====================================================
+
+def get_store_delivery_distance(store, customer_lat, customer_lon):
+
+    try:
+        customer = (
+            float(customer_lat),
+            float(customer_lon)
+        )
+
+        store_lat = getattr(store, "latitude", None) if store else None
+        store_lon = getattr(store, "longitude", None) if store else None
+
+        # ---------------------------------
+        # STORE COORDINATES AVAILABLE
+        # ---------------------------------
+        if store_lat is not None and store_lon is not None:
+
+            store_location = (
+                float(store_lat),
+                float(store_lon)
+            )
+
+            # Try actual road distance first.
+            route = get_road_route_distance([
+                store_location,
+                customer
+            ])
+
+            if route:
+                return round(route["total_distance_km"], 2)
+
+            # Fallback: adjusted straight-line distance.
+            raw_distance = calculate_distance(
+                store_location[0],
+                store_location[1],
+                customer[0],
+                customer[1]
+            )
+
+            return round(
+                raw_distance if raw_distance <= 1
+                else 1 + (raw_distance - 1) * 1.55,
+                2
+            )
+
+        # ---------------------------------
+        # STORE COORDINATES NOT AVAILABLE
+        # ---------------------------------
+        return round(
+            get_delivery_distance(customer[0], customer[1]),
+            2
+        )
+
+    except (TypeError, ValueError):
+        logger.exception("Store delivery distance calculation failed")
+        return None
+
+# =====================================================
+# STORE DETAIL DELIVERY INFORMATION API
+# =====================================================
+
+@require_GET
+def store_delivery_info(request, store_id):
+
+    store = get_object_or_404(Store, id=store_id)
+
+    latitude = request.GET.get("latitude")
+    longitude = request.GET.get("longitude")
+
+    if latitude is None or longitude is None:
+        return JsonResponse({
+            "success": False,
+            "error": "Customer location is required."
+        }, status=400)
+
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+
+        if not (-90 <= latitude <= 90):
+            raise ValueError("Invalid latitude")
+
+        if not (-180 <= longitude <= 180):
+            raise ValueError("Invalid longitude")
+
+    except (TypeError, ValueError):
+        return JsonResponse({
+            "success": False,
+            "error": "Invalid customer location."
+        }, status=400)
+
+    # Store coordinates must exist for an actual
+    # store-to-customer distance calculation.
+    if store.latitude is None or store.longitude is None:
+        return JsonResponse({
+            "success": False,
+            "error": "Store location is not configured."
+        }, status=503)
+
+    # Calculate store-to-customer road distance.
+    distance = get_store_delivery_distance(
+        store,
+        latitude,
+        longitude
+    )
+
+    if distance is None:
+        return JsonResponse({
+            "success": False,
+            "error": "Unable to calculate distance."
+        }, status=503)
+
+    # LOKA delivery radius.
+    delivery_available = distance <= 10
+
+    # Estimated time:
+    # 25 minutes preparation + approximately 3 minutes/km.
+    estimated_minutes = 25 + (distance * 3)
+
+    eta_min = max(25, int(estimated_minutes - 5))
+    eta_max = int(estimated_minutes + 5)
+
+    return JsonResponse({
+        "success": True,
+        "distance": round(distance, 2),
+        "delivery_available": delivery_available,
+        "eta_min": eta_min if delivery_available else None,
+        "eta_max": eta_max if delivery_available else None
+    })
+    
 # =====================================================
 # HOME
 # =====================================================
@@ -1437,6 +1796,28 @@ def checkout(request):
         "loka_money_used": loka_money_used,
     })
 
+    # ---------------------------------
+    # STORE TO SAVED ADDRESS DISTANCE
+    # ---------------------------------
+    for addr in saved_addresses:
+
+        addr_distance = get_store_delivery_distance(
+            store,
+            addr.latitude,
+            addr.longitude
+        )
+
+        addr.delivery_distance = addr_distance
+
+        if addr_distance is not None:
+            addr.delivery_fee = get_delivery_fee(
+                addr_distance,
+                subtotal,
+                is_free_delivery_for(addr.phone)
+            )
+        else:
+            addr.delivery_fee = None
+
     # =========================
     # POST LOGIC
     # =========================
@@ -1613,14 +1994,20 @@ def checkout(request):
 
             # -------------------------
             # DELIVERY CALCULATION
+            # STORE TO CUSTOMER
             # -------------------------
-            BUS_LAT, BUS_LON = 16.579620, 74.312661
-            raw_distance = calculate_distance(latitude, longitude, BUS_LAT, BUS_LON)
+            distance = get_store_delivery_distance(
+                store,
+                latitude,
+                longitude
+            )
 
-            distance = raw_distance if raw_distance <= 1 else 1 + (raw_distance - 1) * 1.55
+            if distance is None:
+                context["error"] = "Unable to calculate delivery distance. Please try again."
+                return render(request, "checkout.html", context)
 
             if distance > 10:
-                context["error"] = "Delivery not available"
+                context["error"] = "Delivery not available for this location."
                 return render(request, "checkout.html", context)
 
             # -------------------------
@@ -3658,15 +4045,78 @@ def calculate_delivery(request):
     longitude = float(longitude)
     subtotal = Decimal(subtotal)
 
-    BUS_STAND_LAT = 16.579620
-    BUS_STAND_LON = 74.312661
+    # ---------------------------------
+    # GET STORE FROM CURRENT CART
+    # ---------------------------------
+    store_ids = set()
 
-    raw_distance = calculate_distance(latitude, longitude, BUS_STAND_LAT, BUS_STAND_LON)
+    for item_id in cart.get("items", {}):
 
-    if raw_distance <= 1:
-        distance = raw_distance
-    else:
-        distance = 1 + (raw_distance - 1) * 1.55
+        if item_id.isdigit():
+            product = Product.objects.filter(
+                id=int(item_id)
+            ).only("store_id").first()
+
+            if product:
+                store_ids.add(product.store_id)
+
+        elif item_id.startswith("bundle_"):
+            try:
+                bundle_id = int(item_id.split("_")[1])
+
+                bundle = Bundle.objects.filter(
+                    id=bundle_id,
+                    is_active=True
+                ).only("store_id").first()
+
+                if bundle:
+                    store_ids.add(bundle.store_id)
+
+            except (ValueError, IndexError):
+                continue
+
+    if len(store_ids) != 1:
+        return JsonResponse({
+            "error": "Unable to identify the store in your cart."
+        }, status=400)
+
+    store = Store.objects.filter(
+        id=next(iter(store_ids))
+    ).first()
+
+    if not store:
+        return JsonResponse({
+            "error": "Store not found. Please refresh your cart."
+        }, status=400)
+
+    # ---------------------------------
+    # STORE TO CUSTOMER DISTANCE
+    # ---------------------------------
+    distance = get_store_delivery_distance(
+        store,
+        latitude,
+        longitude
+    )
+
+    # ---------------------------------
+    # DELIVERY RADIUS VALIDATION
+    # ---------------------------------
+    if distance is None:
+        return JsonResponse({
+            "error": "Unable to calculate delivery distance."
+        }, status=503)
+
+    if distance > 10:
+        return JsonResponse({
+            "delivery_available": False,
+            "distance": round(distance, 2),
+            "error": "Delivery is not available at this location."
+        })
+
+    if distance is None:
+        return JsonResponse({
+            "error": "Unable to calculate delivery distance. Please try again."
+        }, status=503)
 
     handling_fee = Decimal(5) if subtotal < 99 else Decimal(9)
 
@@ -3713,7 +4163,8 @@ def calculate_delivery(request):
         "delivery_fee": float(delivery_fee),
         "total": float(total),
         "distance": round(distance, 2),
-        "free_delivery": free_delivery
+        "free_delivery": free_delivery,
+        "delivery_available": True,
     })
 
 
@@ -5593,7 +6044,7 @@ def rider_dashboard(request):
             )
 
             available_orders_filter = Q(
-                status__in=["REQUEST_SUBMITTED", "ACCEPTED"],
+                status__in=["REQUEST_SUBMITTED", "ACCEPTED", "PICKED_UP"],
                 assigned_delivery__isnull=True,
                 id__in=pending_offer_order_ids
             )
@@ -5614,6 +6065,18 @@ def rider_dashboard(request):
             .select_related("store")
             .order_by("-created_at")
         )
+
+        # Identify which displayed orders have a pending offer for this rider
+        pending_offer_ids = set(
+            RiderOrderOffer.objects.filter(
+                rider=request.user,
+                status="PENDING"
+            ).values_list("order_id", flat=True)
+        )
+
+        # Attach pending-offer information to each order
+        for order in dashboard_orders:
+            order.has_pending_offer = order.id in pending_offer_ids
 
         # -----------------------------------------
         # STATISTICS — SAME FILTERED ORDERS
@@ -6339,7 +6802,7 @@ def rider_update_status(request, order_id, new_status):
 
     # ALLOWED TRANSITIONS
     allowed_transitions = {
-        "ACCEPTED": ["REQUEST_SUBMITTED"],
+        "ACCEPTED": ["REQUEST_SUBMITTED", "ACCEPTED", "PICKED_UP"],
         "DECLINE": ["REQUEST_SUBMITTED"],
         "OUT_FOR_DELIVERY": ["ACCEPTED", "PICKED_UP"],
         "DELIVERED": ["OUT_FOR_DELIVERY"],
@@ -6429,7 +6892,7 @@ def rider_update_status(request, order_id, new_status):
                 )
 
                 if (
-                    order.status not in ["REQUEST_SUBMITTED", "ACCEPTED"]
+                    order.status not in ["REQUEST_SUBMITTED", "ACCEPTED", "PICKED_UP"]
                     or order.assigned_delivery_id is not None
                     or offer is None
                 ):

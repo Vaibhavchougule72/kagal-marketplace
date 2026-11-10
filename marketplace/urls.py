@@ -40,6 +40,11 @@ urlpatterns = [
     path('search/', views.search_products, name='search_products'),
     path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
     path("calculate-delivery/", views.calculate_delivery, name="calculate_delivery"),
+    path(
+        "store-delivery-info/<int:store_id>/",
+        views.store_delivery_info,
+        name="store_delivery_info"
+    ),
     #path('verify-otp/<int:pending_id>/', views.verify_otp, name='verify_otp'),
     #path('resend-otp/<int:pending_id>/', views.resend_otp, name='resend_otp'),
     path("upi_payment/", views.upi_payment, name="upi_payment"),

@@ -1479,7 +1479,20 @@ body{
         <div class="sd-meta-divider"></div>
         {% endif %}
 
-        <div class="sd-meta-item">🛵 <strong>30-40 min</strong></div>
+        <div id="storeDeliveryInfo" class="store-delivery-info">
+            <span id="storeDeliveryLoading">
+                🛵 Checking delivery availability...
+            </span>
+
+            <div id="storeDeliveryResult" style="display:none;">
+                <span id="storeDeliveryDistance"></span>
+                <span id="storeDeliveryETA"></span>
+            </div>
+
+            <span id="storeDeliveryUnavailable"
+                style="display:none; color:#dc3545;">
+            </span>
+        </div>
     </div>
 
     {% if store.is_open %}
@@ -2269,6 +2282,102 @@ document.addEventListener("click", function (e) {
             btn.classList.remove("lk-added");
         }, 1000);
     }
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const loading = document.getElementById("storeDeliveryLoading");
+    const result = document.getElementById("storeDeliveryResult");
+    const distanceEl = document.getElementById("storeDeliveryDistance");
+    const etaEl = document.getElementById("storeDeliveryETA");
+    const unavailable = document.getElementById("storeDeliveryUnavailable");
+
+    if (!loading || !result || !unavailable) return;
+
+    const apiUrl = "{% url 'store_delivery_info' store.id %}";
+
+    function showUnavailable(message) {
+        loading.style.display = "none";
+        result.style.display = "none";
+        unavailable.style.display = "block";
+        unavailable.textContent = message;
+    }
+
+    async function checkStoreDelivery(location) {
+
+        if (
+            !location ||
+            !Number.isFinite(Number(location.latitude)) ||
+            !Number.isFinite(Number(location.longitude))
+        ) {
+            showUnavailable("📍 Please set your delivery location to check availability.");
+            return;
+        }
+
+        try {
+
+            const params = new URLSearchParams({
+                latitude: location.latitude,
+                longitude: location.longitude
+            });
+
+            const response = await fetch(`${apiUrl}?${params.toString()}`);
+            const data = await response.json();
+
+            loading.style.display = "none";
+
+            if (!response.ok || !data.success) {
+                showUnavailable(
+                    data.error || "Unable to check delivery availability."
+                );
+                return;
+            }
+
+            if (!data.delivery_available) {
+                showUnavailable(
+                    "Sorry! This store is outside our 10 km delivery area."
+                );
+                return;
+            }
+
+            unavailable.style.display = "none";
+            result.style.display = "flex";
+
+            distanceEl.textContent = `📍 ${data.distance} km`;
+            etaEl.textContent =
+                `🛵 ${data.eta_min}–${data.eta_max} min`;
+
+        } catch (error) {
+
+            console.error("Store delivery check failed:", error);
+
+            showUnavailable("Unable to check delivery. Please try again.");
+
+        }
+    }
+
+    const location =
+        window.LokaLocationManager?.getLocation();
+
+    if (location) {
+        checkStoreDelivery(location);
+    } else {
+        showUnavailable(
+            "📍 Set your delivery location to check availability."
+        );
+    }
+
+    // Refresh when the global location manager updates GPS location.
+    window.addEventListener("lokaLocationUpdated", function (event) {
+        loading.style.display = "block";
+        result.style.display = "none";
+        unavailable.style.display = "none";
+
+        checkStoreDelivery(event.detail);
+    });
 
 });
 </script>

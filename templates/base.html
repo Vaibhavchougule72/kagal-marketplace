@@ -2411,6 +2411,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
 
+            // 1. Prioritize the customer's confirmed checkout address.
+            const confirmed = sessionStorage.getItem(
+                "checkoutDeliveryConfirmed"
+            );
+
+            const checkoutLat = localStorage.getItem(
+                "checkoutDeliveryLat"
+            );
+
+            const checkoutLng = localStorage.getItem(
+                "checkoutDeliveryLng"
+            );
+
+            if (
+                confirmed === "true" &&
+                checkoutLat &&
+                checkoutLng
+            ) {
+                return {
+                    latitude: Number(checkoutLat),
+                    longitude: Number(checkoutLng),
+                    source: "delivery_address"
+                };
+            }
+
+            // 2. Otherwise, use the saved GPS location.
             const saved = localStorage.getItem(STORAGE_KEY);
 
             if (!saved) return null;

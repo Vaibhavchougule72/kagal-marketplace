@@ -91,7 +91,7 @@
 
             </div>
 
-            {% if order.status == "REQUEST_SUBMITTED" and not order.assigned_delivery_id %}
+            {% if order.status in "REQUEST_SUBMITTED,ACCEPTED,PICKED_UP" and not order.assigned_delivery_id and order.has_pending_offer %}
 
                 <form method="POST"
                       class="rd-accept-form"

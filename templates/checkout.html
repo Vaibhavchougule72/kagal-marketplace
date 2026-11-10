@@ -818,6 +818,8 @@
                    data-address="{{ saved.address }}"
                    data-latitude="{{ saved.latitude|unlocalize }}"
                    data-longitude="{{ saved.longitude|unlocalize }}"
+                   data-delivery-fee="{{ saved.delivery_fee|unlocalize }}"
+                   data-distance="{{ saved.delivery_distance|unlocalize }}"
                    {% if forloop.first %}checked{% endif %}>
             <div class="addr-main">
               <strong>{{ saved.label }}</strong>
@@ -1537,47 +1539,112 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function updateDelivery(lat, lng) {
-  if (!lat || !lng) return;
-  var raw  = calculateDistance(lat, lng, BUS_STAND_LAT, BUS_STAND_LON);
-  var dist = raw <= 1 ? raw : 1 + (raw - 1) * 1.55;
-  var mapError = document.getElementById('mapError');
-  var placeBtn = document.getElementById('placeOrderBtn');
 
-  if (dist > DELIVERY_RADIUS_KM) {
-    if (mapError) {
-      mapError.innerText = 'Delivery not available outside 10 km.';
-      mapError.style.display = 'block';
-    }
-    placeBtn.disabled = true;
-    return;
-  }
+    if (!lat || !lng) return;
 
-  if (mapError) {
-    if (window.deliveryLocationConfirmed === true) {
-      mapError.style.display = 'none';
-    } else {
-      mapError.innerText =
-          '📍 Check the pin. Drag it to your exact delivery address, then confirm your location.';
-      mapError.style.display = 'block';
-    }
-  }
-  placeBtn.disabled = false;
+    var mapError = document.getElementById('mapError');
+    var placeBtn = document.getElementById('placeOrderBtn');
+    var distanceInfo = document.getElementById('distanceInfo');
 
-  var phone = document.getElementById('phoneInput').value;
-  fetch('/calculate-delivery/?latitude=' + lat + '&longitude=' + lng + '&phone=' + phone)
-    .then(function(r) { return r.json(); })
+    // Prevent ordering while checking delivery availability
+    if (placeBtn) placeBtn.disabled = true;
+
+    var phone = document.getElementById('phoneInput').value.trim();
+
+    fetch(
+        '/calculate-delivery/?latitude=' +
+        encodeURIComponent(lat) +
+        '&longitude=' +
+        encodeURIComponent(lng) +
+        '&phone=' +
+        encodeURIComponent(phone),
+        { cache: 'no-store' }
+    )
+    .then(function(response) {
+        return response.json().then(function(data) {
+            if (!response.ok) {
+                throw new Error(data.error || 'Delivery calculation failed.');
+            }
+            return data;
+        });
+    })
     .then(function(data) {
-      freeDeliveryUnlocked = data.free_delivery;
-      document.getElementById('freeDeliveryInput').value = freeDeliveryUnlocked ? 'true' : 'false';
 
-      currentDeliveryFee = parseFloat(data.delivery_fee) || 0;
+        // ---------------------------------
+        // DELIVERY NOT AVAILABLE
+        // ---------------------------------
+        if (data.delivery_available === false) {
 
-      document.getElementById('deliveryFee').innerText =
-          currentDeliveryFee === 0 ? 'FREE 🎉' : '₹' + currentDeliveryFee;
+            if (mapError) {
+                mapError.innerText = data.error ||
+                    'Delivery is not available at this location.';
+                mapError.style.display = 'block';
+            }
 
-      updateOrderTotal();
-      document.getElementById('distanceInfo').innerText =
-          'Distance: ' + data.distance + ' km · 40–60 min delivery';
+            if (distanceInfo) {
+                distanceInfo.innerText =
+                    'Distance: ' + data.distance + ' km';
+            }
+
+            if (placeBtn) placeBtn.disabled = true;
+
+            return;
+        }
+
+        if (data.delivery_fee === undefined) {
+            throw new Error('Delivery fee not received.');
+        }
+
+        // ---------------------------------
+        // DELIVERY AVAILABLE
+        // ---------------------------------
+        freeDeliveryUnlocked = !!data.free_delivery;
+
+        document.getElementById('freeDeliveryInput').value =
+            freeDeliveryUnlocked ? 'true' : 'false';
+
+        currentDeliveryFee = parseFloat(data.delivery_fee) || 0;
+
+        document.getElementById('deliveryFee').innerText =
+            currentDeliveryFee === 0
+                ? 'FREE 🎉'
+                : '₹' + currentDeliveryFee;
+
+        updateOrderTotal();
+
+        if (distanceInfo) {
+            distanceInfo.innerText =
+                'Distance: ' + data.distance +
+                ' km · 40–60 min delivery';
+        }
+
+        if (mapError) {
+            if (window.deliveryLocationConfirmed === true) {
+                mapError.style.display = 'none';
+            } else {
+                mapError.innerText =
+                    '📍 Check the pin. Drag it to your exact delivery address, then confirm your location.';
+                mapError.style.display = 'block';
+            }
+        }
+
+        if (placeBtn) {
+            placeBtn.disabled =
+                window.deliveryLocationConfirmed !== true;
+        }
+
+    })
+    .catch(function(error) {
+
+        console.error('Delivery calculation failed:', error);
+
+        if (mapError) {
+            mapError.innerText =
+                error.message || 'Unable to calculate delivery.';
+            mapError.style.display = 'block';
+        }
+
+        if (placeBtn) placeBtn.disabled = true;
     });
 }
 
@@ -1937,6 +2004,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     checkFreeDelivery(phoneInput.value);
     loadAvailableCoupons(couponInput.value.trim());
+    var presetFee = parseFloat(radio.dataset.deliveryFee);
+
+    if (!isNaN(presetFee)) {
+      currentDeliveryFee = presetFee;
+
+      document.getElementById('deliveryFee').innerText =
+          presetFee === 0 ? 'FREE 🎉' : '₹' + presetFee;
+
+      if (radio.dataset.distance) {
+        document.getElementById('distanceInfo').innerText =
+            'Distance: ' + radio.dataset.distance + ' km · 40–60 min delivery';
+      }
+
+      updateOrderTotal();
+    }
+
     updateDelivery(lat, lng);
 
     if (window.LokaAndroid && /^[6-9]\d{9}$/.test(phoneInput.value)) {
