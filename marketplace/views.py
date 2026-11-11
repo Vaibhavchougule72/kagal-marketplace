@@ -716,7 +716,7 @@ def home(request):
         is_active=True
     ).order_by("priority")
     # inside your home view, where you build the context
-    context["service_off"] = timezone.localdate() == date(2026, 11, 11)
+    service_off = timezone.localdate() == date(2026, 11, 11)
     # =====================================================
     # FINAL RESPONSE
     # =====================================================
@@ -730,6 +730,7 @@ def home(request):
         "offer_sliders": offer_sliders,
         "featured_stores": featured_stores,
         "show_floating_cart": True,
+        "service_off": service_off,
         
     })
 # =====================================================
