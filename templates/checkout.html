@@ -1561,7 +1561,10 @@ function updateDelivery(lat, lng) {
         encodeURIComponent(lng) +
         '&phone=' +
         encodeURIComponent(phone),
-        { cache: 'no-store' }
+        {
+            cache: 'no-store',
+            credentials: 'same-origin'
+        }
     )
     .then(function(response) {
         return response.json().then(function(data) {
