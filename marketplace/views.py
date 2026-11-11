@@ -2,6 +2,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse, request
 import secrets
+
+from django.template import context
 from .models import RiderOrderOffer
 import string
 from .models import NotificationCampaign, NotificationJob
@@ -713,6 +715,8 @@ def home(request):
     offer_sliders = OfferSlider.objects.filter(
         is_active=True
     ).order_by("priority")
+    # inside your home view, where you build the context
+    context["service_off"] = timezone.localdate() == date(2026, 11, 11)
     # =====================================================
     # FINAL RESPONSE
     # =====================================================

@@ -1,0 +1,150 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<style>
+    .loka-store-controls {
+        background: var(--body-bg, #fff);
+        border: 1px solid var(--hairline-color, #ddd);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .loka-store-controls h2 {
+        margin: 0 0 15px;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .loka-store-stats {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .loka-stat {
+        background: var(--darkened-bg, #f5f5f5);
+        padding: 12px 20px;
+        border-radius: 8px;
+        min-width: 110px;
+        text-align: center;
+    }
+
+    .loka-stat strong {
+        display: block;
+        font-size: 23px;
+        margin-bottom: 5px;
+    }
+
+    .loka-stat span {
+        font-size: 12px;
+    }
+
+    .loka-store-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .loka-store-actions button {
+        border: none;
+        padding: 12px 22px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        cursor: pointer;
+    }
+
+    .loka-close-btn {
+        background: #dc2626;
+    }
+
+    .loka-close-btn:hover {
+        background: #b91c1c;
+    }
+
+    .loka-open-btn {
+        background: #16a34a;
+    }
+
+    .loka-open-btn:hover {
+        background: #15803d;
+    }
+</style>
+
+<div class="loka-store-controls">
+
+    <h2>🏪 LOKA Store Management</h2>
+
+    <div class="loka-store-stats">
+
+        <div class="loka-stat">
+            <strong>{{ total_stores }}</strong>
+            <span>Total Stores</span>
+        </div>
+
+        <div class="loka-stat">
+            <strong style="color:#16a34a;">
+                {{ open_stores }}
+            </strong>
+            <span>Not Manually Closed</span>
+        </div>
+
+        <div class="loka-stat">
+            <strong style="color:#dc2626;">
+                {{ closed_stores }}
+            </strong>
+            <span>Manually Closed</span>
+        </div>
+
+    </div>
+
+    {% if request.user.is_superuser %}
+
+    <div class="loka-store-actions">
+
+        <form
+            method="post"
+            action="{% url 'admin:loka_close_all_stores' %}"
+            onsubmit="return confirm('Are you sure you want to CLOSE ALL stores? Customers will not be able to order from them.');"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="loka-close-btn"
+            >
+                🔴 Close All Stores
+            </button>
+
+        </form>
+
+        <form
+            method="post"
+            action="{% url 'admin:loka_open_all_stores' %}"
+            onsubmit="return confirm('Are you sure you want to REOPEN ALL stores? This will remove manual closures, including those set by store partners.');"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="loka-open-btn"
+            >
+                🟢 Open All Stores
+            </button>
+
+        </form>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{{ block.super }}
+
+{% endblock %}

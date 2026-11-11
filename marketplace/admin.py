@@ -325,38 +325,190 @@ class StoreHolidayInline(admin.TabularInline):
     model = StoreHoliday
     extra = 1
     
+from django.contrib import admin, messages
+from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.urls import path, reverse
+from django.views.decorators.http import require_POST
+
+from .models import Store
+
+
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
 
+    change_list_template = "admin/store_change_list.html"
+
     list_display = (
-        'name',
-        'category',
-        'category_priority',
-        'commission_percent',
-        'latitude',
-        'longitude',
+        "name",
+        "category",
+        "category_priority",
+        "commission_percent",
+        "partner_closed",
+        "latitude",
+        "longitude",
     )
 
     list_editable = (
-        'category_priority',
+        "category_priority",
     )
 
-    list_filter = ('category',)
+    list_filter = (
+        "category",
+        "partner_closed",
+    )
 
     search_fields = (
-        'name',
+        "name",
     )
 
     ordering = (
-        'category',
-        'category_priority',
-        'name',
+        "category",
+        "category_priority",
+        "name",
     )
 
     inlines = [
         StoreTimingInline,
-        StoreHolidayInline
+        StoreHolidayInline,
     ]
+
+    # ==========================================
+    # CUSTOM ADMIN URLS
+    # ==========================================
+
+    def get_urls(self):
+
+        urls = super().get_urls()
+
+        custom_urls = [
+            path(
+                "close-all/",
+                self.admin_site.admin_view(
+                    require_POST(self.close_all_stores)
+                ),
+                name="loka_close_all_stores",
+            ),
+
+            path(
+                "open-all/",
+                self.admin_site.admin_view(
+                    require_POST(self.open_all_stores)
+                ),
+                name="loka_open_all_stores",
+            ),
+        ]
+
+        return custom_urls + urls
+
+    # ==========================================
+    # CLEAR STORE CACHE
+    # ==========================================
+
+    def clear_store_cache(self):
+
+        store_ids = Store.objects.values_list(
+            "id",
+            flat=True
+        )
+
+        cache_keys = [
+            f"store_open_{store_id}"
+            for store_id in store_ids
+        ]
+
+        cache_keys.extend([
+            "home_combos",
+            "home_featured_ids",
+        ])
+
+        cache.delete_many(cache_keys)
+
+    # ==========================================
+    # CLOSE ALL STORES
+    # ==========================================
+
+    def close_all_stores(self, request):
+
+        if not request.user.is_superuser:
+            raise PermissionDenied
+
+        with transaction.atomic():
+
+            updated = Store.objects.filter(
+                partner_closed=False
+            ).update(
+                partner_closed=True
+            )
+
+        self.clear_store_cache()
+
+        self.message_user(
+            request,
+            f"🔴 Successfully closed {updated} stores.",
+            level=messages.SUCCESS,
+        )
+
+        return redirect("admin:marketplace_store_changelist")
+
+    # ==========================================
+    # OPEN ALL STORES
+    # ==========================================
+
+    def open_all_stores(self, request):
+
+        if not request.user.is_superuser:
+            raise PermissionDenied
+
+        with transaction.atomic():
+
+            updated = Store.objects.filter(
+                partner_closed=True
+            ).update(
+                partner_closed=False
+            )
+
+        self.clear_store_cache()
+
+        self.message_user(
+            request,
+            f"🟢 Successfully reopened {updated} stores.",
+            level=messages.SUCCESS,
+        )
+
+        return redirect("admin:marketplace_store_changelist")
+
+    # ==========================================
+    # ADMIN PAGE CONTEXT
+    # ==========================================
+
+    def changelist_view(self, request, extra_context=None):
+
+        extra_context = extra_context or {}
+
+        extra_context["total_stores"] = (
+            Store.objects.count()
+        )
+
+        extra_context["closed_stores"] = (
+            Store.objects.filter(
+                partner_closed=True
+            ).count()
+        )
+
+        extra_context["open_stores"] = (
+            Store.objects.filter(
+                partner_closed=False
+            ).count()
+        )
+
+        return super().changelist_view(
+            request,
+            extra_context=extra_context,
+        )
 
 from django.contrib import admin
 from django.urls import path, reverse
