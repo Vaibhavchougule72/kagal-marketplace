@@ -347,6 +347,7 @@ class StoreAdmin(admin.ModelAdmin):
         "category",
         "category_priority",
         "commission_percent",
+        "admin_closed",
         "partner_closed",
         "latitude",
         "longitude",
@@ -358,6 +359,7 @@ class StoreAdmin(admin.ModelAdmin):
 
     list_filter = (
         "category",
+        "admin_closed",
         "partner_closed",
     )
 
@@ -439,16 +441,16 @@ class StoreAdmin(admin.ModelAdmin):
         with transaction.atomic():
 
             updated = Store.objects.filter(
-                partner_closed=False
+                admin_closed=False
             ).update(
-                partner_closed=True
+                admin_closed=True
             )
 
         self.clear_store_cache()
 
         self.message_user(
             request,
-            f"🔴 Successfully closed {updated} stores.",
+            f"🔴 Successfully closed {updated} stores by LOKA Admin.",
             level=messages.SUCCESS,
         )
 
@@ -466,16 +468,16 @@ class StoreAdmin(admin.ModelAdmin):
         with transaction.atomic():
 
             updated = Store.objects.filter(
-                partner_closed=True
+                admin_closed=True
             ).update(
-                partner_closed=False
+                admin_closed=False
             )
 
         self.clear_store_cache()
 
         self.message_user(
             request,
-            f"🟢 Successfully reopened {updated} stores.",
+            f"🟢 Successfully removed admin closure from {updated} stores.",
             level=messages.SUCCESS,
         )
 
@@ -489,27 +491,25 @@ class StoreAdmin(admin.ModelAdmin):
 
         extra_context = extra_context or {}
 
-        extra_context["total_stores"] = (
-            Store.objects.count()
-        )
+        extra_context["total_stores"] = Store.objects.count()
 
-        extra_context["closed_stores"] = (
-            Store.objects.filter(
-                partner_closed=True
-            ).count()
-        )
+        # Closed by either LOKA Admin or Store Partner
+        extra_context["closed_stores"] = Store.objects.filter(
+            Q(admin_closed=True) | Q(partner_closed=True)
+        ).count()
 
-        extra_context["open_stores"] = (
-            Store.objects.filter(
-                partner_closed=False
-            ).count()
-        )
+        # Open only when both closure flags are False
+        extra_context["open_stores"] = Store.objects.filter(
+            admin_closed=False,
+            partner_closed=False
+        ).count()
 
         return super().changelist_view(
             request,
             extra_context=extra_context,
         )
 
+    
 from django.contrib import admin
 from django.urls import path, reverse
 from django.utils.html import format_html

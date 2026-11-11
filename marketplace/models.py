@@ -83,6 +83,11 @@ class Store(models.Model):
         help_text="Temporarily closed by store partner"
     )
 
+    admin_closed = models.BooleanField(
+        default=False,
+        help_text="Temporarily closed by LOKA administration"
+    )
+
     commission_percent = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -112,7 +117,8 @@ class Store(models.Model):
     )
 
     def is_open(self):
-        if self.partner_closed:
+        # Store is closed if either admin or partner has closed it
+        if self.admin_closed or self.partner_closed:
             return False
         
         now = timezone.localtime()
