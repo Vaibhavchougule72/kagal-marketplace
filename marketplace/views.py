@@ -716,7 +716,7 @@ def home(request):
         is_active=True
     ).order_by("priority")
     # inside your home view, where you build the context
-    service_off = timezone.localdate() == date(2026, 11, 11)
+    service_off = timezone.localdate() == date(2026, 10, 9)
     # =====================================================
     # FINAL RESPONSE
     # =====================================================
