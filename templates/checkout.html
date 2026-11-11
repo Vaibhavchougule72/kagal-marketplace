@@ -1231,7 +1231,12 @@ function renderCouponSuggestions(search = '') {
 
     const couponSuggestions = document.getElementById('couponSuggestions');
     const couponWrapper = document.getElementById('couponWrapper');
+    const couponInputEl = document.getElementById('coupon_code');
     const query = search.trim().toUpperCase();
+
+    // Open the list only while the customer is using the coupon field.
+    // Background loads (page open, address change) keep it closed.
+    const shouldOpen = document.activeElement === couponInputEl;
 
     const filteredCoupons = availableCoupons.filter(function(coupon) {
         return !query || coupon.code.toUpperCase().includes(query);
@@ -1241,7 +1246,7 @@ function renderCouponSuggestions(search = '') {
         couponSuggestions.innerHTML = `
             <div class="co-coupon-empty">No matching coupons available.</div>
         `;
-        couponWrapper.classList.add('open');
+        if (shouldOpen) { couponWrapper.classList.add('open'); }
         return;
     }
 
@@ -1260,7 +1265,7 @@ function renderCouponSuggestions(search = '') {
         `;
     }).join('');
 
-    couponWrapper.classList.add('open');
+    if (shouldOpen) { couponWrapper.classList.add('open'); }
 
     couponSuggestions
         .querySelectorAll('.co-coupon-suggestion')

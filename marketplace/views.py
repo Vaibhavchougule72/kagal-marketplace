@@ -312,7 +312,15 @@ def get_road_route_distance(coordinates):
         cached_result = cache.get(cache_key)
 
         if cached_result is not None:
+
+            logger.info(
+                "[LOKA OSRM] CACHE HIT | Road Distance: %.2f km",
+                cached_result["total_distance_km"]
+            )
+
             return cached_result
+
+        logger.info("[LOKA OSRM] CACHE MISS | Requesting actual road route")
 
         url = (
             f"{OSRM_BASE_URL}/route/v1/driving/"
@@ -455,9 +463,17 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
         store_lat = getattr(store, "latitude", None) if store else None
         store_lon = getattr(store, "longitude", None) if store else None
 
+        store_id = getattr(store, "id", "Unknown")
+
+        logger.info(
+            "[LOKA DISTANCE] Starting calculation | Store ID: %s",
+            store_id
+        )
+
         # ---------------------------------
-        # STORE COORDINATES AVAILABLE
+        # CASE 1: STORE COORDINATES AVAILABLE
         # ---------------------------------
+
         if store_lat is not None and store_lon is not None:
 
             store_location = (
@@ -465,16 +481,36 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
                 float(store_lon)
             )
 
-            # Try actual road distance first.
+            logger.info(
+                "[LOKA DISTANCE] Store coordinates available | Store ID: %s",
+                store_id
+            )
+
+            # Try actual road distance using OSRM.
             route = get_road_route_distance([
                 store_location,
                 customer
             ])
 
             if route:
-                return round(route["total_distance_km"], 2)
 
-            # Fallback: adjusted straight-line distance.
+                road_distance = round(
+                    route["total_distance_km"], 2
+                )
+
+                logger.info(
+                    "[LOKA DISTANCE] METHOD: OSRM ROAD DISTANCE | "
+                    "Store ID: %s | Distance: %.2f km",
+                    store_id,
+                    road_distance
+                )
+
+                return road_distance
+
+            # ---------------------------------
+            # OSRM FAILED: STRAIGHT-LINE FALLBACK
+            # ---------------------------------
+
             raw_distance = calculate_distance(
                 store_location[0],
                 store_location[1],
@@ -482,24 +518,54 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
                 customer[1]
             )
 
-            return round(
+            adjusted_distance = (
                 raw_distance if raw_distance <= 1
-                else 1 + (raw_distance - 1) * 1.55,
-                2
+                else 1 + (raw_distance - 1) * 1.55
             )
 
+            adjusted_distance = round(adjusted_distance, 2)
+
+            logger.warning(
+                "[LOKA DISTANCE] METHOD: STRAIGHT-LINE FALLBACK | "
+                "Store ID: %s | Raw Distance: %.2f km | "
+                "Adjusted Distance: %.2f km | Reason: OSRM unavailable",
+                store_id,
+                raw_distance,
+                adjusted_distance
+            )
+
+            return adjusted_distance
+
         # ---------------------------------
-        # STORE COORDINATES NOT AVAILABLE
+        # CASE 2: STORE COORDINATES MISSING
         # ---------------------------------
-        return round(
+
+        logger.warning(
+            "[LOKA DISTANCE] METHOD: BUS STAND FALLBACK | "
+            "Store ID: %s | Store coordinates missing",
+            store_id
+        )
+
+        distance = round(
             get_delivery_distance(customer[0], customer[1]),
             2
         )
 
-    except (TypeError, ValueError):
-        logger.exception("Store delivery distance calculation failed")
-        return None
+        logger.info(
+            "[LOKA DISTANCE] Bus Stand Reference Distance: %.2f km",
+            distance
+        )
 
+        return distance
+
+    except (TypeError, ValueError):
+
+        logger.exception(
+            "[LOKA DISTANCE] Invalid coordinates | Store ID: %s",
+            getattr(store, "id", "Unknown")
+        )
+
+        return None
 # =====================================================
 # STORE DETAIL DELIVERY INFORMATION API
 # =====================================================
