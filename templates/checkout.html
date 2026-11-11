@@ -818,7 +818,7 @@
                    data-address="{{ saved.address }}"
                    data-latitude="{{ saved.latitude|unlocalize }}"
                    data-longitude="{{ saved.longitude|unlocalize }}"
-                   data-delivery-fee="{{ saved.delivery_fee|unlocalize }}"
+                   data-delivery-fee="{% if saved.delivery_fee is not None %}{{ saved.delivery_fee|unlocalize }}{% endif %}"
                    data-distance="{{ saved.delivery_distance|unlocalize }}"
                    {% if forloop.first %}checked{% endif %}>
             <div class="addr-main">
@@ -1058,14 +1058,14 @@
           {% endfor %}
           <hr class="co-sum-divider">
           <div class="co-sum-row"><span>{% trans "Subtotal" %}</span><span>₹{{ subtotal }}</span></div>
-          <div class="co-sum-row"><span>{% trans "Delivery fee" %}</span><span id="deliveryFee">₹0</span></div>
+          <div class="co-sum-row"><span>{% trans "Delivery fee" %}</span><span id="deliveryFee">{% if initial_delivery_fee is not None %}{% if initial_delivery_fee == 0 %}FREE 🎉{% else %}₹{{ initial_delivery_fee|floatformat:"0" }}{% endif %}{% else %}₹0{% endif %}</span></div>
           <div class="co-sum-row"><span>{% trans "Handling fee" %}</span><span>₹{{ handling_fee }}</span></div>
           <div class="co-sum-row discount"><span>{% trans "Coupon discount" %}</span><span>— <span id="discount_amount">₹0</span></span></div>
           <div class="co-sum-row discount" id="lokaMoneyRow" style="display:none;">
             <span>LOKA Money</span>
             <span>− ₹<span id="lokaMoneyAmount">0</span></span>
           </div>
-          <div class="co-distance-info" id="distanceInfo"></div>
+          <div class="co-distance-info" id="distanceInfo">{% if initial_distance %}Distance: {{ initial_distance }} km · 40–60 min delivery{% endif %}</div>
         </div>
       </div>
 
@@ -1130,7 +1130,7 @@ const EDIT_LAT  = "{{ edit_address.latitude|unlocalize|default:'' }}";
 const EDIT_LNG  = "{{ edit_address.longitude|unlocalize|default:'' }}";
 
 let appliedDiscount = 0;
-let currentDeliveryFee = 0;
+let currentDeliveryFee = parseFloat("{{ initial_delivery_fee|default:'0'|unlocalize }}") || 0;
 
 
 /* =====================================================
@@ -1309,6 +1309,8 @@ function updateOrderTotal() {
         lokaAmount.innerText = '0';
     }
 }
+
+updateOrderTotal();
 
 /* ── MAP SETUP (full mode only) ── */
 var map = null;
@@ -1644,13 +1646,16 @@ function updateDelivery(lat, lng) {
 
         console.error('Delivery calculation failed:', error);
 
-        if (mapError) {
-            mapError.innerText =
-                error.message || 'Unable to calculate delivery.';
-            mapError.style.display = 'block';
+        // Saved addresses were already validated by the server.
+        // Only block the button when the customer is picking a new location.
+        if (IS_FULL) {
+            if (mapError) {
+                mapError.innerText =
+                    error.message || 'Unable to calculate delivery.';
+                mapError.style.display = 'block';
+            }
+            if (placeBtn) placeBtn.disabled = true;
         }
-
-        if (placeBtn) placeBtn.disabled = true;
     });
 }
 
@@ -1815,12 +1820,15 @@ document.addEventListener('DOMContentLoaded', function() {
      LINK SAVED PHONE WITH FCM TOKEN
      ===================================================== */
 
-  var savedPhone = localStorage.getItem('user_phone');
+    try {
+      var savedPhone = localStorage.getItem('user_phone');
 
-  if (savedPhone && /^[6-9]\d{9}$/.test(savedPhone) && window.LokaAndroid) {
-      window.LokaAndroid.linkPhone(savedPhone);
-      console.log("Saved phone linked with FCM token");
-  }
+      if (savedPhone && /^[6-9]\d{9}$/.test(savedPhone) && window.LokaAndroid) {
+          window.LokaAndroid.linkPhone(savedPhone);
+      }
+    } catch (e) {
+      console.warn('FCM link skipped:', e);
+    }
 
   /* Remember typed details (full mode fields are real inputs) */
   if (IS_FULL) {
@@ -1992,7 +2000,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var confirmedInput = document.getElementById('deliveryLocationConfirmedInput');
 
   /* ---------- COMPACT MODE: pick a saved address ---------- */
-  var selectSavedAddress = function(radio) {
+    var selectSavedAddress = function(radio) {
     var lat = radio.dataset.latitude;
     var lng = radio.dataset.longitude;
 
@@ -2005,11 +2013,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Saved addresses are already confirmed.
     window.deliveryLocationConfirmed = true;
     confirmedInput.value = 'true';
-    sessionStorage.setItem('checkoutDeliveryConfirmed', 'true');
-    localStorage.setItem('user_phone', phoneInput.value);
 
-    checkFreeDelivery(phoneInput.value);
-    loadAvailableCoupons(couponInput.value.trim());
+    // 1) Apply the server-calculated fee first
     var presetFee = parseFloat(radio.dataset.deliveryFee);
 
     if (!isNaN(presetFee)) {
@@ -2026,10 +2031,23 @@ document.addEventListener('DOMContentLoaded', function() {
       updateOrderTotal();
     }
 
+    // 2) Refresh from the server and re-check the delivery radius
+    updateDelivery(lat, lng);
 
-    if (window.LokaAndroid && /^[6-9]\d{9}$/.test(phoneInput.value)) {
-      window.LokaAndroid.linkPhone(phoneInput.value);
-    }
+    // 3) Nice-to-have extras: they must never break checkout
+    try {
+      sessionStorage.setItem('checkoutDeliveryConfirmed', 'true');
+      localStorage.setItem('user_phone', phoneInput.value);
+    } catch (e) {}
+
+    try { checkFreeDelivery(phoneInput.value); } catch (e) {}
+    try { loadAvailableCoupons(couponInput.value.trim()); } catch (e) {}
+
+    try {
+      if (window.LokaAndroid && /^[6-9]\d{9}$/.test(phoneInput.value)) {
+        window.LokaAndroid.linkPhone(phoneInput.value);
+      }
+    } catch (e) {}
   };
 
   if (!IS_FULL) {

@@ -320,7 +320,7 @@ def get_road_route_distance(coordinates):
             "?overview=false&steps=false"
         )
 
-        with urlopen(url, timeout=10) as response:
+        with urlopen(url, timeout=4) as response:
             data = json.loads(response.read().decode("utf-8"))
 
         if data.get("code") != "Ok":
@@ -1822,6 +1822,14 @@ def checkout(request):
             )
         else:
             addr.delivery_fee = None
+
+        initial_addr = (
+            saved_addresses[0]
+            if (saved_addresses and checkout_mode == "compact")
+            else None
+        )
+        context["initial_delivery_fee"] = getattr(initial_addr, "delivery_fee", None)
+        context["initial_distance"] = getattr(initial_addr, "delivery_distance", None)
 
     # =========================
     # POST LOGIC
