@@ -1469,6 +1469,9 @@ function confirmDeliveryLocation() {
         mapError.innerText = '✅ Delivery location confirmed!';
         mapError.style.display = 'block';
     }
+    // Recheck delivery after confirmation.
+    // This enables Confirm Order if delivery is available.
+    updateDelivery(lat, lng);
 }
 
 function useCurrentLocation() {
