@@ -2210,6 +2210,13 @@ class CustomerSession(models.Model):
         db_index=True
     )
 
+    visitor_key = models.CharField(
+        max_length=40,
+        db_index=True,
+        blank=True,
+        default=""
+    )
+
     customer = models.ForeignKey(
         "Customer",
         on_delete=models.SET_NULL,

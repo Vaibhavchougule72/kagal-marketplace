@@ -13415,13 +13415,13 @@ import json
 
 @require_POST
 def track_customer_activity(request):
+    import uuid
+    from datetime import timedelta
 
     try:
         data = json.loads(request.body or "{}")
 
-        visitor_key = str(
-            data.get("visitor_key", "")
-        ).strip()
+        visitor_key = str(data.get("visitor_key", "")).strip()
 
         if not visitor_key or len(visitor_key) > 40:
             return JsonResponse({
@@ -13432,45 +13432,76 @@ def track_customer_activity(request):
         customer = get_logged_in_customer(request)
 
         path = str(data.get("path", "/"))[:500]
-
         now = timezone.now()
 
         with transaction.atomic():
 
-            analytics_session, created = (
-                CustomerSession.objects.select_for_update()
-                .get_or_create(
-                    session_key=visitor_key,
-                    defaults={
-                        "customer": customer,
-                        "phone": customer.phone if customer else "",
-                        "last_path": path,
-                        "device_type": data.get("device_type", "")[:30],
-                        "browser": data.get("browser", "")[:100],
-                        "user_agent": request.META.get(
-                            "HTTP_USER_AGENT", ""
-                        )[:1000],
-                    }
+            # Find the latest active session for this browser.
+            analytics_session = (
+                CustomerSession.objects
+                .filter(
+                    visitor_key=visitor_key,
+                    last_activity_at__gte=now - timedelta(minutes=30)
                 )
+                .order_by("-started_at")
+                .first()
             )
 
-            if customer and analytics_session.customer_id != customer.id:
+            # Handle an older tracking record created before
+            # visitor_key was introduced.
+            if not analytics_session:
+                legacy_session = (
+                    CustomerSession.objects
+                    .filter(
+                        session_key=visitor_key,
+                        visitor_key=""
+                    )
+                    .first()
+                )
 
+                if legacy_session:
+                    legacy_session.visitor_key = visitor_key
+                    legacy_session.session_key = str(uuid.uuid4())
+                    legacy_session.save(
+                        update_fields=["visitor_key", "session_key"]
+                    )
+
+                    analytics_session = legacy_session
+
+            # Create a new browsing session if none is active.
+            created = False
+
+            if not analytics_session:
+                analytics_session = CustomerSession.objects.create(
+                    session_key=str(uuid.uuid4()),
+                    visitor_key=visitor_key,
+                    customer=customer,
+                    phone=customer.phone if customer else "",
+                    last_path=path,
+                    device_type=str(data.get("device_type", ""))[:30],
+                    browser=str(data.get("browser", ""))[:100],
+                    user_agent=request.META.get(
+                        "HTTP_USER_AGENT", ""
+                    )[:1000],
+                )
+
+                created = True
+
+            # Link anonymous browsing to the logged-in customer.
+            if customer:
                 analytics_session.customer = customer
                 analytics_session.phone = customer.phone
 
             # Calculate active browsing time.
+            # Ignore hidden-tab time and long gaps.
             if analytics_session.last_ping_at and not data.get("resume"):
-
                 elapsed = (
                     now - analytics_session.last_ping_at
                 ).total_seconds()
 
                 active_seconds = min(max(elapsed, 0), 20)
 
-                analytics_session.active_seconds += int(
-                    active_seconds
-                )
+                analytics_session.active_seconds += int(active_seconds)
 
             analytics_session.last_ping_at = now
             analytics_session.last_activity_at = now
@@ -13478,8 +13509,8 @@ def track_customer_activity(request):
 
             analytics_session.save()
 
+            # Record a visit for every new browsing session.
             if created:
-
                 CustomerActivity.objects.create(
                     session=analytics_session,
                     event_type="VISIT",
@@ -13487,11 +13518,12 @@ def track_customer_activity(request):
                 )
 
         return JsonResponse({
-            "success": True
+            "success": True,
+            "session_id": analytics_session.session_key,
+            "new_session": created
         })
 
     except Exception as e:
-
         logger.exception(
             "Customer funnel tracking failed: %s", e
         )
