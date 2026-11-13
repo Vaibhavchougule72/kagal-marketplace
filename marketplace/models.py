@@ -2197,3 +2197,156 @@ class AppUpdateSettings(models.Model):
 
     def __str__(self):
         return "LOKA App Update Settings"
+
+# =====================================================
+# CUSTOMER FUNNEL ANALYTICS
+# =====================================================
+
+class CustomerSession(models.Model):
+
+    session_key = models.CharField(
+        max_length=40,
+        unique=True,
+        db_index=True
+    )
+
+    customer = models.ForeignKey(
+        "Customer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="analytics_sessions"
+    )
+
+    phone = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        db_index=True
+    )
+
+    started_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
+
+    last_activity_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    last_ping_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    active_seconds = models.PositiveIntegerField(
+        default=0
+    )
+
+    device_type = models.CharField(
+        max_length=30,
+        blank=True
+    )
+
+    browser = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    user_agent = models.TextField(
+        blank=True
+    )
+
+    last_path = models.CharField(
+        max_length=500,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ["-started_at"]
+        indexes = [
+            models.Index(
+                fields=["started_at", "phone"]
+            ),
+            models.Index(
+                fields=["customer", "started_at"]
+            ),
+        ]
+
+    def __str__(self):
+        return f"Session {self.session_key}"
+
+
+class CustomerActivity(models.Model):
+
+    EVENT_CHOICES = [
+
+        ("VISIT", "Visited LOKA"),
+
+        ("EXPLORE", "Explored Store"),
+
+        ("PRODUCT_VIEW", "Viewed Product"),
+
+        ("ADD_TO_CART", "Added to Cart"),
+
+        ("CHECKOUT", "Opened Checkout"),
+
+        ("ORDER_PLACED", "Order Placed"),
+
+    ]
+
+    session = models.ForeignKey(
+        CustomerSession,
+        on_delete=models.CASCADE,
+        related_name="activities"
+    )
+
+    event_type = models.CharField(
+        max_length=30,
+        choices=EVENT_CHOICES,
+        db_index=True
+    )
+
+    store = models.ForeignKey(
+        "Store",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    product = models.ForeignKey(
+        "Product",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    path = models.CharField(
+        max_length=500,
+        blank=True
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+        indexes = [
+            models.Index(
+                fields=["event_type", "created_at"]
+            ),
+            models.Index(
+                fields=["session", "event_type"]
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type} - Session {self.session_id}"

@@ -493,6 +493,12 @@ urlpatterns = [
         firebase_messaging_service_worker,
         name="firebase_messaging_sw"
     ),
+    path(
+        "track-customer-activity/",
+        views.track_customer_activity,
+        name="track_customer_activity"
+    ),
 ]
+
 
 

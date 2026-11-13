@@ -2700,6 +2700,199 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 {% endif %}
+
+<!-- =========================================
+     LOKA CUSTOMER FUNNEL TRACKING
+========================================= -->
+
+<script>
+(function () {
+
+    // Avoid tracking admin pages.
+    if (window.location.pathname.startsWith("/admin")) {
+        return;
+    }
+
+    const TRACK_URL = "/track-customer-activity/";
+
+    // -------------------------------------
+    // UNIQUE VISITOR IDENTIFICATION
+    // -------------------------------------
+
+    let visitorKey = localStorage.getItem("loka_visitor_key");
+
+    if (!visitorKey) {
+
+        visitorKey = crypto.randomUUID();
+
+        localStorage.setItem(
+            "loka_visitor_key",
+            visitorKey
+        );
+    }
+
+    // -------------------------------------
+    // CSRF TOKEN
+    // -------------------------------------
+
+    function getCookie(name) {
+
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+
+            cookie = cookie.trim();
+
+            if (cookie.startsWith(name + "=")) {
+
+                return decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+            }
+        }
+
+        return "";
+    }
+
+    // -------------------------------------
+    // DEVICE INFORMATION
+    // -------------------------------------
+
+    function getDeviceType() {
+
+        const ua = navigator.userAgent;
+
+        if (/tablet|ipad/i.test(ua)) {
+            return "Tablet";
+        }
+
+        if (/mobile|android|iphone/i.test(ua)) {
+            return "Mobile";
+        }
+
+        return "Desktop";
+    }
+
+    function getBrowser() {
+
+        const ua = navigator.userAgent;
+
+        if (ua.includes("Edg/")) return "Edge";
+        if (ua.includes("Chrome/")) return "Chrome";
+        if (ua.includes("Firefox/")) return "Firefox";
+        if (ua.includes("Safari/")) return "Safari";
+
+        return "Other";
+    }
+
+    // -------------------------------------
+    // SEND ACTIVITY
+    // -------------------------------------
+
+    let isResume = true;
+
+    function sendActivity() {
+
+        if (document.visibilityState !== "visible") {
+            return;
+        }
+
+        const payload = {
+
+            visitor_key: visitorKey,
+
+            path: window.location.pathname,
+
+            device_type: getDeviceType(),
+
+            browser: getBrowser(),
+
+            resume: isResume
+
+        };
+
+        isResume = false;
+
+        fetch(TRACK_URL, {
+
+            method: "POST",
+
+            credentials: "same-origin",
+
+            headers: {
+
+                "Content-Type": "application/json",
+
+                "X-CSRFToken": getCookie("csrftoken"),
+
+                "X-Requested-With": "XMLHttpRequest"
+
+            },
+
+            body: JSON.stringify(payload)
+
+        })
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Tracking request failed");
+            }
+
+            return response.json();
+
+        })
+        .catch(error => {
+
+            console.warn(
+                "LOKA tracking:",
+                error.message
+            );
+
+        });
+
+    }
+
+    // -------------------------------------
+    // INITIAL VISIT
+    // -------------------------------------
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            sendActivity();
+
+            // Heartbeat every 15 seconds.
+            setInterval(function () {
+
+                sendActivity();
+
+            }, 15000);
+
+        }
+    );
+
+    // -------------------------------------
+    // PAUSE / RESUME
+    // -------------------------------------
+
+    document.addEventListener(
+        "visibilitychange",
+        function () {
+
+            if (document.visibilityState === "visible") {
+
+                isResume = true;
+
+                sendActivity();
+
+            }
+
+        }
+    );
+
+})();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

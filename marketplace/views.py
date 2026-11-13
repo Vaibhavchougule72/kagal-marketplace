@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponse, request
 import secrets
 
 from django.template import context
-from .models import RiderOrderOffer
+from .models import RiderOrderOffer, CustomerSession, CustomerActivity
 import string
 from .models import NotificationCampaign, NotificationJob
 from django.db.models import Q
@@ -465,13 +465,8 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
 
         store_id = getattr(store, "id", "Unknown")
 
-        logger.info(
-            "[LOKA DISTANCE] Starting calculation | Store ID: %s",
-            store_id
-        )
-
         # ---------------------------------
-        # CASE 1: STORE COORDINATES AVAILABLE
+        # STORE COORDINATES AVAILABLE
         # ---------------------------------
 
         if store_lat is not None and store_lon is not None:
@@ -481,91 +476,74 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
                 float(store_lon)
             )
 
-            logger.info(
-                "[LOKA DISTANCE] Store coordinates available | Store ID: %s",
-                store_id
-            )
-
-            # Try actual road distance using OSRM.
+            # Try OSRM road distance first.
             route = get_road_route_distance([
                 store_location,
                 customer
             ])
 
             if route:
+                calculated_distance = route["total_distance_km"]
+                method = "OSRM ROAD DISTANCE"
 
-                road_distance = round(
-                    route["total_distance_km"], 2
+            else:
+                # Straight-line fallback with existing adjustment.
+                raw_distance = calculate_distance(
+                    store_location[0],
+                    store_location[1],
+                    customer[0],
+                    customer[1]
                 )
 
-                logger.info(
-                    "[LOKA DISTANCE] METHOD: OSRM ROAD DISTANCE | "
-                    "Store ID: %s | Distance: %.2f km",
-                    store_id,
-                    road_distance
+                calculated_distance = (
+                    raw_distance if raw_distance <= 1
+                    else 1 + (raw_distance - 1) * 1.55
                 )
 
-                return road_distance
+                method = "STRAIGHT-LINE FALLBACK"
 
-            # ---------------------------------
-            # OSRM FAILED: STRAIGHT-LINE FALLBACK
-            # ---------------------------------
+        # ---------------------------------
+        # STORE COORDINATES NOT AVAILABLE
+        # ---------------------------------
 
-            raw_distance = calculate_distance(
-                store_location[0],
-                store_location[1],
+        else:
+
+            calculated_distance = get_delivery_distance(
                 customer[0],
                 customer[1]
             )
 
-            adjusted_distance = (
-                raw_distance if raw_distance <= 1
-                else 1 + (raw_distance - 1) * 1.55
-            )
-
-            adjusted_distance = round(adjusted_distance, 2)
-
-            logger.warning(
-                "[LOKA DISTANCE] METHOD: STRAIGHT-LINE FALLBACK | "
-                "Store ID: %s | Raw Distance: %.2f km | "
-                "Adjusted Distance: %.2f km | Reason: OSRM unavailable",
-                store_id,
-                raw_distance,
-                adjusted_distance
-            )
-
-            return adjusted_distance
+            method = "BUS STAND FALLBACK"
 
         # ---------------------------------
-        # CASE 2: STORE COORDINATES MISSING
+        # ADD 1 KM AND ROUND
         # ---------------------------------
 
-        logger.warning(
-            "[LOKA DISTANCE] METHOD: BUS STAND FALLBACK | "
-            "Store ID: %s | Store coordinates missing",
-            store_id
-        )
-
-        distance = round(
-            get_delivery_distance(customer[0], customer[1]),
-            2
+        final_distance = int(
+            (Decimal(str(calculated_distance)) + Decimal("1"))
+            .quantize(Decimal("1"), rounding=ROUND_HALF_UP)
         )
 
         logger.info(
-            "[LOKA DISTANCE] Bus Stand Reference Distance: %.2f km",
-            distance
+            "[LOKA DISTANCE] Store: %s | Method: %s | "
+            "Calculated: %.2f km | After +1 km: %.2f km | "
+            "Final rounded distance: %s km",
+            store_id,
+            method,
+            calculated_distance,
+            calculated_distance + 1,
+            final_distance
         )
 
-        return distance
+        return final_distance
 
     except (TypeError, ValueError):
-
         logger.exception(
-            "[LOKA DISTANCE] Invalid coordinates | Store ID: %s",
-            getattr(store, "id", "Unknown")
+            "[LOKA DISTANCE] Store delivery distance calculation failed"
         )
-
         return None
+
+
 # =====================================================
 # STORE DETAIL DELIVERY INFORMATION API
 # =====================================================
@@ -2107,36 +2085,11 @@ def checkout(request):
                 or next_order_number == 10
             )
 
-            if is_free_delivery_order:
-
-                delivery_fee = Decimal(0)
-
-            elif subtotal >= 999:
-
-                delivery_fee = Decimal(0)
-
-            else:
-
-                if distance <= 2:
-                    delivery_fee = Decimal(15)
-
-                elif distance <= 3:
-                    delivery_fee = Decimal(18)
-
-                elif distance <= 4:
-                    delivery_fee = Decimal(20)
-
-                elif distance <= 5:
-                    delivery_fee = Decimal(23)
-
-                elif distance <= 6:
-                    delivery_fee = Decimal(27)
-
-                elif distance <= 7:
-                    delivery_fee = Decimal(30)
-
-                else:
-                    delivery_fee = Decimal(40)
+            delivery_fee = get_delivery_fee(
+                distance,
+                subtotal,
+                is_free_delivery_order
+            )
 
             # -------------------------
             # COUPON
@@ -4199,36 +4152,11 @@ def calculate_delivery(request):
 
     handling_fee = Decimal(5) if subtotal < 99 else Decimal(9)
 
-    delivery_fee = 15
-
-    if free_delivery:
-        delivery_fee = Decimal(0)
-
-    elif subtotal >= 999:
-        delivery_fee = Decimal(0)
-
-    else:
-
-        if distance <= 2:
-            delivery_fee = Decimal(15)
-        elif distance <= 3:
-            delivery_fee = Decimal(18)
-        elif distance <= 4:
-            delivery_fee = Decimal(20)
-        elif distance <= 5:
-            delivery_fee = Decimal(23)
-        elif distance <= 6:
-            delivery_fee = Decimal(27)
-        elif distance <= 7:
-            delivery_fee = Decimal(30)
-        else:
-            delivery_fee = Decimal(40)
-
-
-        if delivery_fee > 80:
-            delivery_fee = Decimal(80)
-
-    delivery_fee = Decimal(delivery_fee)
+    delivery_fee = get_delivery_fee(
+        distance,
+        subtotal,
+        free_delivery
+    )
 
     total = (
         Decimal(subtotal) +
@@ -13470,4 +13398,104 @@ def app_download_settings(request):
         return JsonResponse({
             "success": False,
             "message": "Unable to load download settings."
+        }, status=500)
+
+
+# =====================================================
+# CUSTOMER FUNNEL - ACTIVITY TRACKING
+# =====================================================
+
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db import transaction
+from datetime import timedelta
+import json
+
+
+@require_POST
+def track_customer_activity(request):
+
+    try:
+        data = json.loads(request.body or "{}")
+
+        visitor_key = str(
+            data.get("visitor_key", "")
+        ).strip()
+
+        if not visitor_key or len(visitor_key) > 40:
+            return JsonResponse({
+                "success": False,
+                "message": "Invalid visitor key"
+            }, status=400)
+
+        customer = get_logged_in_customer(request)
+
+        path = str(data.get("path", "/"))[:500]
+
+        now = timezone.now()
+
+        with transaction.atomic():
+
+            analytics_session, created = (
+                CustomerSession.objects.select_for_update()
+                .get_or_create(
+                    session_key=visitor_key,
+                    defaults={
+                        "customer": customer,
+                        "phone": customer.phone if customer else "",
+                        "last_path": path,
+                        "device_type": data.get("device_type", "")[:30],
+                        "browser": data.get("browser", "")[:100],
+                        "user_agent": request.META.get(
+                            "HTTP_USER_AGENT", ""
+                        )[:1000],
+                    }
+                )
+            )
+
+            if customer and analytics_session.customer_id != customer.id:
+
+                analytics_session.customer = customer
+                analytics_session.phone = customer.phone
+
+            # Calculate active browsing time.
+            if analytics_session.last_ping_at and not data.get("resume"):
+
+                elapsed = (
+                    now - analytics_session.last_ping_at
+                ).total_seconds()
+
+                active_seconds = min(max(elapsed, 0), 20)
+
+                analytics_session.active_seconds += int(
+                    active_seconds
+                )
+
+            analytics_session.last_ping_at = now
+            analytics_session.last_activity_at = now
+            analytics_session.last_path = path
+
+            analytics_session.save()
+
+            if created:
+
+                CustomerActivity.objects.create(
+                    session=analytics_session,
+                    event_type="VISIT",
+                    path=path
+                )
+
+        return JsonResponse({
+            "success": True
+        })
+
+    except Exception as e:
+
+        logger.exception(
+            "Customer funnel tracking failed: %s", e
+        )
+
+        return JsonResponse({
+            "success": False
         }, status=500)
