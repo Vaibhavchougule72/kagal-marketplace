@@ -198,6 +198,12 @@
     overflow: hidden;
     text-decoration: none;
     position: relative;
+
+    /* click feel */
+    transition: transform .18s cubic-bezier(.2, .8, .2, 1),
+                box-shadow .2s, border-color .2s, opacity .25s;
+    -webkit-tap-highlight-color: transparent;
+    will-change: transform;
   }
 
   .cs-store-row:hover:not(.cs-disabled) {
@@ -208,6 +214,59 @@
   .cs-store-row.cs-disabled {
     opacity: 0.62;
     cursor: default;
+  }
+
+  /* press-down */
+  .cs-store-row:active:not(.cs-disabled) {
+    transform: scale(.97);
+    box-shadow: 0 1px 4px rgba(45, 90, 39, .15);
+  }
+
+  /* ripple */
+  .cs-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(45, 90, 39, .18);
+    transform: scale(0);
+    animation: cs-ripple .55s ease-out forwards;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  @keyframes cs-ripple {
+    to { transform: scale(1); opacity: 0; }
+  }
+
+  /* selected card while navigating */
+  .cs-store-row.cs-selected {
+    transform: scale(1.02);
+    border-color: #2D5A27;
+    box-shadow: 0 6px 20px rgba(45, 90, 39, .25);
+    z-index: 3;
+  }
+
+  /* the other cards fade back */
+  .cs-store-list.cs-leaving .cs-store-row:not(.cs-selected) {
+    opacity: .35;
+    transform: scale(.98);
+  }
+
+  /* closed store shake */
+  .cs-store-row.cs-shake {
+    animation: cs-shake .35s ease;
+  }
+
+  @keyframes cs-shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cs-store-row,
+    .cs-ripple { transition: none; animation: none; }
   }
 
   .cs-top-rated {
@@ -549,11 +608,61 @@
     input.focus();
   });
 
-  // closed stores are not clickable
+  // ── click effects ──
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function addRipple(e, card) {
+    var rect = card.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height) * 2;
+    var x = e.detail === 0 ? rect.width / 2 : e.clientX - rect.left;   // keyboard: center
+    var y = e.detail === 0 ? rect.height / 2 : e.clientY - rect.top;
+
+    var r = document.createElement('span');
+    r.className = 'cs-ripple';
+    r.style.width = r.style.height = size + 'px';
+    r.style.left = (x - size / 2) + 'px';
+    r.style.top  = (y - size / 2) + 'px';
+    card.appendChild(r);
+    setTimeout(function () { r.remove(); }, 600);
+  }
+
   cards.forEach(function (card) {
-    if (card.classList.contains('cs-disabled')) {
-      card.addEventListener('click', function (e) { e.preventDefault(); });
-    }
+    card.addEventListener('click', function (e) {
+
+      // closed store: shake, don't navigate
+      if (card.classList.contains('cs-disabled')) {
+        e.preventDefault();
+        card.classList.remove('cs-shake');
+        void card.offsetWidth;            // restart animation
+        card.classList.add('cs-shake');
+        return;
+      }
+
+      if (!reduceMotion) addRipple(e, card);
+
+      // let ctrl/cmd/shift/middle-click behave normally (new tab etc.)
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+
+      e.preventDefault();
+      var href = card.getAttribute('href');
+
+      if (reduceMotion) { window.location.href = href; return; }
+
+      card.classList.add('cs-selected');
+      list.classList.add('cs-leaving');
+
+      setTimeout(function () { window.location.href = href; }, 280);
+    });
+
+    card.addEventListener('animationend', function (e) {
+      if (e.animationName === 'cs-shake') card.classList.remove('cs-shake');
+    });
+  });
+
+  // restore state when user comes back via the browser back button
+  window.addEventListener('pageshow', function () {
+    list.classList.remove('cs-leaving');
+    cards.forEach(function (c) { c.classList.remove('cs-selected'); });
   });
 })();
 </script>

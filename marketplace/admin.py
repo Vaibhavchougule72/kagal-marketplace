@@ -1374,25 +1374,109 @@ class ComplaintAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 def download_customers_excel(modeladmin, request, queryset):
-    customers = Customer.objects.all().values(
-        "name",
-        "phone"
+
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.db.models import Count, Max
+
+    today = timezone.localdate()
+
+    # ----------------------------------
+    # GET VALID ORDER STATISTICS
+    # ----------------------------------
+
+    valid_orders = (
+        Order.objects
+        .exclude(status__in=["FAILED", "CANCELLED"])
+        .values("phone")
+        .annotate(
+            order_count=Count("id"),
+            last_order_date=Max("created_at")
+        )
     )
 
-    df = pd.DataFrame(customers)
+    order_data = {
+        item["phone"]: {
+            "order_count": item["order_count"],
+            "last_order_date": item["last_order_date"]
+        }
+        for item in valid_orders
+    }
 
-    # Rename columns
-    df.rename(columns={
-        "name": "Customer Name",
-        "phone": "Phone Number",
-    }, inplace=True)
+    # ----------------------------------
+    # GET ALL CUSTOMERS
+    # ----------------------------------
+
+    customers = Customer.objects.all().order_by("-created_at")
+
+    rows = []
+
+    for customer in customers:
+
+        customer_orders = order_data.get(
+            customer.phone,
+            {}
+        )
+
+        order_count = customer_orders.get(
+            "order_count", 0
+        )
+
+        last_order_date = customer_orders.get(
+            "last_order_date"
+        )
+
+        # Registration date
+        register_date = timezone.localtime(
+            customer.created_at
+        ).date()
+
+        days_from_register = (
+            today - register_date
+        ).days
+
+        # Days since last order
+        if last_order_date:
+
+            last_order_date = timezone.localtime(
+                last_order_date
+            ).date()
+
+            days_from_last_order = (
+                today - last_order_date
+            ).days
+
+        else:
+            days_from_last_order = ""
+
+        rows.append({
+            "Customer Name": customer.name,
+            "Phone Number": customer.phone,
+            "Register Date": register_date,
+            "Days From Register": days_from_register,
+            "Number of Orders": order_count,
+            "Days From Last Order": days_from_last_order,
+        })
+
+    # ----------------------------------
+    # CREATE EXCEL
+    # ----------------------------------
+
+    df = pd.DataFrame(rows, columns=[
+        "Customer Name",
+        "Phone Number",
+        "Register Date",
+        "Days From Register",
+        "Number of Orders",
+        "Days From Last Order",
+    ])
 
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
     response["Content-Disposition"] = (
-        'attachment; filename="customers.xlsx"'
+        'attachment; filename="loka_customer_analytics.xlsx"'
     )
 
     df.to_excel(
@@ -1402,7 +1486,6 @@ def download_customers_excel(modeladmin, request, queryset):
     )
 
     return response
-
 
 class CustomerAddressInline(admin.TabularInline):
     model = CustomerAddress
