@@ -26,7 +26,7 @@ from django import forms
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Count, Min, Max
-
+from .models import CustomerSession, CustomerActivity
 from .models import CustomerReferral, CustomerVisit, AppUpdateSettings
 from django.core.exceptions import ValidationError
 
@@ -2172,3 +2172,43 @@ class AppUpdateSettingsAdmin(admin.ModelAdmin):
             request,
             extra_context
         )
+
+
+@admin.register(CustomerSession)
+class CustomerSessionAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "visitor_key",
+        "customer",
+        "phone",
+        "started_at",
+        "last_activity_at",
+        "active_seconds",
+    )
+
+    search_fields = (
+        "visitor_key",
+        "phone",
+        "session_key",
+    )
+
+    list_filter = ("device_type", "started_at")
+
+
+@admin.register(CustomerActivity)
+class CustomerActivityAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "session",
+        "event_type",
+        "store",
+        "product",
+        "created_at",
+    )
+
+    list_filter = ("event_type", "created_at")
+
+    search_fields = (
+        "session__visitor_key",
+        "session__phone",
+    )
