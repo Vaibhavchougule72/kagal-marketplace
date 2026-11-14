@@ -2154,6 +2154,14 @@ document.querySelectorAll(
     });
 
 });
+
+// =====================================
+// CUSTOMER FUNNEL: CHECKOUT OPENED
+// =====================================
+
+if (typeof window.trackCustomerEvent === "function") {
+    window.trackCustomerEvent("CHECKOUT");
+}
 </script>
 
 {% if error == "Please confirm your delivery location before placing your order." %}

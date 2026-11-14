@@ -13436,6 +13436,22 @@ def track_customer_activity(request):
 
         with transaction.atomic():
 
+            # Prevent simultaneous session creation for the same visitor.
+            from django.db import connection
+            import hashlib
+
+            lock_key = int.from_bytes(
+                hashlib.sha256(visitor_key.encode()).digest()[:8],
+                byteorder="big",
+                signed=True
+            )
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT pg_advisory_xact_lock(%s)",
+                    [lock_key]
+                )
+
             # Find the latest active session for this browser.
             analytics_session = (
                 CustomerSession.objects
@@ -13516,6 +13532,86 @@ def track_customer_activity(request):
                     event_type="VISIT",
                     path=path
                 )
+
+            # Record additional funnel events when explicitly requested.
+            event_type = str(data.get("event_type", "")).upper().strip()
+
+            allowed_events = {
+                "EXPLORE",
+                "PRODUCT_VIEW",
+                "ADD_TO_CART",
+                "CHECKOUT",
+                "ORDER_PLACED",
+            }
+
+            if event_type in allowed_events:
+
+                # Prevent duplicate successful-order events.
+                if event_type == "ORDER_PLACED":
+                    metadata = data.get("metadata", {})
+
+                    if not isinstance(metadata, dict):
+                        metadata = {}
+
+                    order_id = str(metadata.get("order_id", "")).strip()
+
+                    if not order_id:
+                        return JsonResponse({
+                            "success": False,
+                            "message": "Order ID is required."
+                        }, status=400)
+
+                    already_tracked = CustomerActivity.objects.filter(
+                        session=analytics_session,
+                        event_type="ORDER_PLACED",
+                        metadata__order_id=order_id
+                    ).exists()
+
+                    if already_tracked:
+                        return JsonResponse({
+                            "success": True,
+                            "duplicate": True
+                        })
+
+                # Prevent repeated checkout events in the same session.
+                if event_type == "CHECKOUT":
+                    already_tracked = CustomerActivity.objects.filter(
+                        session=analytics_session,
+                        event_type="CHECKOUT"
+                    ).exists()
+
+                    if already_tracked:
+                        return JsonResponse({
+                            "success": True,
+                            "duplicate": True
+                        })
+
+                store_id = data.get("store_id")
+                product_id = data.get("product_id")
+
+                store = None
+                product = None
+
+                if store_id:
+                    store = Store.objects.filter(id=store_id).first()
+
+                if product_id:
+                    product = Product.objects.filter(id=product_id).first()
+
+                CustomerActivity.objects.create(
+                    session=analytics_session,
+                    event_type=event_type,
+                    store=store,
+                    product=product,
+                    path=path,
+                    metadata=data.get("metadata", {})
+                        if isinstance(data.get("metadata", {}), dict)
+                        else {}
+                )
+
+            
+
+            
 
         return JsonResponse({
             "success": True,

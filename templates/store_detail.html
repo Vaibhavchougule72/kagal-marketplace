@@ -2106,6 +2106,13 @@ sheetAddBtn.onclick = function () {
             refreshCartBadge();
             showToast();
 
+            if (typeof window.trackCustomerEvent === "function") {
+                window.trackCustomerEvent("ADD_TO_CART", {
+                    product_id: currentProduct,
+                    store_id: "{{ store.id }}"
+                });
+            }
+
             overlay.classList.remove("show");
 
         } else if (data.different_store) {
@@ -2380,6 +2387,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
 </script>
 
+<script>
+    // =====================================
+    // CUSTOMER FUNNEL: STORE EXPLORE
+    // =====================================
+
+    if (typeof window.trackCustomerEvent === "function") {
+        window.trackCustomerEvent("EXPLORE", {
+            store_id: "{{ store.id }}"
+        });
+    }
+</script>
 {% endblock %}

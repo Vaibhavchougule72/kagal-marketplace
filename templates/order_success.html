@@ -352,6 +352,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
   var orderId = "{{ order.id }}";
 
+  // =====================================
+  // CUSTOMER FUNNEL: ORDER PLACED
+  // =====================================
+
+  var orderTrackingKey = "loka_order_tracked_" + orderId;
+
+  if (
+      !localStorage.getItem(orderTrackingKey) &&
+      typeof window.trackCustomerEvent === "function"
+  ) {
+      window.trackCustomerEvent("ORDER_PLACED", {
+          metadata: {
+              order_id: orderId,
+              order_total: "{{ order.total }}",
+              payment_method: "{{ order.payment_method|escapejs }}"
+          }
+      });
+
+      localStorage.setItem(orderTrackingKey, "1");
+  }
+
   /* ── GA PURCHASE TRACKING ── */
   if (!sessionStorage.getItem("purchase_tracked_" + orderId)) {
     if (typeof gtag === "function") {

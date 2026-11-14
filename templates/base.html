@@ -905,6 +905,12 @@ document.addEventListener("DOMContentLoaded", function(){
                 refreshCartBadge();
                 showToast();
 
+                if (typeof window.trackCustomerEvent === "function") {
+                    window.trackCustomerEvent("ADD_TO_CART", {
+                        product_id: productId
+                    });
+                }
+
                 trackAddToCart(productId, name, parseFloat(price));
                 return;
             }
@@ -1331,6 +1337,13 @@ const image = card.dataset.image;
 const id = card.dataset.id;
 
 currentProductId = id;
+
+// CUSTOMER FUNNEL: PRODUCT VIEW
+if (typeof window.trackCustomerEvent === "function") {
+    window.trackCustomerEvent("PRODUCT_VIEW", {
+        product_id: id
+    });
+}
 const available =
     card.dataset.available === "true";
 
@@ -2784,6 +2797,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return "Other";
     }
+
+    // -------------------------------------
+    // CUSTOMER FUNNEL: EVENT TRACKING
+    // -------------------------------------
+
+    window.trackCustomerEvent = function(eventType, details = {}) {
+
+        const payload = {
+            visitor_key: visitorKey,
+            path: window.location.pathname,
+            device_type: getDeviceType(),
+            browser: getBrowser(),
+            resume: true,
+            event_type: eventType,
+            ...details
+        };
+
+        fetch(TRACK_URL, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Event tracking failed");
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.warn("LOKA event tracking:", error.message);
+        });
+
+    };
 
     // -------------------------------------
     // SEND ACTIVITY
