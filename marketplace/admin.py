@@ -2293,9 +2293,54 @@ class CustomerSessionAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def customer_funnel_analytics(self, request):
+
+        # Total browsing sessions
+        total_sessions = CustomerSession.objects.count()
+
+        # Unique browsers
+        unique_visitors = (
+            CustomerSession.objects
+            .exclude(visitor_key="")
+            .values("visitor_key")
+            .distinct()
+            .count()
+        )
+
+        # Funnel events
+        activities = CustomerActivity.objects
+
+        store_explorations = activities.filter(
+            event_type="EXPLORE"
+        ).count()
+
+        product_views = activities.filter(
+            event_type="PRODUCT_VIEW"
+        ).count()
+
+        add_to_cart = activities.filter(
+            event_type="ADD_TO_CART"
+        ).count()
+
+        checkout_opened = activities.filter(
+            event_type="CHECKOUT"
+        ).count()
+
+        orders_placed = activities.filter(
+            event_type="ORDER_PLACED"
+        ).count()
+
         context = {
             **self.admin_site.each_context(request),
+
             "title": "Customer Funnel Analytics",
+
+            "unique_visitors": unique_visitors,
+            "total_sessions": total_sessions,
+            "store_explorations": store_explorations,
+            "product_views": product_views,
+            "add_to_cart": add_to_cart,
+            "checkout_opened": checkout_opened,
+            "orders_placed": orders_placed,
         }
 
         return render(
