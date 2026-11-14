@@ -1417,6 +1417,34 @@ body{
     .sd-product-card .sd-add-btn.lk-added { animation: none; }
 }
 
+/* Delivery info — match Rating / Starting style */
+.store-delivery-info {
+    display: flex;
+    align-items: center;
+}
+
+.sd-delivery-result {
+    display: flex;
+    align-items: center;
+}
+
+.store-delivery-info .sd-meta-item,
+.store-delivery-info .sd-meta-item strong {
+    font-size: 13px !important;
+    font-weight: 400;
+    color: #555 !important;
+}
+
+.store-delivery-info .sd-meta-item strong {
+    font-weight: 700;
+    color: #111 !important;
+}
+
+.store-delivery-info .sd-delivery-unavailable {
+    color: #dc3545 !important;
+    font-size: 12px !important;
+}
+
 </style>
 
 <!-- ══════════════════════════════════════════
@@ -1480,18 +1508,25 @@ body{
         {% endif %}
 
         <div id="storeDeliveryInfo" class="store-delivery-info">
-            <span id="storeDeliveryLoading">
-                🛵 Checking delivery availability...
-            </span>
 
-            <div id="storeDeliveryResult" style="display:none;">
-                <span id="storeDeliveryDistance"></span>
-                <span id="storeDeliveryETA"></span>
+            <div id="storeDeliveryLoading" class="sd-meta-item">
+                🛵 Checking delivery...
             </div>
 
-            <span id="storeDeliveryUnavailable"
-                style="display:none; color:#dc3545;">
-            </span>
+            <div id="storeDeliveryResult" class="sd-delivery-result" style="display:none;">
+                <div class="sd-meta-item">
+                    📍 <strong id="storeDeliveryDistance"></strong>
+                </div>
+                <div class="sd-meta-divider"></div>
+                <div class="sd-meta-item">
+                    🛵 <strong id="storeDeliveryETA"></strong>
+                </div>
+            </div>
+
+            <div id="storeDeliveryUnavailable"
+                class="sd-meta-item sd-delivery-unavailable"
+                style="display:none;"></div>
+
         </div>
     </div>
 
@@ -2353,9 +2388,8 @@ document.addEventListener("DOMContentLoaded", function () {
             unavailable.style.display = "none";
             result.style.display = "flex";
 
-            distanceEl.textContent = `📍 ${data.distance} km`;
-            etaEl.textContent =
-                `🛵 ${data.eta_min}–${data.eta_max} min`;
+            distanceEl.textContent = `${data.distance} km`;
+            etaEl.textContent = `${data.eta_min}–${data.eta_max} min`;
 
         } catch (error) {
 
@@ -2379,7 +2413,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Refresh when the global location manager updates GPS location.
     window.addEventListener("lokaLocationUpdated", function (event) {
-        loading.style.display = "block";
+        loading.style.display = "flex";
         result.style.display = "none";
         unavailable.style.display = "none";
 

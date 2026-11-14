@@ -520,7 +520,7 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
         # ---------------------------------
 
         final_distance = int(
-            (Decimal(str(calculated_distance)) + Decimal("1"))
+            (Decimal(str(calculated_distance)) + Decimal("0.5"))
             .quantize(Decimal("1"), rounding=ROUND_HALF_UP)
         )
 
