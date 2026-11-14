@@ -1,0 +1,268 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Customer Funnel Analytics | LOKA{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+
+<style>
+.funnel-dashboard {
+    padding: 20px 10px;
+}
+
+.funnel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.funnel-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.funnel-subtitle {
+    color: #777;
+    margin-top: 6px;
+}
+
+.funnel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.funnel-card {
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.funnel-card-label {
+    font-size: 13px;
+    color: var(--body-quiet-color, #777);
+    margin-bottom: 12px;
+}
+
+.funnel-card-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--body-fg, #222);
+}
+
+.funnel-section {
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.funnel-section h2 {
+    font-size: 19px;
+    margin: 0 0 18px;
+}
+
+.funnel-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.funnel-filter {
+    padding: 9px 15px;
+    border-radius: 7px;
+    border: 1px solid var(--border-color, #ddd);
+    text-decoration: none;
+    color: var(--body-fg, #333);
+}
+
+.funnel-filter.active {
+    background: #286b50;
+    color: white;
+    border-color: #286b50;
+}
+
+.funnel-table-wrapper {
+    overflow-x: auto;
+}
+
+.funnel-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+.funnel-table th,
+.funnel-table td {
+    padding: 13px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #eee);
+    font-size: 13px;
+}
+
+.funnel-table th {
+    font-weight: 700;
+    color: var(--body-quiet-color, #666);
+}
+
+.funnel-empty {
+    text-align: center;
+    padding: 35px;
+    color: #888;
+}
+
+.funnel-badge {
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: #e8f5e9;
+    color: #26713d;
+}
+
+@media(max-width: 600px) {
+    .funnel-dashboard {
+        padding: 10px 0;
+    }
+
+    .funnel-header h1 {
+        font-size: 21px;
+    }
+
+    .funnel-card-value {
+        font-size: 25px;
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="funnel-dashboard">
+
+    <!-- HEADER -->
+    <div class="funnel-header">
+        <div>
+            <h1>📊 Customer Funnel Analytics</h1>
+            <div class="funnel-subtitle">
+                Understand how visitors explore LOKA and place orders.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- KPI CARDS -->
+    <div class="funnel-grid">
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Unique Visitors</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Total Sessions</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Store Explorations</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Product Views</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Add to Cart</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Checkout Opened</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+        <div class="funnel-card">
+            <div class="funnel-card-label">Orders Placed</div>
+            <div class="funnel-card-value">0</div>
+        </div>
+
+    </div>
+
+
+    <!-- VISITOR TABLE -->
+    <div class="funnel-section">
+
+        <h2>Visitor Analytics</h2>
+
+        <div class="funnel-filters">
+
+            <a href="#" class="funnel-filter active">
+                All Visitors
+            </a>
+
+            <a href="#" class="funnel-filter">
+                Registered Customers
+            </a>
+
+            <a href="#" class="funnel-filter">
+                Anonymous Visitors
+            </a>
+
+            <a href="#" class="funnel-filter">
+                Ordered Customers
+            </a>
+
+            <a href="#" class="funnel-filter">
+                Visitors Without Orders
+            </a>
+
+        </div>
+
+
+        <div class="funnel-table-wrapper">
+
+            <table class="funnel-table">
+
+                <thead>
+                    <tr>
+                        <th>Visitor</th>
+                        <th>Phone</th>
+                        <th>Sessions</th>
+                        <th>Product Views</th>
+                        <th>Cart</th>
+                        <th>Checkout</th>
+                        <th>Orders</th>
+                        <th>Active Time</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td colspan="8" class="funnel-empty">
+                            Visitor analytics will appear here.
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

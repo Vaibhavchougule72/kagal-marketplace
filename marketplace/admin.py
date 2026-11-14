@@ -2194,6 +2194,33 @@ class CustomerSessionAdmin(admin.ModelAdmin):
 
     list_filter = ("device_type", "started_at")
 
+    def get_urls(self):
+        urls = super().get_urls()
+
+        custom_urls = [
+            path(
+                "funnel-analytics/",
+                self.admin_site.admin_view(
+                    self.customer_funnel_analytics
+                ),
+                name="customer_funnel_analytics",
+            ),
+        ]
+
+        return custom_urls + urls
+
+    def customer_funnel_analytics(self, request):
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Customer Funnel Analytics",
+        }
+
+        return render(
+            request,
+            "admin/customer_funnel_analytics.html",
+            context
+        )
+
 
 @admin.register(CustomerActivity)
 class CustomerActivityAdmin(admin.ModelAdmin):
