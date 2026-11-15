@@ -414,6 +414,105 @@
       </a>
     </div>
 
+    <!-- DELETE ACCOUNT -->
+    <div class="profile-menu-card">
+
+        <button
+            type="button"
+            class="profile-menu-item"
+            onclick="openDeleteAccountModal()"
+        >
+            <div class="profile-menu-icon red">🗑️</div>
+
+            <div class="profile-menu-text">
+                <span class="profile-menu-title logout-title">
+                    Delete Account
+                </span>
+
+                <span class="profile-menu-subtitle">
+                    Permanently deactivate your LOKA account
+                </span>
+            </div>
+
+            <div class="profile-menu-arrow logout-arrow">›</div>
+        </button>
+
+    </div>
+
+    <!-- DELETE ACCOUNT MODAL -->
+    <div id="deleteAccountModal"
+        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;align-items:center;justify-content:center;padding:20px;">
+
+        <div style="background:white;width:100%;max-width:380px;border-radius:18px;padding:24px;">
+
+            <div id="deleteConfirmation">
+
+                <h3 style="color:#C03030;margin-bottom:12px;">
+                    Delete Your Account?
+                </h3>
+
+                <p style="font-size:13px;color:#666;line-height:1.6;">
+                    Your account will be permanently deactivated.
+
+                    Your saved addresses and personal information will be removed.
+
+                    Your previous orders will remain in LOKA's records for historical reporting and calculations.
+                </p>
+
+                <button onclick="sendDeleteOTP()"
+                        style="width:100%;background:#C03030;color:white;border:0;padding:13px;border-radius:10px;font-weight:700;margin-top:15px;">
+                    Continue
+                </button>
+
+                <button onclick="closeDeleteAccountModal()"
+                        style="width:100%;background:#eee;border:0;padding:12px;border-radius:10px;margin-top:9px;">
+                    Cancel
+                </button>
+
+            </div>
+
+            <div id="deleteOTPSection" style="display:none;">
+
+                <h3 style="margin-bottom:10px;">
+                    Verify Your Identity
+                </h3>
+
+                <p style="font-size:13px;color:#777;">
+                    Enter the OTP sent to your registered WhatsApp number.
+                </p>
+
+                <form id="deleteOTPForm">
+
+                    {% csrf_token %}
+
+                    <input
+                        type="text"
+                        name="otp"
+                        maxlength="6"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        placeholder="Enter 6-digit OTP"
+                        required
+                        style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;margin:15px 0;"
+                    >
+
+                    <button type="submit"
+                            style="width:100%;background:#C03030;color:white;border:0;padding:13px;border-radius:10px;font-weight:700;">
+                        Verify & Delete Account
+                    </button>
+
+                </form>
+
+            </div>
+
+            <p id="deleteAccountMessage"
+              style="font-size:13px;color:#C03030;margin-top:12px;">
+            </p>
+
+        </div>
+
+    </div>
+
     <!-- ── FOOTER ── -->
     <div class="profile-footer">
       <strong>LOKA</strong> · Kagal's food delivery service
@@ -466,4 +565,131 @@ function showProfileComingSoon(feature) {
 }
 </style>
 
+<script>
+
+function openDeleteAccountModal() {
+    document.getElementById("deleteAccountModal").style.display = "flex";
+}
+
+function closeDeleteAccountModal() {
+    document.getElementById("deleteAccountModal").style.display = "none";
+}
+
+function showDeleteMessage(message) {
+    document.getElementById("deleteAccountMessage").textContent = message;
+}
+
+async function sendDeleteOTP() {
+
+    const button = document.querySelector(
+        "#deleteConfirmation button"
+    );
+
+    button.disabled = true;
+    button.textContent = "Sending OTP...";
+
+    try {
+
+        const formData = new FormData();
+
+        const csrf = document.querySelector(
+            '#deleteAccountModal input[name="csrfmiddlewaretoken"]'
+        ).value;
+
+        formData.append("csrfmiddlewaretoken", csrf);
+
+        const response = await fetch(
+            "{% url 'request_account_deletion_otp' %}",
+            {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+            showDeleteMessage(data.message);
+            return;
+        }
+
+        document.getElementById(
+            "deleteConfirmation"
+        ).style.display = "none";
+
+        document.getElementById(
+            "deleteOTPSection"
+        ).style.display = "block";
+
+        showDeleteMessage(data.message);
+
+    } catch (error) {
+
+        showDeleteMessage("Something went wrong. Please try again.");
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Continue";
+
+    }
+}
+
+document.getElementById("deleteOTPForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        const button = this.querySelector("button");
+
+        button.disabled = true;
+        button.textContent = "Verifying...";
+
+        try {
+
+            const response = await fetch(
+                "{% url 'confirm_account_deletion' %}",
+                {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (!data.success) {
+
+                showDeleteMessage(data.message);
+                return;
+
+            }
+
+            alert(data.message);
+
+            window.location.href = data.redirect_url;
+
+        } catch (error) {
+
+            showDeleteMessage("Something went wrong. Please try again.");
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = "Verify & Delete Account";
+
+        }
+
+    }
+);
+
+</script>
 {% endblock %}

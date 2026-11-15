@@ -77,6 +77,68 @@ from rest_framework.permissions import IsAuthenticated
 from .firebase import notify_partner_order_alert_cancelled
 from .models import SubCategory
 
+def record_order_placed_activity(order):
+    """
+    Record a successfully created order in customer funnel analytics.
+    """
+
+    try:
+        from datetime import timedelta
+
+        cutoff = timezone.now() - timedelta(hours=24)
+
+        # Find the most recent browsing session for this customer.
+        analytics_session = (
+            CustomerSession.objects
+            .filter(
+                phone=order.phone,
+                last_activity_at__gte=cutoff
+            )
+            .order_by("-last_activity_at")
+            .first()
+        )
+
+        if not analytics_session:
+            logger.warning(
+                "Funnel order tracking skipped: "
+                "No matching session for order %s",
+                order.id
+            )
+            return
+
+        # Prevent duplicate order tracking across sessions.
+        already_tracked = CustomerActivity.objects.filter(
+            event_type="ORDER_PLACED",
+            metadata__order_id=str(order.id)
+        ).exists()
+
+        if already_tracked:
+            return
+
+        CustomerActivity.objects.create(
+            session=analytics_session,
+            event_type="ORDER_PLACED",
+            store=order.store,
+            path="/order-success/",
+            metadata={
+                "order_id": str(order.id),
+                "order_total": str(order.total),
+                "payment_method": order.payment_method,
+            }
+        )
+
+        logger.info(
+            "Funnel ORDER_PLACED tracked for order %s",
+            order.id
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to record funnel order activity: %s",
+            order.id
+        )
+
+
 MAX_CART_QTY = 50
 
 # =====================================================
@@ -2452,6 +2514,11 @@ def checkout(request):
                             edit_address_id=edit_address_id,
                         )
 
+                # CUSTOMER FUNNEL: RECORD SUCCESSFUL COD ORDER
+                record_order_placed_activity(order)
+
+                request.session["cart"] = {"store_id": None, "items": {}}
+
                 request.session["cart"] = {"store_id": None, "items": {}}
                 if coupon:
 
@@ -3079,6 +3146,9 @@ def razorpay_webhook(request):
                 "is_payment_processed",
                 "is_payment_processing",
             ])
+
+            # CUSTOMER FUNNEL: RECORD SUCCESSFUL UPI ORDER
+            record_order_placed_activity(order)
 
             logger.info(
                 f"Webhook order created successfully: "
@@ -13627,3 +13697,294 @@ def track_customer_activity(request):
         return JsonResponse({
             "success": False
         }, status=500)
+
+@require_POST
+def request_account_deletion_otp(request):
+
+    customer = get_logged_in_customer(request)
+
+    if not customer:
+        return JsonResponse({
+            "success": False,
+            "message": "Please log in again."
+        }, status=401)
+
+    phone = customer.phone
+
+    # Do not allow deletion while an order is being processed.
+    active_order = Order.objects.filter(
+        phone=phone
+    ).exclude(
+        status__in=["DELIVERED", "FAILED", "CANCELLED"]
+    ).exists()
+
+    if active_order:
+        return JsonResponse({
+            "success": False,
+            "message": (
+                "You have an active order. "
+                "Please wait until it is completed before deleting your account."
+            )
+        }, status=400)
+
+    latest_otp = CustomerOTP.objects.filter(
+        phone=phone,
+        purpose="DELETE"
+    ).order_by("-created_at").first()
+
+    # 30-second cooldown
+    if latest_otp:
+        seconds = (
+            timezone.now() - latest_otp.created_at
+        ).total_seconds()
+
+        if seconds < 30:
+            return JsonResponse({
+                "success": False,
+                "message": "Please wait before requesting another OTP."
+            }, status=429)
+
+    otp = str(random.randint(100000, 999999))
+
+    expires_at = timezone.now() + timedelta(minutes=5)
+
+    CustomerOTP.objects.filter(
+        phone=phone,
+        purpose="DELETE",
+        is_used=False
+    ).update(is_used=True)
+
+    new_otp = CustomerOTP.objects.create(
+        phone=phone,
+        otp=make_password(otp),
+        purpose="DELETE",
+        expires_at=expires_at
+    )
+
+    whatsapp_response = send_whatsapp_login_otp(
+        phone,
+        otp
+    )
+
+    if whatsapp_response is None or not whatsapp_response.ok:
+
+        new_otp.delete()
+
+        return JsonResponse({
+            "success": False,
+            "message": "Unable to send OTP. Please try again."
+        }, status=500)
+
+    request.session["pending_delete_customer_id"] = customer.id
+    request.session["pending_delete_phone"] = phone
+    request.session.modified = True
+
+    return JsonResponse({
+        "success": True,
+        "message": "OTP sent successfully to your registered WhatsApp number."
+    })
+
+@require_POST
+def confirm_account_deletion(request):
+
+    customer_id = request.session.get(
+        "pending_delete_customer_id"
+    )
+
+    original_phone = request.session.get(
+        "pending_delete_phone"
+    )
+
+    logged_in_customer_id = request.session.get(
+        "customer_id"
+    )
+
+    if (
+        not customer_id
+        or not original_phone
+        or str(customer_id) != str(logged_in_customer_id)
+    ):
+        return JsonResponse({
+            "success": False,
+            "message": "Your session has expired. Please try again."
+        }, status=401)
+
+    customer = Customer.objects.filter(
+        id=customer_id,
+        phone=original_phone,
+        is_active=True
+    ).first()
+
+    if not customer:
+        return JsonResponse({
+            "success": False,
+            "message": "Customer account not found."
+        }, status=404)
+
+    entered_otp = (request.POST.get("otp") or "").strip()
+
+    if not entered_otp.isdigit() or len(entered_otp) != 6:
+        return JsonResponse({
+            "success": False,
+            "message": "Enter a valid 6-digit OTP."
+        }, status=400)
+
+    otp_record = CustomerOTP.objects.filter(
+        phone=original_phone,
+        purpose="DELETE",
+        is_used=False
+    ).order_by("-created_at").first()
+
+    if not otp_record:
+        return JsonResponse({
+            "success": False,
+            "message": "OTP not found. Please request a new OTP."
+        }, status=400)
+
+    if otp_record.is_expired():
+        return JsonResponse({
+            "success": False,
+            "message": "OTP expired. Please request a new OTP."
+        }, status=400)
+
+    if otp_record.attempts >= 3:
+        return JsonResponse({
+            "success": False,
+            "message": "Too many attempts. Please request a new OTP."
+        }, status=400)
+
+    if not check_password(entered_otp, otp_record.otp):
+
+        otp_record.attempts += 1
+        otp_record.save(update_fields=["attempts"])
+
+        return JsonResponse({
+            "success": False,
+            "message": "Incorrect OTP. Please try again."
+        }, status=400)
+
+    # Check again in case an order was placed during verification.
+    active_order = Order.objects.filter(
+        phone=original_phone
+    ).exclude(
+        status__in=["DELIVERED", "FAILED", "CANCELLED"]
+    ).exists()
+
+    if active_order:
+        return JsonResponse({
+            "success": False,
+            "message": "Please complete your active order before deleting your account."
+        }, status=400)
+
+    # Stable anonymous identifier for historical analytics.
+    anonymous_phone = f"D{customer.id:09d}"
+
+    with transaction.atomic():
+
+        # ------------------------------------------------
+        # 1. PRESERVE ORDERS, ANONYMISE CUSTOMER PII
+        # ------------------------------------------------
+
+        Order.objects.filter(
+            phone=original_phone
+        ).update(
+            customer_name="Deleted Customer",
+            phone=anonymous_phone,
+            address="Address removed",
+            customer_note="",
+            latitude=None,
+            longitude=None,
+            delivery_otp=None,
+            delivery_otp_sent_at=None
+        )
+
+        # ------------------------------------------------
+        # 2. PRESERVE CHECKOUT ANALYTICS
+        # ------------------------------------------------
+
+        CheckoutLead.objects.filter(
+            phone=original_phone
+        ).update(
+            name="Deleted Customer",
+            phone=anonymous_phone,
+            address=""
+        )
+
+        # ------------------------------------------------
+        # 3. PRESERVE FUNNEL ANALYTICS
+        # ------------------------------------------------
+
+        CustomerSession.objects.filter(
+            phone=original_phone
+        ).update(
+            customer=None,
+            phone=anonymous_phone,
+            user_agent=""
+        )
+
+        # ------------------------------------------------
+        # 4. DELETE PERSONAL DEVICE INFORMATION
+        # ------------------------------------------------
+
+        DeviceToken.objects.filter(
+            phone=original_phone
+        ).delete()
+
+        # ------------------------------------------------
+        # 5. DELETE SAVED ADDRESSES AND FAVORITES
+        # ------------------------------------------------
+
+        CustomerAddress.objects.filter(
+            customer=customer
+        ).delete()
+
+        FavoriteOrder.objects.filter(
+            customer=customer
+        ).delete()
+
+        # ------------------------------------------------
+        # 6. REMOVE OLD OTP RECORDS
+        # ------------------------------------------------
+
+        CustomerOTP.objects.filter(
+            phone=original_phone
+        ).delete()
+
+        # ------------------------------------------------
+        # 7. ANONYMISE CUSTOMER ACCOUNT
+        # ------------------------------------------------
+
+        customer.name = "Deleted Customer"
+        customer.phone = anonymous_phone
+        customer.email = ""
+        customer.referral_code = f"DEL{customer.id}"
+        customer.gender = None
+        customer.date_of_birth = None
+        customer.is_active = False
+        customer.is_verified = False
+        customer.last_login_at = None
+
+        customer.save(update_fields=[
+            "name",
+            "phone",
+            "email",
+            "referral_code",
+            "gender",
+            "date_of_birth",
+            "is_active",
+            "is_verified",
+            "last_login_at",
+            "updated_at"
+        ])
+
+    # ------------------------------------------------
+    # 8. LOG OUT CUSTOMER
+    # ------------------------------------------------
+
+    request.session.flush()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Your LOKA account has been deleted successfully.",
+        "redirect_url": "/"
+    })

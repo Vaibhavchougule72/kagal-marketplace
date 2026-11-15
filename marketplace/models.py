@@ -1946,6 +1946,7 @@ class CustomerOTP(models.Model):
             ("LOGIN", "Login"),
             ("REGISTER", "Register"),
             ("RESET", "Reset"),
+            ("DELETE", "Delete Account"),
         ],
         default="LOGIN"
     )

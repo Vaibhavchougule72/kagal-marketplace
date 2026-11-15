@@ -498,6 +498,17 @@ urlpatterns = [
         views.track_customer_activity,
         name="track_customer_activity"
     ),
+    path(
+        "profile/delete/send-otp/",
+        views.request_account_deletion_otp,
+        name="request_account_deletion_otp"
+    ),
+
+    path(
+        "profile/delete/verify/",
+        views.confirm_account_deletion,
+        name="confirm_account_deletion"
+    ),
 ]
 
 
