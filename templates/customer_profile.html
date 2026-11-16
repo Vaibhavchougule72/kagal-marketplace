@@ -444,6 +444,28 @@
         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999999;align-items:center;justify-content:center;padding:20px;">
 
         <div style="position:relative;background:white;width:100%;max-width:380px;border-radius:18px;padding:24px;">
+          <button
+                type="button"
+                onclick="closeDeleteAccountModal()"
+                aria-label="Close"
+                style="
+                    position:absolute;
+                    top:12px;
+                    right:12px;
+                    width:34px;
+                    height:34px;
+                    border:0;
+                    border-radius:50%;
+                    background:#f2f2f2;
+                    color:#333;
+                    font-size:23px;
+                    cursor:pointer;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                ">
+                &times;
+            </button>
 
             <div id="deleteConfirmation">
 
@@ -513,29 +535,7 @@
 
     </div>
 
-    <button
-      type="button"
-      onclick="closeDeleteAccountModal()"
-      aria-label="Close"
-      style="
-          position:absolute;
-          top:12px;
-          right:12px;
-          width:34px;
-          height:34px;
-          border:0;
-          border-radius:50%;
-          background:#f2f2f2;
-          color:#333;
-          font-size:23px;
-          cursor:pointer;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-      ">
-      &times;
-  </button>
-
+    
     <!-- ── FOOTER ── -->
     <div class="profile-footer">
       <strong>LOKA</strong> · Kagal's food delivery service
