@@ -588,12 +588,12 @@ def get_store_delivery_distance(store, customer_lat, customer_lon):
 
         logger.info(
             "[LOKA DISTANCE] Store: %s | Method: %s | "
-            "Calculated: %.2f km | After +1 km: %.2f km | "
+            "Calculated: %.2f km | After +0.5 km: %.2f km | "
             "Final rounded distance: %s km",
             store_id,
             method,
             calculated_distance,
-            calculated_distance + 1,
+            calculated_distance + 0.5,
             final_distance
         )
 
