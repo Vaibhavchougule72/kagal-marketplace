@@ -2126,21 +2126,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
           }
 
-    // Show confirmation popup automatically for Edit/New Address.
-    // Wait until location detection or fallback has completed.
-    setTimeout(function () {
-        const confirmedInput = document.getElementById(
-            'deliveryLocationConfirmedInput'
-        );
-
-        if (
-            IS_FULL &&
-            (!confirmedInput || confirmedInput.value !== 'true')
-        ) {
-            showLocationConfirmationPopup();
-        }
-    }, 1000);
-
   }
 
 });
