@@ -1556,8 +1556,9 @@ function updateDelivery(lat, lng) {
     var placeBtn = document.getElementById('placeOrderBtn');
     var distanceInfo = document.getElementById('distanceInfo');
 
-    // Prevent ordering while checking delivery availability
-    if (placeBtn) placeBtn.disabled = true;
+    // Keep Confirm Order clickable.
+    // Location confirmation is handled by the popup.
+    if (placeBtn) placeBtn.disabled = false;
 
     var phone = document.getElementById('phoneInput').value.trim();
 
@@ -1599,7 +1600,7 @@ function updateDelivery(lat, lng) {
                     'Distance: ' + data.distance + ' km';
             }
 
-            if (placeBtn) placeBtn.disabled = true;
+            if (placeBtn) placeBtn.disabled = false;
 
             return;
         }
@@ -1642,8 +1643,7 @@ function updateDelivery(lat, lng) {
         }
 
         if (placeBtn) {
-            placeBtn.disabled =
-                window.deliveryLocationConfirmed !== true;
+            placeBtn.disabled = false;
         }
 
     })
@@ -1659,7 +1659,7 @@ function updateDelivery(lat, lng) {
                     error.message || 'Unable to calculate delivery.';
                 mapError.style.display = 'block';
             }
-            if (placeBtn) placeBtn.disabled = true;
+            if (placeBtn) placeBtn.disabled = false;
         }
     });
 }
@@ -2123,7 +2123,24 @@ document.addEventListener('DOMContentLoaded', function() {
           showNoLocation();
         }
       });
-    }
+
+          }
+
+    // Show confirmation popup automatically for Edit/New Address.
+    // Wait until location detection or fallback has completed.
+    setTimeout(function () {
+        const confirmedInput = document.getElementById(
+            'deliveryLocationConfirmedInput'
+        );
+
+        if (
+            IS_FULL &&
+            (!confirmedInput || confirmedInput.value !== 'true')
+        ) {
+            showLocationConfirmationPopup();
+        }
+    }, 1000);
+
   }
 
 });
