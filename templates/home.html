@@ -267,6 +267,61 @@ body { background: #fff; }
     color: var(--loka-orange-deep); font-size: 15px; font-weight: 500; line-height: 1.3;
 }
 .lk-off-ic { flex: none; font-size: 18px; line-height: 1.2; }
+/* ---------- Tap feedback: press, ripple, bounce ---------- */
+.lk-search, .lk-seg-i, .lk-cat, .lk-feat, .lk-btn, .lk-footer-app, .lk-footer-card a, #popupAddBtn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.lk-fx { position: relative; overflow: hidden; }
+.lk-ripple {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    background: rgba(232, 86, 10, .30); transform: scale(0);
+    animation: lkRipple .55s ease-out forwards;
+}
+.lk-ripple.lk-light { background: rgba(255, 255, 255, .45); }
+@keyframes lkRipple { to { transform: scale(1); opacity: 0; } }
+
+/* search bar grows a little when you tap into it */
+.lk-search { transition: transform .18s ease; }
+.lk-search:focus-within { transform: scale(1.015); }
+.lk-search input { transition: box-shadow .2s ease; }
+
+/* touch screens: no sticky hover effects */
+@media (hover: none) {
+    .lk-cat:hover .lk-cat-img { transform: none; }
+    .lk-feat:hover { transform: none; box-shadow: 0 10px 28px rgba(15, 77, 50, .14), 0 2px 6px rgba(0, 0, 0, .06); }
+    .lk-seg-i:hover { background: transparent; }
+    .lk-seg-i.lk-hi:hover { background: #FFF3E6; }
+    .lk-btn:hover { background: var(--loka-green); }
+}
+
+/* shortcut card: tint + the icon squashes then bounces back */
+.lk-seg-i { transition: background .15s ease; }
+.lk-seg-i .lk-ic-sq { transition: transform .22s cubic-bezier(.3, 1.7, .5, 1); }
+.lk-seg-i:active { background: var(--loka-green-soft); }
+.lk-seg-i.lk-hi:active { background: #FFE0C2; }
+.lk-seg-i:active .lk-ic-sq { transform: scale(.8); }
+
+/* category circle: shrinks and gets an orange ring */
+.lk-cat-img { transition: transform .18s cubic-bezier(.3, 1.5, .5, 1), box-shadow .18s ease; }
+.lk-cat:active .lk-cat-img { transform: scale(.88); box-shadow: 0 0 0 3px var(--loka-orange); }
+.lk-cat:active .lk-cat-name { color: var(--loka-orange-deep); }
+
+/* kitchen card: pushed in */
+.lk-feat { transition: transform .16s ease, box-shadow .2s ease; }
+.lk-feat:active { transform: scale(.97); box-shadow: 0 4px 12px rgba(15, 77, 50, .16); }
+
+/* buttons */
+.lk-btn, .lk-footer-app, #popupAddBtn { transition: transform .14s ease, background .15s ease, box-shadow .15s ease; }
+.lk-btn:active, .lk-footer-app:active, #popupAddBtn:active { transform: scale(.93); box-shadow: 0 0 0 4px rgba(232, 86, 10, .22); }
+
+/* footer links */
+.lk-footer-card a { transition: transform .15s ease, opacity .15s ease; }
+.lk-footer-card a:active { transform: translateX(4px); opacity: .6; }
+
+@media (prefers-reduced-motion: reduce) {
+    .lk-ripple { display: none; }
+    .lk-search, .lk-seg-i, .lk-seg-i .lk-ic-sq, .lk-cat-img, .lk-feat, .lk-btn, .lk-footer-app, #popupAddBtn, .lk-footer-card a { transition: none; }
+    .lk-search:focus-within, .lk-cat:active .lk-cat-img, .lk-seg-i:active .lk-ic-sq, .lk-feat:active,
+    .lk-btn:active, .lk-footer-app:active, #popupAddBtn:active, .lk-footer-card a:active { transform: none; }
+}
 </style>
 
 
@@ -504,6 +559,74 @@ body { background: #fff; }
     if (!el) return;
     var h = new Date().getHours();
     el.textContent = h < 12 ? "Good morning" : (h < 17 ? "Good afternoon" : "Good evening");
+})();
+
+/* Tap feedback: ripple + a tiny vibration, and a short pause before a link opens so the press is visible */
+(function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var TARGETS = [
+        { sel: ".lk-seg-i", host: null, light: false },
+        { sel: ".lk-cat", host: ".lk-cat-img", light: false },
+        { sel: ".lk-feat", host: null, light: true },
+        { sel: ".lk-btn", host: null, light: true },
+        { sel: ".lk-footer-app", host: null, light: true },
+        { sel: "#popupAddBtn", host: null, light: true }
+    ];
+
+    function hostOf(el, t) { return t.host ? el.querySelector(t.host) : el; }
+
+    /* hosts must clip the ripple */
+    TARGETS.forEach(function (t) {
+        document.querySelectorAll(t.sel).forEach(function (el) {
+            var h = hostOf(el, t);
+            if (h) h.classList.add("lk-fx");
+        });
+    });
+
+    function ripple(host, e, light) {
+        var r = host.getBoundingClientRect();
+        var size = Math.max(r.width, r.height) * 2;
+        var x = e.clientX ? e.clientX - r.left : r.width / 2;
+        var y = e.clientY ? e.clientY - r.top : r.height / 2;
+        var dot = document.createElement("span");
+        dot.className = "lk-ripple" + (light ? " lk-light" : "");
+        dot.style.width = dot.style.height = size + "px";
+        dot.style.left = (x - size / 2) + "px";
+        dot.style.top = (y - size / 2) + "px";
+        host.appendChild(dot);
+        setTimeout(function () { dot.remove(); }, 600);
+    }
+
+    function canDelay(a, e) {
+        var href = a.getAttribute("href") || "";
+        return !e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey &&
+            !a.target && !a.hasAttribute("download") &&
+            href && href.charAt(0) !== "#" && !/^(javascript|tel|mailto):/i.test(href);
+    }
+
+    document.addEventListener("click", function (e) {
+        var hit = null;
+        for (var i = 0; i < TARGETS.length; i++) {
+            var el = e.target.closest(TARGETS[i].sel);
+            if (el) { hit = { el: el, t: TARGETS[i] }; break; }
+        }
+        var link = hit && hit.el.tagName === "A" ? hit.el : e.target.closest(".lk-footer-card a");
+        if (!hit && !link) return;
+
+        if (hit && !reduce) {
+            var host = hostOf(hit.el, hit.t);
+            if (host) ripple(host, e, hit.t.light);
+        }
+        if (!reduce && navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} }
+
+        if (link && canDelay(link, e)) {
+            if (link.__lkGo) { e.preventDefault(); return; }
+            link.__lkGo = true;
+            setTimeout(function () { link.__lkGo = false; }, 1500);
+            e.preventDefault();
+            setTimeout(function () { window.location.href = link.href; }, reduce ? 0 : 170);
+        }
+    });
 })();
 
 /* Featured kitchen dots follow the image slider that base.html runs */
