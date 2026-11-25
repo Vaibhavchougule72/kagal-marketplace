@@ -1725,10 +1725,10 @@ class CustomerAdmin(admin.ModelAdmin):
                     if row["Number of Orders"] > 5
                 ],
 
-                "Last Order > 5 Days": [
+                "Last Order 5-10 Days": [
                     row for row in all_rows
                     if row["Days From Last Order"] != ""
-                    and row["Days From Last Order"] > 5
+                    and 5 < row["Days From Last Order"] <= 10
                 ],
 
                 "Last Order > 10 Days": [
