@@ -2,12 +2,27 @@
 
 {% block content_title %}
 
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+
     <a href="{% url 'admin:marketplace_customer_customer_analytics' %}"
        class="button"
        style="padding: 10px 18px; font-size: 14px;">
         📊 Open Customer Analytics Dashboard
     </a>
+
+    <form method="POST"
+          action="{% url 'admin:marketplace_customer_refresh_google_sheet' %}"
+          style="display:inline;">
+        {% csrf_token %}
+
+        <button type="submit"
+                class="button"
+                style="padding:10px 18px; font-size:14px; background:#188038; color:white; border:none; cursor:pointer;"
+                onclick="return confirm('Refresh the LOKA Google Spreadsheet with the latest customer data?');">
+            🔄 Refresh Google Sheet
+        </button>
+    </form>
+
 </div>
 
 <h1>LOKA Customer Analytics</h1>

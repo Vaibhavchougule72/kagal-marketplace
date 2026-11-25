@@ -1538,6 +1538,14 @@ class CustomerAdmin(admin.ModelAdmin):
 
         custom_urls = [
             path(
+                "refresh-google-sheet/",
+                self.admin_site.admin_view(
+                    require_POST(self.refresh_google_sheet)
+                ),
+                name="marketplace_customer_refresh_google_sheet",
+            ),
+
+            path(
                 "analytics/",
                 self.admin_site.admin_view(
                     self.customer_analytics_view
@@ -1547,6 +1555,195 @@ class CustomerAdmin(admin.ModelAdmin):
         ]
 
         return custom_urls + urls
+
+    def refresh_google_sheet(self, request):
+
+        import os
+        import json
+        import logging
+        import gspread
+
+        from django.utils import timezone
+        from django.db.models import Count, Max
+        from django.shortcuts import redirect
+
+        logger = logging.getLogger(__name__)
+
+        try:
+
+            # ----------------------------------
+            # GET GOOGLE CREDENTIALS
+            # ----------------------------------
+
+            credentials_json = os.environ.get(
+                "GOOGLE_SERVICE_ACCOUNT_JSON"
+            )
+
+            spreadsheet_id = os.environ.get(
+                "GOOGLE_SHEETS_ID"
+            )
+
+            if not credentials_json or not spreadsheet_id:
+                raise ValueError(
+                    "Google Sheets environment variables are missing."
+                )
+
+            credentials = json.loads(credentials_json)
+
+            # ----------------------------------
+            # CONNECT TO GOOGLE SHEETS
+            # ----------------------------------
+
+            client = gspread.service_account_from_dict(
+                credentials
+            )
+
+            spreadsheet = client.open_by_key(
+                spreadsheet_id
+            )
+
+            # ----------------------------------
+            # GET CUSTOMER ORDER STATISTICS
+            # Same logic as Excel export
+            # ----------------------------------
+
+            today = timezone.localdate()
+
+            valid_orders = (
+                Order.objects
+                .exclude(status__in=["FAILED", "CANCELLED"])
+                .values("phone")
+                .annotate(
+                    order_count=Count("id"),
+                    last_order_date=Max("created_at")
+                )
+            )
+
+            order_data = {
+                item["phone"]: {
+                    "order_count": item["order_count"],
+                    "last_order_date": item["last_order_date"],
+                }
+                for item in valid_orders
+            }
+
+            # ----------------------------------
+            # PREPARE CUSTOMER DATA
+            # ----------------------------------
+
+            customers = Customer.objects.all().order_by(
+                "-created_at"
+            )
+
+            sheet_data = [[
+                "Customer Name",
+                "Phone Number",
+                "Register Date",
+                "Days From Register",
+                "Number of Orders",
+                "Days From Last Order",
+            ]]
+
+            for customer in customers:
+
+                customer_orders = order_data.get(
+                    customer.phone,
+                    {}
+                )
+
+                order_count = customer_orders.get(
+                    "order_count", 0
+                )
+
+                last_order_date = customer_orders.get(
+                    "last_order_date"
+                )
+
+                register_date = timezone.localtime(
+                    customer.created_at
+                ).date()
+
+                days_from_register = (
+                    today - register_date
+                ).days
+
+                if last_order_date:
+
+                    last_order_date = timezone.localtime(
+                        last_order_date
+                    ).date()
+
+                    days_from_last_order = (
+                        today - last_order_date
+                    ).days
+
+                else:
+                    days_from_last_order = ""
+
+                sheet_data.append([
+                    customer.name or "",
+                    customer.phone or "",
+                    register_date.isoformat(),
+                    days_from_register,
+                    order_count,
+                    days_from_last_order,
+                ])
+
+            # ----------------------------------
+            # UPDATE GOOGLE WORKSHEET
+            # ----------------------------------
+
+            try:
+                worksheet = spreadsheet.worksheet(
+                    "All Customers"
+                )
+            except gspread.WorksheetNotFound:
+                worksheet = spreadsheet.add_worksheet(
+                    title="All Customers",
+                    rows=max(len(sheet_data), 100),
+                    cols=6,
+                )
+
+            worksheet.clear()
+
+            worksheet.update(
+                values=sheet_data,
+                range_name="A1",
+                value_input_option="USER_ENTERED",
+            )
+
+            # ----------------------------------
+            # SUCCESS MESSAGE
+            # ----------------------------------
+
+            refreshed_at = timezone.localtime().strftime(
+                "%d %b %Y, %I:%M %p"
+            )
+
+            self.message_user(
+                request,
+                f"Google Sheet refreshed successfully! "
+                f"{len(sheet_data) - 1} customers updated. "
+                f"Last refreshed: {refreshed_at}",
+                level=messages.SUCCESS,
+            )
+
+        except Exception:
+
+            logger.exception(
+                "LOKA Google Sheets refresh failed"
+            )
+
+            self.message_user(
+                request,
+                "Google Sheets refresh failed. "
+                "Please check the Render application logs.",
+                level=messages.ERROR,
+            )
+
+        return redirect(
+            "admin:marketplace_customer_changelist"
+        )
 
     def changelist_view(self, request, extra_context=None):
 
