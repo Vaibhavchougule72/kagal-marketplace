@@ -1560,20 +1560,18 @@ class CustomerAdmin(admin.ModelAdmin):
 
         import os
         import json
-        import logging
         import gspread
 
         from django.utils import timezone
         from django.db.models import Count, Max
+        from django.contrib import messages
         from django.shortcuts import redirect
-
-        logger = logging.getLogger(__name__)
 
         try:
 
-            # ----------------------------------
-            # GET GOOGLE CREDENTIALS
-            # ----------------------------------
+            # =====================================
+            # GOOGLE SHEETS CONNECTION
+            # =====================================
 
             credentials_json = os.environ.get(
                 "GOOGLE_SERVICE_ACCOUNT_JSON"
@@ -1584,15 +1582,11 @@ class CustomerAdmin(admin.ModelAdmin):
             )
 
             if not credentials_json or not spreadsheet_id:
-                raise ValueError(
+                raise Exception(
                     "Google Sheets environment variables are missing."
                 )
 
             credentials = json.loads(credentials_json)
-
-            # ----------------------------------
-            # CONNECT TO GOOGLE SHEETS
-            # ----------------------------------
 
             client = gspread.service_account_from_dict(
                 credentials
@@ -1602,16 +1596,17 @@ class CustomerAdmin(admin.ModelAdmin):
                 spreadsheet_id
             )
 
-            # ----------------------------------
-            # GET CUSTOMER ORDER STATISTICS
-            # Same logic as Excel export
-            # ----------------------------------
+            # =====================================
+            # ORDER STATISTICS
+            # =====================================
 
             today = timezone.localdate()
 
             valid_orders = (
                 Order.objects
-                .exclude(status__in=["FAILED", "CANCELLED"])
+                .exclude(
+                    status__in=["FAILED", "CANCELLED"]
+                )
                 .values("phone")
                 .annotate(
                     order_count=Count("id"),
@@ -1622,40 +1617,42 @@ class CustomerAdmin(admin.ModelAdmin):
             order_data = {
                 item["phone"]: {
                     "order_count": item["order_count"],
-                    "last_order_date": item["last_order_date"],
+                    "last_order_date": item["last_order_date"]
                 }
                 for item in valid_orders
             }
 
-            # ----------------------------------
-            # PREPARE CUSTOMER DATA
-            # ----------------------------------
+            # =====================================
+            # CUSTOMER DATA
+            # =====================================
 
             customers = Customer.objects.all().order_by(
                 "-created_at"
             )
 
-            sheet_data = [[
+            headers = [
                 "Customer Name",
                 "Phone Number",
                 "Register Date",
                 "Days From Register",
                 "Number of Orders",
                 "Days From Last Order",
-            ]]
+            ]
+
+            all_rows = []
 
             for customer in customers:
 
-                customer_orders = order_data.get(
+                stats = order_data.get(
                     customer.phone,
                     {}
                 )
 
-                order_count = customer_orders.get(
+                order_count = stats.get(
                     "order_count", 0
                 )
 
-                last_order_date = customer_orders.get(
+                last_order_date = stats.get(
                     "last_order_date"
                 )
 
@@ -1678,67 +1675,132 @@ class CustomerAdmin(admin.ModelAdmin):
                     ).days
 
                 else:
+
                     days_from_last_order = ""
 
-                sheet_data.append([
-                    customer.name or "",
-                    customer.phone or "",
-                    register_date.isoformat(),
-                    days_from_register,
-                    order_count,
-                    days_from_last_order,
-                ])
+                all_rows.append({
+                    "Customer Name": customer.name or "",
+                    "Phone Number": customer.phone or "",
+                    "Register Date": str(register_date),
+                    "Days From Register": days_from_register,
+                    "Number of Orders": order_count,
+                    "Days From Last Order": days_from_last_order,
+                })
 
-            # ----------------------------------
-            # UPDATE GOOGLE WORKSHEET
-            # ----------------------------------
+            # =====================================
+            # CUSTOMER SEGMENTS
+            # =====================================
 
-            try:
-                worksheet = spreadsheet.worksheet(
-                    "All Customers"
+            sheets_data = {
+
+                "All Customers": all_rows,
+
+                "1 Order": [
+                    row for row in all_rows
+                    if row["Number of Orders"] == 1
+                ],
+
+                "2 Orders": [
+                    row for row in all_rows
+                    if row["Number of Orders"] == 2
+                ],
+
+                "3 Orders": [
+                    row for row in all_rows
+                    if row["Number of Orders"] == 3
+                ],
+
+                "4 Orders": [
+                    row for row in all_rows
+                    if row["Number of Orders"] == 4
+                ],
+
+                "5 Orders": [
+                    row for row in all_rows
+                    if row["Number of Orders"] == 5
+                ],
+
+                "More Than 5 Orders": [
+                    row for row in all_rows
+                    if row["Number of Orders"] > 5
+                ],
+
+                "Last Order > 5 Days": [
+                    row for row in all_rows
+                    if row["Days From Last Order"] != ""
+                    and row["Days From Last Order"] > 5
+                ],
+
+                "Last Order > 10 Days": [
+                    row for row in all_rows
+                    if row["Days From Last Order"] != ""
+                    and row["Days From Last Order"] > 10
+                ],
+
+            }
+
+            # =====================================
+            # UPDATE GOOGLE WORKSHEETS
+            # =====================================
+
+            for sheet_name, rows in sheets_data.items():
+
+                values = [headers]
+
+                for row in rows:
+
+                    values.append([
+                        row[column]
+                        for column in headers
+                    ])
+
+                try:
+
+                    worksheet = spreadsheet.worksheet(
+                        sheet_name
+                    )
+
+                except gspread.WorksheetNotFound:
+
+                    worksheet = spreadsheet.add_worksheet(
+                        title=sheet_name,
+                        rows=max(len(values), 100),
+                        cols=len(headers)
+                    )
+
+                # Remove previous data
+                worksheet.clear()
+
+                # Write latest data
+                worksheet.update(
+                    values,
+                    "A1"
                 )
-            except gspread.WorksheetNotFound:
-                worksheet = spreadsheet.add_worksheet(
-                    title="All Customers",
-                    rows=max(len(sheet_data), 100),
-                    cols=6,
-                )
 
-            worksheet.clear()
-
-            worksheet.update(
-                values=sheet_data,
-                range_name="A1",
-                value_input_option="USER_ENTERED",
-            )
-
-            # ----------------------------------
+            # =====================================
             # SUCCESS MESSAGE
-            # ----------------------------------
-
-            refreshed_at = timezone.localtime().strftime(
-                "%d %b %Y, %I:%M %p"
-            )
+            # =====================================
 
             self.message_user(
                 request,
-                f"Google Sheet refreshed successfully! "
-                f"{len(sheet_data) - 1} customers updated. "
-                f"Last refreshed: {refreshed_at}",
-                level=messages.SUCCESS,
+                (
+                    f"Google Spreadsheet refreshed successfully! "
+                    f"{len(all_rows)} total customers and "
+                    f"{len(sheets_data)} sheets updated."
+                ),
+                level=messages.SUCCESS
             )
 
-        except Exception:
+        except Exception as e:
 
             logger.exception(
-                "LOKA Google Sheets refresh failed"
+                "Google Sheets customer refresh failed"
             )
 
             self.message_user(
                 request,
-                "Google Sheets refresh failed. "
-                "Please check the Render application logs.",
-                level=messages.ERROR,
+                f"Google Sheets refresh failed: {str(e)}",
+                level=messages.ERROR
             )
 
         return redirect(
