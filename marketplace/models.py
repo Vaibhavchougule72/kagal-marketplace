@@ -2358,3 +2358,184 @@ class CustomerActivity(models.Model):
 
     def __str__(self):
         return f"{self.event_type} - Session {self.session_id}"
+    
+
+
+# =====================================================
+# BEHAVIOURAL PUSH NOTIFICATIONS
+# =====================================================
+
+class BehaviouralNotification(models.Model):
+
+    TRIGGER_CHOICES = [
+        ("VISIT", "Visited LOKA"),
+        ("EXPLORE", "Explored Store"),
+        ("PRODUCT_VIEW", "Viewed Product"),
+        ("ADD_TO_CART", "Added to Cart"),
+        ("CHECKOUT", "Opened Checkout"),
+    ]
+
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("PROCESSING", "Processing"),
+        ("SENT", "Sent"),
+        ("CANCELLED", "Cancelled"),
+        ("FAILED", "Failed"),
+    ]
+
+    # Customer receiving the notification
+    customer = models.ForeignKey(
+        "Customer",
+        on_delete=models.CASCADE,
+        related_name="behavioural_notifications"
+    )
+
+    # Session in which the activity occurred
+    session = models.ForeignKey(
+        "CustomerSession",
+        on_delete=models.CASCADE,
+        related_name="behavioural_notifications"
+    )
+
+    # Original activity that triggered this notification
+    activity = models.OneToOneField(
+        "CustomerActivity",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="behavioural_notification"
+    )
+
+    trigger_type = models.CharField(
+        max_length=30,
+        choices=TRIGGER_CHOICES,
+        db_index=True
+    )
+
+    title = models.CharField(
+        max_length=150
+    )
+
+    message = models.TextField()
+
+    # Higher number = higher priority
+    priority = models.PositiveSmallIntegerField(
+        default=1
+    )
+
+    scheduled_at = models.DateTimeField(
+        db_index=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        db_index=True
+    )
+
+    attempts = models.PositiveSmallIntegerField(
+        default=0
+    )
+
+    max_attempts = models.PositiveSmallIntegerField(
+        default=3
+    )
+
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    cancelled_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    locked_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    error_message = models.TextField(
+        blank=True,
+        default=""
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+        indexes = [
+            models.Index(
+                fields=["status", "scheduled_at"],
+                name="behav_status_sched_idx"
+            ),
+            models.Index(
+                fields=["customer", "created_at"],
+                name="behav_customer_date_idx"
+            ),
+            models.Index(
+                fields=["session", "status"],
+                name="behav_session_status_idx"
+            ),
+        ]
+
+        verbose_name = "Behavioural Notification"
+        verbose_name_plural = "Behavioural Notifications"
+
+    def __str__(self):
+        return (
+            f"{self.customer} | "
+            f"{self.trigger_type} | "
+            f"{self.status}"
+        )
+    
+
+class BehaviouralActivityProcessing(models.Model):
+
+    STATUS_CHOICES = [
+        ("PROCESSING", "Processing"),
+        ("PROCESSED", "Processed"),
+        ("IGNORED", "Ignored"),
+        ("FAILED", "Failed"),
+    ]
+
+    activity = models.OneToOneField(
+        "CustomerActivity",
+        on_delete=models.CASCADE,
+        related_name="processing_record"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PROCESSING",
+        db_index=True
+    )
+
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    error_message = models.TextField(blank=True, default="")
+
+    processed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Activity #{self.activity_id} - {self.status}"

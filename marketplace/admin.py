@@ -26,7 +26,12 @@ from django import forms
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Count, Min, Max
-from .models import CustomerSession, CustomerActivity
+from .models import (
+    CustomerSession,
+    CustomerActivity,
+    BehaviouralNotification,
+    BehaviouralActivityProcessing,
+)
 from .models import CustomerReferral, CustomerVisit, AppUpdateSettings
 from django.core.exceptions import ValidationError
 
@@ -2626,3 +2631,131 @@ class CustomerActivityAdmin(admin.ModelAdmin):
         "session__visitor_key",
         "session__phone",
     )
+
+
+# =====================================================
+# BEHAVIOURAL NOTIFICATION ADMIN
+# =====================================================
+
+@admin.register(BehaviouralNotification)
+class BehaviouralNotificationAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "customer",
+        "trigger_type",
+        "priority",
+        "scheduled_at",
+        "status",
+        "attempts",
+        "sent_at",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "trigger_type",
+        "priority",
+        "created_at",
+        "scheduled_at",
+    )
+
+    search_fields = (
+        "customer__phone",
+        "customer__name",
+        "session__phone",
+        "title",
+        "message",
+    )
+
+    readonly_fields = (
+        "customer",
+        "session",
+        "activity",
+        "trigger_type",
+        "title",
+        "message",
+        "priority",
+        "scheduled_at",
+        "status",
+        "attempts",
+        "max_attempts",
+        "sent_at",
+        "cancelled_at",
+        "locked_at",
+        "error_message",
+        "created_at",
+        "updated_at",
+    )
+
+    date_hierarchy = "created_at"
+
+    ordering = ("-created_at",)
+
+    list_per_page = 50
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+# =====================================================
+# BEHAVIOURAL ACTIVITY PROCESSING ADMIN
+# =====================================================
+
+@admin.register(BehaviouralActivityProcessing)
+class BehaviouralActivityProcessingAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "activity",
+        "get_event_type",
+        "get_customer_phone",
+        "status",
+        "attempts",
+        "processed_at",
+        "created_at",
+    )
+
+    list_filter = (
+        "status",
+        "created_at",
+        "processed_at",
+    )
+
+    search_fields = (
+        "activity__session__phone",
+        "activity__session__visitor_key",
+        "activity__event_type",
+        "error_message",
+    )
+
+    readonly_fields = (
+        "activity",
+        "status",
+        "attempts",
+        "error_message",
+        "processed_at",
+        "created_at",
+        "updated_at",
+    )
+
+    ordering = ("-created_at",)
+
+    list_per_page = 50
+
+    @admin.display(description="Event")
+    def get_event_type(self, obj):
+        return obj.activity.event_type
+
+    @admin.display(description="Customer Phone")
+    def get_customer_phone(self, obj):
+        return obj.activity.session.phone or "-"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
