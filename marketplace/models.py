@@ -2379,6 +2379,7 @@ class BehaviouralNotification(models.Model):
         ("PENDING", "Pending"),
         ("PROCESSING", "Processing"),
         ("SENT", "Sent"),
+        ("DRY_RUN", "Dry Run - Not Sent"),
         ("CANCELLED", "Cancelled"),
         ("FAILED", "Failed"),
     ]

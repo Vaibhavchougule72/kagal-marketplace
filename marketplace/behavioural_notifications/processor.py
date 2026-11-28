@@ -12,6 +12,16 @@ from marketplace.models import (
 )
 
 from marketplace.firebase import send_push_notification
+import os
+
+# =====================================================
+# DRY RUN CONFIGURATION
+# =====================================================
+
+DRY_RUN = os.getenv(
+    "BEHAVIOURAL_NOTIFICATIONS_DRY_RUN",
+    "True"
+).lower() in ("true", "1", "yes")
 
 logger = logging.getLogger(__name__)
 
@@ -193,6 +203,36 @@ def send_behavioural_notification(notification_id):
 
         return "CANCELLED"
 
+    # -------------------------------------------------
+    # DRY RUN: DO NOT SEND THROUGH FIREBASE
+    # -------------------------------------------------
+
+    if DRY_RUN:
+
+        notification.status = "DRY_RUN"
+        notification.error_message = (
+            "Dry run successful. Notification was validated "
+            "but was NOT sent through Firebase."
+        )
+        notification.locked_at = None
+
+        notification.save(
+            update_fields=[
+                "status",
+                "error_message",
+                "locked_at",
+                "updated_at",
+            ]
+        )
+
+        logger.info(
+            "[DRY RUN] Notification #%s validated. "
+            "Firebase sending skipped.",
+            notification.id
+        )
+
+        return "DRY_RUN"
+    
     tokens = DeviceToken.objects.filter(
         phone=notification.customer.phone
     ).values_list("token", flat=True)
