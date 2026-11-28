@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 BATCH_SIZE = 20
 
 INACTIVITY_GRACE_MINUTES = 2
-
+MAX_NOTIFICATION_AGE_HOURS = 2
 PROCESSING_TIMEOUT_MINUTES = 10
 
 
@@ -44,8 +44,41 @@ PROCESSING_TIMEOUT_MINUTES = 10
 def customer_is_inactive(notification):
 
     session = notification.session
+    # 0. Notification must be within 2 hours of the activity.
+    activity_time = (
+        notification.activity.created_at
+        if notification.activity_id
+        else notification.created_at
+    )
+
+    expiry_time = activity_time + timedelta(
+        hours=MAX_NOTIFICATION_AGE_HOURS
+    )
+
+    if timezone.now() > expiry_time:
+        return False, "Notification expired: activity is older than 2 hours."
 
     now = timezone.now()
+    # Cancel notifications whose 2-hour activity window has expired.
+    expiry_cutoff = now - timedelta(
+        hours=MAX_NOTIFICATION_AGE_HOURS
+    )
+
+    expired_count = BehaviouralNotification.objects.filter(
+        status="PENDING",
+        activity__created_at__lt=expiry_cutoff
+    ).update(
+        status="CANCELLED",
+        cancelled_at=now,
+        locked_at=None,
+        error_message="Notification expired: 2-hour delivery window exceeded."
+    )
+
+    if expired_count:
+        logger.info(
+            "Expired %s behavioural notifications.",
+            expired_count
+        )
 
     last_ping = session.last_ping_at
 
@@ -176,6 +209,22 @@ def send_behavioural_notification(notification_id):
         id=notification_id
     )
 
+    # Never send a notification that has already been sent.
+    if notification.status == "SENT":
+        logger.info(
+            "Notification #%s already sent. Skipping.",
+            notification.id
+        )
+        return "SKIPPED"
+
+    if notification.status != "PROCESSING":
+        logger.info(
+            "Notification #%s is not PROCESSING. Current status: %s",
+            notification.id,
+            notification.status
+        )
+        return "SKIPPED"
+
     # Validate before sending.
     valid, reason = validate_notification(notification)
 
@@ -295,7 +344,30 @@ def send_behavioural_notification(notification_id):
     # All devices failed.
     error_text = "; ".join(errors)[:4000]
 
-    if notification.attempts < notification.max_attempts:
+    # -------------------------------------------------
+    # CHECK 2-HOUR EXPIRY BEFORE RETRY
+    # -------------------------------------------------
+
+    activity_time = (
+        notification.activity.created_at
+        if notification.activity_id
+        else notification.created_at
+    )
+
+    expiry_time = activity_time + timedelta(
+        hours=MAX_NOTIFICATION_AGE_HOURS
+    )
+
+    if timezone.now() >= expiry_time:
+
+        notification.status = "CANCELLED"
+        notification.cancelled_at = timezone.now()
+        notification.error_message = (
+            "Notification expired after 2 hours. "
+            "Delivery retries stopped."
+        )
+
+    elif notification.attempts < notification.max_attempts:
 
         notification.status = "PENDING"
 
@@ -303,17 +375,20 @@ def send_behavioural_notification(notification_id):
             timezone.now() + timedelta(minutes=5)
         )
 
+        notification.error_message = error_text
+
     else:
 
         notification.status = "FAILED"
+        notification.error_message = error_text
 
-    notification.error_message = error_text
     notification.locked_at = None
 
     notification.save(
         update_fields=[
             "status",
             "scheduled_at",
+            "cancelled_at",
             "error_message",
             "locked_at",
             "updated_at"

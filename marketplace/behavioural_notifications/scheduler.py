@@ -25,7 +25,9 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 100
 
-ACTIVITY_LOOKBACK_MINUTES = 30
+# Look back 24 hours to recover activities missed
+# because GitHub Actions did not execute on time.
+ACTIVITY_LOOKBACK_MINUTES = 1440
 
 MAX_PROCESSING_ATTEMPTS = 3
 
