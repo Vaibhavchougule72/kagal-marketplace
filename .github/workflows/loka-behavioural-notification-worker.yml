@@ -1,0 +1,39 @@
+name: LOKA Behavioural Notification Worker
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: loka-behavioural-notification-worker
+  cancel-in-progress: false
+
+jobs:
+  process-behavioural-notifications:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Process behavioural notifications
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: "False"
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+          FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
+          FAST2SMS_WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.FAST2SMS_WHATSAPP_PHONE_NUMBER_ID }}
+          BEHAVIOURAL_NOTIFICATIONS_DRY_RUN: "True"
+
+        run: python manage.py process_behavioural_notifications --once

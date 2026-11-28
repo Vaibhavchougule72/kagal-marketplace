@@ -114,11 +114,8 @@ def process_activity_safely(activity_id):
 
         activity = (
             CustomerActivity.objects
-            .select_for_update()
-            .select_related(
-                "session",
-                "session__customer"
-            )
+            .select_related("session", "session__customer")
+            .select_for_update(of=("self",))
             .get(id=activity_id)
         )
 
